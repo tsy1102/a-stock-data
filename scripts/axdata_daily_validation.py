@@ -30,6 +30,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = PROJECT_ROOT / ".tmp" / "axdata_daily_validation_state.json"
 _STATIC_QUEUE_CACHE: Optional[dict[str, Any]] = None
 EVIDENCE_FILENAME = "axdata_validation.json"
+JSON_REPLACE_MAX_ATTEMPTS = 3
+JSON_REPLACE_RETRY_DELAY_SECONDS = 0.05
 ACTIVE_INTERFACE = "tencent_realtime_snapshot"
 ACTIVE_FAMILY = "tencent"
 TENCENT_RAW_INDEXES = {
@@ -134,7 +136,14 @@ def _write_json(path: Path, value: dict[str, Any]) -> None:
         ) as temporary_file:
             temporary_path = Path(temporary_file.name)
             json.dump(value, temporary_file, ensure_ascii=False, indent=2, default=str)
-        os.replace(temporary_path, path)
+        for attempt in range(JSON_REPLACE_MAX_ATTEMPTS):
+            try:
+                os.replace(temporary_path, path)
+                break
+            except PermissionError:
+                if attempt + 1 == JSON_REPLACE_MAX_ATTEMPTS:
+                    raise
+                time.sleep(JSON_REPLACE_RETRY_DELAY_SECONDS * (attempt + 1))
     finally:
         if temporary_path is not None:
             try:

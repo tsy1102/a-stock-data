@@ -8752,13 +8752,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20261028",
         "T:20261030",
         "T:20261102",
-        "T:20261103"
+        "T:20261103",
+        "T:20261104"
       ],
       "evidence_sources": [
         "tdx",
@@ -8770,19 +8771,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 80
+            "source_as_of": 100
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 80
+            "source_as_of": 100
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261104",
+      "last_seen": "20261105",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10325,13 +10326,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.95,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20261028",
         "T:20261030",
         "T:20261102",
-        "T:20261103"
+        "T:20261103",
+        "T:20261104"
       ],
       "evidence_sources": [
         "tdx",
@@ -10343,19 +10345,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 80
+            "source_as_of": 100
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 80
+            "source_as_of": 100
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261104",
+      "last_seen": "20261105",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -12687,6 +12689,90 @@
       "in_registry": true,
       "first_seen": "20261023",
       "status": "confirmed"
+    },
+    "kph.limit_count||kpl.raw_columns.col_15": {
+      "left": "kpl.raw_columns.col_15",
+      "right": "kph.limit_count",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 0.9319,
+      "n_days": 5,
+      "n_pairs": 235,
+      "sample_dates": [
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 409
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 235
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261105",
+      "in_registry": false,
+      "first_seen": "20261105",
+      "status": "repeated"
+    },
+    "kph.industry_id||kpl.raw_columns.col_19": {
+      "left": "kpl.raw_columns.col_19",
+      "right": "kph.industry_id",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 0.9915,
+      "n_days": 5,
+      "n_pairs": 235,
+      "sample_dates": [
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 409
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 235
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261105",
+      "in_registry": false,
+      "first_seen": "20261105",
+      "status": "repeated"
     }
   },
   "legacy_findings_v1": {
@@ -22674,5 +22760,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261104"
+  "updated": "20261105"
 }

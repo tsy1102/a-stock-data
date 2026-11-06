@@ -1,5 +1,128 @@
 {
   "reviews": {
+    "cc1_0066d59b4121dc6aa2b51e68bb34f9c1a34193511672e2d2a164f2ae5c8e98ff": {
+      "current": {
+        "candidate_id": "cc1_0066d59b4121dc6aa2b51e68bb34f9c1a34193511672e2d2a164f2ae5c8e98ff",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "990b78eefa5da97aad8d43424384c4dbbf53a8b70369f383f4b7c11c4d84fa4f",
+        "evidence_refs": [
+          {
+            "path": "20261105/20261105_collision_report.json",
+            "sha256": "af0dddc6452657e3cfdd7f1ec93aef922b84cbbbba09926a31d18d37304a340f"
+          },
+          {
+            "path": "adjudications/public_web/20261105_public_web_research.md",
+            "sha256": "5c34cf7571d517696940f3047f377f5333ed10d63ac23255f1fc7a00316b97e8"
+          },
+          {
+            "path": "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "按来源日期对齐5日、235个共同股票样本，16个整数值不一致，包括1对3、1对2及2对5；这不是舍入或单位误差。拒绝kpl.raw_columns.col_15与kph.limit_count的直接同义映射，但不据此定义KPL原始列，也不将该字段标记为disproved。",
+        "reviewed_at": "2026-11-05T20:48:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_0066d59b4121dc6aa2b51e68bb34f9c1a34193511672e2d2a164f2ae5c8e98ff",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "990b78eefa5da97aad8d43424384c4dbbf53a8b70369f383f4b7c11c4d84fa4f",
+          "evidence_refs": [
+            {
+              "path": "20261105/20261105_collision_report.json",
+              "sha256": "af0dddc6452657e3cfdd7f1ec93aef922b84cbbbba09926a31d18d37304a340f"
+            },
+            {
+              "path": "adjudications/public_web/20261105_public_web_research.md",
+              "sha256": "5c34cf7571d517696940f3047f377f5333ed10d63ac23255f1fc7a00316b97e8"
+            },
+            {
+              "path": "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "按来源日期对齐5日、235个共同股票样本，16个整数值不一致，包括1对3、1对2及2对5；这不是舍入或单位误差。拒绝kpl.raw_columns.col_15与kph.limit_count的直接同义映射，但不据此定义KPL原始列，也不将该字段标记为disproved。",
+          "reviewed_at": "2026-11-05T20:48:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261028": 47,
+            "T:20261030": 41,
+            "T:20261102": 46,
+            "T:20261103": 36,
+            "T:20261104": 49
+          },
+          "daily_informative_sample_counts": {
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50
+          },
+          "daily_sample_counts": {
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50
+          },
+          "days_ge_threshold": 4,
+          "distinct_days": [
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_15",
+          "level": "L1",
+          "n_days": 5,
+          "n_informative_pairs": 235,
+          "n_pairs": 235,
+          "overall_hit": 0.9319,
+          "ratio": null,
+          "right": "kph.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 409
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 235
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
     "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979": {
       "current": {
         "candidate_id": "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979",
@@ -6358,6 +6481,137 @@
         "schema_version": 1
       }
     },
+    "cc1_cfca6964d15a1b15464a9bb612eb05318f0c2a6e33832ae1f63146a18d11a57d": {
+      "current": {
+        "candidate_id": "cc1_cfca6964d15a1b15464a9bb612eb05318f0c2a6e33832ae1f63146a18d11a57d",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "bd1ff5d298733f66b279e44cdd46a3144f65a34acc2b947ac4a7e0f8e2278562",
+        "evidence_refs": [
+          {
+            "path": "20261105/20261105_collision_report.json",
+            "sha256": "af0dddc6452657e3cfdd7f1ec93aef922b84cbbbba09926a31d18d37304a340f"
+          },
+          {
+            "path": "adjudications/public_web/20261105_public_web_research.md",
+            "sha256": "5c34cf7571d517696940f3047f377f5333ed10d63ac23255f1fc7a00316b97e8"
+          },
+          {
+            "path": "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/kcb/603110.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "按来源日期对齐5日、235个共同样本有233个数值相同，但2026-11-02的603110和603466分别出现801660/803023、801159/803029差异。KPL原始列号没有公开字段合同，KPH底层上游身份及industry_id代码表未确认；当前公开页面不足以区分同义类别与分类层级/主板块差异，暂不定案。",
+        "reviewed_at": "2026-11-05T20:48:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cfca6964d15a1b15464a9bb612eb05318f0c2a6e33832ae1f63146a18d11a57d",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "bd1ff5d298733f66b279e44cdd46a3144f65a34acc2b947ac4a7e0f8e2278562",
+          "evidence_refs": [
+            {
+              "path": "20261105/20261105_collision_report.json",
+              "sha256": "af0dddc6452657e3cfdd7f1ec93aef922b84cbbbba09926a31d18d37304a340f"
+            },
+            {
+              "path": "adjudications/public_web/20261105_public_web_research.md",
+              "sha256": "5c34cf7571d517696940f3047f377f5333ed10d63ac23255f1fc7a00316b97e8"
+            },
+            {
+              "path": "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/kcb/603110.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "按来源日期对齐5日、235个共同样本有233个数值相同，但2026-11-02的603110和603466分别出现801660/803023、801159/803029差异。KPL原始列号没有公开字段合同，KPH底层上游身份及industry_id代码表未确认；当前公开页面不足以区分同义类别与分类层级/主板块差异，暂不定案。",
+          "reviewed_at": "2026-11-05T20:48:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 48,
+            "T:20261103": 41,
+            "T:20261104": 50
+          },
+          "daily_informative_sample_counts": {
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50
+          },
+          "daily_sample_counts": {
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50
+          },
+          "days_ge_threshold": 5,
+          "distinct_days": [
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_19",
+          "level": "L1",
+          "n_days": 5,
+          "n_informative_pairs": 235,
+          "n_pairs": 235,
+          "overall_hit": 0.9915,
+          "ratio": null,
+          "right": "kph.industry_id",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 409
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 235
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
     "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40": {
       "current": {
         "candidate_id": "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40",
@@ -7116,5 +7370,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-04T19:16:34+08:00"
+  "updated_at": "2026-11-05T20:48:14+08:00"
 }

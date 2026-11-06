@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2560；日常来源路径 2416：unverified 1383、candidate 1、conflict 81、disproved 2；历史来源路径 144。
+> 注册字段路径 2561；日常来源路径 2417：unverified 1383、candidate 1、conflict 78、disproved 2；历史来源路径 144。
 > 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -29,7 +29,7 @@
 | `registry_status_only_single_source` | 792 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（81）
+## 一、状态冲突（禁止作为锚点，优先复核）（78）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -99,9 +99,6 @@
 | 同花顺-fuyao | `profitability.sale_net_interest_ratio` | profitability.sale_net_interest_ratio | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 同花顺-fuyao | `solvency` | solvency | — | — | 含义栏为空/占位 | status_conflict | 12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕 |
 | 同花顺-fuyao | `solvency.assets_debt_ratio` | solvency.assets_debt_ratio | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
-| 同花顺-fuyao | `valuation.pb_mrq` | valuation.pb_mrq | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
-| 同花顺-fuyao | `valuation.pe_mrq` | valuation.pe_mrq | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
-| 同花顺-fuyao | `valuation.pe_ttm` | valuation.pe_ttm | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 同花顺-fuyao | `valuation.ps_ttm` | valuation.ps_ttm | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 开盘啦(kpl) | `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |

@@ -9,7 +9,7 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 492,
       "candidate": 1,
-      "conflict": 81,
+      "conflict": 78,
       "disproved": 2,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
@@ -21,12 +21,12 @@
       "reference_status_missing": 35,
       "registry_status_only_single_source": 873,
       "resolved_by_multiday_independent_cross_source_l1": 2,
-      "status_conflict": 59,
+      "status_conflict": 56,
       "status_missing": 43,
       "unverified": 1503,
-      "verified": 973,
+      "verified": 976,
       "verified_by_empirical_addendum": 19,
-      "verified_by_source_contract": 71
+      "verified_by_source_contract": 74
     }
   },
   "sources": [
@@ -8343,11 +8343,11 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "同花顺-fuyao": "unverified",
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified",
-        "FTShare REST": "verified"
+        "开盘啦(kpl)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -10502,10 +10502,10 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
-        "同花顺-fuyao": "verified",
-        "FTShare REST": "verified"
+        "同花顺-fuyao": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -10914,9 +10914,9 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
-        "东财-热榜(em_hot)": "verified",
-        "FTShare REST": "verified"
+        "东财-热榜(em_hot)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -11443,11 +11443,11 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "东财-datacenter(英文键)": "unverified",
         "东财-热榜(em_hot)": "verified",
-        "新浪(扩展API)": "unverified",
-        "FTShare REST": "verified"
+        "新浪(扩展API)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -21659,10 +21659,10 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified",
-        "FTShare REST": "verified"
+        "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -24889,10 +24889,10 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified",
-        "FTShare REST": "verified"
+        "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -25601,10 +25601,10 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "东财-datacenter(英文键)": "unverified",
-        "开盘红": "verified",
-        "FTShare REST": "verified"
+        "开盘红": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -26233,6 +26233,7 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
@@ -26241,8 +26242,7 @@
         "同花顺-fuyao": "unverified",
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "unverified",
-        "财联社(cls)": "unverified",
-        "FTShare REST": "verified"
+        "财联社(cls)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -26980,11 +26980,11 @@
       "status_raw": "⏸️",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "同花顺-fuyao": "unverified",
-        "新浪(扩展API)": "unverified",
-        "FTShare REST": "verified"
+        "新浪(扩展API)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -28200,13 +28200,13 @@
       "status_raw": "✅ 未变；✅ 开盘啦实测 `[61]=市盈率TTM` 对应 f164",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
         "ZHB-tdxstat": "verified",
         "同花顺-fuyao": "unverified",
-        "开盘啦(kpl)": "conflict",
-        "FTShare REST": "verified"
+        "开盘啦(kpl)": "conflict"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -29133,8 +29133,8 @@
       "status_raw": "⏸️",
       "status": "conflict",
       "source_statuses": {
-        "新浪(扩展API)": "unverified",
-        "FTShare REST": "verified"
+        "FTShare REST": "verified",
+        "新浪(扩展API)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -30878,6 +30878,24 @@
       ]
     },
     {
+      "code": "raw_columns.col_19",
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "sources": [
+        "开盘啦(kpl_limit_up_detail)"
+      ],
+      "section": "2026-11-05 KPL col_19 行业/板块分类代码语义裁决",
+      "canonical": "sector_code",
+      "meaning": "行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同）",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "开盘啦(kpl_limit_up_detail)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "raw_payload",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -32549,9 +32567,9 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
-        "东财-datacenter(英文键)": "unverified",
-        "FTShare REST": "verified"
+        "东财-datacenter(英文键)": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -35223,9 +35241,9 @@
       "status": "unverified",
       "source_statuses": {
         "FTShare": "unverified",
+        "FTShare REST": "verified",
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified",
-        "FTShare REST": "verified"
+        "开盘啦(kpl)": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -37422,12 +37440,12 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "同花顺-fuyao": "unverified",
         "开盘啦(kpl)": "unverified",
         "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified",
-        "新浪(扩展API)": "conflict",
-        "FTShare REST": "verified"
+        "新浪(扩展API)": "conflict"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -37483,11 +37501,11 @@
       "status_raw": "✅ V17.0.1h",
       "status": "conflict",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "东财-push2ex": "unverified",
         "东财-热榜(em_hot)": "verified",
-        "开盘红": "verified",
-        "FTShare REST": "verified"
+        "开盘红": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -38190,18 +38208,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "valuation.pb_mrq",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市净率 MRQ（最近报告期）",
+      "unit": "倍",
       "status_raw": "✅ L1（比率锚）",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "valuation.pcf_ttm",
@@ -38229,18 +38244,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "valuation.pe_mrq",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市盈率 MRQ（最近报告期）",
+      "unit": "倍",
       "status_raw": "✅ L1（比率锚；🔴2026-09-01 订正语义标签，数值映射未变）",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "valuation.pe_ttm",
@@ -38250,18 +38262,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "valuation.pe_ttm",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市盈率 TTM（滚动市盈率）",
+      "unit": "倍",
       "status_raw": "✅ L1（比率锚）",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "valuation.ps_ttm",
@@ -38454,11 +38463,11 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
+        "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified",
-        "FTShare REST": "verified"
+        "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -44557,6 +44566,9 @@
     ],
     "yingyelirun": [
       "TDX(双命名源)"
+    ],
+    "sector_code": [
+      "开盘啦(kpl)"
     ]
   },
   "mappings": [
@@ -58807,6 +58819,932 @@
         "raw_capture": "docs/field_verification/20260828/raw_ftshare.json",
         "path": "market.limit_up_pool_yesterday[].trade_date",
         "semantic_status": "unverified"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "amplitude",
+      "identity": "FTShare REST::amplitude",
+      "path": "amplitude",
+      "canonical": "amplitude",
+      "meaning": "价格振幅",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "avg",
+      "identity": "FTShare REST::avg",
+      "path": "avg",
+      "canonical": "avg",
+      "meaning": "平均价格",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "bid_ask_ratio",
+      "identity": "FTShare REST::bid_ask_ratio",
+      "path": "bid_ask_ratio",
+      "canonical": "bid_ask_ratio",
+      "meaning": "买卖盘比率",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "board",
+      "identity": "FTShare REST::board",
+      "path": "board",
+      "canonical": "board",
+      "meaning": "板块标识",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change",
+      "identity": "FTShare REST::change",
+      "path": "change",
+      "canonical": "change",
+      "meaning": "价格涨跌额",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate",
+      "identity": "FTShare REST::change_rate",
+      "path": "change_rate",
+      "canonical": "change_rate",
+      "meaning": "日涨跌幅；0.03 表示 3%",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day10",
+      "identity": "FTShare REST::change_rate_day10",
+      "path": "change_rate_day10",
+      "canonical": "change_rate_day10",
+      "meaning": "10日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day120",
+      "identity": "FTShare REST::change_rate_day120",
+      "path": "change_rate_day120",
+      "canonical": "change_rate_day120",
+      "meaning": "120日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day20",
+      "identity": "FTShare REST::change_rate_day20",
+      "path": "change_rate_day20",
+      "canonical": "change_rate_day20",
+      "meaning": "20日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day5",
+      "identity": "FTShare REST::change_rate_day5",
+      "path": "change_rate_day5",
+      "canonical": "change_rate_day5",
+      "meaning": "5日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day60",
+      "identity": "FTShare REST::change_rate_day60",
+      "path": "change_rate_day60",
+      "canonical": "change_rate_day60",
+      "meaning": "60日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_ytd",
+      "identity": "FTShare REST::change_rate_ytd",
+      "path": "change_rate_ytd",
+      "canonical": "change_rate_ytd",
+      "meaning": "年初至今涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "close",
+      "identity": "FTShare REST::close",
+      "path": "close",
+      "canonical": "close",
+      "meaning": "收盘价/最新价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "float_a_shares",
+      "identity": "FTShare REST::float_a_shares",
+      "path": "float_a_shares",
+      "canonical": "float_a_shares",
+      "meaning": "A股流通股数",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "high",
+      "identity": "FTShare REST::high",
+      "path": "high",
+      "canonical": "high",
+      "meaning": "最高价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "listing_date",
+      "identity": "FTShare REST::listing_date",
+      "path": "listing_date",
+      "canonical": "listing_date",
+      "meaning": "上市日期",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "low",
+      "identity": "FTShare REST::low",
+      "path": "low",
+      "canonical": "low",
+      "meaning": "最低价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "market_cap",
+      "identity": "FTShare REST::market_cap",
+      "path": "market_cap",
+      "canonical": "market_cap",
+      "meaning": "总市值",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "name",
+      "identity": "FTShare REST::name",
+      "path": "name",
+      "canonical": "name",
+      "meaning": "证券名称",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "open",
+      "identity": "FTShare REST::open",
+      "path": "open",
+      "canonical": "open",
+      "meaning": "开盘价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "pe_ttm",
+      "identity": "FTShare REST::pe_ttm",
+      "path": "pe_ttm",
+      "canonical": "pe_ttm",
+      "meaning": "滚动市盈率（TTM）",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "prev_close",
+      "identity": "FTShare REST::prev_close",
+      "path": "prev_close",
+      "canonical": "prev_close",
+      "meaning": "前收盘价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "shares",
+      "identity": "FTShare REST::shares",
+      "path": "shares",
+      "canonical": "shares",
+      "meaning": "总股本",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "st",
+      "identity": "FTShare REST::st",
+      "path": "st",
+      "canonical": "st",
+      "meaning": "是否为 ST",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "status",
+      "identity": "FTShare REST::status",
+      "path": "status",
+      "canonical": "status",
+      "meaning": "证券状态",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "symbol",
+      "identity": "FTShare REST::symbol",
+      "path": "symbol",
+      "canonical": "symbol",
+      "meaning": "证券代码（含交易所后缀）",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "symbol_id",
+      "identity": "FTShare REST::symbol_id",
+      "path": "symbol_id",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "unverified",
+      "status_resolution": "live_observed_not_documented",
+      "status_evidence": {
+        "evidence_level": "single_live_response_observation",
+        "evidence_file": "docs/ftshare_contract_catalog.json"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "identity_evidence": {
+        "basis": "single_live_response_observation",
+        "contract_file": "docs/ftshare_contract_catalog.json",
+        "path": "symbol_id",
+        "semantic_status": "unverified"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "tradable_a_market_cap",
+      "identity": "FTShare REST::tradable_a_market_cap",
+      "path": "tradable_a_market_cap",
+      "canonical": "tradable_a_market_cap",
+      "meaning": "A股流通市值",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "ts_millis",
+      "identity": "FTShare REST::ts_millis",
+      "path": "ts_millis",
+      "canonical": "ts_millis",
+      "meaning": "交易所行情时间戳",
+      "unit": "毫秒（Unix 时间戳）",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover",
+      "identity": "FTShare REST::turnover",
+      "path": "turnover",
+      "canonical": "turnover",
+      "meaning": "成交额",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover_rate",
+      "identity": "FTShare REST::turnover_rate",
+      "path": "turnover_rate",
+      "canonical": "turnover_rate",
+      "meaning": "换手率",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "volume",
+      "identity": "FTShare REST::volume",
+      "path": "volume",
+      "canonical": "volume",
+      "meaning": "成交量",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
       }
     },
     {
@@ -160921,14 +161859,15 @@
       "identity": "同花顺-fuyao::valuation.pb_mrq",
       "path": "valuation.pb_mrq",
       "canonical": "valuation.pb_mrq",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市净率 MRQ（最近报告期）",
+      "unit": "倍",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pb_mrq; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -160943,6 +161882,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261105-fuyao-pb-mrq-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261105-fuyao-pb-mrq-contract"
         ]
       },
       "reference_evidence": [
@@ -160953,6 +161898,35 @@
           "unit": "",
           "status_raw": "✅ L1（比率锚）",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pb_mrq; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22",
+          "canonical": "valuation.pb_mrq",
+          "meaning": "市净率 MRQ（最近报告期）",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-05：20261105-fuyao-pb-mrq-contract",
+          "status": "verified",
+          "adjudication_id": "20261105-fuyao-pb-mrq-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pb_mrq; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pb_mrq",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pb_mrq",
+              "meaning": "市净率 MRQ（最近报告期）",
+              "unit": "倍"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -160967,7 +161941,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261105-fuyao-pb-mrq-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-05",
+          "decision_file": "adjudications/20261105_fuyao_valuation_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pb_mrq",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pb_mrq",
+              "meaning": "市净率 MRQ（最近报告期）",
+              "unit": "倍"
+            }
+          },
+          "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pb_mrq 定义为市净率 MRQ；项目适配器请求该精确端点并原样保留此键。官方同花顺量化字段说明给出其市净率计算口径。契约单独确认 Fuyao 来源字段语义，不新增与腾讯 [46] 的数值等同映射。近 7 个来源数据日 138/140 组可按腾讯两位小数四舍五入匹配；601288 在 2026-10-28 和 2026-10-29 的两组偏差超过展示舍入范围，保留为来源口径/更新差异，不将其归因于舍入。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pb_mrq; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -161045,14 +162055,15 @@
       "identity": "同花顺-fuyao::valuation.pe_mrq",
       "path": "valuation.pe_mrq",
       "canonical": "valuation.pe_mrq",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市盈率 MRQ（最近报告期）",
+      "unit": "倍",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pe_mrq; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -161067,6 +162078,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261105-fuyao-pe-mrq-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261105-fuyao-pe-mrq-contract"
         ]
       },
       "reference_evidence": [
@@ -161077,6 +162094,35 @@
           "unit": "",
           "status_raw": "✅ L1（比率锚；🔴2026-09-01 订正语义标签，数值映射未变）",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pe_mrq; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22",
+          "canonical": "valuation.pe_mrq",
+          "meaning": "市盈率 MRQ（最近报告期）",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-05：20261105-fuyao-pe-mrq-contract",
+          "status": "verified",
+          "adjudication_id": "20261105-fuyao-pe-mrq-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_mrq; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pe_mrq",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pe_mrq",
+              "meaning": "市盈率 MRQ（最近报告期）",
+              "unit": "倍"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -161091,7 +162137,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261105-fuyao-pe-mrq-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-05",
+          "decision_file": "adjudications/20261105_fuyao_valuation_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pe_mrq",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pe_mrq",
+              "meaning": "市盈率 MRQ（最近报告期）",
+              "unit": "倍"
+            }
+          },
+          "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pe_mrq 定义为市盈率 MRQ；项目适配器请求该精确端点并原样保留此键。官方同花顺量化字段说明进一步给出 MRQ 使用最近报告期数据的口径。契约单独确认 Fuyao 来源字段语义，不新增与腾讯 [52] 的数值等同映射。近 7 个来源数据日 140/140 组均落入宽松近似筛查，139/140 可按腾讯两位小数四舍五入匹配；唯一例外为负 PE，作为来源计算/舍入边界保留。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_mrq; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -161099,14 +162181,15 @@
       "identity": "同花顺-fuyao::valuation.pe_ttm",
       "path": "valuation.pe_ttm",
       "canonical": "valuation.pe_ttm",
-      "meaning": "",
-      "unit": "",
+      "meaning": "市盈率 TTM（滚动市盈率）",
+      "unit": "倍",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pe_ttm; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -161121,6 +162204,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261105-fuyao-pe-ttm-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261105-fuyao-pe-ttm-contract"
         ]
       },
       "reference_evidence": [
@@ -161131,6 +162220,35 @@
           "unit": "",
           "status_raw": "✅ L1（比率锚）",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/verify/fuyao_api_full.md#GET /api/a-share/valuations/snapshot response data.item[].pe_ttm; lines 1044-1071 @ official full-contract snapshot captured 2026-08-22",
+          "canonical": "valuation.pe_ttm",
+          "meaning": "市盈率 TTM（滚动市盈率）",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-05：20261105-fuyao-pe-ttm-contract",
+          "status": "verified",
+          "adjudication_id": "20261105-fuyao-pe-ttm-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_ttm; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pe_ttm",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pe_ttm",
+              "meaning": "市盈率 TTM（滚动市盈率）",
+              "unit": "倍"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -161145,7 +162263,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261105-fuyao-pe-ttm-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-05",
+          "decision_file": "adjudications/20261105_fuyao_valuation_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "valuation.pe_ttm",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "valuation.pe_ttm",
+              "meaning": "市盈率 TTM（滚动市盈率）",
+              "unit": "倍"
+            }
+          },
+          "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pe_ttm 定义为市盈率 TTM；项目适配器请求该精确端点并原样保留此键。契约单独确认 Fuyao 来源字段的语义，不新增与腾讯 [39] 的数值等同映射。近 7 个来源数据日的 140 组对照全部落入宽松近似筛查，按腾讯两位小数显示精度复核后 137/140 可四舍五入匹配；3 个例外均为负 PE，记录为来源计算或负值显示差异，不推翻字段语义。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract snapshot captured 2026-08-22",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_ttm; lines 1044-1071",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -175476,6 +176630,207 @@
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "raw_columns.col_19",
+      "identity": "开盘啦(kpl_limit_up_detail)::raw_columns.col_19",
+      "path": "raw_columns.col_19",
+      "canonical": "sector_code",
+      "meaning": "行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同）",
+      "unit": "",
+      "section": "2026-11-05 KPL col_19 行业/板块分类代码语义裁决",
+      "sections": [
+        "2026-11-05 KPL col_19 行业/板块分类代码语义裁决"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41,
+          50
+        ],
+        "exact_matches": 417,
+        "comparison_count": 420,
+        "mismatches": [
+          {
+            "date": "2026-10-16",
+            "code": "920690",
+            "kpl_col_19": "801829",
+            "kph_industry_id": "801199"
+          },
+          {
+            "date": "2026-11-02",
+            "code": "603110",
+            "kpl_col_19": "801660",
+            "kph_industry_id": "803023"
+          },
+          {
+            "date": "2026-11-02",
+            "code": "603466",
+            "kpl_col_19": "801159",
+            "kph_industry_id": "803029"
+          }
+        ],
+        "report_sha256": "e3fd803b1d7129b716a24bbe6a48b2324e852587408e0507d5220cb6d9151af5",
+        "adjudication_ids": [
+          "20261105-kpl-col19-sector-semantics"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-05 KPL col_19 行业/板块分类代码语义裁决",
+          "canonical": "sector_code",
+          "meaning": "行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同）",
+          "unit": "",
+          "status_raw": "E3：解析器位置映射与 9 个交易日独立来源稳定分类码对照",
+          "status": "verified",
+          "adjudication_id": "20261105-kpl-col19-sector-semantics",
+          "evidence_basis": "stable_cross_source_collision_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md",
+          "sample_trade_dates": [
+            "2026-10-16",
+            "2026-10-19",
+            "2026-10-21",
+            "2026-10-23",
+            "2026-10-28",
+            "2026-10-30",
+            "2026-11-02",
+            "2026-11-03",
+            "2026-11-04"
+          ],
+          "overlap_counts": [
+            50,
+            40,
+            45,
+            50,
+            50,
+            44,
+            50,
+            41,
+            50
+          ],
+          "exact_matches": 417,
+          "comparison_count": 420,
+          "mismatches": [
+            {
+              "date": "2026-10-16",
+              "code": "920690",
+              "kpl_col_19": "801829",
+              "kph_industry_id": "801199"
+            },
+            {
+              "date": "2026-11-02",
+              "code": "603110",
+              "kpl_col_19": "801660",
+              "kph_industry_id": "803023"
+            },
+            {
+              "date": "2026-11-02",
+              "code": "603466",
+              "kpl_col_19": "801159",
+              "kph_industry_id": "803029"
+            }
+          ],
+          "report_sha256": "e3fd803b1d7129b716a24bbe6a48b2324e852587408e0507d5220cb6d9151af5"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261105-kpl-col19-sector-semantics",
+          "action": "empirical_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-05",
+          "report": "20261105/20261105_collision_report.json",
+          "candidate": {
+            "left": "kpl.raw_columns.col_19",
+            "right": "kph.industry_id"
+          },
+          "level": "L1",
+          "rationale": "登记来源内的稳定语义为行业/板块分类代码。数值对撞只用来确定字段类别，不据此宣布与 KPH industry_id 逐值同义；三个分类码差异明确保留，不创建跨源映射。",
+          "evidence": {
+            "overall_hit": 0.9928571428571429,
+            "n_days": 9,
+            "n_pairs": 420,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261021",
+              "T:20261023",
+              "T:20261028",
+              "T:20261030",
+              "T:20261102",
+              "T:20261103",
+              "T:20261104"
+            ],
+            "daily_sample_counts": {
+              "T:20261016": 50,
+              "T:20261019": 40,
+              "T:20261021": 45,
+              "T:20261023": 50,
+              "T:20261028": 50,
+              "T:20261030": 44,
+              "T:20261102": 50,
+              "T:20261103": 41,
+              "T:20261104": 50
+            },
+            "exact_matches": 417,
+            "mismatches": [
+              {
+                "date": "2026-10-16",
+                "code": "920690",
+                "kpl_col_19": "801829",
+                "kph_industry_id": "801199"
+              },
+              {
+                "date": "2026-11-02",
+                "code": "603110",
+                "kpl_col_19": "801660",
+                "kph_industry_id": "803023"
+              },
+              {
+                "date": "2026-11-02",
+                "code": "603466",
+                "kpl_col_19": "801159",
+                "kph_industry_id": "803029"
+              }
+            ],
+            "evidence_sources": [
+              "kph",
+              "kpl"
+            ]
+          }
+        }
+      ],
+      "capture_evidence": [
+        {
+          "file": "docs/field_verification/20261105/raw_kpl.json",
+          "path": "stocks.[*].raw_columns.col_19"
+        }
+      ]
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
       "code": "seal_amount",
       "identity": "开盘啦(kpl_limit_up_detail)::seal_amount",
       "path": "seal_amount",
@@ -175683,6 +177038,178 @@
     },
     {
       "source": "开盘红",
+      "code": "industry_id",
+      "identity": "开盘红::industry_id",
+      "path": "industry_id",
+      "canonical": "industry_id",
+      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "industry_limit_up_count",
+      "identity": "开盘红::industry_limit_up_count",
+      "path": "industry_limit_up_count",
+      "canonical": "",
+      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+      "unit": "家",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "开盘红"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+          "canonical": "",
+          "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+          "unit": "家",
+          "status_raw": "",
+          "status": "unverified"
+        }
+      ],
+      "registry_aggregate": {
+        "code": "industry_limit_up_count",
+        "sources": [
+          "开盘红"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+        "unit": "家",
+        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      },
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_count",
+      "identity": "开盘红::limit_count",
+      "path": "limit_count",
+      "canonical": "limit_count",
+      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+      "unit": "板",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_tag",
+      "identity": "开盘红::limit_tag",
+      "path": "limit_tag",
+      "canonical": "limit_tag",
+      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
       "code": "limit_time",
       "identity": "开盘红::limit_time",
       "path": "limit_time",
@@ -175724,6 +177251,47 @@
     },
     {
       "source": "开盘红",
+      "code": "market_cap",
+      "identity": "开盘红::market_cap",
+      "path": "market_cap",
+      "canonical": "float_market_value",
+      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
+      "unit": "元",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
       "code": "net_inflow",
       "identity": "开盘红::net_inflow",
       "path": "net_inflow",
@@ -175733,6 +177301,96 @@
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "open_time",
+      "identity": "开盘红::open_time",
+      "path": "open_time",
+      "canonical": "",
+      "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "开盘红"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+          "canonical": "",
+          "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+          "unit": "",
+          "status_raw": "",
+          "status": "unverified"
+        }
+      ],
+      "registry_aggregate": {
+        "code": "open_time",
+        "sources": [
+          "开盘红"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+        "unit": "",
+        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      },
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "reason",
+      "identity": "开盘红::reason",
+      "path": "reason",
+      "canonical": "limit_up_reason",
+      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -175847,6 +177505,47 @@
     },
     {
       "source": "开盘红",
+      "code": "themes",
+      "identity": "开盘红::themes",
+      "path": "themes",
+      "canonical": "themes",
+      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
       "code": "turnover",
       "identity": "开盘红::turnover",
       "path": "turnover",
@@ -175925,350 +177624,6 @@
         ]
       },
       "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "open_time",
-      "identity": "开盘红::open_time",
-      "path": "open_time",
-      "canonical": "",
-      "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
-      "unit": "",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "开盘红"
-        ],
-        "values": [
-          "unverified"
-        ]
-      },
-      "reference_evidence": [
-        {
-          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-          "canonical": "",
-          "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
-          "unit": "",
-          "status_raw": "",
-          "status": "unverified"
-        }
-      ],
-      "registry_aggregate": {
-        "code": "open_time",
-        "sources": [
-          "开盘红"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
-        "unit": "",
-        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      },
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "limit_tag",
-      "identity": "开盘红::limit_tag",
-      "path": "limit_tag",
-      "canonical": "limit_tag",
-      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
-      "unit": "",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "limit_count",
-      "identity": "开盘红::limit_count",
-      "path": "limit_count",
-      "canonical": "limit_count",
-      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
-      "unit": "板",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "themes",
-      "identity": "开盘红::themes",
-      "path": "themes",
-      "canonical": "themes",
-      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
-      "unit": "",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "reason",
-      "identity": "开盘红::reason",
-      "path": "reason",
-      "canonical": "limit_up_reason",
-      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
-      "unit": "",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "market_cap",
-      "identity": "开盘红::market_cap",
-      "path": "market_cap",
-      "canonical": "float_market_value",
-      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
-      "unit": "元",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "industry_id",
-      "identity": "开盘红::industry_id",
-      "path": "industry_id",
-      "canonical": "industry_id",
-      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
-      "unit": "",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-28",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03"
-        ],
-        "overlap_counts": [
-          50,
-          40,
-          45,
-          50,
-          50,
-          44,
-          50,
-          41
-        ]
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "开盘红",
-      "code": "industry_limit_up_count",
-      "identity": "开盘红::industry_limit_up_count",
-      "path": "industry_limit_up_count",
-      "canonical": "",
-      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
-      "unit": "家",
-      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "开盘红"
-        ],
-        "values": [
-          "unverified"
-        ]
-      },
-      "reference_evidence": [
-        {
-          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-          "canonical": "",
-          "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
-          "unit": "家",
-          "status_raw": "",
-          "status": "unverified"
-        }
-      ],
-      "registry_aggregate": {
-        "code": "industry_limit_up_count",
-        "sources": [
-          "开盘红"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
-        "unit": "家",
-        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
-      },
       "attribute_conflicts": {}
     },
     {
@@ -187780,935 +189135,119 @@
         "unit": "",
         "section": ""
       }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "symbol",
-      "identity": "FTShare REST::symbol",
-      "path": "symbol",
-      "canonical": "symbol",
-      "meaning": "证券代码（含交易所后缀）",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "name",
-      "identity": "FTShare REST::name",
-      "path": "name",
-      "canonical": "name",
-      "meaning": "证券名称",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "open",
-      "identity": "FTShare REST::open",
-      "path": "open",
-      "canonical": "open",
-      "meaning": "开盘价",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "high",
-      "identity": "FTShare REST::high",
-      "path": "high",
-      "canonical": "high",
-      "meaning": "最高价",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "low",
-      "identity": "FTShare REST::low",
-      "path": "low",
-      "canonical": "low",
-      "meaning": "最低价",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "close",
-      "identity": "FTShare REST::close",
-      "path": "close",
-      "canonical": "close",
-      "meaning": "收盘价/最新价",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "prev_close",
-      "identity": "FTShare REST::prev_close",
-      "path": "prev_close",
-      "canonical": "prev_close",
-      "meaning": "前收盘价",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change",
-      "identity": "FTShare REST::change",
-      "path": "change",
-      "canonical": "change",
-      "meaning": "价格涨跌额",
-      "unit": "元/股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate",
-      "identity": "FTShare REST::change_rate",
-      "path": "change_rate",
-      "canonical": "change_rate",
-      "meaning": "日涨跌幅；0.03 表示 3%",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "volume",
-      "identity": "FTShare REST::volume",
-      "path": "volume",
-      "canonical": "volume",
-      "meaning": "成交量",
-      "unit": "股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "turnover",
-      "identity": "FTShare REST::turnover",
-      "path": "turnover",
-      "canonical": "turnover",
-      "meaning": "成交额",
-      "unit": "元",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "amplitude",
-      "identity": "FTShare REST::amplitude",
-      "path": "amplitude",
-      "canonical": "amplitude",
-      "meaning": "价格振幅",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "avg",
-      "identity": "FTShare REST::avg",
-      "path": "avg",
-      "canonical": "avg",
-      "meaning": "平均价格",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "bid_ask_ratio",
-      "identity": "FTShare REST::bid_ask_ratio",
-      "path": "bid_ask_ratio",
-      "canonical": "bid_ask_ratio",
-      "meaning": "买卖盘比率",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "turnover_rate",
-      "identity": "FTShare REST::turnover_rate",
-      "path": "turnover_rate",
-      "canonical": "turnover_rate",
-      "meaning": "换手率",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "market_cap",
-      "identity": "FTShare REST::market_cap",
-      "path": "market_cap",
-      "canonical": "market_cap",
-      "meaning": "总市值",
-      "unit": "元",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "tradable_a_market_cap",
-      "identity": "FTShare REST::tradable_a_market_cap",
-      "path": "tradable_a_market_cap",
-      "canonical": "tradable_a_market_cap",
-      "meaning": "A股流通市值",
-      "unit": "元",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "pe_ttm",
-      "identity": "FTShare REST::pe_ttm",
-      "path": "pe_ttm",
-      "canonical": "pe_ttm",
-      "meaning": "滚动市盈率（TTM）",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "board",
-      "identity": "FTShare REST::board",
-      "path": "board",
-      "canonical": "board",
-      "meaning": "板块标识",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "st",
-      "identity": "FTShare REST::st",
-      "path": "st",
-      "canonical": "st",
-      "meaning": "是否为 ST",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "status",
-      "identity": "FTShare REST::status",
-      "path": "status",
-      "canonical": "status",
-      "meaning": "证券状态",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "shares",
-      "identity": "FTShare REST::shares",
-      "path": "shares",
-      "canonical": "shares",
-      "meaning": "总股本",
-      "unit": "股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "float_a_shares",
-      "identity": "FTShare REST::float_a_shares",
-      "path": "float_a_shares",
-      "canonical": "float_a_shares",
-      "meaning": "A股流通股数",
-      "unit": "股",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "listing_date",
-      "identity": "FTShare REST::listing_date",
-      "path": "listing_date",
-      "canonical": "listing_date",
-      "meaning": "上市日期",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_day5",
-      "identity": "FTShare REST::change_rate_day5",
-      "path": "change_rate_day5",
-      "canonical": "change_rate_day5",
-      "meaning": "5日涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_day10",
-      "identity": "FTShare REST::change_rate_day10",
-      "path": "change_rate_day10",
-      "canonical": "change_rate_day10",
-      "meaning": "10日涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_day20",
-      "identity": "FTShare REST::change_rate_day20",
-      "path": "change_rate_day20",
-      "canonical": "change_rate_day20",
-      "meaning": "20日涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_day60",
-      "identity": "FTShare REST::change_rate_day60",
-      "path": "change_rate_day60",
-      "canonical": "change_rate_day60",
-      "meaning": "60日涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_day120",
-      "identity": "FTShare REST::change_rate_day120",
-      "path": "change_rate_day120",
-      "canonical": "change_rate_day120",
-      "meaning": "120日涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "change_rate_ytd",
-      "identity": "FTShare REST::change_rate_ytd",
-      "path": "change_rate_ytd",
-      "canonical": "change_rate_ytd",
-      "meaning": "年初至今涨跌幅",
-      "unit": "比率",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "ts_millis",
-      "identity": "FTShare REST::ts_millis",
-      "path": "ts_millis",
-      "canonical": "ts_millis",
-      "meaning": "交易所行情时间戳",
-      "unit": "毫秒（Unix 时间戳）",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "verified",
-      "status_resolution": "official_contract",
-      "status_evidence": {
-        "evidence_level": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "evidence": {
-        "basis": "official_contract",
-        "contract_id": "a_share_realtime_quote",
-        "evidence_file": "docs/verify/ftshare_rest_contract.md",
-        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
-      }
-    },
-    {
-      "source": "FTShare REST",
-      "code": "symbol_id",
-      "identity": "FTShare REST::symbol_id",
-      "path": "symbol_id",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "FTShare REST 官方接口契约：A股行情列表",
-      "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
-      ],
-      "status": "unverified",
-      "status_resolution": "live_observed_not_documented",
-      "status_evidence": {
-        "evidence_level": "single_live_response_observation",
-        "evidence_file": "docs/ftshare_contract_catalog.json"
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "identity_evidence": {
-        "basis": "single_live_response_observation",
-        "contract_file": "docs/ftshare_contract_catalog.json",
-        "path": "symbol_id",
-        "semantic_status": "unverified"
-      }
     }
   ],
   "source_field_addenda": [
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "amount",
+      "canonical": "amount",
+      "meaning": "成交额；与 KPH turnover 两日逐值一致",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "matrix_field": "amount",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "main_inflow",
+      "canonical": "main_inflow",
+      "meaning": "主力净流入；与 KPH net_inflow 两日逐值一致",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "matrix_field": "main_inflow",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "max_seal",
+      "canonical": "max_seal",
+      "meaning": "最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+      "matrix_field": "max_seal",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "raw_columns.col_19",
+      "canonical": "sector_code",
+      "meaning": "行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同）",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md",
+      "matrix_field": "sector_code",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "seal_amount",
+      "canonical": "seal_amount",
+      "meaning": "封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+      "matrix_field": "seal_amount",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "turnover_real",
+      "canonical": "turnover_real",
+      "meaning": "实际换手率；与 KPH turnover_rate 两日逐值一致",
+      "unit": "%",
+      "evidence_level": "E3",
+      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "matrix_field": "turnover_real",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "zt_time",
+      "canonical": "limit_time",
+      "meaning": "涨停时间；与 KPH limit_time 两日逐值一致",
+      "unit": "Unix 秒",
+      "evidence_level": "E3",
+      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "matrix_field": "zt_time",
+      "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘红",
+      "code": "industry_id",
+      "canonical": "industry_id",
+      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "industry_id",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_count",
+      "canonical": "limit_count",
+      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+      "unit": "板",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "limit_count",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_tag",
+      "canonical": "limit_tag",
+      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "limit_tag",
+      "matrix_source": "开盘红"
+    },
     {
       "source": "开盘红",
       "code": "limit_time",
@@ -188718,6 +189257,39 @@
       "evidence_level": "E3",
       "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
       "matrix_field": "limit_time",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "market_cap",
+      "canonical": "float_market_value",
+      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "market_cap",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "net_inflow",
+      "canonical": "main_inflow",
+      "meaning": "主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "main_inflow",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "reason",
+      "canonical": "limit_up_reason",
+      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "reason",
       "matrix_source": "开盘红"
     },
     {
@@ -188744,13 +189316,13 @@
     },
     {
       "source": "开盘红",
-      "code": "net_inflow",
-      "canonical": "main_inflow",
-      "meaning": "主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致",
-      "unit": "元",
+      "code": "themes",
+      "canonical": "themes",
+      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
+      "unit": "",
       "evidence_level": "E3",
       "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "main_inflow",
+      "matrix_field": "themes",
       "matrix_source": "开盘红"
     },
     {
@@ -188773,138 +189345,6 @@
       "evidence_level": "E3",
       "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
       "matrix_field": "turnover_real",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "zt_time",
-      "canonical": "limit_time",
-      "meaning": "涨停时间；与 KPH limit_time 两日逐值一致",
-      "unit": "Unix 秒",
-      "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "zt_time",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "max_seal",
-      "canonical": "max_seal",
-      "meaning": "最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致",
-      "unit": "元",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
-      "matrix_field": "max_seal",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "seal_amount",
-      "canonical": "seal_amount",
-      "meaning": "封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认",
-      "unit": "",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
-      "matrix_field": "seal_amount",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "main_inflow",
-      "canonical": "main_inflow",
-      "meaning": "主力净流入；与 KPH net_inflow 两日逐值一致",
-      "unit": "元",
-      "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "main_inflow",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "amount",
-      "canonical": "amount",
-      "meaning": "成交额；与 KPH turnover 两日逐值一致",
-      "unit": "元",
-      "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "amount",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "turnover_real",
-      "canonical": "turnover_real",
-      "meaning": "实际换手率；与 KPH turnover_rate 两日逐值一致",
-      "unit": "%",
-      "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "turnover_real",
-      "matrix_source": "开盘啦(kpl)"
-    },
-    {
-      "source": "开盘红",
-      "code": "limit_tag",
-      "canonical": "limit_tag",
-      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
-      "unit": "",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "limit_tag",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘红",
-      "code": "limit_count",
-      "canonical": "limit_count",
-      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
-      "unit": "板",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "limit_count",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘红",
-      "code": "themes",
-      "canonical": "themes",
-      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
-      "unit": "",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "themes",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘红",
-      "code": "reason",
-      "canonical": "limit_up_reason",
-      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
-      "unit": "",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "reason",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘红",
-      "code": "market_cap",
-      "canonical": "float_market_value",
-      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
-      "unit": "元",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "market_cap",
-      "matrix_source": "开盘红"
-    },
-    {
-      "source": "开盘红",
-      "code": "industry_id",
-      "canonical": "industry_id",
-      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
-      "unit": "",
-      "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
-      "matrix_field": "industry_id",
       "matrix_source": "开盘红"
     }
   ],

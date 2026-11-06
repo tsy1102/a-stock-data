@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_0066d59b4121dc6aa2b51e68bb34f9c1a34193511672e2d2a164f2ae5c8e98ff",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-05T20:48:14+08:00",
+      "rationale": "按来源日期对齐5日、235个共同股票样本，16个整数值不一致，包括1对3、1对2及2对5；这不是舍入或单位误差。拒绝kpl.raw_columns.col_15与kph.limit_count的直接同义映射，但不据此定义KPL原始列，也不将该字段标记为disproved。",
+      "evidence_refs": [
+        "20261105/20261105_collision_report.json",
+        "adjudications/public_web/20261105_public_web_research.md",
+        "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cfca6964d15a1b15464a9bb612eb05318f0c2a6e33832ae1f63146a18d11a57d",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-05T20:48:14+08:00",
+      "rationale": "按来源日期对齐5日、235个共同样本有233个数值相同，但2026-11-02的603110和603466分别出现801660/803023、801159/803029差异。KPL原始列号没有公开字段合同，KPH底层上游身份及industry_id代码表未确认；当前公开页面不足以区分同义类别与分类层级/主板块差异，暂不定案。",
+      "evidence_refs": [
+        "20261105/20261105_collision_report.json",
+        "adjudications/public_web/20261105_public_web_research.md",
+        "https://electkismet.github.io/AxData/interfaces/kph_limit_up_history.html",
+        "https://quote.eastmoney.com/kcb/603110.html"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

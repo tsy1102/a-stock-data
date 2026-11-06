@@ -132,6 +132,47 @@ def test_json_writes_use_unique_target_local_temporary_files(tmp_path, monkeypat
     ]
 
 
+def test_json_writer_retries_transient_replace_permission_error(tmp_path, monkeypatch):
+    path = tmp_path / "state.json"
+    original_replace = os.replace
+    attempts = 0
+
+    def fail_once(source, destination):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise PermissionError(5, "access denied", str(destination))
+        return original_replace(source, destination)
+
+    monkeypatch.setattr(validation.os, "replace", fail_once)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+
+    validation._write_json(path, {"ok": True})
+
+    assert attempts == 2
+    assert json.loads(path.read_text(encoding="utf-8")) == {"ok": True}
+    assert not list(tmp_path.glob(".state.*.tmp"))
+
+
+def test_json_writer_propagates_persistent_replace_permission_error(tmp_path, monkeypatch):
+    path = tmp_path / "state.json"
+    attempts = 0
+
+    def always_fail(_source, destination):
+        nonlocal attempts
+        attempts += 1
+        raise PermissionError(5, "access denied", str(destination))
+
+    monkeypatch.setattr(validation.os, "replace", always_fail)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+
+    with pytest.raises(PermissionError):
+        validation._write_json(path, {"ok": True})
+
+    assert attempts == validation.JSON_REPLACE_MAX_ATTEMPTS
+    assert not list(tmp_path.glob(".state.*.tmp"))
+
+
 def test_validation_requires_latest_trade_date_and_required_sources(tmp_path, monkeypatch):
     output = _capture_dir(tmp_path)
     monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")

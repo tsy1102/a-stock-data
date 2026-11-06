@@ -210,7 +210,7 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1705/2323/348)" in output
+    assert "registry-core(1706/2324/348)" in output
     assert "parity[unverified-candidates]: PASS 237" in output
     assert "parity[adjudication-addenda]: PASS 8" in output
     assert "parity[capture-path-addenda]: PASS 2" in output
@@ -395,16 +395,29 @@ def test_capture_path_manifest_rejects_pre_retention_evidence(tmp_path: Path):
     assert any("早于保留起始日" in problem for problem in problems)
 
 
-def test_reconciled_capture_pairs_stay_unverified_and_traceable():
+def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     registry = registry_parity.fra.load_registry()
     captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
 
-    assert len(captured) == 35
-    for row in captured:
+    assert len(captured) == 36
+    verified = [row for row in captured if row["status"] == "verified"]
+    assert [(row["source"], row["code"]) for row in verified] == [
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19")
+    ]
+    assert verified[0]["status_resolution"] == "verified_by_empirical_addendum"
+    assert verified[0]["canonical"] == "sector_code"
+    assert verified[0]["status_evidence"]["evidence_file"] == (
+        "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md"
+    )
+
+    unverified = [row for row in captured if row["status"] == "unverified"]
+    assert len(unverified) == 35
+    for row in unverified:
         assert row["status"] == "unverified"
         assert not row["canonical"]
         assert not row["meaning"]
         assert not row["unit"]
+    for row in captured:
         assert row["capture_evidence"]
         for evidence in row["capture_evidence"]:
             assert set(evidence) == {"file", "path"}

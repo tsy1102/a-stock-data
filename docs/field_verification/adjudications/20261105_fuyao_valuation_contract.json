@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-05",
+  "decisions": [
+    {
+      "id": "20261105-fuyao-pe-ttm-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "valuation.pe_ttm"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "valuation.pe_ttm",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "valuation.pe_ttm",
+      "meaning": "市盈率 TTM（滚动市盈率）",
+      "unit": "倍",
+      "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pe_ttm 定义为市盈率 TTM；项目适配器请求该精确端点并原样保留此键。契约单独确认 Fuyao 来源字段的语义，不新增与腾讯 [39] 的数值等同映射。近 7 个来源数据日的 140 组对照全部落入宽松近似筛查，按腾讯两位小数显示精度复核后 137/140 可四舍五入匹配；3 个例外均为负 PE，记录为来源计算或负值显示差异，不推翻字段语义。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_ttm; lines 1044-1071",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261105-fuyao-pe-mrq-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "valuation.pe_mrq"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "valuation.pe_mrq",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "valuation.pe_mrq",
+      "meaning": "市盈率 MRQ（最近报告期）",
+      "unit": "倍",
+      "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pe_mrq 定义为市盈率 MRQ；项目适配器请求该精确端点并原样保留此键。官方同花顺量化字段说明进一步给出 MRQ 使用最近报告期数据的口径。契约单独确认 Fuyao 来源字段语义，不新增与腾讯 [52] 的数值等同映射。近 7 个来源数据日 140/140 组均落入宽松近似筛查，139/140 可按腾讯两位小数四舍五入匹配；唯一例外为负 PE，作为来源计算/舍入边界保留。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/valuations/snapshot response data.item[].pe_mrq; lines 1044-1071",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261105-fuyao-pb-mrq-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "valuation.pb_mrq"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "valuation.pb_mrq",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "valuation.pb_mrq",
+      "meaning": "市净率 MRQ（最近报告期）",
+      "unit": "倍",
+      "rationale": "Fuyao 官方接口契约明确将 /api/a-share/valuations/snapshot 的 data.item[].pb_mrq 定义为市净率 MRQ；项目适配器请求该精确端点并原样保留此键。官方同花顺量化字段说明给出其市净率计算口径。契约单独确认 Fuyao 来源字段语义，不新增与腾讯 [46] 的数值等同映射。近 7 个来源数据日 138/140 组可按腾讯两位小数四舍五入匹配；601288 在 2026-10-28 和 2026-10-29 的两组偏差超过展示舍入范围，保留为来源口径/更新差异，不将其归因于舍入。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/valuations/snapshot response data.item[].pb_mrq; lines 1044-1071",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    }
+  ]
+}

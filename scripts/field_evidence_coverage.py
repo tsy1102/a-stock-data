@@ -449,6 +449,7 @@ def refresh_daily_coverage(
         folder_window.folders,
         allowed_trading_folders=folder_window.market_folders,
         allowed_event_folders=folder_window.event_folders,
+        allowed_event_window=(folder_window.event_start, folder_window.event_end),
     )
     trading_window_dates = []
     for day_text in folder_window.trading_dates:

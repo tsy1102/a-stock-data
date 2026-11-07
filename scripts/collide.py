@@ -765,6 +765,7 @@ def run(args):
         allowed_trading_folders=folder_window.market_folders,
         allowed_event_folders=folder_window.event_folders,
         allowed_trading_dates=frozenset(folder_window.trading_dates),
+        allowed_event_window=(folder_window.event_start, folder_window.event_end),
     )
     diagnostics.extend(snapshot_warnings)
     usable_snapshots = []

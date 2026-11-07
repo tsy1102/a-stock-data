@@ -89,6 +89,7 @@ from scripts.capture_diagnostics import (
 from scripts import capture_archive as CAPA
 from scripts.capture_archive import (
     _has_complete_snapshot,
+    _incomplete_snapshot_sources,
     _preserve_context_paths,
     _retain_current_zhb_snapshot,
 )
@@ -1030,21 +1031,78 @@ def collect_exchange(pool: list) -> dict:
     return _capture_http_collectors.collect_exchange(pool, _capture_http_dependencies())
 
 
-def _last_completed_trading_day() -> date:
+def _last_completed_trading_day(
+    now: Optional[datetime] = None,
+    session_checker: Optional[Callable[[date], bool]] = None,
+) -> date:
     """返回最近已收盘的 A 股交易日，覆盖周末、法定节假日和调休补班周末。"""
-    from stock_common.stock_calendar import is_workday_with_zhb_supplement
+    if session_checker is None:
+        from stock_common.stock_calendar import is_workday_with_zhb_supplement
 
-    now = datetime.now()
-    today = now.date()
+        session_checker = is_workday_with_zhb_supplement
+    current = now or datetime.now()
+    if current.tzinfo is not None:
+        current = current.astimezone(timezone(timedelta(hours=8))).replace(tzinfo=None)
+    today = current.date()
     candidate = today
-    include_current = is_workday_with_zhb_supplement(today) and now.time() >= dt_time(15, 0)
+    include_current = session_checker(today) and current.time() >= dt_time(15, 0)
     if not include_current:
         candidate -= timedelta(days=1)
     for _ in range(370):
-        if is_workday_with_zhb_supplement(candidate):
+        if session_checker(candidate):
             return candidate
         candidate -= timedelta(days=1)
     raise RuntimeError("ZHB 补充日历中无法找到最近已收盘交易日")
+
+
+def _source_capture_metadata(
+    captured_at: datetime, data_date: str, data_date_domain: str
+) -> dict[str, str]:
+    """Describe when one source was collected, separately from its data date."""
+    if captured_at.tzinfo is not None:
+        captured_at = captured_at.astimezone(timezone(timedelta(hours=8))).replace(tzinfo=None)
+    if data_date_domain == "calendar":
+        data_market_phase = "calendar"
+    else:
+        data_market_phase = "closed" if captured_at >= _market_close_dt(data_date) else "intraday"
+    return {
+        "source_capture_date": captured_at.strftime("%Y%m%d"),
+        "source_capture_started_at": captured_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "data_market_phase": data_market_phase,
+    }
+
+
+def _legacy_source_capture_metadata(previous_meta: dict[str, Any]) -> dict[str, str]:
+    """Pin a labeled legacy folder date before a later run updates folder metadata."""
+    captured_at = None
+    for key in ("run_datetime", "end", "start"):
+        value = previous_meta.get(key)
+        if not isinstance(value, str):
+            continue
+        try:
+            captured_at = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        break
+    if captured_at is not None and captured_at.tzinfo is not None:
+        captured_at = captured_at.astimezone(timezone(timedelta(hours=8))).replace(tzinfo=None)
+    source_capture_date = captured_at.strftime("%Y%m%d") if captured_at is not None else None
+    if source_capture_date is None:
+        for key in ("capture_date", "run_date"):
+            value = previous_meta.get(key)
+            if isinstance(value, str) and re.fullmatch(r"\d{8}", value):
+                source_capture_date = value
+                break
+    if source_capture_date is None:
+        return {}
+    result = {
+        "source_capture_date": source_capture_date,
+        "source_capture_date_origin": "legacy_global_metadata",
+    }
+    previous_phase = str(previous_meta.get("market_phase") or "").lower()
+    if previous_phase in {"calendar", "closed", "intraday"}:
+        result["data_market_phase"] = previous_phase
+    return result
 
 
 def _normalize_fuyao_source_date(value: Any) -> Optional[str]:
@@ -1381,12 +1439,16 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
     # 使文件夹名恒为"实际数据日"(收盘数据所属交易日), 根除"文件夹名是假日但数据是上一交易日"的根因。
-    ap.add_argument("--date", default="", help="数据日期 YYYYMMDD；行情日按交易日校验")
+    ap.add_argument(
+        "--date",
+        default="",
+        help="目标数据日 YYYYMMDD；默认最近已完成交易日，行情日按交易日校验",
+    )
     ap.add_argument(
         "--overwrite",
         action="store_true",
         help="强制覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
-        "默认: 盘后→盘后幂等跳过, 盘中→盘后自动刷新为收盘数据, 盘中→盘中跳过",
+        "默认重复运行仅补不完整来源；盘后完整快照幂等跳过, 盘中→盘后刷新为收盘数据",
     )
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument(
@@ -1475,14 +1537,30 @@ def main() -> None:
         "sources": {},
         "source_as_of_dates": {},
     }
-    # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
-    # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
-    if args.only and os.path.isfile(meta_path):
+    # Same-data-date reruns merge prior source entries. The later collection pass
+    # refreshes only missing/incomplete sources unless --overwrite is explicit.
+    # --only always merges so unrelated sources and their provenance remain intact.
+    if os.path.isfile(meta_path) and (args.only or not args.overwrite):
         try:
             with open(meta_path, encoding="utf-8") as f:
                 _prev = json.load(f)
             if isinstance(_prev.get("sources"), dict):
                 meta["sources"].update(_prev["sources"])
+                legacy_capture_meta = _legacy_source_capture_metadata(_prev)
+                for _source_entry in meta["sources"].values():
+                    if not isinstance(_source_entry, dict):
+                        continue
+                    if any(
+                        _source_entry.get(key)
+                        for key in (
+                            "source_capture_date",
+                            "source_capture_started_at",
+                            "captured_at",
+                            "run_datetime",
+                        )
+                    ):
+                        continue
+                    _source_entry.update(legacy_capture_meta)
             previous_source_meta = _prev.get("sources")
             previous_sources = (
                 set(previous_source_meta) if isinstance(previous_source_meta, dict) else set()
@@ -1618,22 +1696,58 @@ def main() -> None:
                 )
                 return
             # 已有=盘中快照, 本次=盘后运行 → 刷新为收盘数据(覆盖重采目标源)
-            print(
-                f"🔄 数据日 {args.date} 现有采集物为盘中快照(非收盘), 本次盘后运行将刷新为收盘数据。",
-                flush=True,
-            )
-            _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in raw_clear_source_names}
-            _clear_existing_raw_files(_existing_raws, _clear_raw)
-            if os.path.isfile(meta_path):
-                try:
-                    _m = json.load(open(meta_path, encoding="utf-8"))
-                    for _n in [k for k in _m.get("sources", {}) if k in source_names_to_refresh]:
-                        del _m["sources"][_n]
-                    with open(meta_path, "w", encoding="utf-8") as _f:
-                        json.dump(_m, _f, ensure_ascii=False, indent=1)
-                except Exception as meta_error:
-                    _remove_unusable_meta(meta_path, meta_error)
-            # 清空后 fall through 进入采集
+        if not args.only and not args.overwrite and _existing_raws:
+            _existing_closed = _is_closed_phase_existing(meta_path, args.date)
+            _new_closed = _is_closed_phase_now(args.date)
+            if not _existing_closed and _new_closed:
+                print(
+                    f"🔄 数据日 {args.date} 的已有快照为盘中数据，本次收盘后运行将刷新全部活动来源。",
+                    flush=True,
+                )
+                _sources_to_refresh = set(collectors)
+                _clear_raw = {
+                    os.path.join(out_dir, f"raw_{name}.json") for name in raw_clear_source_names
+                }
+                _clear_existing_raw_files(_existing_raws, _clear_raw)
+                for name in _sources_to_refresh:
+                    meta.get("sources", {}).pop(name, None)
+                    meta.get("source_as_of_dates", {}).pop(name, None)
+                if os.path.isfile(meta_path):
+                    try:
+                        _m = json.load(open(meta_path, encoding="utf-8"))
+                        for _name in _sources_to_refresh:
+                            _m.get("sources", {}).pop(_name, None)
+                            _m.get("source_as_of_dates", {}).pop(_name, None)
+                        with open(meta_path, "w", encoding="utf-8") as _f:
+                            json.dump(_m, _f, ensure_ascii=False, indent=1)
+                    except Exception as meta_error:
+                        _remove_unusable_meta(meta_path, meta_error)
+                # The full active collector set remains selected for this refresh.
+            else:
+                _missing_sources = _incomplete_snapshot_sources(
+                    collectors,
+                    snapshot_meta,
+                    out_dir,
+                    pool,
+                    include_context=include_context,
+                )
+                if _missing_sources:
+                    collectors = {
+                        name: collector
+                        for name, collector in collectors.items()
+                        if name in _missing_sources
+                    }
+                    source_names_to_refresh = set(collectors)
+                    raw_clear_source_names = set(source_names_to_refresh)
+                    if not include_context:
+                        raw_clear_source_names.difference_update(CONTEXT_RAW_PATHS)
+                    meta["collection_mode"] = "missing_source_supplement"
+                    meta["supplemented_sources"] = sorted(source_names_to_refresh)
+                    print(
+                        f"↻ 数据日 {args.date} 仅补采缺失/不完整来源: "
+                        f"{', '.join(sorted(source_names_to_refresh))}",
+                        flush=True,
+                    )
 
     axdata_identity_plan: dict[str, Any] = {"status": "not_requested", "endpoints": {}}
     if {"axdata", "kph"} & set(collectors):
@@ -1673,6 +1787,10 @@ def main() -> None:
             }
             print(f"  ⊘ {name}: context_only (默认跳过)", flush=True)
             continue
+        source_capture_started_at = datetime.now()
+        source_capture_meta = _source_capture_metadata(
+            source_capture_started_at, args.date, data_date_domain
+        )
         try:
             t1 = time.time()
             meta["source_as_of_dates"].pop(name, None)
@@ -1805,6 +1923,12 @@ def main() -> None:
                 )
                 if isinstance(data, dict):
                     collected_data[name] = data
+                if not _write_raw:
+                    previous_entry = meta.get("sources", {}).get(name)
+                    if isinstance(previous_entry, dict):
+                        for key in source_capture_meta:
+                            if previous_entry.get(key):
+                                source_capture_meta[key] = previous_entry[key]
             if _write_raw:
                 with open(path, "w", encoding="utf-8") as f:
                     json.dump(data, f, ensure_ascii=False, indent=1, default=str)
@@ -1827,6 +1951,7 @@ def main() -> None:
                 "field_meta": _fm is not None,
                 "secs": round(time.time() - t1, 1),
                 "file": path,
+                **source_capture_meta,
             }
             if _as_of_date:
                 _entry["as_of_date"] = _as_of_date
@@ -1886,6 +2011,7 @@ def main() -> None:
                 "scheme": SOURCE_SCHEME.get(name, "unknown"),
                 "ok": False,
                 "error": str(e)[:300],
+                **source_capture_meta,
             }
             print(f"  ✖ {name}: {e}", flush=True)
 

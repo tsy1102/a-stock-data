@@ -89,25 +89,40 @@ def test_record_count_ignores_fuyao_auction_provenance_metadata():
     assert collision_dates._record_count({"stocks": document["stocks"]}) == 1
 
 
-def test_legacy_weekend_folder_maps_to_prior_session_without_rename(tmp_path):
+def test_legacy_weekend_folder_without_data_date_is_not_inferred_as_market_data(tmp_path):
     target = tmp_path / "20260920"
     target.mkdir()
     folders, warnings = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
 
-    assert folders[0].market_date == date(2026, 9, 18)
+    assert folders[0].market_date is None
     assert folders[0].capture_date == date(2026, 9, 20)
-    assert folders[0].market_date_origin == "folder_inferred"
-    assert any("目录未改名" in warning for warning in warnings)
+    assert folders[0].market_date_origin == "nontrading_folder"
+    assert any("不按运行日推断" in warning for warning in warnings)
     assert target.is_dir()
 
 
-def test_explicit_nontrading_data_date_is_rejected_without_inference(tmp_path):
+def test_data_date_folder_mismatch_is_rejected_without_inference(tmp_path):
     _write_capture(
         tmp_path,
         "20260929",
         {"data_date": "20260927", "run_date": "20260929"},
         "push2",
         {"stocks": {}},
+    )
+    folders, warnings = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+
+    assert folders[0].market_date is None
+    assert not folders[0].data_date_matches_folder
+    assert any("目录名与 meta.data_date 不一致" in warning for warning in warnings)
+
+
+def test_explicit_nontrading_data_date_is_rejected(tmp_path):
+    _write_capture(
+        tmp_path,
+        "20260927",
+        {"data_date": "20260927", "run_date": "20260928"},
+        "push2",
+        {"stocks": {"600000": {"data": {"f1": 1}}}},
     )
     folders, warnings = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
 
@@ -170,8 +185,16 @@ def test_event_window_can_use_later_capture_for_prior_natural_event(tmp_path):
     folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
     window = collision_dates.select_folder_window(folders, 2, date(2026, 9, 29), all_history=False)
 
-    assert "20260929" in window.event_folders
     assert "20260929" in window.market_folders
+    snapshots, warnings = collision_dates.select_snapshots(
+        window.folders,
+        allowed_trading_folders=window.market_folders,
+        allowed_event_folders=window.event_folders,
+        allowed_event_window=(window.event_start, window.event_end),
+        checker=_weekday,
+    )
+    assert [snapshot.source for snapshot in snapshots] == ["news_wscn_cctv"]
+    assert warnings == []
 
 
 def test_window_excludes_bad_market_date_but_keeps_calendar_capture(tmp_path):
@@ -207,7 +230,7 @@ def test_all_history_does_not_include_future_market_dates(tmp_path):
     assert any("晚于报告日" in warning for warning in window.warnings)
 
 
-def test_snapshot_selector_prefers_closed_complete_duplicate(tmp_path):
+def test_snapshot_selector_prefers_closed_complete_duplicate_source_date(tmp_path):
     document_small = {"stocks": {"600000": {"data": {"f1": 1}}}}
     document_complete = {
         "stocks": {
@@ -232,14 +255,17 @@ def test_snapshot_selector_prefers_closed_complete_duplicate(tmp_path):
         tmp_path,
         "20260929",
         {
-            "data_date": "20260928",
+            "data_date": "20260929",
             "capture_date": "20260929",
             "start": "2026-09-29 16:00:00",
             "market_phase": "closed",
             "sources": {"push2": {"status": "ok"}},
         },
         "push2",
-        document_complete,
+        {
+            "as_of_date": "20260928",
+            **document_complete,
+        },
     )
     folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
     snapshots, warnings = collision_dates.select_snapshots(folders, checker=_weekday)
@@ -248,6 +274,43 @@ def test_snapshot_selector_prefers_closed_complete_duplicate(tmp_path):
     assert snapshots[0].folder == "20260929"
     assert snapshots[0].sample_date == date(2026, 9, 28)
     assert any("重复快照 push2/20260928" in warning for warning in warnings)
+
+
+def test_event_sources_in_one_data_folder_use_their_own_capture_dates(tmp_path):
+    metadata = {
+        "data_date": "20260929",
+        "data_date_domain": "calendar",
+        "capture_date": "20260930",
+        "sources": {
+            "news_wscn_cctv": {"source_capture_date": "20260929"},
+            "reports": {"source_capture_date": "20260930"},
+        },
+    }
+    _write_capture(
+        tmp_path,
+        "20260929",
+        metadata,
+        "news_wscn_cctv",
+        {"cctv_xwlb": [{"date": "2026-09-29", "title": "news"}]},
+    )
+    _write_capture(
+        tmp_path,
+        "20260929",
+        metadata,
+        "reports",
+        {"reports": [{"publishDate": "2026-09-29", "title": "report"}]},
+    )
+
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+    window = collision_dates.select_folder_window(folders, 1, date(2026, 9, 29))
+    snapshots, warnings = collision_dates.select_snapshots(
+        window.folders,
+        allowed_event_folders=window.event_folders,
+        allowed_event_window=(window.event_start, window.event_end),
+    )
+
+    assert [snapshot.source for snapshot in snapshots] == ["news_wscn_cctv"]
+    assert any("reports" in warning and "不在本轮自然日窗口" in warning for warning in warnings)
 
 
 def test_legacy_same_day_morning_capture_is_marked_intraday(tmp_path):
@@ -272,6 +335,26 @@ def test_unknown_market_phase_warns_and_is_not_inferred_closed(tmp_path):
         {"data_date": "20260928", "capture_date": "20260928"},
         "push2",
         {"stocks": {"600000": {"data": {"f1": 1}}}},
+    )
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+    snapshots, warnings = collision_dates.select_snapshots(folders, checker=_weekday)
+
+    assert snapshots[0].phase == "unknown"
+    assert any("时段未知" in warning for warning in warnings)
+
+
+def test_source_capture_date_without_time_does_not_inherit_later_folder_phase(tmp_path):
+    _write_capture(
+        tmp_path,
+        "20260928",
+        {
+            "data_date": "20260928",
+            "market_phase": "closed",
+            "start": "2026-09-28 16:00:00",
+            "sources": {"push2": {"source_capture_date": "20260928"}},
+        },
+        "push2",
+        {"as_of_date": "20260928", "stocks": {"600000": {"data": {"f1": 1}}}},
     )
     folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
     snapshots, warnings = collision_dates.select_snapshots(folders, checker=_weekday)

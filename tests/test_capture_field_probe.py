@@ -870,6 +870,10 @@ def test_last_completed_trading_day_respects_close_and_exchange_holidays(monkeyp
         "stock_common.stock_calendar.is_workday_with_zhb_supplement",
         lambda value: value in known_trading_days,
     )
+    FixedDateTime.value = datetime(2026, 9, 28, 8, 59)
+    assert capture_probe._last_completed_trading_day() == date(2026, 9, 24)
+
+    FixedDateTime.value = datetime(2026, 9, 28, 14, 59)
     assert capture_probe._last_completed_trading_day() == date(2026, 9, 24)
 
     FixedDateTime.value = datetime(2026, 9, 28, 15, 0)
@@ -877,6 +881,18 @@ def test_last_completed_trading_day_respects_close_and_exchange_holidays(monkeyp
 
     FixedDateTime.value = datetime(2026, 10, 10, 16, 0)
     assert capture_probe._last_completed_trading_day() == date(2026, 10, 9)
+
+
+def test_source_capture_metadata_keeps_run_and_data_dates_separate():
+    captured_at = datetime(2026, 10, 10, 9, 30)
+
+    metadata = capture_probe._source_capture_metadata(captured_at, "20261009", "trading")
+
+    assert metadata == {
+        "source_capture_date": "20261010",
+        "source_capture_started_at": "2026-10-10 09:30:00",
+        "data_market_phase": "closed",
+    }
 
 
 def test_collect_etf_uses_recent_market_sessions(monkeypatch):
@@ -1413,6 +1429,91 @@ def test_non_raw_source_states_are_complete_without_raw_files(tmp_path):
 
     meta["sources"]["baidu"]["status"] = "unwired"
     assert not capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), [])
+
+
+def test_incomplete_snapshot_sources_only_selects_sources_needing_supplement(tmp_path):
+    pool = [{"code": "600000"}]
+    (tmp_path / "raw_push2.json").write_text(
+        '{"stocks":{"600000":{"data":{"f1":"1"}}},"scheme":"em.stock_get"}',
+        encoding="utf-8",
+    )
+    collectors = {
+        "push2": capture_probe.collect_push2,
+        "future_source": lambda _pool: {"value": 1},
+    }
+    metadata = {
+        "sources": {
+            "push2": {"ok": True, "status": "ok"},
+            "future_source": {"ok": False, "status": "failed"},
+        }
+    }
+
+    assert capture_probe._incomplete_snapshot_sources(
+        collectors, metadata, str(tmp_path), pool
+    ) == {"future_source"}
+
+
+def test_default_repeat_supplements_missing_source_without_recollecting_complete_sources(
+    tmp_path, monkeypatch
+):
+    from types import ModuleType
+
+    out_dir = tmp_path / "20260929"
+    out_dir.mkdir()
+    push2_raw = '{"stocks":{"600000":{"data":{"f1":"complete"}}},' '"scheme":"em.stock_get"}'
+    (out_dir / "raw_push2.json").write_text(push2_raw, encoding="utf-8")
+    (out_dir / "meta.json").write_text(
+        '{"date":"20260929","data_date":"20260929","market_phase":"closed",'
+        '"capture_date":"20260929","run_date":"20260929",'
+        '"run_datetime":"2026-09-29 16:00:00",'
+        '"sources":{"push2":{"ok":true,"status":"ok"}}}',
+        encoding="utf-8",
+    )
+    calls = []
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(capture_probe, "_refresh_field_evidence_coverage", lambda *_args: None)
+    monkeypatch.setattr(capture_probe, "load_pool", lambda: [{"code": "600000"}])
+    monkeypatch.setattr(
+        capture_probe,
+        "build_collectors",
+        lambda: {
+            "push2": lambda _pool: calls.append("push2") or {},
+            "future_source": lambda _pool: calls.append("future_source") or {"value": 1},
+        },
+    )
+    monkeypatch.setattr(sys, "argv", ["capture_field_probe.py", "--date", "20260929"])
+    monkeypatch.setattr(
+        capture_probe, "_validate_capture_data_date", lambda *_args: (date(2026, 9, 29), "trading")
+    )
+    monkeypatch.setattr(capture_probe, "_is_closed_phase_now", lambda *_args: True)
+    monkeypatch.setattr(capture_probe, "_capture_market_phase", lambda *_args: "closed")
+    monkeypatch.setattr(capture_probe, "_last_trading_day_str", lambda: "20260929")
+
+    axdata_validation = ModuleType("axdata_daily_validation")
+    axdata_validation.run_axdata_daily_validation = lambda **_kwargs: {"status": "not_eligible"}
+    monkeypatch.setitem(sys.modules, "axdata_daily_validation", axdata_validation)
+    monkeypatch.setitem(sys.modules, "scripts.axdata_daily_validation", axdata_validation)
+    levistock_validation = ModuleType("levistock_daily_validation")
+    levistock_validation.run_levistock_daily_validation = lambda **_kwargs: {
+        "status": "not_eligible",
+        "methods": {},
+        "network_requests_added": 0,
+    }
+    monkeypatch.setitem(sys.modules, "levistock_daily_validation", levistock_validation)
+    monkeypatch.setitem(sys.modules, "scripts.levistock_daily_validation", levistock_validation)
+
+    capture_probe.main()
+
+    assert calls == ["future_source"]
+    assert (out_dir / "raw_push2.json").read_text(encoding="utf-8") == push2_raw
+    assert (out_dir / "raw_future_source.json").is_file()
+    saved_meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+    assert saved_meta["collection_mode"] == "missing_source_supplement"
+    assert saved_meta["supplemented_sources"] == ["future_source"]
+    assert saved_meta["sources"]["push2"]["status"] == "ok"
+    assert saved_meta["sources"]["push2"]["source_capture_date"] == "20260929"
+    assert saved_meta["sources"]["push2"]["source_capture_date_origin"] == "legacy_global_metadata"
+    assert "source_capture_started_at" not in saved_meta["sources"]["push2"]
 
 
 def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch):

@@ -41,6 +41,13 @@ def _source_date(entry: dict[str, Any], source_dates: Any, source: str):
     return None, "missing_source_date"
 
 
+def _source_capture_date(entry: dict[str, Any], folder_capture_day: date):
+    parsed = parse_date(entry.get("source_capture_date"))
+    if parsed is not None:
+        return parsed, str(entry.get("source_capture_date_origin") or "sources.source_capture_date")
+    return folder_capture_day, "meta.capture_date_fallback"
+
+
 def _retained_date_folders(root: Path, since: date):
     for folder in sorted(root.iterdir(), key=lambda item: item.name):
         if not folder.is_dir() or len(folder.name) != 8 or not folder.name.isdigit():
@@ -101,10 +108,13 @@ def _source_observations(
         if source_day < since:
             excluded_pre_retention[source] += 1
             continue
+        source_capture_day, source_capture_basis = _source_capture_date(raw_entry, capture_day)
         observations.append(
             {
                 "folder": folder.name,
                 "capture_date": capture_day.strftime("%Y%m%d"),
+                "source_capture_date": source_capture_day.strftime("%Y%m%d"),
+                "source_capture_date_basis": source_capture_basis,
                 "target_data_date": data_day.strftime("%Y%m%d"),
                 "source": source,
                 "source_date": source_day.strftime("%Y%m%d"),
@@ -113,6 +123,7 @@ def _source_observations(
                 "capture_minus_data_calendar_days": (capture_day - data_day).days,
                 "source_minus_data_calendar_days": (source_day - data_day).days,
                 "source_minus_capture_calendar_days": (source_day - capture_day).days,
+                "source_minus_source_capture_calendar_days": (source_day - source_capture_day).days,
             }
         )
     return observations
@@ -199,8 +210,16 @@ def summarize_observations(
     for source, rows in sorted(by_source.items()):
         data_offsets = Counter(row["source_minus_data_calendar_days"] for row in rows)
         capture_offsets = Counter(row["source_minus_capture_calendar_days"] for row in rows)
+        source_capture_offsets = Counter(
+            row.get(
+                "source_minus_source_capture_calendar_days",
+                row["source_minus_capture_calendar_days"],
+            )
+            for row in rows
+        )
         data_matches = sum(offset == 0 for offset in data_offsets.elements())
         capture_matches = sum(offset == 0 for offset in capture_offsets.elements())
+        source_capture_matches = sum(offset == 0 for offset in source_capture_offsets.elements())
         if len(rows) < 3:
             pattern = "insufficient_observations"
         elif len(data_offsets) == 1:
@@ -213,14 +232,18 @@ def summarize_observations(
                 "observation_count": len(rows),
                 "source_date_equals_target_count": data_matches,
                 "source_date_equals_capture_count": capture_matches,
+                "source_date_equals_source_capture_count": source_capture_matches,
                 "source_minus_data_calendar_days": dict(sorted(data_offsets.items())),
                 "source_minus_capture_calendar_days": dict(sorted(capture_offsets.items())),
+                "source_minus_source_capture_calendar_days": dict(
+                    sorted(source_capture_offsets.items())
+                ),
                 "observed_pattern": pattern,
                 "observations": rows,
             }
         )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "audit_scope": "retained meta.json only; no raw files or network",
         "retention_start": RETENTION_START.strftime("%Y%m%d"),
         "audit_since": since.strftime("%Y%m%d"),
@@ -242,8 +265,8 @@ def render_markdown(summary: dict[str, Any], diagnostics: list[str]) -> str:
         "",
         "## 来源汇总",
         "",
-        "| 来源 | 样本数 | 来源日=目标日 | 来源日=采集日 | 来源日-目标日偏移 | 来源日-采集日偏移 | 观察结论 |",
-        "|:--|--:|--:|--:|:--|:--|:--|",
+        "| 来源 | 样本数 | 来源日=目标日 | 来源日=运行日 | 来源日=逐源采集日 | 来源日-目标日 | 来源日-运行日 | 来源日-逐源采集日 | 观察结论 |",
+        "|:--|--:|--:|--:|--:|:--|:--|:--|:--|",
     ]
     lines.extend(_render_source_summary_rows(summary["sources"]))
     lines.extend(
@@ -254,8 +277,8 @@ def render_markdown(summary: dict[str, Any], diagnostics: list[str]) -> str:
             "",
             "## 逐次采集证据",
             "",
-            "| 采集目录 | 实际采集日 | 目标数据日 | 来源 | 来源日期 | 日期依据 | 状态 | 来源日-目标日 | 来源日-采集日 |",
-            "|:--|:--|:--|:--|:--|:--|:--|--:|--:|",
+            "| 采集目录 | 实际运行日 | 逐源采集日 | 逐源采集日依据 | 目标数据日 | 来源 | 来源日期 | 日期依据 | 状态 | 来源日-目标日 | 来源日-运行日 | 来源日-逐源采集日 |",
+            "|:--|:--|:--|:--|:--|:--|:--|:--|:--|--:|--:|--:|",
         ]
     )
     lines.extend(_render_observation_rows(summary["sources"]))
@@ -283,10 +306,19 @@ def _render_source_summary_rows(sources: list[dict[str, Any]]) -> list[str]:
             )
             or "—"
         )
+        source_capture_offsets = (
+            ", ".join(
+                f"{offset:+d}天×{count}"
+                for offset, count in source["source_minus_source_capture_calendar_days"].items()
+            )
+            or "—"
+        )
         rows.append(
             f"| {source['source']} | {source['observation_count']} | "
             f"{source['source_date_equals_target_count']} | "
-            f"{source['source_date_equals_capture_count']} | {offsets} | {capture_offsets} | "
+            f"{source['source_date_equals_capture_count']} | "
+            f"{source['source_date_equals_source_capture_count']} | {offsets} | "
+            f"{capture_offsets} | {source_capture_offsets} | "
             f"{source['observed_pattern']} |"
         )
     return rows
@@ -297,11 +329,13 @@ def _render_observation_rows(sources: list[dict[str, Any]]) -> list[str]:
     for source in sources:
         for row in source["observations"]:
             rows.append(
-                f"| {row['folder']} | {row['capture_date']} | {row['target_data_date']} | "
+                f"| {row['folder']} | {row['capture_date']} | {row['source_capture_date']} | "
+                f"{row['source_capture_date_basis']} | {row['target_data_date']} | "
                 f"{row['source']} | {row['source_date']} | {row['source_date_basis']} | "
                 f"{row.get('source_status') or 'unknown'} | "
                 f"{row['source_minus_data_calendar_days']:+d} | "
-                f"{row['source_minus_capture_calendar_days']:+d} |"
+                f"{row['source_minus_capture_calendar_days']:+d} | "
+                f"{row['source_minus_source_capture_calendar_days']:+d} |"
             )
     return rows
 

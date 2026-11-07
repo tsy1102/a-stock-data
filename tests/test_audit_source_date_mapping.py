@@ -6,14 +6,22 @@ import pytest
 from scripts import audit_source_date_mapping as audit
 
 
-def _write_meta(folder, *, capture_date, data_date, source_dates):
+def _write_meta(folder, *, capture_date, data_date, source_dates, source_capture_dates=None):
     folder.mkdir()
     meta = {
         "capture_date": capture_date,
         "data_date": data_date,
         "market_phase": "closed",
         "sources": {
-            source: {"status": "ok", "as_of_date": source_date}
+            source: {
+                "status": "ok",
+                "as_of_date": source_date,
+                **(
+                    {"source_capture_date": source_capture_dates[source]}
+                    if source_capture_dates and source in source_capture_dates
+                    else {}
+                ),
+            }
             for source, source_date in source_dates.items()
         },
     }
@@ -68,6 +76,26 @@ def test_audit_never_accepts_a_start_before_retention_boundary(tmp_path):
         audit.collect_observations(tmp_path, date(2026, 10, 14))
 
 
+def test_audit_reports_per_source_capture_date_and_keeps_legacy_fallback(tmp_path):
+    _write_meta(
+        tmp_path / "20261016",
+        capture_date="20261018",
+        data_date="20261016",
+        source_dates={"source_a": "20261016", "source_b": "20261017"},
+        source_capture_dates={"source_a": "20261017"},
+    )
+
+    observations, _ = audit.collect_observations(tmp_path)
+    by_source = {row["source"]: row for row in observations}
+
+    assert by_source["source_a"]["source_capture_date"] == "20261017"
+    assert by_source["source_a"]["source_capture_date_basis"] == "sources.source_capture_date"
+    assert by_source["source_a"]["source_minus_source_capture_calendar_days"] == -1
+    assert by_source["source_b"]["source_capture_date"] == "20261018"
+    assert by_source["source_b"]["source_capture_date_basis"] == "meta.capture_date_fallback"
+    assert by_source["source_b"]["source_minus_source_capture_calendar_days"] == -1
+
+
 def test_summary_calls_offsets_observed_not_a_source_contract():
     summary = audit.summarize_observations(
         [
@@ -75,16 +103,19 @@ def test_summary_calls_offsets_observed_not_a_source_contract():
                 "source": "stable",
                 "source_minus_data_calendar_days": 0,
                 "source_minus_capture_calendar_days": 0,
+                "source_minus_source_capture_calendar_days": 0,
             },
             {
                 "source": "stable",
                 "source_minus_data_calendar_days": 0,
                 "source_minus_capture_calendar_days": 0,
+                "source_minus_source_capture_calendar_days": 0,
             },
             {
                 "source": "stable",
                 "source_minus_data_calendar_days": 0,
                 "source_minus_capture_calendar_days": 0,
+                "source_minus_source_capture_calendar_days": 0,
             },
         ]
     )

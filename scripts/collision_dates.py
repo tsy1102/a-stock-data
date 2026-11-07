@@ -1,8 +1,8 @@
 """Date domains, trading-session validation, and deterministic snapshot selection.
 
-Capture folder names record where a run was stored; they are not always the
-date represented by the source data. This module keeps those concepts separate
-for the generic and topic-specific collision analyzers.
+Capture folder names are keyed by the requested data date. Source as-of dates,
+per-source capture times, and event dates remain separate evidence and are
+validated independently for the generic and topic-specific collision analyzers.
 """
 
 from __future__ import annotations
@@ -73,6 +73,7 @@ class CaptureFolder:
     meta: dict[str, Any]
     market_date_origin: str
     warnings: tuple[str, ...] = ()
+    data_date_matches_folder: bool = True
 
 
 @dataclass(frozen=True)
@@ -198,8 +199,27 @@ def _read_json(path: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
-def _capture_datetime(meta: dict[str, Any]) -> datetime | None:
-    for key in ("start", "run_datetime", "end"):
+def _capture_datetime(meta: dict[str, Any], source: str | None = None) -> datetime | None:
+    source_entry = None
+    source_map = meta.get("sources")
+    if source is not None and isinstance(source_map, dict):
+        candidate = source_map.get(source)
+        if isinstance(candidate, dict):
+            source_entry = candidate
+    if source_entry is not None:
+        for key in ("source_capture_started_at", "captured_at", "run_datetime"):
+            value = source_entry.get(key)
+            if isinstance(value, str):
+                try:
+                    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError:
+                    continue
+                if parsed.tzinfo is not None:
+                    parsed = parsed.astimezone(timezone(timedelta(hours=8))).replace(tzinfo=None)
+                return parsed
+        if source_entry.get("source_capture_date"):
+            return None
+    for key in ("run_datetime", "end", "start"):
         value = meta.get(key)
         if isinstance(value, str):
             try:
@@ -212,10 +232,31 @@ def _capture_datetime(meta: dict[str, Any]) -> datetime | None:
     return None
 
 
+def _source_capture_date(meta: dict[str, Any], source: str, fallback: date) -> date:
+    source_map = meta.get("sources")
+    source_entry = source_map.get(source) if isinstance(source_map, dict) else None
+    if isinstance(source_entry, dict):
+        explicit = parse_date(source_entry.get("source_capture_date"))
+        if explicit is not None:
+            return explicit
+    captured = _capture_datetime(meta, source)
+    return captured.date() if captured is not None else fallback
+
+
+def _folder_event_capture_dates(folder: CaptureFolder) -> set[date]:
+    source_map = folder.meta.get("sources")
+    dates = {
+        _source_capture_date(folder.meta, source, folder.capture_date)
+        for source in EVENT_SOURCES
+        if isinstance(source_map, dict) and isinstance(source_map.get(source), dict)
+    }
+    return dates or {folder.capture_date}
+
+
 def discover_capture_folders(
     data_dir: str, checker: Callable[[date], bool] | None = None
 ) -> tuple[list[CaptureFolder], list[str]]:
-    """List valid capture folders and safely infer legacy weekend data dates."""
+    """List canonical date folders and reject mismatched or unsafe date inference."""
     is_session = checker or is_trading_session
     folders: list[CaptureFolder] = []
     warnings: list[str] = []
@@ -258,6 +299,15 @@ def discover_capture_folders(
         if capture_day is None:
             capture_day = parse_date(meta.get("run_date")) or folder_day
         explicit_data_date = meta.get("data_date")
+        data_date_matches_folder = True
+        if explicit_data_date not in (None, ""):
+            explicit_folder_day = parse_date(explicit_data_date)
+            data_date_matches_folder = explicit_folder_day == folder_day
+            if not data_date_matches_folder:
+                local_warnings.append(
+                    f"{name}: 目录名与 meta.data_date 不一致 "
+                    f"(目录={folder_day:%Y%m%d}, meta={explicit_data_date!r})；快照跳过"
+                )
         if meta.get("data_date_domain") == CALENDAR:
             market_day = None
             origin = "calendar_only"
@@ -266,6 +316,9 @@ def discover_capture_folders(
             origin = "meta_data_date"
             if market_day is None:
                 local_warnings.append(f"{name}: meta.data_date 格式无效，行情快照将跳过")
+            elif not data_date_matches_folder:
+                market_day = None
+                origin = "directory_data_date_mismatch"
             else:
                 try:
                     valid = is_session(market_day)
@@ -284,10 +337,11 @@ def discover_capture_folders(
                     market_day = folder_day
                     origin = "folder_date"
                 else:
-                    market_day = previous_trading_session(folder_day, is_session)
-                    origin = "folder_inferred"
+                    market_day = None
+                    origin = "nontrading_folder"
                     local_warnings.append(
-                        f"{name}: 旧式非交易日目录按前一交易日 {market_day:%Y%m%d} 归并；目录未改名"
+                        f"{name}: 无 meta.data_date 的非交易日目录不符合数据日命名规则；"
+                        "行情快照跳过，不按运行日推断"
                     )
             except CalendarResolutionError as exc:
                 market_day = None
@@ -304,6 +358,7 @@ def discover_capture_folders(
                 meta=meta,
                 market_date_origin=origin,
                 warnings=tuple(local_warnings),
+                data_date_matches_folder=data_date_matches_folder,
             )
         )
         warnings.extend(local_warnings)
@@ -324,6 +379,9 @@ def select_folder_window(
     of being silently replaced by older sessions.
     """
     all_folders = tuple(folders)
+    event_dates_by_folder = {
+        folder.name: _folder_event_capture_dates(folder) for folder in all_folders
+    }
     warnings = [
         f"{folder.name}: 行情数据日 {folder.market_date:%Y%m%d} 晚于报告日，行情快照不纳入本轮"
         for folder in all_folders
@@ -348,8 +406,15 @@ def select_folder_window(
         market_names = frozenset(
             folder.name for folder in all_folders if folder.market_date in market_dates
         )
-        event_names = frozenset(folder.name for folder in all_folders)
-        event_start = min((folder.capture_date for folder in all_folders), default=report_date)
+        historical_event_dates = [
+            day for days in event_dates_by_folder.values() for day in days if day <= report_date
+        ]
+        event_names = frozenset(
+            name
+            for name, days in event_dates_by_folder.items()
+            if any(day <= report_date for day in days)
+        )
+        event_start = min(historical_event_dates, default=report_date)
     else:
         n = max(1, int(window))
         available_market_dates = {
@@ -382,7 +447,9 @@ def select_folder_window(
             folder.name for folder in all_folders if folder.market_date in market_dates
         )
         event_names = frozenset(
-            folder.name for folder in all_folders if folder.capture_date >= event_start
+            name
+            for name, days in event_dates_by_folder.items()
+            if any(event_start <= day <= report_date for day in days)
         )
     chosen = tuple(
         folder
@@ -498,17 +565,31 @@ def _source_as_of(meta: dict[str, Any], document: dict[str, Any], source: str) -
     return None, "folder_inferred"
 
 
-def _phase(meta: dict[str, Any], capture_day: date, sample_day: date, event: bool) -> str:
+def _phase(
+    meta: dict[str, Any],
+    capture_day: date,
+    sample_day: date,
+    event: bool,
+    source: str | None = None,
+) -> str:
     if event:
         return "calendar"
-    captured = _capture_datetime(meta)
+    captured = _capture_datetime(meta, source)
     if sample_day < capture_day:
         return "closed"
     if captured is not None:
         if captured.time() >= time(15, 0):
             return "closed"
         return "intraday"
-    value = str(meta.get("market_phase") or "").lower()
+    source_map = meta.get("sources")
+    source_entry = source_map.get(source) if source and isinstance(source_map, dict) else None
+    source_phase = source_entry.get("data_market_phase") if isinstance(source_entry, dict) else None
+    has_source_capture_date = isinstance(source_entry, dict) and bool(
+        source_entry.get("source_capture_date")
+    )
+    value = str(
+        source_phase or (None if has_source_capture_date else meta.get("market_phase")) or ""
+    ).lower()
     if value in {"closed", "intraday"}:
         return value
     return "unknown"
@@ -525,10 +606,21 @@ def build_snapshot(
     is_session = checker or is_trading_session
     warnings: list[str] = []
     event = is_calendar_event_source(source)
+    if not folder.data_date_matches_folder:
+        warnings.append(f"{folder.name}/{source}: 目录日期不等于 meta.data_date，快照跳过")
+        return None, warnings
+    source_capture_day = _source_capture_date(folder.meta, source, folder.capture_date)
+    captured = _capture_datetime(folder.meta, source)
     sample_day: date | None
     if event:
-        sample_day = folder.capture_date
-        origin = "folder_inferred"
+        sample_day = source_capture_day
+        source_map = folder.meta.get("sources")
+        source_entry = source_map.get(source) if isinstance(source_map, dict) else None
+        origin = (
+            str(source_entry.get("source_capture_date_origin") or "source_capture_date")
+            if isinstance(source_entry, dict) and source_entry.get("source_capture_date")
+            else "folder_inferred"
+        )
         domain = CALENDAR
     else:
         raw_day, origin = _source_as_of(folder.meta, document, source)
@@ -549,10 +641,10 @@ def build_snapshot(
                 f"{folder.name}/{source}: 来源日期 {sample_day:%Y%m%d} 不是交易日，快照跳过"
             )
             return None, warnings
-        if sample_day > folder.capture_date:
+        if sample_day > source_capture_day:
             warnings.append(
                 f"{folder.name}/{source}: 来源 as_of_date {sample_day:%Y%m%d} 晚于采集日 "
-                f"{folder.capture_date:%Y%m%d}，快照跳过"
+                f"{source_capture_day:%Y%m%d}，快照跳过"
             )
             return None, warnings
         domain = TRADING
@@ -571,13 +663,18 @@ def build_snapshot(
         warnings.append(f"{folder.name}/{source}: 没有可用记录，快照跳过")
         return None, warnings
 
-    phase = _phase(folder.meta, folder.capture_date, sample_day, event)
-    captured = _capture_datetime(folder.meta)
-    declared_phase = str(folder.meta.get("market_phase") or "").lower()
+    phase = _phase(folder.meta, source_capture_day, sample_day, event, source)
+    source_map = folder.meta.get("sources")
+    source_entry = source_map.get(source) if isinstance(source_map, dict) else None
+    declared_phase = str(
+        source_entry.get("data_market_phase")
+        if isinstance(source_entry, dict) and source_entry.get("data_market_phase")
+        else folder.meta.get("market_phase") or ""
+    ).lower()
     if (
         not event
         and captured is not None
-        and sample_day == folder.capture_date
+        and sample_day == source_capture_day
         and declared_phase in {"closed", "intraday"}
     ):
         observed_phase = "closed" if captured.time() >= time(15, 0) else "intraday"
@@ -595,7 +692,7 @@ def build_snapshot(
         source=source,
         domain=domain,
         sample_date=sample_day,
-        capture_date=folder.capture_date,
+        capture_date=source_capture_day,
         folder=folder.name,
         path=path,
         document=document,
@@ -616,6 +713,7 @@ def select_snapshots(
     allowed_event_folders: set[str] | frozenset[str] | None = None,
     checker: Callable[[date], bool] | None = None,
     allowed_trading_dates: set[str] | frozenset[str] | None = None,
+    allowed_event_window: tuple[date, date] | None = None,
 ) -> tuple[list[Snapshot], list[str]]:
     """Load, validate, and deterministically deduplicate per-source snapshots.
 
@@ -651,6 +749,7 @@ def select_snapshots(
                 event
                 and allowed_event_folders is not None
                 and folder.name not in allowed_event_folders
+                and (allowed_trading_folders is None or folder.name not in allowed_trading_folders)
             ):
                 continue
             if (
@@ -667,6 +766,17 @@ def select_snapshots(
             snapshot, problems = build_snapshot(folder, source, path, document, checker)
             warnings.extend(problems)
             if snapshot is not None:
+                if snapshot.domain == CALENDAR and allowed_event_window is not None:
+                    event_start, event_end = allowed_event_window
+                    if not event_start <= snapshot.capture_date <= event_end and (
+                        allowed_trading_folders is None
+                        or folder.name not in allowed_trading_folders
+                    ):
+                        warnings.append(
+                            f"{folder.name}/{source}: 来源采集日 "
+                            f"{snapshot.capture_date:%Y%m%d} 不在本轮自然日窗口，快照跳过"
+                        )
+                        continue
                 if (
                     snapshot.domain == TRADING
                     and allowed_trading_dates is not None

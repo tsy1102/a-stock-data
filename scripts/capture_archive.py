@@ -155,6 +155,54 @@ def _preserve_context_paths(
     return preserved, warnings
 
 
+def _incomplete_snapshot_sources(
+    collectors: Dict[str, Callable[..., Dict[str, Any]]],
+    meta: dict,
+    out_dir: str,
+    pool: List[Dict[str, Any]],
+    include_context: bool = False,
+) -> set[str]:
+    """Return requested producers whose saved snapshots need a capture attempt."""
+    source_meta = meta.get("sources") if isinstance(meta.get("sources"), dict) else {}
+    incomplete: set[str] = set()
+    for source in collectors:
+        if source in CONTEXT_ONLY_SOURCES and not include_context:
+            continue
+        entry = source_meta.get(source) if isinstance(source_meta, dict) else None
+        if not isinstance(entry, dict):
+            incomplete.add(source)
+            continue
+        status = entry.get("status")
+        expected_non_raw_status = NON_RAW_SOURCE_STATUS.get(source)
+        if expected_non_raw_status:
+            if status != expected_non_raw_status:
+                incomplete.add(source)
+            continue
+        if status in {"unwired", "deprecated"}:
+            continue
+        if entry.get("ok") is not True or status not in (None, "ok"):
+            incomplete.add(source)
+            continue
+        raw_path = os.path.join(out_dir, f"raw_{source}.json")
+        if not os.path.isfile(raw_path):
+            incomplete.add(source)
+            continue
+        try:
+            with open(raw_path, encoding="utf-8") as stream:
+                document = json.load(stream)
+        except (OSError, json.JSONDecodeError):
+            incomplete.add(source)
+            continue
+        ok, _ = assess_result(
+            document,
+            expected_symbols=_source_expected_codes(source, pool),
+            required_paths=_source_required_paths(source, include_context),
+        )
+        if not ok:
+            incomplete.add(source)
+    return incomplete
+
+
 def _has_complete_snapshot(
     collectors: Dict[str, Callable[..., Dict[str, Any]]],
     meta: dict,
@@ -163,39 +211,7 @@ def _has_complete_snapshot(
     include_context: bool = False,
 ) -> bool:
     """Only skip when each requested producer has a complete, assessable snapshot."""
-    source_meta = meta.get("sources") if isinstance(meta.get("sources"), dict) else {}
-    for source in collectors:
-        if source in CONTEXT_ONLY_SOURCES and not include_context:
-            continue
-        entry = source_meta.get(source) if isinstance(source_meta, dict) else None
-        if not isinstance(entry, dict):
-            return False
-        status = entry.get("status")
-        expected_non_raw_status = NON_RAW_SOURCE_STATUS.get(source)
-        if expected_non_raw_status:
-            if status != expected_non_raw_status:
-                return False
-            continue
-        if status in {"unwired", "deprecated"}:
-            continue
-        if entry.get("ok") is not True or status not in (None, "ok"):
-            return False
-        raw_path = os.path.join(out_dir, f"raw_{source}.json")
-        if not os.path.isfile(raw_path):
-            return False
-        try:
-            with open(raw_path, encoding="utf-8") as stream:
-                document = json.load(stream)
-        except (OSError, json.JSONDecodeError):
-            return False
-        ok, _ = assess_result(
-            document,
-            expected_symbols=_source_expected_codes(source, pool),
-            required_paths=_source_required_paths(source, include_context),
-        )
-        if not ok:
-            return False
-    return True
+    return not _incomplete_snapshot_sources(collectors, meta, out_dir, pool, include_context)
 
 
 def _refresh_closed_snapshot_validations(

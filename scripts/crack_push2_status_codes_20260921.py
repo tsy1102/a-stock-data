@@ -13,7 +13,7 @@
 
 from collections import defaultdict
 import importlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 _package_prefix = f"{__package__}." if __package__ else ""
 _retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
@@ -61,18 +61,15 @@ DATES = [
 ]
 
 
-def num(x):
-    if x is None:
-        return None
-    if isinstance(x, (int, float)):
-        return float(x)
-    s = str(x).strip().replace(",", "").replace("%", "")
-    if s in ("", "None", "nan", "NaN", "-", "--", "null"):
-        return None
-    try:
-        return float(s)
-    except Exception:
-        return None
+_crack_helpers_module = importlib.import_module(
+    f"{__package__}.crack_helpers" if __package__ else "crack_helpers"
+)
+_build_collision_field = _crack_helpers_module.collision_field
+num = _crack_helpers_module.parse_number
+
+
+def _collision_field(per_date: dict[str, dict[str, Any]], source: str) -> dict[str, Any]:
+    return cast(dict[str, Any], _build_collision_field(per_date, source, SNAPSHOT_PHASES))
 
 
 def _load(date, src):
@@ -94,26 +91,6 @@ def _load(date, src):
                 out[c] = {f"tx[{i+1}]": v["fields"][i] for i in range(len(v["fields"]))}
         return out
     return {}
-
-
-def _collision_field(per_date, source):
-    values = {}
-    sample_meta = {}
-    for day, row in per_date.items():
-        for code, value in row.items():
-            sample_key = (str(code), f"T:{day}")
-            values[sample_key] = value
-            sample_meta[sample_key] = {
-                "phase": SNAPSHOT_PHASES.get((source, day), "unknown"),
-                "source": source,
-            }
-    distinct = set(values.values())
-    return {
-        "vals": values,
-        "src": source,
-        "is_constant": bool(values) and len(distinct) <= 1,
-        "sample_meta": sample_meta,
-    }
 
 
 def main():

@@ -86,6 +86,8 @@ from stock_common.sc_report_runner import (
     format_52w_reference,
     format_quote_provenance,
     non_quarter_end_dates,
+    report_fund_flow_120d as get_fund_flow_120d,
+    unique_trading_flow_rows as _unique_trading_flow_rows,
 )
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -98,18 +100,6 @@ _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
 
 
 # ==================== 核心数据抓取模块 ====================
-
-
-def get_fund_flow_120d(code):
-    """V17.2.x(2026-09-10) 统一口径：sht 已对齐至本 `prefer="em"`（东财直连）。
-
-    原注释称"保留仅东财口径（中线业绩视角）"以区别于 sht 的 TDX 优先——该区分已不成立：
-    `tdx_get_history_fund_flow` 自 V12.0 起即委托东财 HTTP，两路径数据同源同值。
-    现 med 与 sht 完全一致（同一函数、同一参数），跨报告资金流结论可直接横向比较。
-    """
-    from stock_common import get_history_fund_flow_120d
-
-    return get_history_fund_flow_120d(code, 60, prefer="em")
 
 
 # V7.5: get_dragon_tiger_board 由 stock_common 统一提供
@@ -166,29 +156,6 @@ async def get_stock_sector_rank_async(code, info=None):
 
 
 # ==================== 报告生成引擎 ====================
-
-
-def _unique_trading_flow_rows(rows):
-    """返回有明确日期且日历确认开市的资金流记录，按日期从新到旧去重。"""
-    from stock_common.stock_calendar import is_trading_day
-
-    dated_rows = {}
-    for row in rows or []:
-        if not isinstance(row, dict):
-            continue
-        raw_date = str(row.get("date") or row.get("trade_date") or "")[:10]
-        try:
-            trade_date = date.fromisoformat(raw_date)
-            if not is_trading_day(trade_date):
-                continue
-        except (TypeError, ValueError, NotImplementedError):
-            continue
-        previous = dated_rows.get(trade_date)
-        if previous is None or (
-            previous.get("main_net") is None and row.get("main_net") is not None
-        ):
-            dated_rows[trade_date] = row
-    return [dated_rows[day] for day in sorted(dated_rows, reverse=True)]
 
 
 async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=None):

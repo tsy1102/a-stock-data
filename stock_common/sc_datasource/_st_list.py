@@ -14,20 +14,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
+from ._normalizers import soft_optional_float as _v39_num
 
 EM_CLIST_HOSTS = ["https://push2.eastmoney.com", "https://push2delay.eastmoney.com"]
-
-
-def _v39_num(value: Any) -> Optional[float]:
-    if value is None or value == "":
-        return None
-    t = str(value).replace(",", "").strip()
-    if t in ("", "-", "--", "None", "null"):
-        return None
-    try:
-        return float(t)
-    except ValueError:
-        return None
 
 
 def _em_clist_all(fs: str, fields: str, page_size: int = 100) -> Tuple[List[Dict[str, Any]], str]:

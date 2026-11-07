@@ -16,6 +16,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
 
 from __future__ import annotations
 
+from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from stock_common import _debug_log
@@ -38,6 +39,20 @@ _ELTDX_HOSTS = [
     "159.75.55.232:7709",
     "120.76.152.87:7709",
 ]
+
+
+def _json_friendly(value: Any) -> Any:
+    if isinstance(value, bytes):
+        return value.hex()
+    if isinstance(value, (list, tuple)):
+        return [_json_friendly(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _json_friendly(item) for key, item in value.items()}
+    if is_dataclass(value) and not isinstance(value, type):
+        return _json_friendly(asdict(value))
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
 
 
 def _normalize_eltdx_code(code: str) -> str:
@@ -398,21 +413,6 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
       ladder_list:  list[dict]  —— limit_ladder(ecodes) 代码池内连板天梯(rows)
       shortline_map: {ecode: dict} —— shortline_indicators(ecodes) 批量命中(ShortlineIndicator 41 字段)
     """
-    from dataclasses import asdict, is_dataclass
-
-    def _jfy(o):
-        if isinstance(o, bytes):
-            return o.hex()
-        if isinstance(o, (list, tuple)):
-            return [_jfy(x) for x in o]
-        if isinstance(o, dict):
-            return {str(k): _jfy(v) for k, v in o.items()}
-        if is_dataclass(o) and not isinstance(o, type):
-            return _jfy(asdict(o))
-        if isinstance(o, (str, int, float, bool)) or o is None:
-            return o
-        return str(o)
-
     # 模块级缓存: 同进程同 codes 集合 300s 内复用 bundle, 避免 val 多策略/统一层重复连接 eltdx
     _ecodes = [_normalize_eltdx_code(c) for c in all_codes]
     _ckey = frozenset(_ecodes)
@@ -436,7 +436,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
             try:
                 _ll = client.helpers.limit_ladder(codes=_ecodes)
                 _rows = getattr(_ll, "rows", None) or []
-                ladder = [_jfy(r) for r in _rows]
+                ladder = [_json_friendly(row) for row in _rows]
             except Exception as _e:
                 _debug_log(f"eltdx limit_ladder: {_e}")
             # ── 批量短线指标(按代码, 一次批量) ──
@@ -447,7 +447,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
                 _sl_rows = getattr(_sl, "rows", None)
                 _sl_iter = _sl_rows if _sl_rows is not None else _sl
                 for _rec in _sl_iter or []:
-                    _d = _jfy(_rec)
+                    _d = _json_friendly(_rec)
                     _cc = _d.get("code") or _d.get("full_code")
                     if _cc:
                         sl_map[_cc] = _d
@@ -505,20 +505,6 @@ def get_eltdx_limit_ladder(timeout: float = 20.0, *, codes: Optional[List[str]] 
     返回: list[dict] —— 每行含 code/full_code/ladder_level/limit_up_streak_days/
           limit_board_text/seal_to_float_ratio/open_volume_ratio 等(ShortlineIndicator schema)。
     """
-    from dataclasses import asdict, is_dataclass
-
-    def _jfy(o):
-        if isinstance(o, bytes):
-            return o.hex()
-        if isinstance(o, (list, tuple)):
-            return [_jfy(x) for x in o]
-        if isinstance(o, dict):
-            return {str(k): _jfy(v) for k, v in o.items()}
-        if is_dataclass(o) and not isinstance(o, type):
-            return _jfy(asdict(o))
-        if isinstance(o, (str, int, float, bool)) or o is None:
-            return o
-        return str(o)
 
     def _work():
         try:
@@ -534,7 +520,7 @@ def get_eltdx_limit_ladder(timeout: float = 20.0, *, codes: Optional[List[str]] 
                 return []
             _ll = client.helpers.limit_ladder(codes=_ecodes)
             _rows = getattr(_ll, "rows", None) or []
-            return [_jfy(r) for r in _rows]
+            return [_json_friendly(row) for row in _rows]
         except Exception as _e:
             _debug_log(f"eltdx limit_ladder: {_e}")
             return []

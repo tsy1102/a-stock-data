@@ -1,10 +1,25 @@
 import sys
+from dataclasses import dataclass
 from types import ModuleType, SimpleNamespace
 
 import pytest
 
 from core import eltdx_adapter
 from core.eltdx_adapter import download_eltdx_report_file
+
+
+def test_json_friendly_recursively_normalizes_eltdx_values() -> None:
+    @dataclass
+    class Payload:
+        content: object
+
+    class UnknownValue:
+        def __str__(self) -> str:
+            return "unknown"
+
+    assert eltdx_adapter._json_friendly(
+        {1: Payload(content=(b"\x01\xaf", UnknownValue(), None))}
+    ) == {"1": {"content": ["01af", "unknown", None]}}
 
 
 @pytest.mark.parametrize(

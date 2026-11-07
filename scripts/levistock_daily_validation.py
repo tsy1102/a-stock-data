@@ -6,10 +6,13 @@ This module is intentionally offline: it never imports or calls Levistock/networ
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
-from importlib import metadata
+from datetime import datetime
+from importlib import import_module, metadata
 from pathlib import Path
 from typing import Any
+
+_date_utils_module = import_module(f"{__package__}.date_utils" if __package__ else "date_utils")
+_date_key = _date_utils_module.normalize_date_key
 import importlib
 
 _package_prefix = f"{__package__}." if __package__ else ""
@@ -41,22 +44,6 @@ def _read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     if not isinstance(value, dict):
         return None, "capture_file_root_is_not_object"
     return value, None
-
-
-def _date_key(value: Any) -> str | None:
-    if isinstance(value, datetime):
-        return value.date().isoformat()
-    if isinstance(value, date):
-        return value.isoformat()
-    if not isinstance(value, str):
-        return None
-    normalized = value.strip()
-    for pattern in ("%Y-%m-%d", "%Y%m%d"):
-        try:
-            return datetime.strptime(normalized, pattern).date().isoformat()
-        except ValueError:
-            continue
-    return None
 
 
 def _explicit_dates(value: Any) -> set[str]:

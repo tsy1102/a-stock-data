@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import threading
-import time
+from stock_common.sc_rate_utils import advance_interval_timestamp
 import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional
@@ -49,11 +49,7 @@ def _throttle() -> None:
     """进程内连接级限频（1.0s/请求）。"""
     global _last_request
     with _throttle_lock:
-        now = time.time()
-        wait = _QUERY_INTERVAL - (now - _last_request)
-        if wait > 0:
-            time.sleep(wait)
-        _last_request = time.time()
+        _last_request = advance_interval_timestamp(_last_request, _QUERY_INTERVAL)
 
 
 def _post(host: str, params: Dict[str, Any]) -> Dict[str, Any]:

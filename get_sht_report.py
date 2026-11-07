@@ -97,7 +97,12 @@ from stock_common import (
     sec_type_market_label,
     limit_pct_for,
 )  # V10.3, V16.2: 统一涨跌停阈值
-from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
+from stock_common.sc_report_runner import (
+    format_52w_reference,
+    format_quote_provenance,
+    report_fund_flow_120d as get_fund_flow_120d,
+    unique_trading_flow_rows as _unique_trading_flow_rows,
+)
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
 
@@ -234,29 +239,6 @@ def _verified_tdx_daily_bar(
 # ═══════════════════════════════════════════
 
 
-def _unique_trading_flow_rows(rows):
-    """保留有明确交易日、且日历确认开市的资金流记录，按日期从新到旧排序。"""
-    from stock_common.stock_calendar import is_trading_day
-
-    dated_rows = {}
-    for row in rows or []:
-        if not isinstance(row, dict):
-            continue
-        raw_date = str(row.get("date") or row.get("trade_date") or "")[:10]
-        try:
-            trade_date = date.fromisoformat(raw_date)
-            if not is_trading_day(trade_date):
-                continue
-        except (TypeError, ValueError, NotImplementedError):
-            continue
-        previous = dated_rows.get(trade_date)
-        if previous is None or (
-            previous.get("main_net") is None and row.get("main_net") is not None
-        ):
-            dated_rows[trade_date] = row
-    return [dated_rows[day] for day in sorted(dated_rows, reverse=True)]
-
-
 def _get_index_quote(idx_code):
     """V4: 指数行情 → tdx_client 适配器（TDX指数K线，自动fallback腾讯）"""
 
@@ -321,22 +303,6 @@ def get_fund_flow_realtime(code, ff_120d=None):
                 "date_end": dates[0] if dates else "",
             }
     return None
-
-
-def get_fund_flow_120d(code):
-    """V17.2.x(2026-09-10) 统一口径：与 med 对齐为 `prefer="em"`（东财直连）。
-
-    ⚠️ 变更依据（非行为变更，数据完全等价）：
-      - 原 sht 用 `prefer="tdx"`、med 用 `prefer="em"`，看似两口径；
-      - 实测 `tdx_get_history_fund_flow`(`core/tdx_client.py:1694`) **已完全委托东财 HTTP**
-        （"V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）"），
-        且 V17.0.13 口径规定主力净额统一走东财 push2 f137（本身含超大单+大单，V17.0.16 重定案禁止再+f140）—— **两路径数据同源同值**；
-      - `prefer="tdx"` 仅多一次对同一函数的冗余二次调用，且会把 `source` 误标为 "tdx"。
-      故统一为 "em" 直连：数据不变、source 标注正确、少一层间接调用。
-    """
-    from stock_common import get_history_fund_flow_120d
-
-    return get_history_fund_flow_120d(code, 60, prefer="em")
 
 
 def get_baidu_kline_with_ma(code):

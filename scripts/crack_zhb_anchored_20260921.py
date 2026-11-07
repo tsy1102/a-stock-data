@@ -11,31 +11,19 @@ ZHB-T1 铁律: 休市日 ZHB 日期=报告数据日; 本机 ZHB 未同步今日�
 """
 
 import importlib
-import json, statistics
+import statistics
 
 _package_prefix = f"{__package__}." if __package__ else ""
 _capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_store")
 _retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+_crack_helpers_module = importlib.import_module(f"{_package_prefix}crack_helpers")
 read_capture_json = _capture_store_module.read_capture_json
 MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
+num = _crack_helpers_module.parse_number
 
 FV = "docs/field_verification"
 DATE = "20260918"  # 全采集锚定日(tencent/push2_full/ulist239 均有效)
 ZHB_DIR = "20260921"  # 今日(20260921)采集的 ZHB(=20260918)
-
-
-def num(x):
-    if x is None:
-        return None
-    if isinstance(x, (int, float)):
-        return float(x)
-    s = str(x).strip().replace(",", "").replace("%", "")
-    if s in ("", "None", "nan", "NaN", "-", "--", "null"):
-        return None
-    try:
-        return float(s)
-    except Exception:
-        return None
 
 
 def decimals(x):

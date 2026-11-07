@@ -17,7 +17,7 @@ import json
 import logging
 import re
 import threading
-import time
+from stock_common.sc_rate_utils import advance_interval_timestamp
 import urllib.parse
 import urllib.request
 from typing import Any, Dict, List
@@ -43,11 +43,7 @@ _throttle_lock = threading.Lock()
 def _throttle() -> None:
     global _last_request
     with _throttle_lock:
-        now = time.time()
-        wait = _QUERY_INTERVAL - (now - _last_request)
-        if wait > 0:
-            time.sleep(wait)
-        _last_request = time.time()
+        _last_request = advance_interval_timestamp(_last_request, _QUERY_INTERVAL)
 
 
 def _post(path: str, params: Dict[str, Any]) -> Dict[str, Any]:

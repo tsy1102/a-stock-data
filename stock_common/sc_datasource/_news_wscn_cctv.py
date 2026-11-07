@@ -14,15 +14,9 @@ from typing import Any, Dict, List
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
+from ._normalizers import normalize_compact_date as _v39_date
 
 CCTV_DAY_URL = "https://tv.cctv.com/lm/xwlb/day/{ymd}.shtml"
-
-
-def _v39_date(value: str) -> str:
-    t = str(value).strip()
-    if re.fullmatch(r"[0-9]{8}", t):
-        return f"{t[0:4]}-{t[4:6]}-{t[6:8]}"
-    return t
 
 
 def _cctv_body(url: str) -> str | None:

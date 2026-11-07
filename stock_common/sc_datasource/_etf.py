@@ -12,29 +12,11 @@ from typing import Any, Dict, List, Optional
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
+from ._normalizers import normalize_compact_date as _v39_date, soft_optional_float as _v39_num
 
 SSE_ETF_SHARES_URL = "https://query.sse.com.cn/commonQuery.do"
 SZSE_FUND_LIST_URL = "https://www.szse.cn/api/report/ShowReport/data"  # V17.4.2: 改用 www.szse.cn(同仓内 _eastmoney.py:1195 龙虎榜域名); fund.szse.cn 本环境被封
 SZSE_FUND_LIST_HOSTS = ["https://www.szse.cn", "https://fund.szse.cn"]  # 主站不可达时回退
-
-
-def _v39_num(value: Any) -> Optional[float]:
-    if value is None or value == "":
-        return None
-    t = str(value).replace(",", "").strip()
-    if t in ("", "-", "--", "None", "null"):
-        return None
-    try:
-        return float(t)
-    except ValueError:
-        return None
-
-
-def _v39_date(value: Any) -> str:
-    t = str(value).strip()
-    if re.fullmatch(r"[0-9]{8}", t):
-        return f"{t[0:4]}-{t[4:6]}-{t[6:8]}"
-    return t
 
 
 def _etf_shares_sse(day: str) -> List[Dict[str, Any]]:

@@ -11,10 +11,13 @@ import logging
 import os
 import re
 import time
-from datetime import date, datetime
-from importlib import metadata
+from datetime import datetime
+from importlib import import_module, metadata
 from pathlib import Path
 from typing import Any, Callable, Optional
+
+_date_utils_module = import_module(f"{__package__}.date_utils" if __package__ else "date_utils")
+_date_key = _date_utils_module.normalize_date_key
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = PROJECT_ROOT / ".tmp" / "a_stock_data_v7" / "levistock_daily_probe_state.json"
@@ -79,22 +82,6 @@ CANDIDATES: tuple[dict[str, Any], ...] = (
         "date_basis": "response_trade_date",
     },
 )
-
-
-def _date_key(value: Any) -> Optional[str]:
-    if isinstance(value, datetime):
-        return value.date().isoformat()
-    if isinstance(value, date):
-        return value.isoformat()
-    if not isinstance(value, str):
-        return None
-    normalized = value.strip()
-    for pattern in ("%Y-%m-%d", "%Y%m%d"):
-        try:
-            return datetime.strptime(normalized, pattern).date().isoformat()
-        except ValueError:
-            continue
-    return None
 
 
 def _has_data(value: Any) -> bool:

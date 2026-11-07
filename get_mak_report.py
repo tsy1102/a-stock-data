@@ -42,6 +42,7 @@ _MAIN_NET_SOURCE_STATUS = "not_requested"
 
 warnings.filterwarnings("ignore")
 from core.data_provider import get_market_snapshot_async
+from stock_common.sc_utils import is_a_stock as _is_a_stock
 
 from core.tdx_client import (  # V16.4.1: 删 tdx_get_security_bars/cleanup_tdx,
     tdx_get_board_list,
@@ -83,13 +84,6 @@ def _name_mark(name: str) -> str:
     from stock_common.sc_utils import name_mark as _u_name_mark
 
     return _u_name_mark(name)
-
-
-def _is_a_stock(code: str) -> bool:
-    """V17.2.x(2026-09-10): 直接转调 sc_utils.is_a_stock（与 val 同口径：00/30/60/68/92 前缀）。"""
-    from stock_common.sc_utils import is_a_stock
-
-    return is_a_stock(code)
 
 
 def _is_industry_code(ic) -> bool:

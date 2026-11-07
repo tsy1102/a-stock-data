@@ -44,6 +44,7 @@ _SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 from scripts.capture_retention import MIN_CAPTURE_DATE
+from scripts.date_utils import normalize_date_key as _normalize_fuyao_source_date
 from scripts.context_policy import (
     CONTEXT_EXCLUDED_PATHS,
     CONTEXT_ONLY_SOURCES,
@@ -1103,23 +1104,6 @@ def _legacy_source_capture_metadata(previous_meta: dict[str, Any]) -> dict[str, 
     if previous_phase in {"calendar", "closed", "intraday"}:
         result["data_market_phase"] = previous_phase
     return result
-
-
-def _normalize_fuyao_source_date(value: Any) -> Optional[str]:
-    """Normalize a date explicitly labeled as source data date; never parse timestamps."""
-    if isinstance(value, datetime):
-        return value.date().isoformat()
-    if isinstance(value, date):
-        return value.isoformat()
-    if not isinstance(value, str):
-        return None
-    normalized = value.strip()
-    for date_format in ("%Y-%m-%d", "%Y%m%d"):
-        try:
-            return datetime.strptime(normalized, date_format).date().isoformat()
-        except ValueError:
-            continue
-    return None
 
 
 def _normalize_fuyao_response_timestamp_date(value: Any) -> Optional[str]:

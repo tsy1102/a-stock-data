@@ -131,6 +131,36 @@ def non_quarter_end_dates(records: Any) -> list[str]:
     return dates
 
 
+def unique_trading_flow_rows(rows: Any) -> list[dict[str, Any]]:
+    """Keep one row per confirmed trading date, newest first."""
+    from stock_common.stock_calendar import is_trading_day
+
+    dated_rows: dict[date, dict[str, Any]] = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        raw_date = str(row.get("date") or row.get("trade_date") or "")[:10]
+        try:
+            trade_date = date.fromisoformat(raw_date)
+            if not is_trading_day(trade_date):
+                continue
+        except (TypeError, ValueError, NotImplementedError):
+            continue
+        previous = dated_rows.get(trade_date)
+        if previous is None or (
+            previous.get("main_net") is None and row.get("main_net") is not None
+        ):
+            dated_rows[trade_date] = row
+    return [dated_rows[day] for day in sorted(dated_rows, reverse=True)]
+
+
+def report_fund_flow_120d(code: str) -> dict[str, Any]:
+    """Load the shared 60-day EM-preferred history used by SHT and MED reports."""
+    from stock_common import get_history_fund_flow_120d
+
+    return get_history_fund_flow_120d(code, 60, prefer="em")
+
+
 def format_52w_reference(
     price: Any,
     low: Any,

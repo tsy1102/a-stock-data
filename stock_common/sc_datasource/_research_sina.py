@@ -15,6 +15,7 @@ import requests
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
+from ._normalizers import normalize_compact_date as _src_date
 
 SINA_REPORT_URL = (
     "https://vip.stock.finance.sina.com.cn/q/go.php/vReport_List/kind/{kind}/index.phtml"
@@ -57,13 +58,6 @@ def _sina_report_page(url: str, params: dict[str, Any]) -> tuple[requests.Respon
 
 def _sina_text(fragment: str) -> str:
     return _html.unescape(re.sub(r"<[^>]+>", "", fragment)).strip()
-
-
-def _src_date(value: str) -> str:
-    t = str(value).strip()
-    if re.fullmatch(r"[0-9]{8}", t):
-        return f"{t[0:4]}-{t[4:6]}-{t[6:8]}"
-    return t
 
 
 def sina_research_reports(code: Optional[str] = None, page: int = 1) -> List[Dict[str, Any]]:

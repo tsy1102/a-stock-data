@@ -133,6 +133,7 @@ from stock_common import (
     get_em_batch_quotes,
 )  # V11.5
 from stock_common.sc_report_runner import classify_price_range
+from stock_common.sc_utils import is_a_stock as _is_a_stock
 from core.data_provider import (
     get_market_snapshot_async,
     get_turnover_pct_async,
@@ -562,16 +563,6 @@ def _tdxstat_prescreen(stocks):
 
 # V15.1: A 股代码前缀白名单（沪深主板/创业板/科创板/北交所），其余（ETF/LOF/可转债）过滤掉
 # V17.0 S3: 统一收敛到 stock_common.sc_utils（is_a_stock/A_STOCK_PREFIXES 单一来源）
-
-
-def _is_a_stock(code: str) -> bool:
-    """V17.2.x(2026-09-10): 直接转调 sc_utils.is_a_stock（原本地前缀表早已收敛）。
-
-    与 mak 的同名包装曾构成两份重复实现，现两者均为同构单行转发，保留仅为调用点兼容。
-    """
-    from stock_common.sc_utils import is_a_stock
-
-    return is_a_stock(code)
 
 
 def _zhb_weekly_eligible(stock: dict) -> bool:

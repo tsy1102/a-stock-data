@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_0c51870c07493c0cf06259c4b88725a7236017dae793db91ee6025d1ff6f62d0",
+  "disposition": "rejected",
+  "reviewer": "Codex historical evidence review",
+  "reviewed_at": "2026-11-06T18:44:00+08:00",
+  "rationale": "拒绝将东财 Push2EX zt_continuous 与 KPH limit_count 登记为逐值同义映射。历史碰撞报告中的 377 组命中来自日期未确认的采集记录，不能作为同日证明；按明确交易日查询并与保留 KPH trade_date 对齐后，三日 124 组重叠样本仅 118 组相等，6 组整数差异（含 002696 的 10 对 1），无法由四舍五入或显示精度解释。zt_continuous 继续保持未知。该结果不影响另一条独立字段关系：东财 Push2EX limit_count 与 KPL raw_columns.col_15 已有 271/271 组来源日期确认的精确相等证据。",
+  "evidence_refs": [
+    "20261106/historical_recrack_final_reviewed/20261106_collision_report.json",
+    "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+    "adjudications/20261106_historical_second_pass.md",
+    "adjudications/20261106_kpl_raw_columns_semantics.md"
+  ],
+  "duplicate_of": null
+}

@@ -851,6 +851,74 @@ def test_verified_fields_with_unresolved_semantics_exit_targets_but_not_anchors(
     assert left_ids == []
 
 
+def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, tmp_path):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "pe_lyr",
+                        "status": "verified",
+                    },
+                    {
+                        "source": "ZHB-tdxstat2",
+                        "code": "high_52w",
+                        "status": "verified",
+                        "meaning": "52周最高价",
+                        "unit": "元",
+                    },
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            source: {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": True,
+                "independence_status": "confirmed",
+                "independence_family": "tdx",
+            }
+            for source in ("ZHB-tdxstat", "ZHB-tdxstat2")
+        },
+        "runtime_sources": {
+            "zhb": {"independence_status": "confirmed", "independence_family": "tdx"}
+        },
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+
+    assert ("zhb", "stat.pe_lyr") in context["verified_target_exclusions"]
+    assert ("zhb", "stat.pe_lyr") not in context["verified"]
+    assert ("zhb", "stat.pe_lyr") not in context["anchors"]
+    assert ("zhb", "stat2.high_52w") in context["verified"]
+    assert ("zhb", "stat2.high_52w") in context["anchors"]
+
+    store = {
+        field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
+        for field_id in ("zhb.stat.pe_lyr", "zhb.stat2.high_52w")
+    }
+    left_ids, right_ids = collide.select_collision_fields(
+        store,
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+
+    assert left_ids == []
+    assert "zhb.stat.pe_lyr" not in right_ids
+    assert "zhb.stat2.high_52w" in right_ids
+
+
 def test_default_field_selection_uses_only_verified_independent_anchors():
     store = {
         field_id: {

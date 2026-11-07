@@ -6,6 +6,8 @@
 > 格式：`| 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |`
 > 源前缀短别名：fuyao / tdx / eltdx / zhb / tencent / push2 / push2_full / ulist239 / sina / em_fund_flow / event_dc / push2ex / em_hot / exchange
 > 注：fuyao/tdx/eltdx/zhb 适配层字段因 registered_field_sets 收录形态差异，verified 状态定案见 field_dict.md 附录；本表确保 collide in_registry 固化等价关系。
+>
+> **2026-11-07 语义复核提示**：本表旧报告中的 `ulist239.f142 ↔ sina[13]` “板级枚举计数”和 `ulist239.f143 ↔ tencent[21]` “年初至今涨跌幅”是已被撤回的历史错标，不代表当前字典结论。当前精确路径已核实为买二价/卖二价，4 条 Ulist–Sina/Tencent 关系为既有映射并已用保留期样本复验；其中卖二 4 组 `-` 对 `0.00/0.000` 是无报价占位差异。`push2(stock/get)::f192` 的委差定义也不得投射到 `ulist239(np/get)::f192`。详见[本轮最终审计](../field_verification/adjudications/20261107_historical_recrack_final_closeout.md)。下表保留历史原始行作为审计记录，字段当前语义以逐源注册表为准。
 
 | 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
 |---|---|---|---|---|
@@ -192,14 +194,10 @@
 | push2_full.f195 | ulist239.f75 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | push2_full.f196 | ulist239.f81 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | push2_full.f197 | ulist239.f87 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
-| tencent[32] | zhb.full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
-| tencent[32] | zhb.stat.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | tencent[63] | zhb.full.change_5d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | tencent[63] | zhb.stat.change_5d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | tencent[68] | zhb.full.low_52w | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | tencent[68] | zhb.stat2.low_52w | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
-| ulist239.f3 | zhb.full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
-| ulist239.f3 | zhb.stat.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | ulist239.f24 | zhb.full.change_60d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | ulist239.f24 | zhb.stat.change_60d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
 | ulist239.f109 | zhb.full.change_5d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
@@ -265,8 +263,6 @@
 | push2_full.f167 | push2.f167 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2_full.f168 | push2.f168 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2_full.f169 | push2.f169 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
-| push2_full.f170 | zhb.full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
-| push2_full.f170 | zhb.stat.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2_full.f170 | push2.f170 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2_full.f171 | push2.f171 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2_full.f173 | push2.f173 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
@@ -298,8 +294,6 @@
 | push2.f119 | zhb.stat.change_5d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2.f121 | zhb.full.change_60d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | push2.f121 | zhb.stat.change_60d | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
-| push2.f170 | zhb.full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
-| push2.f170 | zhb.stat.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
 | fuyao.auction_final.auction_volume | eltdx.limit_ladder.open_volume_hand | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·5d |
 | fuyao.auction_final.auction_amount | eltdx.limit_ladder.open_amount | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·5d |
 | push2_full.f48 | eltdx.quote_snapshot.amount | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·5d |
@@ -327,20 +321,10 @@
 | sina[21] | ulist239.f32 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.96·9d |
 | sina[23] | ulist239.f143 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.96·9d |
 | tencent[19] | ulist239.f32 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.96·9d |
-| push2.f122 | zhb.full.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·6d |
-| push2.f122 | zhb.stat.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·6d |
-| tencent[67] | zhb.full.high_52w | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·7d |
-| tencent[67] | zhb.stat2.high_52w | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·7d |
-| push2_full.f122 | zhb.full.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·6d |
-| push2_full.f122 | zhb.stat.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.95·6d |
 | tencent[46] | ulist239.f23 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.94·9d |
-| ulist239.f25 | zhb.full.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.94·7d |
-| ulist239.f25 | zhb.stat.change_ytd | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.94·7d |
 | push2_full.f121 | tencent[71] | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.91·7d |
 | fuyao.valuation.ps_ttm | ulist239.f130 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
 | tencent[71] | ulist239.f24 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
-| ulist239.f192 | ulist239.f202 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
-| ulist239.f192 | ulist239.f233 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
 
 | push2ex.change_pct | fuyao.snapshot.price_change_ratio_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
 | push2ex.change_pct | tdx.quote_full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
@@ -515,6 +499,7 @@
 | push2ex.limit_count | zhb.full.zt_lianban | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d |
 | push2ex.limit_count | zhb.stat.zt_lianban | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d |
 | push2ex.limit_count | eltdx.limit_ladder.ladder_level | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d |
+| push2ex.limit_count | kpl.raw_columns.col_15 | 同义 | 码级同义 | 2026-11-06 同数据日 271/271 精确相等；`adjudications/20261106_push2ex_kpl_limit_count_mapping.json` |
 | sina[1] | fuyao.snapshot.open_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d |
 | sina[1] | fuyao.auction_final.open_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d |
 | sina[1] | push2_full.f46 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d |
@@ -837,7 +822,6 @@
 | ulist239.f189 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f189 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f189 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f190 | tdx.finance_info.hgu | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f191 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
 | ulist239.f191 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f191 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
@@ -955,9 +939,6 @@
 | ulist239.f189 | ulist239.f230 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f189 | ulist239.f232 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f189 | ulist239.f234 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
-| ulist239.f190 | tdx.finance_info.bgu | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
-| ulist239.f190 | ulist239.f200 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
-| ulist239.f190 | ulist239.f231 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f191 | ulist239.f195 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f191 | ulist239.f196 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f191 | ulist239.f197 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
@@ -1032,3 +1013,11 @@
 | ulist239.f199 | ulist239.f230 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f199 | ulist239.f232 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
 | ulist239.f199 | ulist239.f234 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d |
+## 2026-11-06 历史映射复核记录
+
+旧对撞映射已退出活动表，防止抽取器把历史命中率重新当作永久同值关系。完整日期配对结果及来源证据见 [历史采集与字段定案二次复核](../field_verification/adjudications/20261106_historical_second_pass.md)。
+
+- ZHB `change_pct` 到 Tencent `[32]`、Ulist `f3`、Push2 `f170` 的旧映射先撤回并进入本轮重审；仅重审确认的关系会以新报告证据恢复。
+- ZHB `change_ytd` 到 Push2 `f122`、Ulist `f25` 的旧精确映射撤回；历史样本出现重复且超过舍入精度的偏差。
+- ZHB `high_52w` 到 Tencent `[67]` 的旧精确映射撤回；窗口边界和小额差异作为近似证据单独记录。
+- Ulist `f190` 到 TDX `hgu`/`bgu`、同源 `f200`/`f231`，以及 Ulist `f192` 到 `f202`/`f233` 的旧映射撤回；字段语义仍待核。

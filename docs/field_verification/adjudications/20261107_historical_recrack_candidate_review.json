@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_d6f25afd3fd73d60dcd331ea4398f2b07589576fd2ac295d29f37818c58570cb",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T02:46:41+08:00",
+      "rationale": "全历史 80 组、4 日数据中 ulist239.f11 与 Tencent[80] 相关性高，但仍没有同刻且带字段标签的接口值。东财页面同时展示涨速和 5 分钟涨跌幅，当前公开页面核验没有把 f11 唯一指向其中一项。保留该候选，暂不登记含义或映射。",
+      "evidence_refs": [
+        "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+        "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+        "20261107/historical_final_semantic_rerun_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_eastmoney_quote_semantic_audit_review_snapshot.json",
+        "adjudications/20261107_historical_recrack_followup.md",
+        "https://quote.eastmoney.com/center/",
+        "https://quote.eastmoney.com/ztb/"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e3b789b2c94c7c53a32cfbfe432ad2e24b437947efcf43efbdc89f3a04d18556",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T02:46:41+08:00",
+      "rationale": "拒绝这个具体邻档关系。2026-11-02 至 2026-11-05 的 80 组样本中，f142 与 Tencent[9] 为 0/80 精确匹配；官方东财页面和接口在 600519、688327、688553 上逐一显示 f142 对应买二价，且 f142 与 Tencent[11] 为 80/80 精确匹配。结论只针对 f142↔Tencent[9]，不自动生成其他映射。",
+      "evidence_refs": [
+        "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+        "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+        "20261107/historical_final_semantic_rerun_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_eastmoney_quote_semantic_audit_review_snapshot.json",
+        "adjudications/20261107_historical_recrack_followup.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e0fa28d3a527b296f0de06e523791c41f4dce5b863649b1db2cbe117c359ee1e",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T02:46:41+08:00",
+      "rationale": "拒绝这个具体邻档关系。2026-11-02 至 2026-11-05 的 76 组样本中，f143 与 Tencent[19] 为 0/76 精确匹配；官方东财页面和接口在 600519、688327、688553 上逐一显示 f143 对应卖二价，且 f143 与 Tencent[21] 为 76/76 精确匹配。结论只针对 f143↔Tencent[19]，不自动生成其他映射。",
+      "evidence_refs": [
+        "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+        "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+        "20261107/historical_final_semantic_rerun_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_eastmoney_quote_semantic_audit_review_snapshot.json",
+        "adjudications/20261107_historical_recrack_followup.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_66a007cdb2d8ce85dd4b59b8c2b32bcc60eb8f2c0249f247595aab17351300b1",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T02:46:41+08:00",
+      "rationale": "拒绝 ZHB full.change_pct_2d 与 ulist239.f124 的候选关系。报告仅有 3 个交易日、60 组样本，逐股中位 Pearson 为 0.7928 且部分股票负相关；f124 已由独立日期对齐证据确认是行情更新时间戳。时间戳参与时序相关不证明涨跌幅语义。",
+      "evidence_refs": [
+        "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+        "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+        "20261107/historical_final_semantic_rerun_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_eastmoney_quote_semantic_audit_review_snapshot.json",
+        "adjudications/20261107_historical_recrack_followup.md",
+        "adjudications/20261105_ulist_f124_timestamp_correction.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_8eaf9056385c2fb4b0dbdfb55eaa191a13e218c1fc9a079440e79b80dcd29d09",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T02:46:41+08:00",
+      "rationale": "东财官方行情页标签和值已支持 push2.f192 的源内含义为委差（手）；保留期内它与 Tencent[50] 有 134 组、8 日样本，其中 114 组精确、19 组差 1、1 组差 2。最大差异样本两源记录时刻相差 180 秒。此审阅仅拒绝据当前样本建立逐值映射，不推翻 f192 源内语义。",
+      "evidence_refs": [
+        "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+        "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+        "20261107/historical_final_semantic_rerun_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_eastmoney_quote_semantic_audit_review_snapshot.json",
+        "adjudications/20261107_historical_recrack_followup.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

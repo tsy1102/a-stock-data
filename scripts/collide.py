@@ -325,7 +325,6 @@ def collide_pair(L, R, *, contract_anchor=False):
     if exact_l1_ok:
         level = "L1"
         selected_days = l1_days
-        selected_evidence_days = informative_l1
         overall = exact_overall
         days_ge = exact_days_ge
     elif ratio_info is not None and not L["is_constant"] and not R["is_constant"] and evidence_gate:
@@ -352,7 +351,11 @@ def collide_pair(L, R, *, contract_anchor=False):
 
     if statistical_level == "L1":
         informative_report_days = informative_l1
-        n_informative_pairs = sum(total for _, total in selected_evidence_days.values())
+        n_informative_pairs = sum(
+            informative_report_days[day][1]
+            for day in selected_days
+            if day in informative_report_days
+        )
     elif statistical_level == "L1-U":
         informative_report_days = ratio_days
         n_informative_pairs = None
@@ -1268,6 +1271,10 @@ def run(args):
         out_dir = os.path.join(DATA_DIR, f"collision_research_{today}", research_scope, today)
     else:
         out_dir = os.path.join(DATA_DIR, today)
+    if args.run_tag:
+        out_dir = os.path.join(out_dir, args.run_tag)
+        if os.path.exists(out_dir):
+            raise FileExistsError(f"--run-tag output already exists: {out_dir}")
     os.makedirs(out_dir, exist_ok=True)
     md_path = os.path.join(out_dir, f"{today}_collision_report.md")
     json_path = os.path.join(out_dir, f"{today}_collision_report.json")
@@ -1488,6 +1495,12 @@ def main():
     )
     ap.add_argument("--all", action="store_true", help="使用全部历史日期")
     ap.add_argument("--date", type=str, default="", help="报告日期戳（默认今天）")
+    ap.add_argument(
+        "--run-tag",
+        type=str,
+        default="",
+        help="写入当日独立子目录以保留已有报告；标签仅允许字母、数字、下划线和连字符",
+    )
     ap.add_argument("--limit", type=int, default=0, help="仅取前 N 个左字段（自测）")
     ap.add_argument(
         "--include-context",
@@ -1501,6 +1514,8 @@ def main():
     )
     ap.add_argument("--min-hit", type=float, default=0.0, help="自定义 L1 命中率（调试）")
     args = ap.parse_args()
+    if args.run_tag and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,47}", args.run_tag):
+        ap.error("--run-tag 必须以字母或数字开头，且仅含字母、数字、下划线或连字符（最多48位）")
     if args.min_hit:
         global HIT_RATE_L1_RATIO
         HIT_RATE_L1_RATIO = args.min_hit

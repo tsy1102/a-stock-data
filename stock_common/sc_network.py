@@ -1692,7 +1692,7 @@ def _market_code(code: str) -> int:
 
     V16.3 O16: 补北交所分支——920 号段（2024-10 起启用）及 8/4 老号段返回 2，
     此前 920 落到 0(深圳)，TDX finance_info 等按错误市场请求（参考仓库 v3.5.1 同款修复）。
-    V17.0 S3: 补 9 开头沪 B 股(900xxx) → 1，与 tdx_client._market_from_code 口径对齐。
+    V17.0 S3: 补 9 开头沪 B 股(900xxx) → 1。
     """
     if code.startswith(("92", "8", "4", "43", "83", "87")):
         return 2

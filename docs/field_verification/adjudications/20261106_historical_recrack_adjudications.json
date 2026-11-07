@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-06",
+  "report": "20261106/historical_second_pass_reviewed/20261106_collision_report.json",
+  "decisions": [
+    {
+      "id": "historical-recrack-zhb-change-pct-20261106",
+      "candidate": {
+        "left": "zhb.full.change_pct",
+        "right": "tencent[32]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_pct"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[32]"
+      },
+      "action": "verify",
+      "canonical": "change_pct",
+      "meaning": "当日涨跌幅",
+      "unit": "%",
+      "rationale": "来源日期确认的9个交易日中178组有效配对全部精确相等；两个独立东方财富字段另有3日60/60精确复核。将未登记语义的 ZHB change_pct 定案为当日涨跌幅（%），并建立与腾讯[32]的精确映射。"
+    },
+    {
+      "id": "historical-recrack-push2-f170-20261106",
+      "candidate": {
+        "left": "zhb.full.change_pct",
+        "right": "push2.f170"
+      },
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f170"
+      },
+      "anchor": {
+        "source": "ZHB-tdxstat",
+        "code": "change_pct"
+      },
+      "action": "link_verified",
+      "rationale": "ZHB change_pct 已由主候选定案；Push2 f170 已有涨跌幅（%）字段契约。三个来源日期共60/60精确相等，建立同义映射。"
+    },
+    {
+      "id": "historical-recrack-ulist-f3-20261106",
+      "candidate": {
+        "left": "zhb.full.change_pct",
+        "right": "ulist239.f3"
+      },
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f3"
+      },
+      "anchor": {
+        "source": "ZHB-tdxstat",
+        "code": "change_pct"
+      },
+      "action": "link_verified",
+      "rationale": "ZHB change_pct 已由主候选定案；Ulist f3 已有涨跌幅字段契约。三个来源日期共60/60精确相等，建立同义映射。"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-06",
+  "observations": [
+    {
+      "source": "Eastmoney Push2 stock/get",
+      "url": "https://push2.eastmoney.com/api/qt/stock/get?secid=1.600519&fields=f57%2Cf58%2Cf43%2Cf44%2Cf45%2Cf46%2Cf47%2Cf48%2Cf49%2Cf162%2Cf170%2Cf174%2Cf175%2Cf124&fltt=2&invt=2",
+      "accessed_at": "2026-11-06T23:19:55+08:00",
+      "request": {
+        "secid": "1.600519",
+        "fields": ["f57", "f58", "f43", "f44", "f45", "f46", "f47", "f48", "f49", "f162", "f170", "f174", "f175", "f124"]
+      },
+      "response_data": {
+        "f43": 1453.0,
+        "f44": 1457.72,
+        "f45": 1436.0,
+        "f46": 1450.0,
+        "f47": 42848,
+        "f48": 6199528289.0,
+        "f49": 23139,
+        "f57": "600519",
+        "f58": "贵州茅台",
+        "f124": 0.0,
+        "f162": 21.13,
+        "f170": 0.07,
+        "f174": 1539.98,
+        "f175": 1151.01
+      },
+      "use": "Current public snapshot only; the response uses numeric field IDs without a field-label contract. It is not evidence for historical date alignment or a ZHB-to-Eastmoney mapping."
+    },
+    {
+      "source": "Eastmoney Push2EX getTopicZTPool",
+      "url": "https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=100&sort=fbt%3Aasc&date=20261104",
+      "accessed_at_date": "2026-11-06",
+      "access_time_captured": false,
+      "requested_trade_date": "2026-11-04",
+      "response": {
+        "rc": 0,
+        "qdate": 20261106,
+        "tc": 118,
+        "returned_pool_count": 100,
+        "sample_rows": [
+          {"code": "000679", "limit_count": 2, "zttj_days": 2, "zttj_ct": 2, "price_mills": 7280},
+          {"code": "002827", "limit_count": 3, "zttj_days": 3, "zttj_ct": 3, "price_mills": 68950},
+          {"code": "000096", "limit_count": 1, "zttj_days": 1, "zttj_ct": 1, "price_mills": 8460},
+          {"code": "002088", "limit_count": 2, "zttj_days": 4, "zttj_ct": 3, "price_mills": 9160},
+          {"code": "603598", "limit_count": 1, "zttj_days": 3, "zttj_ct": 2, "price_mills": 19690}
+        ]
+      },
+      "cross_check": "The five sampled limit_count/price values match the saved 2026-11-04 Push2EX date-aligned evidence rows. qdate is not treated as the pool's effective data date; the adapter does not preserve this outer metadata.",
+      "use": "Exploratory interface observation only. It does not define zttj.days/ct semantics or create a mapping."
+    },
+    {
+      "source": "Eastmoney Push2EX getYesterdayZTPool",
+      "url": "https://push2ex.eastmoney.com/getYesterdayZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=100&sort=fbt%3Aasc&date=20261104",
+      "accessed_at_date": "2026-11-06",
+      "access_time_captured": false,
+      "requested_trade_date": "2026-11-04",
+      "response": {"rc": 0, "qdate": 20261106, "tc": 48, "pool": []},
+      "use": "A separate endpoint and empty response; excluded from all field-semantic and historical date-alignment decisions."
+    }
+  ]
+}

@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-11-06",
+  "source": "TDX(双命名源)",
+  "scope": {
+    "retained_sample_start": "2026-10-15",
+    "dates_used": [
+      "T:20261016",
+      "T:20261019",
+      "T:20261020",
+      "T:20261021",
+      "T:20261023",
+      "T:20261026",
+      "T:20261028",
+      "T:20261029",
+      "T:20261030",
+      "T:20261102",
+      "T:20261103",
+      "T:20261104",
+      "T:20261105"
+    ],
+    "tdx_source_date_status": "date_unconfirmed",
+    "capture_phase_sample_20261105": "closed",
+    "capture_datetime_sample_20261105": "2026-11-05 20:07:42",
+    "capture_metadata_is_not_source_timestamp": true
+  },
+  "candidate_report": {
+    "path": "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+    "uncompressed_sha256": "6839b40353e817eeb080af6b14752536e448d0ead4956d17fbec35fd78d5d159",
+    "markdown_snapshot": "20261106/20261106_collision_report_second_pass_pre_tdx.md"
+  },
+  "findings": [
+    {
+      "identity": "TDX(双命名源)::price",
+      "runtime_path": "tdx.quote_raw.price",
+      "canonical": "price",
+      "meaning": "现价",
+      "unit": "元",
+      "candidate_evidence": [
+        {
+          "candidate_id": "cc1_b7b1fad96b0508181f33097bd3615395d893293cbdc7166a846fc2cec16d2282",
+          "left": "tdx.quote_raw.price",
+          "right": "sina[3]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        },
+        {
+          "candidate_id": "cc1_3c17e6dde7907ec98c0c29d83b597dedb3cccf77fe8139a8309bf66ca1d685f3",
+          "left": "tdx.quote_raw.price",
+          "right": "tencent[3]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        }
+      ],
+      "evidence_summary": {
+        "independent_anchor_sources": [
+          "新浪(hq.sinajs)",
+          "腾讯(qt.gtimg)"
+        ],
+        "each_source_pairs": 258,
+        "distinct_dates": 13,
+        "exact_pairs_per_anchor": 258,
+        "temporal_alignment": "date_unconfirmed",
+        "decision_scope": "source field semantics only; no cross-source mapping row"
+      }
+    },
+    {
+      "identity": "TDX(双命名源)::bid1",
+      "runtime_path": "tdx.quote_raw.bid1",
+      "canonical": "bid1",
+      "meaning": "买一价",
+      "unit": "元",
+      "candidate_evidence": [
+        {
+          "candidate_id": "cc1_7b94d2ce12c6252fbf88f0842b4fb4b7143f5c709036dd8f0f5480387d4a40b5",
+          "left": "tdx.quote_raw.bid1",
+          "right": "sina[6]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        },
+        {
+          "candidate_id": "cc1_7e0275c54baadb505728a7c574cfcad0138226315f470fd7d7f974afdffb4a6a",
+          "left": "tdx.quote_raw.bid1",
+          "right": "sina[11]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "duplicate_grouped"
+        },
+        {
+          "candidate_id": "cc1_150e1daf5a991848d3aff2eeaa8c9c53064622fbc15c8af9c28b25a8fd1bc3fe",
+          "left": "tdx.quote_raw.bid1",
+          "right": "tencent[9]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        }
+      ],
+      "evidence_summary": {
+        "independent_anchor_sources": [
+          "新浪(hq.sinajs)",
+          "腾讯(qt.gtimg)"
+        ],
+        "each_source_pairs": 258,
+        "distinct_dates": 13,
+        "exact_pairs_per_anchor": 258,
+        "temporal_alignment": "date_unconfirmed",
+        "decision_scope": "source field semantics only; no cross-source mapping row"
+      }
+    },
+    {
+      "identity": "TDX(双命名源)::ask1",
+      "runtime_path": "tdx.quote_raw.ask1",
+      "canonical": "ask1",
+      "meaning": "卖一价",
+      "unit": "元",
+      "candidate_evidence": [
+        {
+          "candidate_id": "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8",
+          "left": "tdx.quote_raw.ask1",
+          "right": "sina[7]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        },
+        {
+          "candidate_id": "cc1_ec451d50ed6a45dd6becb9609647709fdc5cbeeec52bd35284bdc2c8646ec530",
+          "left": "tdx.quote_raw.ask1",
+          "right": "sina[21]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "duplicate_grouped"
+        },
+        {
+          "candidate_id": "cc1_de81c90ff8d0b90cfa9bf30f834447c202d6019329f7db228d79761009ef17b2",
+          "left": "tdx.quote_raw.ask1",
+          "right": "tencent[19]",
+          "n_pairs": 258,
+          "n_days": 13,
+          "overall_hit": 1.0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105"
+          ],
+          "anchor_basis": "independent_source",
+          "source_independence_confirmed": true,
+          "left_date_status": "date_unconfirmed",
+          "right_date_status": "source_date_confirmed",
+          "disposition": "accepted_for_adjudication"
+        }
+      ],
+      "evidence_summary": {
+        "independent_anchor_sources": [
+          "新浪(hq.sinajs)",
+          "腾讯(qt.gtimg)"
+        ],
+        "each_source_pairs": 258,
+        "distinct_dates": 13,
+        "exact_pairs_per_anchor": 258,
+        "temporal_alignment": "date_unconfirmed",
+        "decision_scope": "source field semantics only; no cross-source mapping row"
+      }
+    }
+  ],
+  "duplicate_anchor_controls": [
+    {
+      "source_identity": "新浪(hq.sinajs)::[11]",
+      "duplicate_of": "新浪(hq.sinajs)::[6]",
+      "effect": "not counted as an independent anchor"
+    },
+    {
+      "source_identity": "新浪(hq.sinajs)::[21]",
+      "duplicate_of": "新浪(hq.sinajs)::[7]",
+      "effect": "not counted as an independent anchor"
+    }
+  ],
+  "other_exact_l4_price_candidates_not_used_as_primary_evidence": [
+    {
+      "candidate_id": "cc1_b301d4334736957657e5785dc3579b02b8fbd3122131f0711b3c0ecf68277ce1",
+      "right": "ftshare_rest.close",
+      "pairs": 218,
+      "dates": 11,
+      "source_independence_confirmed": false
+    },
+    {
+      "candidate_id": "cc1_8916aad1fc8870239dc1aceec69d4aca83c343ac569739c95fbfc360fb4bf495",
+      "right": "fuyao.snapshot.last_price",
+      "pairs": 238,
+      "dates": 12,
+      "source_independence_confirmed": true
+    },
+    {
+      "candidate_id": "cc1_f98b7f8b8be603455292cfcea5e7b22887477eea011cd82c2c7510de217bf7e2",
+      "right": "push2.f43",
+      "pairs": 132,
+      "dates": 8,
+      "source_independence_confirmed": true,
+      "both_source_dates_unconfirmed": true
+    },
+    {
+      "candidate_id": "cc1_45bdaceee327f2342c7b5d5e1d4984b3fca2ae9835a9ea26841a333a3082c60a",
+      "right": "push2.f179",
+      "pairs": 132,
+      "dates": 8,
+      "source_independence_confirmed": true,
+      "both_source_dates_unconfirmed": true
+    }
+  ],
+  "public_documentation": [
+    {
+      "url": "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+      "supports": "TDX get_security_quotes fields include price, bid1 and ask1; public third-party client documentation, not an official TDX vendor specification."
+    },
+    {
+      "url": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+      "supports": "TDX quote response identifies bid1/ask1 as first-level buy/sell prices; public third-party adapter documentation."
+    }
+  ],
+  "adjudication": {
+    "source_semantics": "verified",
+    "cross_source_same_day_mapping": "not_adjudicated",
+    "reason": "TDX snapshots contain no source as-of timestamp; all 258 candidate pairs per field remain date_unconfirmed/L4 under the project temporal policy.",
+    "mapping_rows_added": 0
+  }
+}

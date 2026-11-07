@@ -5,6 +5,7 @@ import pytest
 
 from scripts import apply_collision_adjudications as adjudication_module
 from scripts import collision_candidate_reviews as candidate_reviews
+from scripts import collision_adjudication_transformations as adjudication_transformations
 from scripts import collide
 from scripts.apply_collision_adjudications import (
     REPO_ROOT,
@@ -38,6 +39,16 @@ def test_decision_and_report_paths_use_the_documented_bases():
     assert (
         report_relative == "collision_research_20261005/verified_anchor_only/20261005/report.json"
     )
+
+
+def test_aggregate_projection_counts_null_status_resolution_as_unresolved():
+    registry, _, _, _ = _inputs()
+    registry["source_fields"][1]["status_resolution"] = None
+
+    adjudication_transformations._refresh_aggregate_projection(registry, {"unknown.value"})
+
+    assert registry["meta"]["source_field_stats"]["unresolved"] == 1
+    assert None not in registry["meta"]["source_field_stats"]
 
 
 def _inputs(action="verify"):

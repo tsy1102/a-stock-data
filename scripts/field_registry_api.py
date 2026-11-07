@@ -273,13 +273,6 @@ def build_aggregate_fields(source_records: List[dict]) -> List[dict]:
     return aggregates
 
 
-def field_records(reg: Optional[dict] = None) -> List[dict]:
-    """返回完整字段记录列表（含 canonical/meaning/unit/status/status_raw 等）。"""
-    if reg is None:
-        reg = load_registry()
-    return cast(List[dict], reg["fields"])
-
-
 def sources(reg: Optional[dict] = None) -> List[dict]:
     if reg is None:
         reg = load_registry()
@@ -290,15 +283,3 @@ def mappings(reg: Optional[dict] = None) -> List[dict]:
     if reg is None:
         reg = load_registry()
     return cast(List[dict], reg.get("mappings", []))
-
-
-def source_by_verify_file(verify_file: str, reg: Optional[dict] = None) -> Optional[dict]:
-    for s in sources(reg):
-        if s.get("verify_file") == verify_file:
-            return s
-    return None
-
-
-def source_name_by_verify_file(verify_file: str, reg: Optional[dict] = None) -> Optional[str]:
-    s = source_by_verify_file(verify_file, reg)
-    return s["name"] if s else None

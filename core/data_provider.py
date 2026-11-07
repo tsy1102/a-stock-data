@@ -27,7 +27,7 @@ from core._accessors import (  # noqa: F401
     get_streak_days as get_streak_days,
 )
 import math
-from datetime import date, datetime
+from datetime import datetime
 
 from core.stock_cache import (  # V15.2: 强化 valid_if
     cached,
@@ -2005,65 +2005,6 @@ def _should_use_zhb_for_realtime() -> bool:
     except Exception as _e:
         _debug_log(f"data_provider _should_use_zhb_for_realtime error: {_e}")
         return _get_market_status() != "trading"
-
-
-def _parse_zhb_date(zhb_date_str: Optional[str]) -> Optional[date]:
-    """V16.2: 统一解析 ZHB 日期（支持 YYYYMMDD 与 YYYY-MM-DD 两种格式）。"""
-    if not zhb_date_str:
-        return None
-    try:
-        s = str(zhb_date_str).strip()
-        if len(s) == 8 and s.isdigit():
-            return datetime.strptime(s, "%Y%m%d").date()
-        return datetime.strptime(s, "%Y-%m-%d").date()
-    except (ValueError, TypeError):
-        return None
-
-
-def _get_zhb_date_offset() -> int:
-    """计算 ZHB 数据日期相对当前有效行情日的交易日偏移。
-
-    返回值：
-      0 = ZHB 与当前有效行情日同日
-      1+ = ZHB 落后相应数量的交易日
-    """
-    try:
-        from stock_common import get_zhb_data_date
-        from stock_common.stock_calendar import trading_day_age
-
-        zhb_date_str = get_zhb_data_date()
-        zhb_date = _parse_zhb_date(zhb_date_str)
-        if zhb_date is None:
-            return 99
-        return max(0, trading_day_age(zhb_date, datetime.now()))
-    except Exception:
-        return 99
-
-
-def _get_trading_date_offset() -> int:
-    """计算ZHB数据日期相对于最新交易日的偏移量（ΔT）。
-
-    这是日期对齐器的核心函数。它比较的是：
-    - ZHB数据日期（T_zhb）
-    - API行情能够获取到的最新交易日期（T_quote）
-
-    交易日 9:30 前以最近已完成交易日为基准；9:30 起以当日为基准。
-    周末、法定休市日和周末调休补班日均不增加偏移。
-    """
-    try:
-        from stock_common import get_zhb_data_date
-        from stock_common.stock_calendar import latest_market_data_date, trading_days_between
-
-        zhb_date_str = get_zhb_data_date()
-        zhb_date = _parse_zhb_date(zhb_date_str)
-        if zhb_date is None:
-            return 99
-
-        now = datetime.now()
-        reference_date = latest_market_data_date(now)
-        return max(0, trading_days_between(zhb_date, reference_date))
-    except Exception:
-        return _get_zhb_date_offset()
 
 
 # ═══════════════════════════════════════════════════

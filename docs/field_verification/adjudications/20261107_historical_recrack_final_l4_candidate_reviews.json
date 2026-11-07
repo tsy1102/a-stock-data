@@ -1,0 +1,503 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_17873d1752d64882da49282668124b5d1c27751aac771b0bc52d44335691fda4",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "仅拒绝该候选的直接数值同义关系：两端都是整数计数，但历史日期对齐样本仍有非舍入差异；Push2EX limit_count 与 KPL col_15 已有独立的逐日精确对照，不能把 zt_days/zt_continuous 的相似命中率当成同一字段。本裁定不定义或否定 KPL 未知原始列的其他语义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_721c2cd0402eeb661b3619d6fbec7b6ce79ee97ac9c8844d6de1ff45150c1d28",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "仅拒绝该候选的直接数值同义关系：两端都是整数计数，但历史日期对齐样本仍有非舍入差异；Push2EX limit_count 与 KPL col_15 已有独立的逐日精确对照，不能把 zt_days/zt_continuous 的相似命中率当成同一字段。本裁定不定义或否定 KPL 未知原始列的其他语义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_820da24b7ac20747aa52016a50280d7f5389debce99c43db4cb6b8662c0a3dd0",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "仅拒绝该候选的直接数值同义关系：两端都是整数计数，但历史日期对齐样本仍有非舍入差异；Push2EX limit_count 与 KPL col_15 已有独立的逐日精确对照，不能把 zt_days/zt_continuous 的相似命中率当成同一字段。本裁定不定义或否定 KPL 未知原始列的其他语义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_f18ae0e18496f9ca59995689304a4f6cd6ba1fafb5d73abacf05821fb37a0ab6",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_13610c25db4ddebb727432f8e6f361b7b51305ff54908c5c87113860f019cb0f",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_99d65de92b4633f608cddfd22eb5e761be4f969759d58ef067e2b71dd1f3efe7",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_4a150d04f68cbde65bfab2aebf47d61755c255df2462eb8388844ade7a783407",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_28a631157e22f9619070f8823a0d0b7e5e1948f11b6771bf7f3fec8b5f57b752",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_201797fa43e1a578e8de58435088c092b0aebc2c6f1177dc0305375314046324",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_76d90fcf2da2be1d59f1670f5287a979df3bd29b83b28b504356238d08f81ca9",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "80 组样本中 57 组相等，但公开资料没有给出 Tencent[80] 的唯一字段标签，也没有同刻带标签的端点值。东财 f11 的公开反向资料提示其为短周期变化字段；当前只能保留候选，不能把相似数值写成跨源映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_844e1c71d5c8e74e640fc31ddb274f66af1f4bc37e0d247d9d7ba468f9195ddf",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_3b09d06cd0802abd5958f9e12673744481ce7ed3febf0e326702f29f9990f4fd",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_12ef2e2c8423a9389db53f4631f2dff0921e77a800dcd031604bbc652da4332a",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "保留为同类股息率字段的近似证据，不登记严格逐值等价：60 组/3 日中 42 组精确相同，另有差异超过普通显示舍入范围。两端都具有股息率语义的证据，但当前资料不足以确定计算期间、分母价格和刷新口径是否一致；因此不把近似差异当作完全无关，也不把相同值比例直接定为同义映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_cd4cbea8396838fe6f5b0441227b10584c64dabb5d5529ad1b68740be8780017",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_dc7df3ca42d269d102a2facfc51a25155a6cf972192460a7ac55a402c00a5a11",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_646ad708f55ca6458caf83edd71dbd48553c9c3294107a9fd0844095b2c004ae",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_ulist_market_flag_adjudication.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "拒绝直接同值映射：命中由两侧零值/零占位造成，信息性非零样本没有精确命中。右侧现已确认是市场标志；仅凭零值重合不能据此定义 Sina 字段。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_713941167bec55db32b1f90e59e9f4d496794f871766606fc6bd13d425805a6a",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_ulist_market_flag_adjudication.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "拒绝直接同值映射：命中由两侧零值/零占位造成，信息性非零样本没有精确命中。右侧现已确认是市场标志；仅凭零值重合不能据此定义 Sina 字段。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_f6cef99210528440de9e7012f852c6c1f4e8ca94b5dcc697c954e0e5dbb4fa2f",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_ulist_market_flag_adjudication.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "拒绝直接同值映射：f13/f27 已按来源证据确认是无单位的市场标志；other_qy_jzc 是财务金额字段。本次碰撞中的精确命中来自零值对零值，非零信息配对均不命中；不把零占位共现解释为字段语义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_a5969d5a5bba03caa7e4bf9334e600e768f66ddb6d9d3f4fbbc4b65a34a5c0a3",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_ulist_market_flag_adjudication.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "拒绝直接同值映射：f13/f27 已按来源证据确认是无单位的市场标志；other_qy_jzc 是财务金额字段。本次碰撞中的精确命中来自零值对零值，非零信息配对均不命中；不把零占位共现解释为字段语义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_30815de5e14a12ae06b23c6b45b31f60ba9ffbbfe1a103b20539455ac25cad85",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/20261107_historical_recrack_final_closeout.md"
+      ],
+      "rationale": "拒绝直接同值映射：Push2 f107/f110 的已登记含义是市场标志，ZHB other_qy_jzc 是财务项目金额；数值偶合不能跨越字段语义和单位差异。该裁定只针对这组精确数值关系。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b94c127056b254edd87a881bfa56ffda34414d862c0a651d419b0c7a72649ad4",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/20261107_historical_recrack_final_closeout.md"
+      ],
+      "rationale": "拒绝直接同值映射：Push2 f107/f110 的已登记含义是市场标志，ZHB other_qy_jzc 是财务项目金额；数值偶合不能跨越字段语义和单位差异。该裁定只针对这组精确数值关系。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_56b0ca5353b07027ea9ab3d39bc9d792e8278201556f5777f4457f7adc84664d",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "拒绝直接映射：Sina[32] 在该样本中是零占位；与 0/1 市场标志的约 56% 命中只反映市场标志为 0 的样本占比，当市场标志为 1 时全部失配，故不是信息性字段对应。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b12ce95120ee891750e1b75949c60cf60290a912cab149a8c809184ce58c4ecb",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "拒绝直接映射：Sina[32] 在该样本中是零占位；与 0/1 市场标志的约 56% 命中只反映市场标志为 0 的样本占比，当市场标志为 1 时全部失配，故不是信息性字段对应。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_915c0847c994e07eba6601cd025fb8fa8e1e48e2eb07953a1705519de247b895",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "保留待外部核验：东财 ulist239 f97 当前没有找到足以定案的接口字段定义；与财务值或另一个未知原始字段的中等命中率不能证明语义。需要先还原 f97 的字段契约，再决定这些候选是否有意义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_2714c03e611fdcfce0c57d5bc4e44c779f296672fbae79aa223cf7490c13f75a",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "保留待外部核验：东财 ulist239 f97 当前没有找到足以定案的接口字段定义；与财务值或另一个未知原始字段的中等命中率不能证明语义。需要先还原 f97 的字段契约，再决定这些候选是否有意义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_11e28cc7b8d0ea03e868ea34222a20e28514bf9de569bf77c8fd460cb9da8bb7",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "保留待外部核验：东财 ulist239 f97 当前没有找到足以定案的接口字段定义；与财务值或另一个未知原始字段的中等命中率不能证明语义。需要先还原 f97 的字段契约，再决定这些候选是否有意义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_27f847b3014f597a8b571f549be56fb4f371f56157969b0db6b95842d4f293ee",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "拒绝此处列出的直接数字映射：历史同股日期对齐样本存在大量整数计数不一致，不能由四舍五入或单位换算解释。裁定只否定 col_02/col_16 与已知涨停计数字段的这几组直接等值关系，不推断未知 KPL 列本身的含义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_366f1678d2d4c6327e3f71ee81feb57282100502453e09a6a844050e48d5ffc4",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "保留待外部核验：东财 ulist239 f97 当前没有找到足以定案的接口字段定义；与财务值或另一个未知原始字段的中等命中率不能证明语义。需要先还原 f97 的字段契约，再决定这些候选是否有意义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_83a5d29b9e94d086dedf9d4fa26d89d544bcc09e93dbc017f179a54efd266055",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "拒绝此处列出的直接数字映射：历史同股日期对齐样本存在大量整数计数不一致，不能由四舍五入或单位换算解释。裁定只否定 col_02/col_16 与已知涨停计数字段的这几组直接等值关系，不推断未知 KPL 列本身的含义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_f77e7b26d97f5c1b1fc26838d689c7896b51494ff990e9a96613edebf0a2f210",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "拒绝此处列出的直接数字映射：历史同股日期对齐样本存在大量整数计数不一致，不能由四舍五入或单位换算解释。裁定只否定 col_02/col_16 与已知涨停计数字段的这几组直接等值关系，不推断未知 KPL 列本身的含义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_42bb0b376d8203e71f40e53308925bbe454d833f59817ac8762c00ee466b9de6",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261106_push2ex_kpl_limit_count_mapping.json",
+        "adjudications/public_web/20261106_em_zt_continuous_kph_probe.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md"
+      ],
+      "rationale": "拒绝此处列出的直接数字映射：历史同股日期对齐样本存在大量整数计数不一致，不能由四舍五入或单位换算解释。裁定只否定 col_02/col_16 与已知涨停计数字段的这几组直接等值关系，不推断未知 KPL 列本身的含义。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_69cc239797a3be0e8ac4abf7284d1d63eb844d3cd05dec38da36f940e4802dae",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_0cd605a93cddf90795e015a5b3a95161f08622d9422629a8215230b9c4dd78e9",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_9ad369a0994ab72b202a2601ad56651265e31ab84f00c01646778d761265c4ee",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261107/market_flag_final_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "rationale": "保留为价格近似/异步候选，不定案为收盘价或其他报价字段：Sina extended 的 trade 来自资金流扩展端点，opendate 与采集目录日一致，但该记录没有可确认的逐条报价时间；历史样本与多个行情源的精确值并不稳定，偏差可达数元。Sina 帮助资料说明其相关行情/资金流统计有延迟与更新间隔，尚不足以证明该列是日收盘价。等待该接口字段的明确定义和有效时间语义；近似值另作证据，不建立严格逐值映射。",
+      "reviewed_at": "2026-11-07T11:33:44+08:00",
+      "reviewer": "Codex historical evidence review"
+    }
+  ]
+}

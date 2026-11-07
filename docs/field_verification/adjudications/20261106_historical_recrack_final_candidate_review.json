@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_aa705e3e795e5f9347ddb3b7e09a8382020420c3a52b49fbd504cefe862fcaa2",
+  "disposition": "rejected",
+  "reviewer": "Codex historical evidence review",
+  "reviewed_at": "2026-11-06T18:02:00+08:00",
+  "rationale": "拒绝将 ZHB full.high_52w 与 Push2 f174 写为逐值同义映射。按来源日期对齐的 3 日样本中 54/60 精确相等；6 个不等值集中为 000568 的 140.10/140.11（差 0.01 元）和 688553 的 17.20/17.23（差 0.03 元），且两种差值各跨 3 日重复。公开 Eastmoney 688553 数据显示 quote f174=17.23，未复权 K 线年度高点受复权口径影响达到 25.65，前复权 K 线年度最高为 17.22；这支持 52 周高点语义及来源/复权口径差异，但不能证明两个字段逐值等价。按近似证据保留语义线索，不新增精确映射。",
+  "evidence_refs": [
+    "20261106/historical_recrack_post_adjudication/20261106_collision_report.json",
+    "adjudications/public_web/20261106_em_high52_688553_probe.json",
+    "adjudications/public_web/20261106_em_high52_688553_adjusted_kline.json",
+    "adjudications/public_web/20261106_em_high52_probe.json"
+  ],
+  "duplicate_of": null
+}

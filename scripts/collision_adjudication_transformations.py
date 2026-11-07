@@ -134,8 +134,10 @@ def _refresh_aggregate_projection(registry: dict[str, Any], affected_codes: set[
     meta["updated"] = dt.date.today().isoformat()
     counts: Counter[str] = Counter()
     for record in source_fields:
-        counts[record.get("status", "unverified")] += 1
-        counts[record.get("status_resolution", "unresolved")] += 1
+        status = record.get("status")
+        resolution = record.get("status_resolution")
+        counts[status if isinstance(status, str) and status else "unverified"] += 1
+        counts[resolution if isinstance(resolution, str) and resolution else "unresolved"] += 1
     meta["source_field_stats"] = dict(sorted(counts.items()))
 
 

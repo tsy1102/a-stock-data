@@ -285,8 +285,8 @@ def normalize_status(raw: str) -> str:
 
 
 # 通用跨源对齐表(cross_source_align.md)的 id 解析：源前缀(短别名).字段 / 源前缀[索引]
-# -> (source短别名, code)；code 取 collide.code_of 形态(最后一个 '.' 之后 / '[索引]')，
-# 保证 collide.load_registry_state 能据 mappings 标 in_registry(durable 定案)。
+# -> (source短别名, code)；保留第一个分隔符之后的完整字段路径，供运行时统一层
+# 仅剥离已登记的包装路径，并让 KPL raw_columns.* 保持来源字段身份。
 _ALIGN_SRCS = {
     "fuyao",
     "tdx",
@@ -300,6 +300,7 @@ _ALIGN_SRCS = {
     "em_fund_flow",
     "event_dc",
     "push2ex",
+    "kpl",
     "em_hot",
     "exchange",
 }
@@ -313,10 +314,10 @@ def _parse_align_id(idstr: str):
     if "[" in s:  # tencent[52] / sina[8] -> ('tencent', '[52]')
         pre = s[: s.index("[")]
         return pre, s[s.index("[") :]
-    if "." in s:  # fuyao.snapshot.price_change -> ('fuyao', 'price_change')
-        # 源前缀=首个 '.' 之前(对齐 collide.alias_src); code=末个 '.' 之后(对齐 collide.code_of)
-        pre = s.split(".", 1)[0]
-        code = s.rsplit(".", 1)[-1]
+    if "." in s:
+        # 来源别名只占首段，其余全部是字段路径。运行时会按来源做路径归一化；
+        # 例如 zhb.full.amount → amount，而 kpl.raw_columns.col_15 保留完整路径。
+        pre, code = s.split(".", 1)
         return pre, code
     return None, None
 
@@ -767,7 +768,7 @@ def extract():
                 )
 
     # 通用跨源对齐（非 ulist239↔push2）：cross_source_align.md
-    # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/em_hot/exchange 任意源对的等价/同义关系，
+    # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/kpl/em_hot/exchange 任意源对的等价/同义关系，
     # 经 _parse_align_id 解析为 (源短别名, code)，collide 标 in_registry 后 durable 定案。
     if os.path.exists(CROSS_ALIGN):
         for ln in io.open(CROSS_ALIGN, encoding="utf-8").read().split("\n"):

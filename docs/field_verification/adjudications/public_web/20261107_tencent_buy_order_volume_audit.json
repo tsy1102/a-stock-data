@@ -1,0 +1,538 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tencent-buy-order-volume-semantics-20261107",
+  "observed_on": "2026-11-07",
+  "data_floor": "20261015",
+  "scope": {
+    "source_identity": "腾讯(qt.gtimg)",
+    "paths": [
+      {
+        "path": "[10]",
+        "meaning": "买1量",
+        "unit": "手"
+      },
+      {
+        "path": "[12]",
+        "meaning": "买2量",
+        "unit": "手"
+      },
+      {
+        "path": "[14]",
+        "meaning": "买3量",
+        "unit": "手"
+      },
+      {
+        "path": "[16]",
+        "meaning": "买4量",
+        "unit": "手"
+      },
+      {
+        "path": "[18]",
+        "meaning": "买5量",
+        "unit": "手"
+      }
+    ],
+    "temporal_class": "intraday_sensitive",
+    "excluded_from_this_round": [
+      "腾讯(qt.gtimg)::[20]",
+      "腾讯(qt.gtimg)::[22]",
+      "腾讯(qt.gtimg)::[24]",
+      "腾讯(qt.gtimg)::[26]",
+      "腾讯(qt.gtimg)::[28]"
+    ],
+    "scope_note": "五个买档路径单独核验；本次没有把卖档路径扩展进来。"
+  },
+  "collision_reports": {
+    "formal": {
+      "path": "20261107/user_recrack_formal_v2_20261107/20261107_collision_report.json",
+      "sha256": "96ede88c5a138cece795db360e4dcb19d93412ad66f182f231d2d0a626c98011",
+      "mode": "verified_anchor_only",
+      "completeness": "complete",
+      "target_count": 266,
+      "verified_identity_count": 865,
+      "anchor_identity_count": 780,
+      "method_candidate_inventory_count": 4362,
+      "L1": 0,
+      "L1_C": 0,
+      "L4": 48,
+      "trading_window": [
+        "20261015",
+        "20261016",
+        "20261019",
+        "20261020",
+        "20261021",
+        "20261022",
+        "20261023",
+        "20261026",
+        "20261028",
+        "20261029",
+        "20261030",
+        "20261102",
+        "20261103",
+        "20261104",
+        "20261105",
+        "20261106"
+      ]
+    },
+    "exploratory": {
+      "path": "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+      "sha256": "023cbf46e0c0d83f692ba332cd3a7315cd0df93a0dfc11d032070a3ba575cfcf",
+      "mode": "exploratory",
+      "completeness": "complete",
+      "target_count": 266,
+      "method_candidate_inventory_count": 5851,
+      "L1": 0,
+      "L1_C": 0,
+      "L4": 73,
+      "trading_window": [
+        "20261015",
+        "20261016",
+        "20261019",
+        "20261020",
+        "20261021",
+        "20261022",
+        "20261023",
+        "20261026",
+        "20261028",
+        "20261029",
+        "20261030",
+        "20261102",
+        "20261103",
+        "20261104",
+        "20261105",
+        "20261106"
+      ]
+    }
+  },
+  "retained_samples": {
+    "paired_sina_tencent_capture_dates": [
+      "20261015",
+      "20261016",
+      "20261019",
+      "20261020",
+      "20261021",
+      "20261023",
+      "20261026",
+      "20261028",
+      "20261029",
+      "20261030",
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261105"
+    ],
+    "date_count": 14,
+    "paired_quotes": 280,
+    "stocks_per_date": 20,
+    "missing_raw_capture_dates_within_report_window": [
+      "20261022",
+      "20261106"
+    ],
+    "file_provenance": [
+      {
+        "date": "20261015",
+        "tencent_path": "20261015/raw_tencent.json",
+        "tencent_sha256": "a1d498d7e2af4d72d8081858b0909c0b10b71e34ddf9799d92d8d52b164b28fc",
+        "tencent_stocks": 20,
+        "sina_path": "20261015/raw_sina.json",
+        "sina_sha256": "389333a856118947fbef6f24db63c172987a076554406576c928ed0e771ef3a3",
+        "sina_stocks": 20,
+        "tdx_path": "20261015/raw_tdx.json",
+        "tdx_sha256": "107c6d7bc2acdef7c880d1a349be7bd3eb2512a3420d667cddd9c114ef1cb2f9",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261015/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261016",
+        "tencent_path": "20261016/raw_tencent.json",
+        "tencent_sha256": "fd858d57ab8d4abdf9cce142070741bc54f40c6a7ff1a5206d4aeb20fcff3d26",
+        "tencent_stocks": 20,
+        "sina_path": "20261016/raw_sina.json",
+        "sina_sha256": "0966635667074ceeb9fa10eed0efaf3c831ad15e06e3c8aed7322e5d12aa5d71",
+        "sina_stocks": 20,
+        "tdx_path": "20261016/raw_tdx.json",
+        "tdx_sha256": "c6999f5e84fc1b32467d133a61332bc354d769a76bbec55448a1931b8501aa45",
+        "tdx_stocks": 20
+      },
+      {
+        "date": "20261019",
+        "tencent_path": "20261019/raw_tencent.json",
+        "tencent_sha256": "2c07e6525213f9773e20a003d6f042ef2052bec05a677cab3a7cfa9f0d4e23d7",
+        "tencent_stocks": 20,
+        "sina_path": "20261019/raw_sina.json",
+        "sina_sha256": "ce87ccfd70c677e58a333276ab610a08b1c42ed830cf72644f731d50d37a6a21",
+        "sina_stocks": 20,
+        "tdx_path": "20261019/raw_tdx.json",
+        "tdx_sha256": "a6efed7ab2f1faa421ea9aa6e1df7a913f71d13c20feba8c5514028b48124344",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261019/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261020",
+        "tencent_path": "20261020/raw_tencent.json",
+        "tencent_sha256": "b4dccc9dba8c78a0df485c4997a6979cd6ff46778c5454ec0e272fb9d7cfc501",
+        "tencent_stocks": 20,
+        "sina_path": "20261020/raw_sina.json",
+        "sina_sha256": "a55389da8d50c723c4b724cf4d80c1803799eb0ed1962d9ab1fe92f556658df2",
+        "sina_stocks": 20,
+        "tdx_path": "20261020/raw_tdx.json",
+        "tdx_sha256": "d9049d6a0d5f94e6812e161c4313d784877ecbc47198a5123b7a12e2f6d2729d",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261020/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261021",
+        "tencent_path": "20261021/raw_tencent.json",
+        "tencent_sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46",
+        "tencent_stocks": 20,
+        "sina_path": "20261021/raw_sina.json",
+        "sina_sha256": "de12ce2f0de87bdfc82fb8307aaa8cb5985aa9aa341b12f387904eedc2c871ad",
+        "sina_stocks": 20,
+        "tdx_path": "20261021/raw_tdx.json",
+        "tdx_sha256": "3f4dfcd0a4c4ba24ef004c802071851ddb1995e0cc6aa0e760cab349b1c190f2",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261021/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261023",
+        "tencent_path": "20261023/raw_tencent.json",
+        "tencent_sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de",
+        "tencent_stocks": 20,
+        "sina_path": "20261023/raw_sina.json",
+        "sina_sha256": "b475bfbed6f0e74146a28596e547123e9a22cac9187df8c1114d5baee99916ea",
+        "sina_stocks": 20,
+        "tdx_path": "20261023/raw_tdx.json",
+        "tdx_sha256": "18c7bc3f4eaf4212379164745112f9d60ca9082dbe587b96762b22fc80ec6c6f",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261023/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261026",
+        "tencent_path": "20261026/raw_tencent.json",
+        "tencent_sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9",
+        "tencent_stocks": 20,
+        "sina_path": "20261026/raw_sina.json",
+        "sina_sha256": "a5e18bff21af30dc488ff54ceba2c003a7c0f7b1282b4b668244d7f157c36d76",
+        "sina_stocks": 20,
+        "tdx_path": "20261026/raw_tdx.json",
+        "tdx_sha256": "213becbdbd164034f300254b1548ef08e13e7eb6cfa7f993caf08b79ac3362ca",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261026/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261028",
+        "tencent_path": "20261028/raw_tencent.json",
+        "tencent_sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752",
+        "tencent_stocks": 20,
+        "sina_path": "20261028/raw_sina.json",
+        "sina_sha256": "f16ac03d53598749e0088bd9c81c7560b13a3d63d1ffd884a287a0dc89a7350a",
+        "sina_stocks": 20,
+        "tdx_path": "20261028/raw_tdx.json",
+        "tdx_sha256": "103ad2ee8200858b0d8008739c3741b7f8c10565e2130b6f294cd0049c09a881",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261028/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261029",
+        "tencent_path": "20261029/raw_tencent.json",
+        "tencent_sha256": "06618e9b0f2138c809761891b76f0c842e24f0009723e923b57b96fbdb2ea80e",
+        "tencent_stocks": 20,
+        "sina_path": "20261029/raw_sina.json",
+        "sina_sha256": "4d3af3f661b2ba5884a98729da0393e420a120a30bb30a62201eb5582099ffad",
+        "sina_stocks": 20,
+        "tdx_path": "20261029/raw_tdx.json",
+        "tdx_sha256": "7f09d82de8c7dc0f87dd4a37092a9bd3197d2666f20ba56ba0632cfbeafb442a",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261029/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261030",
+        "tencent_path": "20261030/raw_tencent.json",
+        "tencent_sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990",
+        "tencent_stocks": 20,
+        "sina_path": "20261030/raw_sina.json",
+        "sina_sha256": "30608da7c14028e3a36a5b2e95b56ae1a6bd955877f9f04ca11edbf78161dfe9",
+        "sina_stocks": 20,
+        "tdx_path": "20261030/raw_tdx.json",
+        "tdx_sha256": "f62eee59dae5137d4740243b8ba55107ca8d6d3b3423c057133f25ae665d8910",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261030/raw_ulist239.json",
+        "ulist239_sha256": "8669f81aff9c728c48119ab2599a1aaab6e325390c3261f2ef876731d8f073fe",
+        "ulist239_stocks": 0
+      },
+      {
+        "date": "20261102",
+        "tencent_path": "20261102/raw_tencent.json",
+        "tencent_sha256": "21b882b75f0e6a5cd530878d16548f8e6509c039037ef7e605e23cefebde5ebf",
+        "tencent_stocks": 20,
+        "sina_path": "20261102/raw_sina.json",
+        "sina_sha256": "657e860dc68fcc6b24b0b7d26bde8616946995ff195cb1829ef44820eb442c30",
+        "sina_stocks": 20,
+        "tdx_path": "20261102/raw_tdx.json",
+        "tdx_sha256": "cdb103801b5e4399deaf8779d1612bb1eea96c27826fc6df086ed270a6b7ad7d",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261102/raw_ulist239.json",
+        "ulist239_sha256": "8df028edbcc2725edf0280d741e6b146dc777532dec2d7c368ea655431d22718",
+        "ulist239_stocks": 20
+      },
+      {
+        "date": "20261103",
+        "tencent_path": "20261103/raw_tencent.json",
+        "tencent_sha256": "61c9ada0a2ae0c3c36d03900d287159fae9e649bdb9b049cafda5f44873b3406",
+        "tencent_stocks": 20,
+        "sina_path": "20261103/raw_sina.json",
+        "sina_sha256": "1c5ebc16b47951e178a4272caaee9999c5643ae3ce5ca820a1e2d348939658ca",
+        "sina_stocks": 20,
+        "tdx_path": "20261103/raw_tdx.json",
+        "tdx_sha256": "d3b1686382b2dfa411d44de173a17e9d5ac4e1513ea85515ee05c661fbfdad38",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261103/raw_ulist239.json",
+        "ulist239_sha256": "ad26b1f24b3a74b95647ef97fa89e41284932fba38936c4a4746f331850ac034",
+        "ulist239_stocks": 20
+      },
+      {
+        "date": "20261104",
+        "tencent_path": "20261104/raw_tencent.json",
+        "tencent_sha256": "8878608f96a54f84ab24eef23cfcf1155213d9f1b2ade94ad4f547c4c91cec95",
+        "tencent_stocks": 20,
+        "sina_path": "20261104/raw_sina.json",
+        "sina_sha256": "87e745f5126e779ca7839311165c2c32e52e17bc1cfb607080ac3308b97093cf",
+        "sina_stocks": 20,
+        "tdx_path": "20261104/raw_tdx.json",
+        "tdx_sha256": "2e7faec88aacc557baf19d94a27683e678a1f2bcc4cd225bcb585ab2419c7913",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261104/raw_ulist239.json",
+        "ulist239_sha256": "a6e6706884616bc349f29440a9708026bab9f42f985a19639be4129050b3b79d",
+        "ulist239_stocks": 20
+      },
+      {
+        "date": "20261105",
+        "tencent_path": "20261105/raw_tencent.json",
+        "tencent_sha256": "1c99e35c190bb81ce7ef05264677bbe7e6fc18a499c5bbd0b43128c7bfb57d0f",
+        "tencent_stocks": 20,
+        "sina_path": "20261105/raw_sina.json",
+        "sina_sha256": "69474de5b98bf6fede8c8e9ad0c98121ff15ec77f2b475170db0033412d0c0de",
+        "sina_stocks": 20,
+        "tdx_path": "20261105/raw_tdx.json",
+        "tdx_sha256": "e9b4b8e46983b816387f2649a1a770d41771bc16683fc2097b8282c1f02ae5eb",
+        "tdx_stocks": 20,
+        "ulist239_path": "20261105/raw_ulist239.json",
+        "ulist239_sha256": "10a6f6eba28a406799ccf73d366482ce23913234da33020c752858ea9140cf68",
+        "ulist239_stocks": 20
+      }
+    ],
+    "sina_vs_tencent_timestamp_gap_seconds": {
+      "paired_timestamps": 280,
+      "min": 93,
+      "median": 2358,
+      "p90": 2400,
+      "max": 4500,
+      "pairs_within_60_seconds": 0
+    },
+    "same_level_sina_scaled_comparison": [
+      {
+        "path": "[10]",
+        "candidate_id_against_sina_same_level": "cc1_a60100bc3f520a21679d44ef5affc51452d084147c3e479abdf7870b53ce5cbd",
+        "historical_sina_nonzero_pairs": 277,
+        "historical_exact_after_multiplying_tencent_by_100": 159,
+        "historical_scaled_exact_rate": 0.574
+      },
+      {
+        "path": "[12]",
+        "candidate_id_against_sina_same_level": "cc1_f4598a8bc5c5d7476bf9ef091dca0a0f314fcb4d16d8f00b5bffe879a40a37af",
+        "historical_sina_nonzero_pairs": 278,
+        "historical_exact_after_multiplying_tencent_by_100": 228,
+        "historical_scaled_exact_rate": 0.8201
+      },
+      {
+        "path": "[14]",
+        "candidate_id_against_sina_same_level": "cc1_b0f0726a60e51ccf6f90bcc70e80ec07a80cabdfe95a962a583c017859dd3a43",
+        "historical_sina_nonzero_pairs": 278,
+        "historical_exact_after_multiplying_tencent_by_100": 227,
+        "historical_scaled_exact_rate": 0.8165
+      },
+      {
+        "path": "[16]",
+        "candidate_id_against_sina_same_level": "cc1_988f5edacc38dc9bbf4347aede62c7644c898ff9c0f702f60799add21917f640",
+        "historical_sina_nonzero_pairs": 277,
+        "historical_exact_after_multiplying_tencent_by_100": 239,
+        "historical_scaled_exact_rate": 0.8628
+      },
+      {
+        "path": "[18]",
+        "candidate_id_against_sina_same_level": "cc1_d57ce62c13c8b1bd15e9dc55103c4835159e8a7b5c678661e6919cdaa2cc976d",
+        "historical_sina_nonzero_pairs": 278,
+        "historical_exact_after_multiplying_tencent_by_100": 241,
+        "historical_scaled_exact_rate": 0.8669
+      }
+    ],
+    "candidate_context": {
+      "tencent_10_to_tdx_bid1_vol": {
+        "exact_pairs": 258,
+        "pairs": 258,
+        "dates": [
+          "20261016",
+          "20261019",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105"
+        ],
+        "stocks": 20,
+        "meaning": "same-level exact observations support the hand unit; no strict timestamp-independent mapping was registered"
+      },
+      "tencent_10_to_ulist239_f211": {
+        "exact_pairs": 80,
+        "pairs": 80,
+        "dates": [
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105"
+        ],
+        "stocks": 20,
+        "meaning": "historical same-date corroboration; Ulist source field metadata remains outside this five-path registration"
+      }
+    }
+  },
+  "public_observations": {
+    "observation_date": "2026-11-06",
+    "trading_status": "all three Eastmoney pages showed market closed",
+    "page_labels": "Eastmoney quote pages expose five bid levels; Tencent raw response contains alternating bid price/quantity slots at indices [9]-[18].",
+    "symbols": [
+      {
+        "code": "600519",
+        "eastmoney_url": "https://quote.eastmoney.com/sh600519.html",
+        "eastmoney_page_observed_at": "2026-11-06T16:11:39+08:00",
+        "tencent_url": "https://qt.gtimg.cn/q=sh600519",
+        "tencent_payload_as_of": "2026-11-06T16:14:58+08:00",
+        "eastmoney_visible_buy_quantities": [
+          2,
+          1,
+          1,
+          1,
+          5
+        ],
+        "tencent_indices_10_12_14_16_18": [
+          2,
+          1,
+          1,
+          1,
+          5
+        ]
+      },
+      {
+        "code": "688327",
+        "eastmoney_url": "https://quote.eastmoney.com/kcb/688327.html",
+        "eastmoney_page_observed_at": "2026-11-06T16:11:41+08:00",
+        "tencent_url": "https://qt.gtimg.cn/q=sh688327",
+        "tencent_payload_as_of": "2026-11-06T16:14:54+08:00",
+        "eastmoney_visible_buy_quantities": [
+          208,
+          393,
+          570,
+          153,
+          283
+        ],
+        "tencent_indices_10_12_14_16_18": [
+          208,
+          393,
+          570,
+          153,
+          283
+        ]
+      },
+      {
+        "code": "688553",
+        "eastmoney_url": "https://quote.eastmoney.com/kcb/688553.html",
+        "eastmoney_page_observed_at": "2026-11-06T16:11:33+08:00",
+        "tencent_url": "https://qt.gtimg.cn/q=sh688553",
+        "tencent_payload_as_of": "2026-11-06T16:14:37+08:00",
+        "eastmoney_visible_buy_quantities": [
+          50,
+          73,
+          231,
+          244,
+          131
+        ],
+        "tencent_indices_10_12_14_16_18": [
+          50,
+          73,
+          231,
+          244,
+          131
+        ]
+      }
+    ],
+    "matched_level_values": 15,
+    "total_level_values": 15,
+    "exact_match": true,
+    "provider_notes": "Eastmoney and Tencent snapshot timestamps differed by about three minutes; post-close observation supports field semantics, not a live synchronized historical mapping."
+  },
+  "decisions": [
+    {
+      "source_path": "腾讯(qt.gtimg)::[10]",
+      "meaning": "买1量",
+      "unit": "手",
+      "status": "verified",
+      "basis": "three post-close stocks, five buy levels, 15/15 direct value matches against Eastmoney quote pages; retained raw collision analysis supports the hand unit"
+    },
+    {
+      "source_path": "腾讯(qt.gtimg)::[12]",
+      "meaning": "买2量",
+      "unit": "手",
+      "status": "verified",
+      "basis": "three post-close stocks, five buy levels, 15/15 direct value matches against Eastmoney quote pages; retained raw collision analysis supports the hand unit"
+    },
+    {
+      "source_path": "腾讯(qt.gtimg)::[14]",
+      "meaning": "买3量",
+      "unit": "手",
+      "status": "verified",
+      "basis": "three post-close stocks, five buy levels, 15/15 direct value matches against Eastmoney quote pages; retained raw collision analysis supports the hand unit"
+    },
+    {
+      "source_path": "腾讯(qt.gtimg)::[16]",
+      "meaning": "买4量",
+      "unit": "手",
+      "status": "verified",
+      "basis": "three post-close stocks, five buy levels, 15/15 direct value matches against Eastmoney quote pages; retained raw collision analysis supports the hand unit"
+    },
+    {
+      "source_path": "腾讯(qt.gtimg)::[18]",
+      "meaning": "买5量",
+      "unit": "手",
+      "status": "verified",
+      "basis": "three post-close stocks, five buy levels, 15/15 direct value matches against Eastmoney quote pages; retained raw collision analysis supports the hand unit"
+    }
+  ],
+  "non_decisions": [
+    "No strict same-number mapping to Sina was added: Sina quantities are 股, Tencent quantities are 手, same-level comparisons are scaled but not fully exact, and timestamps are not aligned.",
+    "No strict mapping to Ulist f211 or the TDX order-book path was added; exact historical co-observations are corroboration, while source timestamp alignment and source-family independence are not established.",
+    "No sell-side Tencent quantity path was adjudicated in this batch.",
+    "No source independence claim is made."
+  ]
+}

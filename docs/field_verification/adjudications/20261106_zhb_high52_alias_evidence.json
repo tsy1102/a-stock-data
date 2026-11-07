@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "20261106-zhb-high52-full-alias",
+  "target": {
+    "source": "ZHB-tdxstat2",
+    "code": "high_52w"
+  },
+  "same_source_alias": {
+    "source": "ZHB-tdxstat2",
+    "code": "stat2.high_52w"
+  },
+  "decision": {
+    "status": "verified",
+    "canonical": "stat2.high_52w",
+    "meaning": "52周最高价；full.high_52w 是 stat2.high_52w 的直接合并别名。",
+    "unit": "元",
+    "status_resolution": "verified_by_empirical_addendum",
+    "evidence_level": "E3",
+    "evidence_basis": "empirical_source_field_semantics"
+  },
+  "parser_contract": [
+    {
+      "file": "core/zhb_client.py",
+      "lines": "1062-1063, 1123-1124",
+      "claim": "tdxstat2.cfg slot 17 is parsed as high_52w."
+    },
+    {
+      "file": "core/zhb_client.py",
+      "lines": "2212-2232",
+      "claim": "full_market_snapshot merges stat2 values directly into the full record."
+    },
+    {
+      "file": "core/zhb_client.py",
+      "lines": "2259-2265",
+      "claim": "get_high_52w returns stat2.high_52w directly."
+    }
+  ],
+  "historical_report": {
+    "path": "docs/field_verification/20261106/historical_recrack_followup_20261106/20261106_collision_report.json",
+    "sha256": "738d49c00d13df658754329c4868e9533e402e6bb7558751be1f589587ab670a"
+  },
+  "in_floor_sample_comparison": {
+    "sample_floor": "20261015",
+    "capture_directory_count": 13,
+    "distinct_source_dates": 10,
+    "comparison_count": 260,
+    "exact_match_count": 260,
+    "mismatch_count": 0,
+    "excluded_by_metadata_before_raw_read": [],
+    "directories": [
+      {
+        "capture_folder": "20261016",
+        "raw_zhb_date": "20261016",
+        "meta_as_of_date": "20261016",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "2151f93d7da5da1f88b12285c6fce71d11c73df21b1bd3a11503c8031f6fff64",
+        "meta_sha256": "7d4adb5550fa4a6bc9a51b3e88eadec0d072b87fe35bfeaf144e846b31132918"
+      },
+      {
+        "capture_folder": "20261019",
+        "raw_zhb_date": "20261016",
+        "meta_as_of_date": "20261016",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "2151f93d7da5da1f88b12285c6fce71d11c73df21b1bd3a11503c8031f6fff64",
+        "meta_sha256": "c27ee14b9ae41a52510bdf533863f60ce5880118418a995897b3f8990e431850"
+      },
+      {
+        "capture_folder": "20261020",
+        "raw_zhb_date": "20261019",
+        "meta_as_of_date": "20261019",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "4c3c61cfb7b7bce6bbe03c652906a755ddbf3d6c5bdd223bfd2c4a37d0cbdc18",
+        "meta_sha256": "e12d2b7395ba912fa621ad9afc356d36d2a8207df9057515edacfd489ef7962d"
+      },
+      {
+        "capture_folder": "20261021",
+        "raw_zhb_date": "20261020",
+        "meta_as_of_date": "20261020",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "2d30083671777a1758d8a1d3ddd3cd5d50c5f45e97d2a9d51e12f7aa0eb06226",
+        "meta_sha256": "a708b9fc57db23204914b1ca3334d28151676d4a5485f3ec1088c9d52090d56f"
+      },
+      {
+        "capture_folder": "20261023",
+        "raw_zhb_date": "20261023",
+        "meta_as_of_date": "20261023",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "3bf95a831d5a3f1e64e71d061a01f3df3490126bad9d256e32184c4bb10d2ad7",
+        "meta_sha256": "f1bf7e57dc0600220b554a04e40df6a83c10cd44123a691229587b594bcc6f7c"
+      },
+      {
+        "capture_folder": "20261026",
+        "raw_zhb_date": "20261023",
+        "meta_as_of_date": "20261023",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "3bf95a831d5a3f1e64e71d061a01f3df3490126bad9d256e32184c4bb10d2ad7",
+        "meta_sha256": "2c4a6f7c62ff6d7ef9cd00ea2d3b64eba80ca007fdabbe562df7a104c027d355"
+      },
+      {
+        "capture_folder": "20261028",
+        "raw_zhb_date": "20261027",
+        "meta_as_of_date": "20261027",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "79329814fef114650f5c804b151617c706cf6bf0b4d76f4b3c9b448fe9818132",
+        "meta_sha256": "89d97e3e6cbf132df725719f2a20cb71c400fb98abc826a2fd112922dc7eb145"
+      },
+      {
+        "capture_folder": "20261029",
+        "raw_zhb_date": "20261028",
+        "meta_as_of_date": "20261028",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "9e8aef8d9241eb557a17d974aadec659953c57f81f32ddac1cd3ef7c854f14d8",
+        "meta_sha256": "faa7863ec4e75e764c5c56850e181f815744f9ea44430e2f4768aa7f2d9e4002"
+      },
+      {
+        "capture_folder": "20261030",
+        "raw_zhb_date": "20261030",
+        "meta_as_of_date": "20261030",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "83f3775cf55945424e9be28e8d47d52a1e2448fdc5daaaf526939e6121a7ef33",
+        "meta_sha256": "d522ae4528286a616b15df0b3094dd40c08a71ff619466295e89f413c9e11f21"
+      },
+      {
+        "capture_folder": "20261102",
+        "raw_zhb_date": "20261030",
+        "meta_as_of_date": "20261030",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "bdcded220dca9d81c4c2013b404e6a32d531d8f1ad3dee8c5db44e5389275f6d",
+        "meta_sha256": "569955a6f0388bc0be8329d88d56f2d1d7aec366dbc3a12f79cd6619c6cd5b8b"
+      },
+      {
+        "capture_folder": "20261103",
+        "raw_zhb_date": "20261102",
+        "meta_as_of_date": "20261102",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "71d7be6c5c5e3bdfbbf7ffa9d554350a731e862949c7d454080141da1dd3c550",
+        "meta_sha256": "6dd7808d6d62454c1a78d0298dbd233920733d9ccf6ee04c3b5396a4f903452d"
+      },
+      {
+        "capture_folder": "20261104",
+        "raw_zhb_date": "20261103",
+        "meta_as_of_date": "20261103",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "6a6f42a1088df0b01075721efe7282c2443ac19fc4f4be3cf2842c013194c721",
+        "meta_sha256": "219e56df06512482208f262d30a6f79b7f5799bfaf8e5a3ab87c978668c50b45"
+      },
+      {
+        "capture_folder": "20261105",
+        "raw_zhb_date": "20261104",
+        "meta_as_of_date": "20261104",
+        "stock_pair_count": 20,
+        "exact_match_count": 20,
+        "mismatch_count": 0,
+        "raw_sha256": "2dca8c9c150288423a3dba7c2ff1fb68a2cc1d46361a6d7f1c5b93df882ebfc3",
+        "meta_sha256": "3530efbb830252640474890a991c2b4d63b7fddd4593f75a03914bd155536616"
+      }
+    ]
+  },
+  "date_floor_boundary": {
+    "floor": "20261015",
+    "excluded_sample_date": "20261014",
+    "report_diagnostic": "20261015/zhb: 来源有效交易日 20261014 不在本轮行情交易日窗口，快照跳过",
+    "excluded_from_this_evidence": true
+  },
+  "related_cross_source_candidates": [
+    {
+      "candidate_id": "cc1_aa705e3e795e5f9347ddb3b7e09a8382020420c3a52b49fbd504cefe862fcaa2",
+      "pair": [
+        "zhb.full.high_52w",
+        "push2.f174"
+      ],
+      "decision": "rejected_exact_mapping"
+    },
+    {
+      "candidate_id": "cc1_f4b80f5b49cd701dc4b1b07d450c23668325bee719aa15c7d9b77bf5563af777",
+      "pair": [
+        "zhb.full.high_52w",
+        "tencent[67]"
+      ],
+      "decision": "rejected_exact_mapping"
+    }
+  ],
+  "public_web_observation_file": "docs/field_verification/adjudications/public_web/20261106_historical_round2_observations.json",
+  "evidence_summary_file": "docs/field_verification/adjudications/20261106_historical_recrack_round2_supplement.md",
+  "mappings_added": 0
+}

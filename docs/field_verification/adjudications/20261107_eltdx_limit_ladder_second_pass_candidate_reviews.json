@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_06a1f180137870b6f06a3b4b0d7c6119579d62588bc5428edaaa603c890778bb",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.open_price 与 Tencent[9] 的直接映射。ELTDX 锁定版本将 open_price 定义为当前交易日开盘价；本项目已将 Tencent[9] 定义为买卖盘口价量序列。项目加载器对齐的 12 组中仅 1 组精确相等，最大相对差约 17.08%，高相关属于价格水平横截面信号，不足以证明相同字段。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_96960f2015cf57e65d9087c5852fb93b306b11c1ba6d5af6d2270d7c7140876d",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.pre_close 与 Tencent[9] 的直接映射。ELTDX 将 pre_close 定义为当前交易日涨跌幅基准价，Tencent[9] 是盘口价量序列；12 组历史配对 0 组精确相等，最大相对差约 16.67%。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_b3111946d8537836b5265f863871094a2afac76f6ae76d2409f02d18efc7a498",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.beta_60d 与 Tencent[76] 的直接映射。ELTDX beta_60d 是无量纲的 60 日 Beta；Tencent[76] 已登记为 A 股流通股本、单位股，12 组均非精确相等，相关性不改变量纲和业务定义。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_123c77dccc1391e7d58755d32d0b14566198759e1213f2a56abdd65fbcbf50b3",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.beta_60d 与 Tencent[73] 的直接映射。ELTDX beta_60d 是无量纲的 60 日 Beta；Tencent[73] 已登记为总股本、单位股，12 组均非精确相等。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_ae25675134409b3274a350de6d1cf3aba6d0dacd240af4e78e43250f30820dda",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.pe_ttm 与 Tencent[53] 的直接等值映射。ELTDX 字段为滚动市盈率，Tencent[53] 已登记为静态/年报 LYR 市盈率；12 组历史配对 0 组精确相等，计算期间不同。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_0eabd91e65760002f1881c5226a6f2a25d84f3b57c906aa9dde82ff6df6d28e9",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "ELTDX limit_ladder.pe_ttm 与 Tencent[39] 都被来源资料标为 TTM 市盈率，但项目加载器对齐的 12 组中仅 4 组精确相等，其余差异最大约 18.76%，远超舍入误差。保留为同类指标的未决数值关系；需要确认统计日期、利润口径和刷新时点，不新增严格映射，也不把它写成舍入近似证据。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_636769b8b9d37980ac2f6257e455f023fcbc701685ad2b9ce4750b685597846a",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T18:06:26+08:00",
+      "rationale": "仅拒绝 limit_ladder.ladder_level 与 Tencent[70] 的直接映射。ELTDX 将 ladder_level 定义为封板时的连续板数，单位板；Tencent[70] 已登记为 20 日涨跌幅、单位百分比。12 组历史值 0 组精确相等。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_alias_review/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_second_pass_adjudication.md",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

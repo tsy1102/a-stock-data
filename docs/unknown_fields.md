@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2561；日常来源路径 2417：unverified 1383、candidate 1、conflict 78、disproved 2；历史来源路径 144。
-> 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2603；日常来源路径 2459：unverified 1347、candidate 2、conflict 74、disproved 2；历史来源路径 144。
+> 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -15,21 +15,22 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1197 |
+| 含义栏为空/占位 | 1161 |
 | 含义栏有文本（仍未验证） | 186 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 453 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 416 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
+| `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
-| `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 792 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
+| `registry_status_only_single_source` | 788 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（78）
+## 一、状态冲突（禁止作为锚点，优先复核）（74）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -70,15 +71,11 @@
 | 东财-push2(stock/get) | `f138` | f138 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
 | 东财-push2(stock/get) | `f139` | f139 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
 | 东财-push2(stock/get) | `f149` | — | 待破解 | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）；12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
-| 东财-push2(stock/get) | `f59` | f59 | 涨跌幅 | % | 含义栏有文本（仍未验证） | reference_status_conflict | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；12.3.3 日K线 `stock/kline/get`（🆕 V17.0.14 新增——CYQ 筹码分布数据入口） |
 | 东财-ulist239(np/get) | `f135` | — | 净资产 | — | 含义栏有文本（仍未验证） | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f137` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f139` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f141` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f142` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f143` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f144` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f145` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f146` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_conflict | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -112,13 +109,14 @@
 | 新浪(扩展API) | `turnover` | turnover | 换手率% | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 | 腾讯(qt.gtimg) | `[86]` | — | 收盘集合竞价净未匹配手数(带符号)（L2 机制确认） | 手 | 含义栏有文本（仍未验证） | reference_status_conflict | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 
-## 二、候选字段（1）
+## 二、候选字段（2）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
+| 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1383）
+## 三、待破解字段（1347）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -238,8 +236,6 @@
 | TDX(双命名源) | `amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `amount_wan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `amplitude_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ask1` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `ask1_vol` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | TDX(双命名源) | `ask2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ask3` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ask4` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -248,8 +244,6 @@
 | TDX(双命名源) | `b_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `b_vol` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `baoliu2` | baoliu2 | 保留字段2 | - | 含义栏有文本（仍未验证） | matched | 2.1 协议完整 36 字段表（权威定义） |
-| TDX(双命名源) | `bid1` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `bid1_vol` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `bid2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `bid3` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `bid4` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -316,7 +310,6 @@
 | TDX(双命名源) | `peigu` | — | 每股配股比例（XDXR category=1） | 股/股 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `peigujia` | — | 配股价（XDXR category=1） | 元/股 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `pre_close` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `reserve2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `rise_speed` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -584,10 +577,8 @@
 | ZHB-tdxstat | `change_10k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_5k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d_alt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `change_pct_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `change_pct_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat | `change_ytd` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `dividend_yield` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -595,7 +586,6 @@
 | ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `market` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat | `pe_lyr` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `streak_days` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `unseal_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -605,14 +595,12 @@
 | ZHB-tdxstat2 | `[9]` | [9] | 待破解 | 手 | 含义栏为空/占位 | aggregate_status_scope_unresolved | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
 | ZHB-tdxstat2 | `amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat2 | `change_250k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `change_30k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `change_30k_bar_ref` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `change_mtd` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat2 | `high_52w` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `industry_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `ipo_price` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `main_net_buy_amount` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -779,13 +767,10 @@
 | 东财-push2(stock/get) | `f161` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f17` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f172` | f172 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
-| 东财-push2(stock/get) | `f174` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f176` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f178` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f18` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f19` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f191` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f192` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f199` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f2` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f216` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -804,7 +789,10 @@
 | 东财-push2(stock/get) | `f40` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f41` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f49` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f62` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| 东财-push2(stock/get) | `f53` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 东财-push2(stock/get) | `f54` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 东财-push2(stock/get) | `f56` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 东财-push2(stock/get) | `f61` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 东财-push2(stock/get) | `f63` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f64` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f65` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -827,17 +815,14 @@
 | 东财-push2(stock/get) | `f9` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `HHMMSS` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2ex | `broken_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-push2ex | `change_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `circulating_value` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2ex | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `first_limit_time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `last_limit_time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `limit_broken_pool` | — | — | — | 含义栏为空/占位 | status_missing | — |
-| 东财-push2ex | `limit_count` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `limit_down_pool` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2ex | `limit_up_pool` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 东财-push2ex | `name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2ex | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `sector` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `total_value` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2ex | `turnover_rate` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -866,8 +851,6 @@
 | 东财-ulist239(np/get) | `f126` | f126 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f127` | f127 | 委比 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f128` | f128 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f13` | f13 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f133` | f133 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f134` | f134 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f136` | — | — | — | 含义栏为空/占位 | matched | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f138` | — | — | — | 含义栏为空/占位 | matched | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -876,6 +859,8 @@
 | 东财-ulist239(np/get) | `f152` | f152 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f153` | f153 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f154` | f154 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
+| 东财-ulist239(np/get) | `f190` | f190 | — | — | 含义栏为空/占位 | manual_semantic_retraction | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
+| 东财-ulist239(np/get) | `f192` | f192 | — | — | 含义栏为空/占位 | manual_semantic_retraction | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f194` | f194 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f204` | f204 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f205` | f205 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -912,7 +897,6 @@
 | 东财-ulist239(np/get) | `f248` | f248 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f249` | f249 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f250` | f250 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f27` | f27 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f28` | f28 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f30` | f30 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f45` | f45 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -1421,20 +1405,12 @@
 | 开盘红(Levistock适配) | `themes` | themes | 题材 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
 | 开盘红(Levistock适配) | `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
 | 开盘红(Levistock适配) | `zt` | zt / dt | 涨停 / 跌停总数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| 新浪(hq.sinajs) | `[13]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[14]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[15]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[16]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[17]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[18]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[19]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[23]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[24]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[25]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[26]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[27]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[28]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 新浪(hq.sinajs) | `[29]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[32]` | [32] | 状态码 | - | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段） |
 | 新浪(hq.sinajs) | `[58]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[59]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -1462,23 +1438,9 @@
 | 百度(baidu) | `ma10avgprice` | ma5avgprice/ma10avgprice/ma20avgprice | 待破解 | — | 含义栏为空/占位 | matched | 12.8.16 百度股市通（K线带MA）❌→⏸️ |
 | 百度(baidu) | `ma20avgprice` | ma5avgprice/ma10avgprice/ma20avgprice | 待破解 | — | 含义栏为空/占位 | matched | 12.8.16 百度股市通（K线带MA）❌→⏸️ |
 | 百度(baidu) | `ma5avgprice` | ma5avgprice/ma10avgprice/ma20avgprice | 待破解 | — | 含义栏为空/占位 | matched | 12.8.16 百度股市通（K线带MA）❌→⏸️ |
-| 腾讯(qt.gtimg) | `[10]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[11]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[12]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[13]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[14]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[15]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[16]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[17]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[18]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[20]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[21]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 腾讯(qt.gtimg) | `[22]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[23]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 腾讯(qt.gtimg) | `[24]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[25]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 腾讯(qt.gtimg) | `[26]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 腾讯(qt.gtimg) | `[27]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 腾讯(qt.gtimg) | `[28]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 腾讯(qt.gtimg) | `[29]` | — | 最近逐笔成交 | - | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 | 腾讯(qt.gtimg) | `[55]` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

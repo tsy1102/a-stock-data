@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "historical-ulist-market-flag-alias-20261107",
+  "observed_on": "2026-11-07",
+  "data_floor": "20261015",
+  "scope": {
+    "source_identity": "东财-ulist239(np/get)",
+    "paths": [
+      "f13",
+      "f27"
+    ],
+    "population": "20 captured A-share securities including Shanghai, Shenzhen, and Beijing listings",
+    "historical_raw_policy": "No pre-2026-10-15 raw samples were read or replayed; older reports are cited only as historical research records."
+  },
+  "retained_samples": {
+    "dates": [
+      {
+        "date": "20261102",
+        "path": "20261102/raw_ulist239.json",
+        "sha256": "8df028edbcc2725edf0280d741e6b146dc777532dec2d7c368ea655431d22718",
+        "stocks": 20,
+        "exact_f13_f27": 20,
+        "coverage_by_exchange": {
+          "BJ": 2,
+          "SH": 8,
+          "SZ": 10
+        }
+      },
+      {
+        "date": "20261103",
+        "path": "20261103/raw_ulist239.json",
+        "sha256": "ad26b1f24b3a74b95647ef97fa89e41284932fba38936c4a4746f331850ac034",
+        "stocks": 20,
+        "exact_f13_f27": 20,
+        "coverage_by_exchange": {
+          "BJ": 2,
+          "SH": 8,
+          "SZ": 10
+        }
+      },
+      {
+        "date": "20261104",
+        "path": "20261104/raw_ulist239.json",
+        "sha256": "a6e6706884616bc349f29440a9708026bab9f42f985a19639be4129050b3b79d",
+        "stocks": 20,
+        "exact_f13_f27": 20,
+        "coverage_by_exchange": {
+          "BJ": 2,
+          "SH": 8,
+          "SZ": 10
+        }
+      },
+      {
+        "date": "20261105",
+        "path": "20261105/raw_ulist239.json",
+        "sha256": "10a6f6eba28a406799ccf73d366482ce23913234da33020c752858ea9140cf68",
+        "stocks": 20,
+        "exact_f13_f27": 20,
+        "coverage_by_exchange": {
+          "BJ": 2,
+          "SH": 8,
+          "SZ": 10
+        }
+      }
+    ],
+    "rows": 80,
+    "distinct_securities": 20,
+    "exact_f13_f27": 80,
+    "informative_distinct_values": {
+      "f13": [
+        0,
+        1
+      ],
+      "f27": [
+        0,
+        1
+      ]
+    },
+    "exchange_value_counts": [
+      {
+        "exchange_sample": "BJ",
+        "f13": "0",
+        "f27": "0",
+        "count": 8
+      },
+      {
+        "exchange_sample": "SH",
+        "f13": "1",
+        "f27": "1",
+        "count": 32
+      },
+      {
+        "exchange_sample": "SZ",
+        "f13": "0",
+        "f27": "0",
+        "count": 40
+      }
+    ],
+    "representative_beijing_securities": [
+      {
+        "code": "920118",
+        "date": "20261102",
+        "f13": 0,
+        "f27": 0
+      },
+      {
+        "code": "920508",
+        "date": "20261102",
+        "f13": 0,
+        "f27": 0
+      },
+      {
+        "code": "920118",
+        "date": "20261103",
+        "f13": 0,
+        "f27": 0
+      },
+      {
+        "code": "920508",
+        "date": "20261103",
+        "f13": 0,
+        "f27": 0
+      }
+    ]
+  },
+  "prior_research_records": [
+    {
+      "path": "field_source_reference.md",
+      "sha256": "a92fd9e39e0b7c49f0fbb347938c8d88e4db24c2cdf3c860b5be297856cfdef1",
+      "sections": [
+        "historical note on f107/f110 and Ulist f13/f27 alias",
+        "Ulist239 f13/f27 inventory"
+      ],
+      "use": "Conflict locator and historical research summary only; older raw samples were not re-read."
+    },
+    {
+      "path": "verify/ulist_push2_align.md",
+      "sha256": "ccd7f0ebb6c19e128bf8e97c07b28223877977b0bd12ced3bf5179f6a0e46668",
+      "use": "Prior alignment report documenting the historical f13/f27 alias conclusion; not used as a substitute for retained raw evidence."
+    }
+  ],
+  "public_evidence": [
+    {
+      "url": "https://github.com/wonchermaine960/eastmoney-cli/blob/main/docs/API.md",
+      "claim": "A public reverse-engineered Eastmoney API reference lists ulist/clist f13 as the market field.",
+      "authority_limit": "Third-party reverse-engineered documentation, not an official stable Eastmoney API contract."
+    },
+    {
+      "url": "https://www.bse.cn/disclosure/2026/2026-04-23/31dec88c9d0b4a98bbf737c45a0e99ea.pdf",
+      "claim": "Beijing Stock Exchange issuer filing identifies 920118 (Taihu Yuanda) as a security code.",
+      "authority_limit": "Exchange source confirms issuer/code, not Eastmoney field semantics."
+    },
+    {
+      "url": "https://quote.eastmoney.com/bj/920118.html?jump_to_web=true",
+      "claim": "Eastmoney quote route places 920118 under the bj market path.",
+      "authority_limit": "Page routing is corroborative public evidence, not a field schema contract."
+    }
+  ],
+  "decision": {
+    "f13": {
+      "status": "verified",
+      "meaning": "Eastmoney market marker; in the retained A-share universe, 1 identifies Shanghai and 0 identifies non-Shanghai listings (including sampled Shenzhen and Beijing securities)."
+    },
+    "f27": {
+      "status": "verified",
+      "meaning": "Same-source alias of the f13 market marker within the retained A-share universe; 80/80 retained observations are identical and nonconstant."
+    },
+    "cross_source_numeric_mapping": "No direct numeric mapping to Tencent[0] is registered. In the retained sample Eastmoney uses 1/0 while Tencent uses 1/51/62; the sources' code spaces differ and 0 collapses Shenzhen and Beijing in this sample.",
+    "temporal_class": "static_reference",
+    "confidence": "high for f13 market-marker semantics in the captured A-share universe; high for f13/f27 alias on the retained sample; no claim for other Eastmoney instrument classes or future protocol versions."
+  }
+}

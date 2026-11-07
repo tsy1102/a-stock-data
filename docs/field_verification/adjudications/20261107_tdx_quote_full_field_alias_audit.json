@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tdx-quote-full-volume-alias-to-raw-20261107",
+  "generated_at": "2026-11-07T17:29:05+08:00",
+  "scope": "Determine whether TDX quote_full bid1/ask1 volume paths are independent fields or normalized copies of quote_raw.",
+  "report": {
+    "path": "20261107/user_recrack_post_witness_formal/20261107_collision_report.json",
+    "sha256": "e78204c92bb939ab5db988c949feea588be560a5128c62ad58406dcd20d57e36",
+    "schema_version": 5,
+    "completeness": "complete",
+    "l1_count": 2,
+    "l4_count": 50
+  },
+  "capture_contract": {
+    "source_file": "scripts/capture_tcp_collectors.py",
+    "code_sha256": "7e69f091fc443e939407bf7abd7c77d8f7b307397d8759639902691b9a779083",
+    "lines": "54-75",
+    "observed_behavior": "The collector calls tdx_get_quote_raw(code), then computes quote_full by normalizing that same quote_raw object; it does not call the fallback-capable tdx_get_quote_full function for this captured path.",
+    "raw_accessor": {
+      "source_file": "core/tdx_client.py",
+      "code_sha256": "f0daab0fbef02abf232c6f5aa008dfa49ddd63142570d875e5caa041a47f7252",
+      "lines": "1659-1666",
+      "observed_behavior": "tdx_get_quote_raw is documented as TDX-adapter-only, with no ZHB/Tencent fallback or result cache."
+    }
+  },
+  "historical_value_checks": [
+    {
+      "field": "bid1_vol",
+      "runtime_paths": [
+        "tdx.quote_raw.bid1_vol",
+        "tdx.quote_full.bid1_vol",
+        "tencent[10]"
+      ],
+      "common_sample_pairs": 258,
+      "exact_numeric_matches": {
+        "quote_raw_vs_quote_full": 258,
+        "quote_raw_vs_tencent": 258,
+        "quote_full_vs_tencent": 258
+      },
+      "distinct_effective_dates": [
+        "20261016",
+        "20261019",
+        "20261020",
+        "20261021",
+        "20261023",
+        "20261026",
+        "20261028",
+        "20261029",
+        "20261030",
+        "20261102",
+        "20261103",
+        "20261104",
+        "20261105"
+      ],
+      "full_path_candidate_id": "cc1_12a859566e745b72aaf773b760fe8af444fe070f23b7bce21bdef858396437cf",
+      "representative_verified_mapping_candidate_id": "cc1_08e224f8be46e327952c064844e47b52b7401deeb5449655cf443b7467949d35"
+    },
+    {
+      "field": "ask1_vol",
+      "runtime_paths": [
+        "tdx.quote_raw.ask1_vol",
+        "tdx.quote_full.ask1_vol",
+        "tencent[20]"
+      ],
+      "common_sample_pairs": 258,
+      "exact_numeric_matches": {
+        "quote_raw_vs_quote_full": 258,
+        "quote_raw_vs_tencent": 258,
+        "quote_full_vs_tencent": 258
+      },
+      "distinct_effective_dates": [
+        "20261016",
+        "20261019",
+        "20261020",
+        "20261021",
+        "20261023",
+        "20261026",
+        "20261028",
+        "20261029",
+        "20261030",
+        "20261102",
+        "20261103",
+        "20261104",
+        "20261105"
+      ],
+      "full_path_candidate_id": "cc1_79f902a45659bbfcedbf31ad5b969208ef7504dce2c6780e231965a46d641089",
+      "representative_verified_mapping_candidate_id": "cc1_25f8e31ac61d33336d7f6bbacbdbaa543b4462f0692776f7a83778f974a7e724"
+    }
+  ],
+  "effective_date_count": 13,
+  "effective_dates": [
+    "20261016",
+    "20261019",
+    "20261020",
+    "20261021",
+    "20261023",
+    "20261026",
+    "20261028",
+    "20261029",
+    "20261030",
+    "20261102",
+    "20261103",
+    "20261104",
+    "20261105"
+  ],
+  "sample_files_sha256": {
+    "docs/field_verification/20261016/raw_tdx.json": "c6999f5e84fc1b32467d133a61332bc354d769a76bbec55448a1931b8501aa45",
+    "docs/field_verification/20261016/raw_tencent.json": "fd858d57ab8d4abdf9cce142070741bc54f40c6a7ff1a5206d4aeb20fcff3d26",
+    "docs/field_verification/20261019/raw_tdx.json": "a6efed7ab2f1faa421ea9aa6e1df7a913f71d13c20feba8c5514028b48124344",
+    "docs/field_verification/20261019/raw_tencent.json": "2c07e6525213f9773e20a003d6f042ef2052bec05a677cab3a7cfa9f0d4e23d7",
+    "docs/field_verification/20261020/raw_tdx.json": "d9049d6a0d5f94e6812e161c4313d784877ecbc47198a5123b7a12e2f6d2729d",
+    "docs/field_verification/20261020/raw_tencent.json": "b4dccc9dba8c78a0df485c4997a6979cd6ff46778c5454ec0e272fb9d7cfc501",
+    "docs/field_verification/20261021/raw_tdx.json": "3f4dfcd0a4c4ba24ef004c802071851ddb1995e0cc6aa0e760cab349b1c190f2",
+    "docs/field_verification/20261021/raw_tencent.json": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46",
+    "docs/field_verification/20261023/raw_tdx.json": "18c7bc3f4eaf4212379164745112f9d60ca9082dbe587b96762b22fc80ec6c6f",
+    "docs/field_verification/20261023/raw_tencent.json": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de",
+    "docs/field_verification/20261026/raw_tdx.json": "213becbdbd164034f300254b1548ef08e13e7eb6cfa7f993caf08b79ac3362ca",
+    "docs/field_verification/20261026/raw_tencent.json": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9",
+    "docs/field_verification/20261028/raw_tdx.json": "103ad2ee8200858b0d8008739c3741b7f8c10565e2130b6f294cd0049c09a881",
+    "docs/field_verification/20261028/raw_tencent.json": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752",
+    "docs/field_verification/20261029/raw_tdx.json": "7f09d82de8c7dc0f87dd4a37092a9bd3197d2666f20ba56ba0632cfbeafb442a",
+    "docs/field_verification/20261029/raw_tencent.json": "06618e9b0f2138c809761891b76f0c842e24f0009723e923b57b96fbdb2ea80e",
+    "docs/field_verification/20261030/raw_tdx.json": "f62eee59dae5137d4740243b8ba55107ca8d6d3b3423c057133f25ae665d8910",
+    "docs/field_verification/20261030/raw_tencent.json": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990",
+    "docs/field_verification/20261102/raw_tdx.json": "cdb103801b5e4399deaf8779d1612bb1eea96c27826fc6df086ed270a6b7ad7d",
+    "docs/field_verification/20261102/raw_tencent.json": "21b882b75f0e6a5cd530878d16548f8e6509c039037ef7e605e23cefebde5ebf",
+    "docs/field_verification/20261103/raw_tdx.json": "d3b1686382b2dfa411d44de173a17e9d5ac4e1513ea85515ee05c661fbfdad38",
+    "docs/field_verification/20261103/raw_tencent.json": "61c9ada0a2ae0c3c36d03900d287159fae9e649bdb9b049cafda5f44873b3406",
+    "docs/field_verification/20261104/raw_tdx.json": "2e7faec88aacc557baf19d94a27683e678a1f2bcc4cd225bcb585ab2419c7913",
+    "docs/field_verification/20261104/raw_tencent.json": "8878608f96a54f84ab24eef23cfcf1155213d9f1b2ade94ad4f547c4c91cec95",
+    "docs/field_verification/20261105/raw_tdx.json": "e9b4b8e46983b816387f2649a1a770d41771bc16683fc2097b8282c1f02ae5eb",
+    "docs/field_verification/20261105/raw_tencent.json": "1c99e35c190bb81ce7ef05264677bbe7e6fc18a499c5bbd0b43128c7bfb57d0f"
+  },
+  "decision": {
+    "disposition": "duplicate_grouped",
+    "reason": "quote_full bid1_vol and ask1_vol are same-record normalized copies of quote_raw fields. Each has 258/258 exact values against quote_raw and Tencent, while the representative quote_raw-to-Tencent relation already has separate confirmed source-date evidence and verified registry adjudication. The quote_full paths add no independent source or new semantic mapping; group them with the respective representative mappings.",
+    "does_not_change_registry": true
+  },
+  "public_evidence_refs": [
+    "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json",
+    "adjudications/public_web/20261107_tencent_sell_order_volume_audit.json"
+  ]
+}

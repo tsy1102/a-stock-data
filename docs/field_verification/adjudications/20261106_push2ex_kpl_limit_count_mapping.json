@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "20261106-push2ex-kpl-limit-count-mapping",
+  "status": "verified",
+  "relation": "same_number_same_meaning",
+  "from": {
+    "source": "东财-push2ex",
+    "code": "limit_count"
+  },
+  "to": {
+    "source": "开盘啦(kpl_limit_up_detail)",
+    "code": "raw_columns.col_15"
+  },
+  "canonical": "limit_up_streak_count",
+  "unit": "板",
+  "evidence": {
+    "file": "docs/field_verification/adjudications/20261106_push2ex_date_aligned_evidence.json",
+    "sha256": "a50bc977cd36a0eee5a66f6a045d45f05f5a011bb3b4ebf09f1d21a3f184a9eb",
+    "comparison_count": 271,
+    "exact_matches": 271,
+    "source_date_confirmed": true,
+    "trade_dates": [
+      "20261028",
+      "20261102",
+      "20261104"
+    ],
+    "historical_same_directory_comparison_count": 837,
+    "historical_same_directory_exact_matches": 837,
+    "historical_same_directory_source_dates_confirmed": false,
+    "excluded_next_day_requery": {
+      "query_date": "20261106",
+      "data_date": "20261105",
+      "overlap_count": 53,
+      "exact_matches": 48,
+      "included_as_positive_evidence": false,
+      "reason": "The adapter does not preserve response as-of metadata and the returned stock set/values conflicted with the retained same-date KPL sample."
+    }
+  },
+  "rationale": "The two verified source paths represent the same current continuous limit-up streak count, with identical units and untransformed integer values across 271 pairs on three explicitly requested dates aligned to the KPL trade_date. The historical same-directory 837/837 result is supporting evidence only because its Push2EX source date is unconfirmed. The inconsistent next-day requery is excluded."
+}

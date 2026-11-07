@@ -47,10 +47,6 @@ UNRES_RE = re.compile(r"具体语义待定|资金流细分小比率|待数值对
 TIERS = ["L1", "L2", "定案", "跨源", "官方命名", "fuyao锚", "变量名"]
 
 
-def strip_marker(s: str) -> str:
-    return re.sub(r"^[✅❌⏸️⚠️]\s*", "", s).strip()
-
-
 def marker_of(s: str) -> str:
     m = MARK_RE.match(s.strip())
     return m.group(0) if m else ""

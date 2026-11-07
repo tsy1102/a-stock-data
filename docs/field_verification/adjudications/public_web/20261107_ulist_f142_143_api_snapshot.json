@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-07T00:50:51+08:00",
+  "purpose": "Read-only public snapshot for field-path investigation; not a collection or historical mapping proof.",
+  "source": "Eastmoney public ulist.np/get endpoint",
+  "request_url": "https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=1.600519&fields=f12%2Cf14%2Cf2%2Cf142%2Cf143&ut=7eea3edcaed734bea9cbfc24409ed989",
+  "security": {
+    "secid": "1.600519",
+    "code": "600519",
+    "name": "贵州茅台"
+  },
+  "response_fields": {
+    "f2": 1453.0,
+    "f142": 1451.6,
+    "f143": 1453.01
+  },
+  "quote_page_check": {
+    "url": "https://quote.eastmoney.com/sh600519.html",
+    "http_status": 200,
+    "title": "贵州茅台(600519)_最新价格_行情_走势图—东方财富网",
+    "level2_labels_present": ["买一", "买二", "买三", "买四", "卖一", "卖二", "卖三"],
+    "server_rendered_level2_values": "-",
+    "saved_html_sha256": "49826fa8832da38399fc8a57ba869c7120297d938025bcd0381dc11ae758fc55"
+  },
+  "interpretation_limit": "The observation was made after the 2026-11-06 session, while the exchange was closed. It exposes numeric values but no field labels, and the server-rendered quote page had no level-2 values. It cannot distinguish adjacent bid/ask levels or establish a historical cross-source mapping."
+}

@@ -36,9 +36,6 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 | `collide.py`、`collision_dates.py`、`collision_rules.py`、`collision_candidate_reviews.py` | 共用日期归一化与快照择优；样本发现跳过 20261015 前的目录，`--window` 与 `--all` 均不能读入更早数据。行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。候选报告逐字段展示来源覆盖、候选缺口、按股票留出的区分点、受约束公式线索及正/负向校准统计；数值范围不重叠只作诊断，不过滤单位换算或仿射候选。完整方法候选保存在 JSON `method_candidate_inventory`，`report_completeness` 对账生成/保留数量和 Markdown Top-N 展示差额。schema 5 另为候选附稳定 ID 与人工处置状态；审阅状态写入 `collision_candidate_reviews.json`，候选审阅工具默认预览，只有 `--apply` 才追加记录。`accepted_for_adjudication` 是进入既有定案流程的前置条件，不会直接改主字典；重复成员保留到代表项的反向关系。机器完整性与人工审阅覆盖率分开统计。完整性不通过时不得据报告做无候选或定案结论。候选方法不改变 L1/L1-U 条件或主字典。盘中/未知阶段仅作候选，所有结果保留日期及来源证据。详见 `docs/field_verification/DAILY_RUNBOOK.md` 与 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
-| `crack_push2_status_codes_20260921.py` | Push2 状态码历史专题；旧样本已清理，入口会直接提示停用。 |
-| `crack_ulist_f88_95_20260921.py` | Ulist 高位字段历史专题；固定旧输出目录已过保留起点，入口会直接提示停用。 |
-| `crack_zhb_anchored_20260921.py` | 基于旧锚点的 ZHB 历史专题；旧样本已清理，入口会直接提示停用。 |
 
 采集启动行会显示 `--only` 中实际选择的源，未指定时显示“默认源集合”，并单独标明市场上下文是“启用”还是“跳过”。
 

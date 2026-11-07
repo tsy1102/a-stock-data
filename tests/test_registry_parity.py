@@ -210,7 +210,7 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1706/2324/348)" in output
+    assert "registry-core(1748/2366/348)" in output
     assert "parity[unverified-candidates]: PASS 237" in output
     assert "parity[adjudication-addenda]: PASS 8" in output
     assert "parity[capture-path-addenda]: PASS 2" in output
@@ -399,19 +399,39 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     registry = registry_parity.fra.load_registry()
     captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
 
-    assert len(captured) == 36
+    assert len(captured) == 39
     verified = [row for row in captured if row["status"] == "verified"]
-    assert [(row["source"], row["code"]) for row in verified] == [
-        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19")
+    assert {(row["source"], row["code"]) for row in verified} == {
+        ("TDX(双命名源)", "ask1_vol"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_15"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_21"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_22"),
+    }
+    ask1_vol_field = next(row for row in verified if row["code"] == "ask1_vol")
+    assert ask1_vol_field["canonical"] == "ask1_vol"
+    assert ask1_vol_field["meaning"] == "卖一量"
+    assert ask1_vol_field["unit"] == "手"
+    assert ask1_vol_field["status_resolution"] == "manual_collision_adjudication"
+    assert (
+        "historical-recrack-tdx-ask1-vol-20261107"
+        in ask1_vol_field["status_evidence"]["adjudication_ids"]
+    )
+    assert ask1_vol_field["capture_evidence"] == [
+        {
+            "file": "docs/field_verification/20261016/raw_tdx.json",
+            "path": "stocks.[*].quote_raw.ask1_vol",
+        }
     ]
-    assert verified[0]["status_resolution"] == "verified_by_empirical_addendum"
-    assert verified[0]["canonical"] == "sector_code"
-    assert verified[0]["status_evidence"]["evidence_file"] == (
+    sector_field = next(row for row in verified if row["code"] == "raw_columns.col_19")
+    assert sector_field["status_resolution"] == "verified_by_empirical_addendum"
+    assert sector_field["canonical"] == "sector_code"
+    assert sector_field["status_evidence"]["evidence_file"] == (
         "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md"
     )
 
     unverified = [row for row in captured if row["status"] == "unverified"]
-    assert len(unverified) == 35
+    assert len(unverified) == 34
     for row in unverified:
         assert row["status"] == "unverified"
         assert not row["canonical"]

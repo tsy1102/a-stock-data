@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_b7b1fad96b0508181f33097bd3615395d893293cbdc7166a846fc2cec16d2282",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::price 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_3c17e6dde7907ec98c0c29d83b597dedb3cccf77fe8139a8309bf66ca1d685f3",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::price 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_7b94d2ce12c6252fbf88f0842b4fb4b7143f5c709036dd8f0f5480387d4a40b5",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::bid1 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_7e0275c54baadb505728a7c574cfcad0138226315f470fd7d7f974afdffb4a6a",
+      "disposition": "duplicate_grouped",
+      "duplicate_of": "cc1_7b94d2ce12c6252fbf88f0842b4fb4b7143f5c709036dd8f0f5480387d4a40b5",
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "新浪该路径已由注册表登记为同响应内重复字段；保留重复关系，不作为第二个独立锚。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_150e1daf5a991848d3aff2eeaa8c9c53064622fbc15c8af9c28b25a8fd1bc3fe",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::bid1 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::ask1 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_ec451d50ed6a45dd6becb9609647709fdc5cbeeec52bd35284bdc2c8646ec530",
+      "disposition": "duplicate_grouped",
+      "duplicate_of": "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8",
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "新浪该路径已由注册表登记为同响应内重复字段；保留重复关系，不作为第二个独立锚。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_de81c90ff8d0b90cfa9bf30f834447c202d6019329f7db228d79761009ef17b2",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+        "adjudications/20261106_tdx_quote_semantics_evidence.json",
+        "https://github.com/jiangtaovan/tdxrs/blob/main/docs/public/API_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md"
+      ],
+      "rationale": "TDX(双命名源)::ask1 的来源字段语义由13个采集日、258组逐值相等样本及公开 TDX 客户端字段说明支持。TDX 源内时间戳缺失，候选仍为 L4；本审阅只支持来源字段语义，不裁定同日跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_a7d7ec1cf01b5879d64f4007377c3cf078e54d26ed554b67cfb5942f64793acc",
+      "disposition": "insufficient_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "10日199组虽完全一致，但报告标记来源独立性未确认，AxData 侧日期也未确认；不据此确认跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_42ea4266bcc86f0a4a4d768b5d02d1510398606810c99f3cfc32b710bdfbf40a",
+      "disposition": "insufficient_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "10日199组虽完全一致，但 AxData 与 FTShare 来源独立性未确认且 AxData 日期未确认；公开 Schema 不能证明这两个运行时路径同源独立。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_89025623173bfc76c93d3dbaf95c4ea2381c1e30c7278b225bd3c653779304d7",
+      "disposition": "insufficient_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "10日199组虽完全一致，但 AxData 与 FTShare 来源独立性未确认且 AxData 日期未确认；保留为旁证，不登记跨源映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_b301d4334736957657e5785dc3579b02b8fbd3122131f0711b3c0ecf68277ce1",
+      "disposition": "insufficient_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "11日218组精确命中，但报告未确认来源独立性，且 TDX 源内日期未确认；不据此建立日收盘映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_8916aad1fc8870239dc1aceec69d4aca83c343ac569739c95fbfc360fb4bf495",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "12日238组精确命中且来源独立性已确认；作为现价语义的补充证据，但 TDX 日期未确认，不能据此确认同日映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_f98b7f8b8be603455292cfcea5e7b22887477eea011cd82c2c7510de217bf7e2",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "8日132组精确命中；push2 f43 已在主字典定为现价，但两侧源内日期均未确认，因此仅作语义旁证，不作同日映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_45bdaceee327f2342c7b5d5e1d4984b3fca2ae9835a9ea26841a333a3082c60a",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "8日132组精确命中；push2 f179 已在主字典定为现价，但两侧源内日期均未确认，因此仅作语义旁证，不作同日映射。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "candidate_id": "cc1_9a5becd6eb208815ebe66201dd5b13573d237f7ecd7720b2e12f6e0cae4406be",
+      "disposition": "insufficient_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261106/20261106_second_pass_review_candidates.json",
+        "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz"
+      ],
+      "rationale": "5日86组精确命中，但 push2 源内日期未确认；ZHB 文件名仅能确认 ZHB 数据日期，不能替代 push2 的来源日期。",
+      "reviewed_at": "2026-11-06T14:05:55+08:00",
+      "reviewer": "Codex"
+    }
+  ]
+}

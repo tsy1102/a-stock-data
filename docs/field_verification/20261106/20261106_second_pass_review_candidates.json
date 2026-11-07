@@ -1,0 +1,1197 @@
+{
+  "schema_version": 5,
+  "artifact_type": "collision_candidate_review_evidence_extract",
+  "date": "20261106",
+  "collision_mode": "verified_anchor_only",
+  "candidate_review": {
+    "method_version": "collision-candidate-v2"
+  },
+  "source_report": {
+    "path": "20261106/20261106_collision_report_second_pass_pre_tdx.json.gz",
+    "uncompressed_sha256": "6839b40353e817eeb080af6b14752536e448d0ead4956d17fbec35fd78d5d159"
+  },
+  "L4": [
+    {
+      "left": "axdata.data.instrument_id",
+      "right": "ftshare_rest.symbol",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "official_contract",
+      "source_independence_confirmed": false,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 10,
+      "n_days": 10,
+      "n_pairs": 199,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 19,
+        "T:20261105": 20,
+        "T:20261102": 20,
+        "T:20261028": 20,
+        "T:20261103": 20,
+        "T:20261104": 20,
+        "T:20261020": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 199,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 199
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 200
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [],
+      "candidate_id": "cc1_a7d7ec1cf01b5879d64f4007377c3cf078e54d26ed554b67cfb5942f64793acc",
+      "review_disposition": "unreviewed"
+    },
+    {
+      "left": "axdata.data.open_price",
+      "right": "ftshare_rest.open",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "official_contract",
+      "source_independence_confirmed": false,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 10,
+      "n_days": 10,
+      "n_pairs": 199,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 19,
+        "T:20261105": 20,
+        "T:20261102": 20,
+        "T:20261028": 20,
+        "T:20261103": 20,
+        "T:20261104": 20,
+        "T:20261020": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 199,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 199
+          }
+        },
+        "right": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 200
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [],
+      "candidate_id": "cc1_42ea4266bcc86f0a4a4d768b5d02d1510398606810c99f3cfc32b710bdfbf40a",
+      "review_disposition": "unreviewed"
+    },
+    {
+      "left": "axdata.data.pre_close",
+      "right": "ftshare_rest.prev_close",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "official_contract",
+      "source_independence_confirmed": false,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 10,
+      "n_days": 10,
+      "n_pairs": 199,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 19,
+        "T:20261105": 20,
+        "T:20261102": 20,
+        "T:20261028": 20,
+        "T:20261103": 20,
+        "T:20261104": 20,
+        "T:20261020": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 199,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 199
+          }
+        },
+        "right": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 200
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [],
+      "candidate_id": "cc1_89025623173bfc76c93d3dbaf95c4ea2381c1e30c7278b225bd3c653779304d7",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261031",
+        "last_seen": "20261031",
+        "prior_observation_count": 1,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "ftshare_rest.close",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "official_contract",
+      "source_independence_confirmed": false,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 11,
+      "n_days": 11,
+      "n_pairs": 218,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261105": 19,
+        "T:20261102": 20,
+        "T:20261028": 20,
+        "T:20261103": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 218,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 218
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "tdx"
+      ],
+      "candidate_id": "cc1_b301d4334736957657e5785dc3579b02b8fbd3122131f0711b3c0ecf68277ce1",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261031",
+        "last_seen": "20261031",
+        "prior_observation_count": 1,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "fuyao.snapshot.last_price",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 12,
+      "n_days": 12,
+      "n_pairs": 238,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261016": 20,
+        "T:20261030": 20,
+        "T:20261105": 19,
+        "T:20261102": 20,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 238,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 238
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 240
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "candidate_id": "cc1_8916aad1fc8870239dc1aceec69d4aca83c343ac569739c95fbfc360fb4bf495",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "push2.f43",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 8,
+      "n_days": 8,
+      "n_pairs": 132,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261026",
+        "T:20261029",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261105": 19,
+        "T:20261102": 20,
+        "T:20261103": 20,
+        "T:20261104": 19,
+        "T:20261026": 14,
+        "T:20261020": 12,
+        "T:20261023": 14,
+        "T:20261029": 14
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 132,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 158
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 134
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "candidate_id": "cc1_f98b7f8b8be603455292cfcea5e7b22887477eea011cd82c2c7510de217bf7e2",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261031",
+        "last_seen": "20261031",
+        "prior_observation_count": 1,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "push2.f179",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 8,
+      "n_days": 8,
+      "n_pairs": 132,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261026",
+        "T:20261029",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261105": 19,
+        "T:20261102": 20,
+        "T:20261103": 20,
+        "T:20261104": 19,
+        "T:20261026": 14,
+        "T:20261020": 12,
+        "T:20261023": 14,
+        "T:20261029": 14
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 132,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 158
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 134
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "candidate_id": "cc1_45bdaceee327f2342c7b5d5e1d4984b3fca2ae9835a9ea26841a333a3082c60a",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261031",
+        "last_seen": "20261031",
+        "prior_observation_count": 1,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "sina[3]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "candidate_id": "cc1_b7b1fad96b0508181f33097bd3615395d893293cbdc7166a846fc2cec16d2282",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.price",
+      "right": "tencent[3]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "candidate_id": "cc1_3c17e6dde7907ec98c0c29d83b597dedb3cccf77fe8139a8309bf66ca1d685f3",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.bid1",
+      "right": "sina[6]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "candidate_id": "cc1_7b94d2ce12c6252fbf88f0842b4fb4b7143f5c709036dd8f0f5480387d4a40b5",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.bid1",
+      "right": "sina[11]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "candidate_id": "cc1_7e0275c54baadb505728a7c574cfcad0138226315f470fd7d7f974afdffb4a6a",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.bid1",
+      "right": "tencent[9]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "candidate_id": "cc1_150e1daf5a991848d3aff2eeaa8c9c53064622fbc15c8af9c28b25a8fd1bc3fe",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.ask1",
+      "right": "sina[7]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "candidate_id": "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.ask1",
+      "right": "sina[21]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "candidate_id": "cc1_ec451d50ed6a45dd6becb9609647709fdc5cbeeec52bd35284bdc2c8646ec530",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "tdx.quote_raw.ask1",
+      "right": "tencent[19]",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 13,
+      "n_days": 13,
+      "n_pairs": 258,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "daily_sample_counts": {
+        "T:20261030": 20,
+        "T:20261026": 20,
+        "T:20261016": 20,
+        "T:20261105": 19,
+        "T:20261103": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 19,
+        "T:20261021": 20,
+        "T:20261020": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261029": 20
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 258,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 258
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 260
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "candidate_id": "cc1_de81c90ff8d0b90cfa9bf30f834447c202d6019329f7db228d79761009ef17b2",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261018",
+        "last_seen": "20261031",
+        "prior_observation_count": 2,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    },
+    {
+      "left": "zhb.full.change_pct",
+      "right": "push2.f170",
+      "level": "L4",
+      "statistical_level": "L4",
+      "ratio": null,
+      "anchor_basis": "independent_source",
+      "source_independence_confirmed": true,
+      "overall_hit": 1.0,
+      "days_ge_threshold": 5,
+      "n_days": 5,
+      "n_pairs": 86,
+      "n_informative_pairs": null,
+      "distinct_days": [
+        "T:20261020",
+        "T:20261023",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104"
+      ],
+      "daily_sample_counts": {
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261103": 20,
+        "T:20261020": 12,
+        "T:20261023": 14
+      },
+      "daily_informative_sample_counts": {},
+      "daily_informative_hit_counts": {},
+      "excluded_intraday_pairs": 0,
+      "excluded_unknown_phase_pairs": 0,
+      "excluded_unconfirmed_date_pairs": 86,
+      "temporal_evidence": {
+        "alignment_status": "date_unconfirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "date_unconfirmed",
+          "date_origin_counts": {
+            "meta_data_date": 86
+          }
+        }
+      },
+      "same_code": false,
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "candidate_id": "cc1_9a5becd6eb208815ebe66201dd5b13573d237f7ecd7720b2e12f6e0cae4406be",
+      "review_disposition": "unreviewed",
+      "research_history": {
+        "first_seen": "20261011",
+        "last_seen": "20261031",
+        "prior_observation_count": 8,
+        "latest_report": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json"
+      }
+    }
+  ]
+}

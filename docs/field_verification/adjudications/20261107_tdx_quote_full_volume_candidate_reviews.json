@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_12a859566e745b72aaf773b760fe8af444fe070f23b7bce21bdef858396437cf",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T17:29:10+08:00",
+      "rationale": "将 tdx.quote_full.bid1_vol 与其代表候选 tdx.quote_raw.bid1_vol ↔ tencent[10] 归为同一证据组。采集器从无回退 TDX quote_raw 生成 quote_full 规范副本；13 个有效日期、258 组中 quote_raw↔quote_full、quote_raw↔Tencent 和 quote_full↔Tencent 均为 258/258 精确一致。该路径不增加独立来源或新的字段映射；现有 quote_raw 买一量定案保持唯一代表。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_witness_formal/20261107_collision_report.json",
+        "adjudications/20261107_tdx_quote_full_field_alias_audit.json"
+      ],
+      "duplicate_of": "cc1_08e224f8be46e327952c064844e47b52b7401deeb5449655cf443b7467949d35"
+    },
+    {
+      "candidate_id": "cc1_79f902a45659bbfcedbf31ad5b969208ef7504dce2c6780e231965a46d641089",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T17:29:10+08:00",
+      "rationale": "将 tdx.quote_full.ask1_vol 与其代表候选 tdx.quote_raw.ask1_vol ↔ tencent[20] 归为同一证据组。采集器从无回退 TDX quote_raw 生成 quote_full 规范副本；13 个有效日期、258 组中 quote_raw↔quote_full、quote_raw↔Tencent 和 quote_full↔Tencent 均为 258/258 精确一致。该路径不增加独立来源或新的字段映射；现有 quote_raw 卖一量定案保持唯一代表。",
+      "evidence_refs": [
+        "20261107/user_recrack_post_witness_formal/20261107_collision_report.json",
+        "adjudications/20261107_tdx_quote_full_field_alias_audit.json"
+      ],
+      "duplicate_of": "cc1_25f8e31ac61d33336d7f6bbacbdbaa543b4462f0692776f7a83778f974a7e724"
+    }
+  ]
+}

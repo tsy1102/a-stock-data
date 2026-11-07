@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_0de265e38f1f45f0dadf4d1a4dc10ee99c23b932a2c54ce93f9a6e93fd9f7ccf",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T21:22:35+08:00",
+      "rationale": "拒绝 ZHB change_ytd 与 Tencent[62] 的精确同值映射：来源日期对齐 180 组虽有 131 组精确相等，但差值最大 0.12 个百分点，重复差异超过显示舍入边界。确认 ZHB 源内为年初至今涨跌幅；与前复权参照口径不完全相同。",
+      "evidence_refs": [
+        "20261106/historical_recrack_final_20261106/20261106_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/public_web/20261106_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_c9cf32fd0b7f012c2d87c6c3c12bd48e3c34b4f0b50f00867d8ae40d646c805d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T21:22:35+08:00",
+      "rationale": "拒绝 ZHB change_250k_bar 与 Tencent[79] 的精确同值映射：180 组中仅 123 组精确相等，最大差 0.15 个百分点。历史协议与多日参照支持滚动 250 根日 K 线涨跌幅语义，但复权与窗口端点未证明一致。",
+      "evidence_refs": [
+        "20261106/historical_recrack_final_20261106/20261106_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/public_web/20261106_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_395b8be0bd97d482334bf27688824894d416b3e3d3189f9e0d844e9ec2a7cd0d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T21:22:35+08:00",
+      "rationale": "拒绝 ZHB dividend_yield 与 Tencent[64] 的精确同义映射：180 组中 137 组精确相等，发行人样本显示股息口径会随已实施的年度/中期分红及预案状态变化。数值高度相关不足以证明统一 TTM 或 LFY 基数。",
+      "evidence_refs": [
+        "20261106/historical_recrack_final_20261106/20261106_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/public_web/20261106_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_2788dd3cf2f57ead8f2bcd33eb6525035d70adccad23ec236e0827cfc9ba7515",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T21:22:35+08:00",
+      "rationale": "拒绝 Ulist239 f133 与 ZHB stat.dividend_yield 的精确同值映射：60 组中 42 组相等，反例与股息基数/有效分红周期差异相容。Ulist f133 的来源内股息率语义另按三个发行人和公开分红公告定案。",
+      "evidence_refs": [
+        "20261106/historical_recrack_final_20261106/20261106_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/public_web/20261106_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_a547e4dcc4ccb03e2784db02af2a51977045a5f155af547d6ae5d98d73885e92",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T21:22:35+08:00",
+      "rationale": "拒绝 Ulist239 f133 与 Tencent[64] 的精确同义映射：80 组中 44 组相等。三家公司公开分红公告与历史值共同显示，本批 f133 更接近最近已实施完整年度分红/价格，而 Tencent[64] 的 TTM 还包含窗口内中期分红；不将近似趋势写成精确映射。",
+      "evidence_refs": [
+        "20261106/historical_recrack_final_20261106/20261106_collision_report.json",
+        "adjudications/20261106_historical_recrack_semantic_adjudication.md",
+        "adjudications/public_web/20261106_public_web_research.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_4622338e22a3c05a1b9bff2d7e9d6af9f012fbf229212e3e002c3bfe64924b26",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T14:04:18+08:00",
+      "rationale": "tdx.quote_raw.bid1_vol 与腾讯 [10] 在 13 个报告日、258 组样本中 258/258 数值相等；但报告明确将 258 组全部排除在已确认数据日期之外，TDX 记录只有目录/元数据日期，缺少逐字段 source_as_of。保留为需外部/逐字段时间证据补充的候选，不更新 TDX 字典或跨源映射。",
+      "evidence_refs": [
+        "20261107/user_recrack_formal_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_12a859566e745b72aaf773b760fe8af444fe070f23b7bce21bdef858396437cf",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T14:04:18+08:00",
+      "rationale": "tdx.quote_full.bid1_vol 与腾讯 [10] 在 13 个报告日、258 组样本中 258/258 数值相等；但报告明确将 258 组全部排除在已确认数据日期之外，TDX 记录只有目录/元数据日期，缺少逐字段 source_as_of。此外 core/tdx_client.py 的 quote_full 构建路径可用腾讯 HTTP 填充缺失字段，而当前捕获未保存该字段逐样本来源；因此这个 1:1 关系不能作为独立来源证据。保留为需外部/逐字段时间证据补充的候选，不更新 TDX 字典或跨源映射。",
+      "evidence_refs": [
+        "20261107/user_recrack_formal_final_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

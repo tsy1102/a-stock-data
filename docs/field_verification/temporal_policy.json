@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "2026-11-01",
+  "policy_version": "2026-11-07-cross-source-value-witness",
   "default_class": "unclassified",
   "classes": {
     "intraday_sensitive": "盘中或每日变化的敏感行情字段；L1 必须有明确来源日期且样本阶段已收盘。",
@@ -11,6 +11,244 @@
     "unclassified": "没有逐源分类的保守默认值；L1 必须有明确来源日期。"
   },
   "entries": [
+    {
+      "source": "AxData",
+      "code": "data.auction_prev_volume_ratio",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.exchange",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "AxData 接口契约定义的证券标识字段；稳定性不证明实时行情新鲜度。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.float_market_value",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.float_shares",
+      "class": "slow_changing",
+      "registry_status": "verified",
+      "reason": "普通/自由流通股本为低频变化字段；跨日可核对语义，不能据此认定逐日精确相同。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.free_float_market_value",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.free_float_shares",
+      "class": "slow_changing",
+      "registry_status": "verified",
+      "reason": "普通/自由流通股本为低频变化字段；跨日可核对语义，不能据此认定逐日精确相同。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.instrument_id",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "AxData 接口契约定义的证券标识字段；稳定性不证明实时行情新鲜度。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_board_text",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_stat_days",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_up_count_in_stat_days",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_up_streak_days",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_change_pct",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_prev_amount_ratio",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_prev_seal_ratio",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_price",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_turnover_z",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_volume_hand",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_volume_ratio",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.opening_rush",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.pre_close",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev2_seal_amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_open_amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_open_volume_hand",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_seal_amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_amount",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_prev_ratio",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_to_amount_ratio",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_to_float_ratio",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "依赖实时快照、当前价格或当前封单的字段；接口未为每个字段提供独立有效时点，不能仅凭采集时间定案。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.stats_date",
+      "class": "periodic_or_event",
+      "registry_status": "verified",
+      "reason": "历史统计分母日期字段；它只表示统计基准，不替代本条行情数据的有效日期。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.symbol",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "AxData 接口契约定义的证券标识字段；稳定性不证明实时行情新鲜度。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.tdx_code",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "AxData 接口契约定义的证券标识字段；稳定性不证明实时行情新鲜度。"
+    },
+    {
+      "source": "AxData",
+      "code": "data.year_limit_up_days",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "按当前交易日形成的开盘、前日或连板统计字段；接口未为每个字段提供独立有效日，不能用目录日期冒充来源日期。"
+    },
     {
       "source": "FTShare REST",
       "code": "high",
@@ -96,11 +334,272 @@
       "reason": "逐源注册表已确认开盘价，随交易日变化。"
     },
     {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.float_market_value",
+      "class": "daily_market",
+      "reason": "由实时价格和普通流通股本计算，每个交易日变化；日频比较需要对齐目标交易日。"
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.float_shares",
+      "class": "slow_changing",
+      "reason": "取 TDX 财务快照普通流通股本，随财务更新或公司股本事项变化，属于慢变字段。"
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.free_float_market_value",
+      "class": "daily_market",
+      "reason": "由实时价格和自由流通股本计算，每个交易日变化；日频比较需要对齐目标交易日。"
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.free_float_shares",
+      "class": "slow_changing",
+      "reason": "取 TDX 自由流通口径统计值，受财务/统计资源更新与公司股本事项影响，属于慢变字段；不等同普通流通股本。"
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.seal_amount",
+      "class": "intraday_sensitive",
+      "reason": "由当前买一价和买一量计算，盘中可变化；仅 limit_status=sealed 时解释为封单额。"
+    },
+    {
       "source": "ZHB-tdxstat2",
       "code": "amount",
       "class": "daily_market",
       "registry_status": "verified",
       "reason": "逐源注册表已确认 T 日总成交额，随交易日变化。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "code": "high_52w",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "52周滚动最高价受行情和窗口边界影响；碰撞关系必须使用来源确认的数据日。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "code": "stat2.high_52w",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "52周滚动最高价受行情和窗口边界影响；碰撞关系必须使用来源确认的数据日。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f168",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "换手率随当日成交量变化；不同采样时点的值允许不同。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f170",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "涨跌幅随当日价格变化；不同采样时点的值允许不同。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f191",
+      "class": "intraday_sensitive",
+      "reason": "委比为盘口快照指标，盘中快速变化；跨来源采样时点不同会产生正常差异。",
+      "registry_status": "verified"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f51",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "每日涨停价；同一交易日内稳定，但随证券涨跌幅规则与前收变化。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f52",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "每日跌停价；同一交易日内稳定，但随证券涨跌幅规则与前收变化。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f55",
+      "class": "periodic_or_event",
+      "reason": "基本每股收益随定期报告披露和来源刷新发生变化；不能将旧季度样本当作当前行情错值。",
+      "registry_status": "verified"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f62",
+      "class": "periodic_or_event",
+      "reason": "仅记录最新已发布报告的季度序号且不含年份；公告披露与来源刷新存在滞后。",
+      "registry_status": "verified"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f13",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "市场标志按证券所属市场稳定；保留样本确认 f13/f27 市场标志语义，但静态字段不证明其它行情字段的新鲜度。"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f27",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "市场标志按证券所属市场稳定；保留样本确认 f13/f27 市场标志语义，但静态字段不证明其它行情字段的新鲜度。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[15]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[17]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[19]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[25]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[27]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "新浪(hq.sinajs)",
+      "code": "[29]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[13]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[15]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[17]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[23]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[25]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "腾讯(qt.gtimg)",
+      "code": "[27]",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    }
+  ],
+  "row_timestamp_witnesses": [
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f86",
+      "timestamp_format": "unix_seconds",
+      "unit": "Unix 秒",
+      "meaning_contains": "时间戳",
+      "reason": "逐源注册表已验证 f86 为当日收盘/最后行情时间戳；仅当同一证券行时间戳日期与碰撞交易日键及样本来源日期一致时，为同一 stock/get 记录确认日期。"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f124",
+      "timestamp_format": "unix_seconds",
+      "unit": "Unix 秒",
+      "meaning_contains": "时间戳",
+      "reason": "逐源注册表已验证 f124 为行情更新时间戳；仅当同一证券行时间戳日期与碰撞交易日键及样本来源日期一致时，为同一 ulist.np/get 记录确认日期。"
+    }
+  ],
+  "cross_source_value_witnesses": [
+    {
+      "source": "TDX(双命名源)",
+      "code": "bid1_vol",
+      "runtime_paths": [
+        "quote_raw.bid1_vol"
+      ],
+      "witness_source": "腾讯(qt.gtimg)",
+      "witness_code": "[10]",
+      "witness_runtime_path": "[10]",
+      "evidence_file": "adjudications/20261107_tdx_cross_source_date_witness.json",
+      "evidence_sha256": "4931665e6c81711f3ad825723a99e4fe7b7f4793fd8dccbc311ee015d48b2a95",
+      "reason": "只为此精确 TDX 盘口数量路径推断日期。Tencent 锚字段已验证且每条样本有来源日期；必须至少8个交易日、200组且200组非零样本、每日至少10组且10组非零、至少100个不同非零值，并要求总体/非零/逐日精确率均为100%。证据文件同时记录同一 Tencent 行 [30] 时间戳及原始文件哈希；不向其他 TDX 字段推广。买一量：13日258组，256组非零，全部精确一致。",
+      "thresholds": {
+        "min_distinct_days": 8,
+        "min_pairs": 200,
+        "min_nonzero_pairs": 200,
+        "min_daily_pairs": 10,
+        "min_daily_nonzero_pairs": 10,
+        "min_unique_nonzero_values": 100,
+        "min_exact_ratio": 1.0,
+        "min_nonzero_exact_ratio": 1.0,
+        "min_daily_exact_ratio": 1.0,
+        "min_daily_nonzero_exact_ratio": 1.0
+      }
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "ask1_vol",
+      "runtime_paths": [
+        "quote_raw.ask1_vol"
+      ],
+      "witness_source": "腾讯(qt.gtimg)",
+      "witness_code": "[20]",
+      "witness_runtime_path": "[20]",
+      "evidence_file": "adjudications/20261107_tdx_cross_source_date_witness.json",
+      "evidence_sha256": "4931665e6c81711f3ad825723a99e4fe7b7f4793fd8dccbc311ee015d48b2a95",
+      "reason": "只为此精确 TDX 盘口数量路径推断日期。Tencent 锚字段已验证且每条样本有来源日期；必须至少8个交易日、200组且200组非零样本、每日至少10组且10组非零、至少100个不同非零值，并要求总体/非零/逐日精确率均为100%。证据文件同时记录同一 Tencent 行 [30] 时间戳及原始文件哈希；不向其他 TDX 字段推广。卖一量：13日258组，246组非零，全部精确一致。",
+      "thresholds": {
+        "min_distinct_days": 8,
+        "min_pairs": 200,
+        "min_nonzero_pairs": 200,
+        "min_daily_pairs": 10,
+        "min_daily_nonzero_pairs": 10,
+        "min_unique_nonzero_values": 100,
+        "min_exact_ratio": 1.0,
+        "min_nonzero_exact_ratio": 1.0,
+        "min_daily_exact_ratio": 1.0,
+        "min_daily_nonzero_exact_ratio": 1.0
+      }
     }
   ]
 }

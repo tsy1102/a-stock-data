@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "title": "2026-11-07 Eastmoney quote semantic audit",
+  "observed_on": "2026-11-07",
+  "timezone": "Asia/Shanghai",
+  "collection_mode": "manual Chrome read-only queries; no project collection run",
+  "project_history": {
+    "data_floor": "20261015",
+    "collision_report": "20261107/recrack_verified_path_fix_20261107/20261107_collision_report.json",
+    "collision_report_sha256": "d533d47506b705173e5531ee0d5ff08928a85bd2588c6ff52fc7275b7751eba1",
+    "collision_window": [
+      "20261015",
+      "20261016",
+      "20261019",
+      "20261020",
+      "20261021",
+      "20261022",
+      "20261023",
+      "20261026",
+      "20261028",
+      "20261029",
+      "20261030",
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261105",
+      "20261106"
+    ],
+    "all_history_report_status": "complete",
+    "all_history_target_count": 322,
+    "all_history_l1_count": 0,
+    "all_history_l1c_count": 0,
+    "all_history_l4_count": 59,
+    "method_candidate_count": 6181
+  },
+  "ulist239_f142_f143": {
+    "endpoint_template": "https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=1.{code}&fields=f12,f14,f2,f142,f143&ut=7eea3edcaed734bea9cbfc24409ed989",
+    "official_quote_pages": [
+      {
+        "code": "600519",
+        "url": "https://quote.eastmoney.com/sh600519.html",
+        "displayed_quote_time": "2026-11-06 16:11:39+08:00",
+        "api_values": {
+          "f142": 1451.6,
+          "f143": 1453.01
+        },
+        "page_labels_and_values": {
+          "买二": 1451.6,
+          "卖二": 1453.01
+        },
+        "exact_match": true
+      },
+      {
+        "code": "688327",
+        "url": "https://quote.eastmoney.com/kcb/688327.html",
+        "displayed_quote_time": "2026-11-06 16:11:41+08:00",
+        "api_values": {
+          "f142": 9.86,
+          "f143": 9.89
+        },
+        "page_labels_and_values": {
+          "买二": 9.86,
+          "卖二": 9.89
+        },
+        "exact_match": true
+      },
+      {
+        "code": "688553",
+        "url": "https://quote.eastmoney.com/kcb/688553.html",
+        "displayed_quote_time": "2026-11-06 16:11:33+08:00",
+        "api_values": {
+          "f142": 11.41,
+          "f143": 11.44
+        },
+        "page_labels_and_values": {
+          "买二": 11.41,
+          "卖二": 11.44
+        },
+        "exact_match": true
+      }
+    ],
+    "retained_capture_cross_check": {
+      "source_files": [
+        "20261102/raw_ulist239.json",
+        "20261102/raw_tencent.json",
+        "20261103/raw_ulist239.json",
+        "20261103/raw_tencent.json",
+        "20261104/raw_ulist239.json",
+        "20261104/raw_tencent.json",
+        "20261105/raw_ulist239.json",
+        "20261105/raw_tencent.json"
+      ],
+      "distinct_dates": 4,
+      "distinct_stocks": 20,
+      "f142_equals_tencent_11": {
+        "samples": 80,
+        "exact": 80,
+        "max_abs_difference": 0
+      },
+      "f143_equals_tencent_21": {
+        "samples": 80,
+        "exact_numeric_pairs": 76,
+        "missing_price_vs_zero_placeholders": 4,
+        "max_abs_difference_for_numeric_pairs": 0,
+        "dates": 4,
+        "stocks": 20,
+        "placeholder_examples": [
+          {
+            "date": "20261102",
+            "code": "000037",
+            "ulist_f143": "-",
+            "tencent_21": "0.00"
+          },
+          {
+            "date": "20261102",
+            "code": "000678",
+            "ulist_f143": "-",
+            "tencent_21": "0.00"
+          },
+          {
+            "date": "20261102",
+            "code": "300788",
+            "ulist_f143": "-",
+            "tencent_21": "0.00"
+          },
+          {
+            "date": "20261104",
+            "code": "300788",
+            "ulist_f143": "-",
+            "tencent_21": "0.00"
+          }
+        ]
+      },
+      "neighbor_depth_controls": {
+        "f142_vs_tencent_9": {
+          "samples": 80,
+          "exact": 0,
+          "within_0_01": 42,
+          "max_abs_difference": 0.5
+        },
+        "f142_vs_tencent_13": {
+          "samples": 80,
+          "exact": 0,
+          "within_0_01": 44,
+          "max_abs_difference": 0.43
+        },
+        "f143_vs_tencent_19": {
+          "samples": 76,
+          "exact": 0,
+          "within_0_01": 42,
+          "max_abs_difference": 0.06
+        },
+        "f143_vs_tencent_23": {
+          "samples": 76,
+          "exact": 0,
+          "within_0_01": 48,
+          "max_abs_difference": 0.35
+        }
+      },
+      "interpretation": "The exact historical pairs identify the second bid/ask price columns. All four sell-side exceptions are Ulist '-' versus a peer-source 0.00/0.000 placeholder for no second ask price; the 76 numeric pairs are exact. Nearby price levels remain highly similar by construction and cannot be distinguished by correlation or approximate matches alone.",
+      "f143_equals_sina_23": {
+        "samples": 80,
+        "exact_numeric_pairs": 76,
+        "missing_price_vs_zero_placeholders": 4,
+        "max_abs_difference_for_numeric_pairs": 0,
+        "dates": 4,
+        "stocks": 20
+      }
+    },
+    "prior_registry_issue": "The exact Ulist239 source paths f142 and f143 had reference_status_conflict because historical reference sections grouped the paths differently. Their historical reference_evidence is retained; the manual adjudication resolves the exact current source paths using direct public labels and values plus retained capture pairs."
+  },
+  "push2_f192": {
+    "endpoint_template": "https://push2.eastmoney.com/api/qt/stock/get?secid={market}.{code}&fields=f57,f58,f86,f192&fltt=2&invt=2",
+    "official_quote_pages": [
+      {
+        "code": "600519",
+        "url": "https://quote.eastmoney.com/sh600519.html",
+        "displayed_quote_time": "2026-11-06 16:11:39+08:00",
+        "api_f192": -4,
+        "page_label": "委差",
+        "page_value": -4,
+        "visible_five_level_bid_quantity_sum": 10,
+        "visible_five_level_ask_quantity_sum": 14
+      },
+      {
+        "code": "688327",
+        "url": "https://quote.eastmoney.com/kcb/688327.html",
+        "displayed_quote_time": "2026-11-06 16:11:41+08:00",
+        "api_f192": -258,
+        "page_label": "委差",
+        "page_value": -258,
+        "visible_five_level_bid_quantity_sum": 1607,
+        "visible_five_level_ask_quantity_sum": 1864
+      },
+      {
+        "code": "688553",
+        "url": "https://quote.eastmoney.com/kcb/688553.html",
+        "displayed_quote_time": "2026-11-06 16:11:33+08:00",
+        "api_f192": 238,
+        "page_label": "委差",
+        "page_value": 238,
+        "visible_five_level_bid_quantity_sum": 729,
+        "visible_five_level_ask_quantity_sum": 492
+      }
+    ],
+    "retained_capture_cross_check": {
+      "source_files": "20261015 through 20261105 raw_push2.json and raw_tencent.json where both records exist",
+      "distinct_dates": 8,
+      "distinct_stocks": 20,
+      "paired_values": 134,
+      "push2_f192_equals_tencent_50": 114,
+      "absolute_difference_1": 19,
+      "absolute_difference_2": 1,
+      "median_absolute_difference": 0,
+      "max_absolute_difference": 2,
+      "max_difference_example": {
+        "date": "20261103",
+        "code": "688327",
+        "push2_f192": -356,
+        "tencent_50": -358,
+        "push2_f86_local_time": "2026-11-03 16:11:58+08:00",
+        "tencent_quote_time": "2026-11-03 16:14:58+08:00",
+        "time_difference_seconds": 180
+      },
+      "interpretation": "The official Eastmoney page label and direct Eastmoney API value confirm f192 as 委差. The retained cross-source sample strongly corroborates the same meaning and unit as Tencent[50], but quote timestamps differ; this evidence alone does not establish a same-number mapping."
+    },
+    "unit": "手"
+  },
+  "decision_boundary": {
+    "source_semantic_decisions_supported": [
+      "东财-ulist239(np/get)::f142 = 买二价，元",
+      "东财-ulist239(np/get)::f143 = 卖二价，元",
+      "东财-push2(stock/get)::f192 = 委差，手"
+    ],
+    "cross_source_mappings": "The rerun revalidated four already-registered Ulist-to-Sina/Tencent mappings. Do not add another copy. For sell2, 76/80 numeric pairs match exactly; the four remaining pairs are Ulist '-' versus peer 0.00/0.000 no-quote placeholders. Push2 f192 and Tencent[50] retain the same semantic meaning, but no exact-value mapping is registered because their snapshots are not timestamp-aligned.",
+    "source_semantics_registered": [
+      "东财-ulist239(np/get)::f142 = 买二价（元）",
+      "东财-ulist239(np/get)::f143 = 卖二价（元）",
+      "腾讯(qt.gtimg)::[11] = 买二价（元）",
+      "新浪(hq.sinajs)::[13] = 买二价（元）",
+      "腾讯(qt.gtimg)::[21] = 卖二价（元；缺失价以 0.00 占位）",
+      "新浪(hq.sinajs)::[23] = 卖二价（元；缺失价以 0.000 占位）",
+      "东财-push2(stock/get)::f192 = 委差（手）"
+    ]
+  },
+  "semantic_anchor_rerun": {
+    "report": "20261107/historical_semantic_anchor_rerun_20261107/20261107_collision_report.json",
+    "report_sha256": "edf54ba8aee41abc3d54d1ce326e61bcb9acde5c5c71a0264d8a4e4f056aa6fc",
+    "status": "complete",
+    "target_count": 319,
+    "verified_identity_count": 807,
+    "anchor_identity_count": 756,
+    "right_field_count": 408,
+    "l1_count": 4,
+    "l1c_count": 0,
+    "actionable_l1_count": 0,
+    "mapped_pair_revalidation_count": 4,
+    "l4_count": 58,
+    "method_candidate_count": 6007,
+    "new_candidate_pair_count": 0,
+    "candidate_review_status": "complete",
+    "pairs": [
+      {
+        "left": "sina[13]",
+        "right": "ulist239.f142",
+        "exact": 80,
+        "samples": 80,
+        "dates": 4,
+        "stocks": 20,
+        "mapping_already_registered": true
+      },
+      {
+        "left": "tencent[11]",
+        "right": "ulist239.f142",
+        "exact": 80,
+        "samples": 80,
+        "dates": 4,
+        "stocks": 20,
+        "mapping_already_registered": true
+      },
+      {
+        "left": "sina[23]",
+        "right": "ulist239.f143",
+        "exact": 76,
+        "samples": 80,
+        "dates": 4,
+        "stocks": 20,
+        "non_numeric_sentinel_pairs": 4,
+        "mapping_already_registered": true
+      },
+      {
+        "left": "tencent[21]",
+        "right": "ulist239.f143",
+        "exact": 76,
+        "samples": 80,
+        "dates": 4,
+        "stocks": 20,
+        "non_numeric_sentinel_pairs": 4,
+        "mapping_already_registered": true
+      }
+    ],
+    "interpretation": "All four L1 entries are existing mappings revalidated from post-floor captures. They are not actionable new candidates, so this rerun adds no mapping. The four sell-side exceptions are missing-price sentinels, not numeric price disagreements. No sentinel normalization was applied to stored data."
+  },
+  "final_semantic_rerun": {
+    "report": "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+    "report_sha256": "b0f574d269ac9e3857d340460114af5415d254e664404306b340ac238bef9a6e",
+    "status": "complete",
+    "target_count": 315,
+    "verified_identity_count": 811,
+    "anchor_identity_count": 760,
+    "right_field_count": 412,
+    "l1_count": 0,
+    "l1c_count": 0,
+    "actionable_l1_count": 0,
+    "mapped_pair_revalidation_count": 0,
+    "l4_count": 58,
+    "method_candidate_count": 5649,
+    "new_candidate_pair_count": 0,
+    "candidate_review_machine_validation": "complete",
+    "target_exit_check": {
+      "checked_source_paths": [
+        "push2.f192",
+        "ulist239.f142",
+        "ulist239.f143",
+        "tencent[11]",
+        "tencent[21]",
+        "sina[13]",
+        "sina[23]"
+      ],
+      "present_as_left_targets": []
+    },
+    "interpretation": "The seven verified source paths remain outside the cracking targets. This report was generated after the latest formal review events were appended. The machine inventory is complete, while most human candidate reviews remain pending.",
+    "candidate_review": {
+      "status": "pending",
+      "reviewed_count": 8,
+      "pending_count": 5699,
+      "coverage": 0.0014017872787804452,
+      "inventory_complete": true
+    }
+  }
+}

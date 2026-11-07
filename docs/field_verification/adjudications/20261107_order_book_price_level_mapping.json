@@ -1,0 +1,884 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "historical-order-book-price-levels-20261107",
+  "observed_on": "2026-11-07",
+  "data_floor": "20261015",
+  "collision_report": {
+    "path": "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+    "sha256": "9081ac8fb19ec2d02c3d275b67b454227cff73db15e5c2015f10cfd88196d2d4",
+    "mode": "exploratory",
+    "trading_window": [
+      "20261015",
+      "20261016",
+      "20261019",
+      "20261020",
+      "20261021",
+      "20261022",
+      "20261023",
+      "20261026",
+      "20261028",
+      "20261029",
+      "20261030",
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261105",
+      "20261106"
+    ]
+  },
+  "method": "Exact field-value comparison by same stock and source-confirmed date; exclude missing and simultaneous-zero observations; inspect retained raw arrays for positional order; verify that the public quote page exposes the five bid and ask levels.",
+  "scope": {
+    "capture_directories": 21,
+    "effective_trading_dates": 16,
+    "field_samples": 1026686,
+    "quote_pairs": 6
+  },
+  "official_public_semantic_anchor": {
+    "url": "https://quote.eastmoney.com/sh600519.html",
+    "additional_url": "https://quote.eastmoney.com/",
+    "label": "The official Eastmoney quote page displays the five bid and five ask levels.",
+    "use_limit": "This page supports the meaning of five-level order-book positions; it does not document Sina or Tencent array indices. Exact index mapping comes from the independent retained quote payloads and the full collision report."
+  },
+  "decisions": [
+    {
+      "candidate_id": "cc1_34b1ad727ce437eef9e6b86f3f5b0d08f216e3c1bae5683db55d8b60b5ebbb40",
+      "left": "sina[15]",
+      "right": "tencent[13]",
+      "meaning": "买三价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 278,
+      "exact_hits": 278,
+      "numeric_l1_coverage_threshold_met": true,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1450.570",
+        "tencent": "1450.57"
+      }
+    },
+    {
+      "candidate_id": "cc1_662f76bdb422ca175dc3cd3fe30e0f9f6fce476deb1b0d0b50d64a4966e4f05c",
+      "left": "sina[17]",
+      "right": "tencent[15]",
+      "meaning": "买四价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 278,
+      "exact_hits": 278,
+      "numeric_l1_coverage_threshold_met": true,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1450.500",
+        "tencent": "1450.50"
+      }
+    },
+    {
+      "candidate_id": "cc1_204164819b4a5d05afbbf2e47787c670b825555784aae6da8c12d724c738d692",
+      "left": "sina[19]",
+      "right": "tencent[17]",
+      "meaning": "买五价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 278,
+      "exact_hits": 278,
+      "numeric_l1_coverage_threshold_met": true,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 20,
+        "T:20261026": 20,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 20,
+        "T:20261028": 20,
+        "T:20261102": 20,
+        "T:20261104": 20,
+        "T:20261019": 20,
+        "T:20261023": 20,
+        "T:20261016": 20,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1450.130",
+        "tencent": "1450.13"
+      }
+    },
+    {
+      "candidate_id": "cc1_a9c0db5e73672b1cc538c16cc790e88fa8c7a82fffd30c9dd18a6aa497715428",
+      "left": "sina[25]",
+      "right": "tencent[23]",
+      "meaning": "卖三价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 267,
+      "exact_hits": 267,
+      "numeric_l1_coverage_threshold_met": false,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 18,
+          "exact_hits": 18
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 17,
+          "exact_hits": 17
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1452.380",
+        "tencent": "1452.38"
+      }
+    },
+    {
+      "candidate_id": "cc1_26bf9c15ea926778485e1f9cd398f5545fa043cb739f616ccff1c0e5de178e2b",
+      "left": "sina[27]",
+      "right": "tencent[25]",
+      "meaning": "卖四价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 267,
+      "exact_hits": 267,
+      "numeric_l1_coverage_threshold_met": false,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 18,
+          "exact_hits": 18
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 17,
+          "exact_hits": 17
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1452.490",
+        "tencent": "1452.49"
+      }
+    },
+    {
+      "candidate_id": "cc1_788dc688a17a28dbc82f1effac052707c260378c4ced9143054cf6089c86cce6",
+      "left": "sina[29]",
+      "right": "tencent[27]",
+      "meaning": "卖五价",
+      "unit": "元",
+      "samples": 280,
+      "informative_pairs": 267,
+      "exact_hits": 267,
+      "numeric_l1_coverage_threshold_met": false,
+      "distinct_days": [
+        "T:20261015",
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023",
+        "T:20261026",
+        "T:20261028",
+        "T:20261029",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261105"
+      ],
+      "stock_count": 20,
+      "daily_informative_sample_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "daily_informative_hit_counts": {
+        "T:20261021": 19,
+        "T:20261026": 19,
+        "T:20261030": 19,
+        "T:20261015": 19,
+        "T:20261020": 19,
+        "T:20261028": 19,
+        "T:20261102": 17,
+        "T:20261104": 19,
+        "T:20261019": 20,
+        "T:20261023": 19,
+        "T:20261016": 18,
+        "T:20261103": 20,
+        "T:20261029": 20,
+        "T:20261105": 20
+      },
+      "raw_replay_by_day": {
+        "T:20261015": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261016": {
+          "pairs": 20,
+          "informative_pairs": 18,
+          "exact_hits": 18
+        },
+        "T:20261019": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261020": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261021": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261023": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261026": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261028": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261029": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261030": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261102": {
+          "pairs": 20,
+          "informative_pairs": 17,
+          "exact_hits": 17
+        },
+        "T:20261103": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        },
+        "T:20261104": {
+          "pairs": 20,
+          "informative_pairs": 19,
+          "exact_hits": 19
+        },
+        "T:20261105": {
+          "pairs": 20,
+          "informative_pairs": 20,
+          "exact_hits": 20
+        }
+      },
+      "source_independence_confirmed": true,
+      "date_alignment": "source_dates_confirmed",
+      "retained_sample": {
+        "date": "20261105",
+        "code": "600519",
+        "sina": "1452.660",
+        "tencent": "1452.66"
+      }
+    }
+  ]
+}

@@ -30,6 +30,8 @@
 
     默认分析截至报告日最近 7 个日历确认的交易日；新闻/公告另按自然日窗口处理。窗口按交易日历定界，不按现存采集目录数倒推；某个交易日缺采集目录时会保留该日并报告缺口，不再用更早日期补位。来源数据日可能由后续采集目录提供，须结合来源级 `as_of_date` 和 `source_coverage` 核对。样本发现统一跳过 20261015 之前的目录，因此 `--window N` 与 `--all` 都只覆盖该保留起点之后的数据。碰撞是本地分析，不请求数据源。只有确需分析已归档的龙虎榜/人气榜上下文时才加 --include-context。
 
+    若同一报告日期已有报告或审查台账引用，使用 `--run-tag <标签>` 将新报告写入该日期的独立子目录；标签仅接受字母、数字、下划线和连字符，目标目录已存在时命令会停止以保护既有证据。
+
 6. **完整审阅报告，先过完整性闸门。** 检查 `trading_window` 是否是日历上的最近 N 个交易日，并核对缺采集目录警告、窗口中的样本日期、来源日期、采集阶段、每日样本量、信息配对、来源独立性和告警；来源级日期可能由后续采集目录补到，不能只看目录名。把 `actionable_L1` 与 `mapped_pair_revalidations` 分开。候选覆盖区逐个未知目标给出比较、覆盖、候选、来源失败、公式线索和复核股票。
 
     先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 只说明报告结构和候选明细对账完整，不代表人工已审完，也不代表交易日连续或所有来源采集成功；这些要以 `trading_window`、诊断和逐源 `source_coverage` 核查。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和独立的 `candidate_triage.approximate_matches`。近似命中只用于安排网页/原始样本复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
@@ -70,6 +72,7 @@
 
 - `daily_market`、`intraday_sensitive` 和 `unclassified` 字段只有在来源元数据提供 `source_as_of`，或记录自身有 `event_date` / `trade_date` 时，样本才计入 L1/L1-U。目标 `data_date`、`meta_data_date` 或目录日期不能代替来源日期。
 - `slow_changing`、`static_reference` 可用已收盘的跨源多日样本验证语义关系，即使日期来源尚未证实；碰撞 JSON/Markdown 会标为 `semantic_only_date_unconfirmed`。该标记不证明数据新鲜度、有效日期或来源间日期对齐，也不自动写入字典。
+- 同一原始行情记录中的逐源已验证 Unix 时间戳可作为该行数据日期见证；仅当时间戳换算出的中国市场日期、样本键日期和样本 `as_of_date` 三者一致时，才标记 `record.timestamp` 并允许日变字段进入 L1。缺失或日期冲突的行继续按未确认处理，不自动改写样本日期，也不拿采集日期补位。见证字段身份由 `temporal_policy.json` 精确登记。
 - `periodic_or_event` 必须提供字段值级 `effective_date` / `report_period` / `event_date`。当前通用采集结构未为所有此类字段提供值级日期时，保持 L1 排除，不能用采集日替代报告期。
 - 更新分类时只编辑逐源策略，写明原因并确认注册表状态；运行碰撞时按 lineage 别名精确解析回注册表身份。策略失效或状态漂移会关闭分类，所有字段回退到严格 `unclassified` 门控。
 

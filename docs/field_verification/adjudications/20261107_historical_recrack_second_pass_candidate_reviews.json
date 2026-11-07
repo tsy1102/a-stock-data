@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_34b1ad727ce437eef9e6b86f3f5b0d08f216e3c1bae5683db55d8b60b5ebbb40",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 个来源日期确认交易日、20 只股票；278/278 有效买三价配对精确相等，日覆盖 19–20/20。新浪/腾讯公开解析字段顺序与东方财富五档行情页语义相符；逐日原始值复算已写入注册表。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_662f76bdb422ca175dc3cd3fe30e0f9f6fce476deb1b0d0b50d64a4966e4f05c",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 个来源日期确认交易日、20 只股票；278/278 有效买四价配对精确相等，日覆盖 19–20/20。新浪/腾讯公开解析字段顺序与东方财富五档行情页语义相符；逐日原始值复算已写入注册表。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_204164819b4a5d05afbbf2e47787c670b825555784aae6da8c12d724c738d692",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 个来源日期确认交易日、20 只股票；278/278 有效买五价配对精确相等，日覆盖 19–20/20。新浪/腾讯公开解析字段顺序与东方财富五档行情页语义相符；逐日原始值复算已写入注册表。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_a9c0db5e73672b1cc538c16cc790e88fa8c7a82fffd30c9dd18a6aa497715428",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 日卖三价有效样本 267/267 精确相等；但 2026-11-02 仅覆盖 17/20，因此未按完整 L1 覆盖登记，作为覆盖受限的语义定案写入逐源字典。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_26bf9c15ea926778485e1f9cd398f5545fa043cb739f616ccff1c0e5de178e2b",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 日卖四价有效样本 267/267 精确相等；但 2026-11-02 仅覆盖 17/20，因此未按完整 L1 覆盖登记，作为覆盖受限的语义定案写入逐源字典。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_788dc688a17a28dbc82f1effac052707c260378c4ced9143054cf6089c86cce6",
+      "disposition": "accepted_for_adjudication",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "14 日卖五价有效样本 267/267 精确相等；但 2026-11-02 仅覆盖 17/20，因此未按完整 L1 覆盖登记，作为覆盖受限的语义定案写入逐源字典。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_32a5f7f44d220412fbdd1c11cddb67226f95fad38d239b438c8461277b3016a4",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "220 组/11 日/20 股呈强相关并接近 1e-4 缩放，但原始值乘 1e-4 后仅 146/220 在 1e-6 内，最大差 0.0161765。可能存在换手率分母或口径差异，拒绝登记逐值映射，等待接口定义。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_98e6829bb683dc53b2841872a9adffe2858e67cbd2ff2a3913ecebe6678c3fba",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "258 组/13 日数值完全相同，但 TDX 的 data_date 来源为 meta_data_date，尚未确认是行情数据日期；日期未确认前不能作为跨日独立映射写入。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_63ebc90e96caf55ea74656407d723365c573072c4a3fba8b8f56fa13d82d127f",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "258 组/13 日数值完全相同，但 TDX 的 data_date 来源为 meta_data_date，尚未确认是行情数据日期；日期未确认前不能作为跨日独立映射写入。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_54897af9d5cfeb3a1a61be25b0e1568a8cd46674b8b38b158608ffab87fedb4e",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "258 组/13 日数值完全相同，但 TDX 的 data_date 来源为 meta_data_date，尚未确认是行情数据日期；quote_full 与 quote_raw 同属 TDX 数据链，不能当作两份独立佐证。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_0a8c958d1baf19845fbc09c3ca29780d7ed32fd444219508d9e5449711530a29",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "258 组/13 日数值完全相同，但 TDX 的 data_date 来源为 meta_data_date，尚未确认是行情数据日期；quote_full 与 quote_raw 同属 TDX 数据链，不能当作两份独立佐证。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_5c305ab662429709d58489a26e1b60658de6fe6e3b48bc80f8d14ba6ecba203f",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "LATELY_PRICE 与 FTShare close 在 22 组/11 日精确相等，但只有 000007、000011 两只股票，且研究报告未恢复该事件字段的完整响应端点和数组路径；需补足来源契约。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_4a9349d51f7c257905bfd6e4d1094de84748bb012610a5e32534fb4646e8ae4b",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "TNEW_PRICE 与 FTShare close 在 22 组/11 日精确相等，但只有 000007、000011 两只股票，且研究报告未恢复该事件字段的完整响应端点和数组路径；需补足来源契约。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c5754606284dfee58528a73c1804ebc6ecb08924d5a5fe949afb62f745da63b4",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "CHANGE_RATE 与 FTShare change_rate 可拟合为约 0.01 缩放，22 组/11 日仅两只股票；像是百分数与小数口径，但缺少事件接口定义，不登记严格关系。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_dc7d09a9200478d608584d9b094e11122d21cf4633d3fb13be70137b1863861c",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "TOTAL_SHARES 与 FTShare shares 虽呈完全相关，但拟合斜率约 1.0324922 且有约 330,100,080 的截距，直接同值映射不成立；该结论只拒绝这组跨源关系，不定性单字段语义。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_2301aae7311e43d0a33a832ad75fd5e3c0251b95f68b2d5e5df9bcbfee13420f",
+      "disposition": "rejected",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_recrack_final_adjudication_20261107/20261107_collision_report.json",
+        "adjudications/20261107_order_book_price_level_mapping.json",
+        "adjudications/20261107_historical_large_recrack_second_pass.md"
+      ],
+      "rationale": "TCHANGE_RATE 与 FTShare shares 的强负相关仅基于两只股票及 11 个日点，变量量纲/语义不相容，判断为伪相关并拒绝该候选关系。",
+      "reviewed_at": "2026-11-07T10:21:26+08:00",
+      "reviewer": "Codex"
+    }
+  ]
+}

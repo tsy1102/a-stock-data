@@ -1,0 +1,5901 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-06T13:16:13+08:00",
+  "source": "Eastmoney Push2EX getTopicZTPool",
+  "adapter": "stock_common.sc_datasource._pools.get_limit_up_pool(date_str)",
+  "request_contract": {
+    "url": "https://push2ex.eastmoney.com/getTopicZTPool",
+    "query_parameter": "date"
+  },
+  "capture_scope": "four explicit trade dates >= 2026-10-15; one request per date; no retry",
+  "dates": [
+    {
+      "date": "20261028",
+      "request_return_count": 72,
+      "kpl_stock_count": 71,
+      "paired_count": 71,
+      "limit_count_exact_count": 71,
+      "price_scaled_exact_count": 71,
+      "change_pct_within_0_02_count": 71,
+      "change_pct_rounded_exact_count": 71,
+      "pairs": [
+        {
+          "code": "000554",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6630.0",
+            "change_pct": "9.950248718261719"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.63",
+            "col_22": "9.95"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000248718261719",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000559",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13180.0",
+            "change_pct": "10.016695022583008"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.18",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003304977416992",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000670",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7080.0",
+            "change_pct": "9.937888145446777"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.08",
+            "col_22": "9.94"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002111854553223",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000678",
+          "push2ex": {
+            "limit_count": "5.0",
+            "price": "17610.0",
+            "change_pct": "9.993753433227539"
+          },
+          "kpl": {
+            "col_15": "5",
+            "col_21": "17.61",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003753433227539",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001219",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "16480.0",
+            "change_pct": "10.013350486755371"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "16.48",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003350486755371",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001270",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "80000.0",
+            "change_pct": "9.995875358581543"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "80",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004124641418457",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001296",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20230.0",
+            "change_pct": "10.005437850952148"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.23",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004562149047852",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001400",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "88310.0",
+            "change_pct": "10.00249195098877"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "88.31",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00249195098877",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002164",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "16900.0",
+            "change_pct": "10.026041030883789"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "16.9",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003958969116211",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002172",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4880.0",
+            "change_pct": "9.909910202026367"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.88",
+            "col_22": "9.91"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000089797973633",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002265",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20920.0",
+            "change_pct": "9.989484786987305"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.92",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000515213012695",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002526",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "2980.0",
+            "change_pct": "9.963099479675293"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "2.98",
+            "col_22": "9.96"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003099479675293",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002534",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15400.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.4",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002636",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "58590.0",
+            "change_pct": "10.0075101852417"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "58.59",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0024898147583",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002696",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11770.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.77",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002708",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "18940.0",
+            "change_pct": "9.988385200500488"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "18.94",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001614799499512",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002741",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20250.0",
+            "change_pct": "9.99456787109375"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.25",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00456787109375",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002862",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15380.0",
+            "change_pct": "10.01430606842041"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.38",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00430606842041",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002879",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "14950.0",
+            "change_pct": "10.00735855102539"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "14.95",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00264144897461",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002889",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15440.0",
+            "change_pct": "9.97150993347168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.44",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00150993347168",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002915",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "16020.0",
+            "change_pct": "10.027472496032715"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "16.02",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002527503967285",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002943",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25110.0",
+            "change_pct": "9.986859321594238"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.11",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003140678405762",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002962",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "12830.0",
+            "change_pct": "10.034305572509766"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "12.83",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004305572509766",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002975",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "85120.0",
+            "change_pct": "10.002584457397461"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "85.12",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002584457397461",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "003028",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25910.0",
+            "change_pct": "10.021231651306152"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.91",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001231651306152",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300006",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "9920.0",
+            "change_pct": "19.95163345336914"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "9.92",
+            "col_22": "19.95"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00163345336914",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300291",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6240.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.24",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300613",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "72480.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "72.48",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300806",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "43920.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "43.92",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301080",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "101240.0",
+            "change_pct": "19.995258331298828"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "101.24",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004741668701172",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301261",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "62890.0",
+            "change_pct": "19.996183395385742"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "62.89",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003816604614258",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301359",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19080.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.08",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301488",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "97870.0",
+            "change_pct": "19.997547149658203"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "97.87",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002452850341797",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301525",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "47530.0",
+            "change_pct": "19.994949340820312"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "47.53",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004949340820312",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600078",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "9420.0",
+            "change_pct": "10.04672908782959"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "9.42",
+            "col_22": "10.05"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00327091217041",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600173",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5450.0",
+            "change_pct": "10.1010103225708"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.45",
+            "col_22": "10.1"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0010103225708",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600601",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10320.0",
+            "change_pct": "10.021322250366211"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.32",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001322250366211",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600715",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "2060.0",
+            "change_pct": "10.16042709350586"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "2.06",
+            "col_22": "10.16"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00042709350586",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600828",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "4920.0",
+            "change_pct": "10.067113876342773"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "4.92",
+            "col_22": "10.07"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002886123657227",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601956",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "6090.0",
+            "change_pct": "9.9277982711792"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "6.09",
+            "col_22": "9.93"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0022017288208",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603006",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10740.0",
+            "change_pct": "10.040983200073242"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.74",
+            "col_22": "10.04"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000983200073242",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603037",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "13060.0",
+            "change_pct": "10.025274276733398"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "13.06",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004725723266602",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603061",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "260150.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "260.15",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603081",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11310.0",
+            "change_pct": "10.019454956054688"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.31",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000545043945312",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603109",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17930.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17.93",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603131",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "14500.0",
+            "change_pct": "10.015174865722656"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "14.5",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004825134277344",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603135",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8640.0",
+            "change_pct": "10.06369400024414"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.64",
+            "col_22": "10.06"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00369400024414",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603219",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13210.0",
+            "change_pct": "9.991673469543457"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.21",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001673469543457",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603226",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "24260.0",
+            "change_pct": "10.022676467895508"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "24.26",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002676467895508",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603303",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "29760.0",
+            "change_pct": "10.018484115600586"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "29.76",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001515884399414",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603337",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "48830.0",
+            "change_pct": "10.002252578735352"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "48.83",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002252578735352",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603418",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "44990.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "44.99",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603533",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28030.0",
+            "change_pct": "10.00784969329834"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.03",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00215030670166",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603612",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15880.0",
+            "change_pct": "9.972298622131348"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.88",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002298622131348",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603626",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "27830.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "27.83",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603633",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6360.0",
+            "change_pct": "10.034602165222168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.36",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004602165222168",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603667",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "49980.0",
+            "change_pct": "9.99119758605957"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "49.98",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00119758605957",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603680",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11330.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.33",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603868",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "34220.0",
+            "change_pct": "9.996786117553711"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "34.22",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003213882446289",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603897",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "26430.0",
+            "change_pct": "9.987516403198242"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "26.43",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002483596801758",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603920",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "37850.0",
+            "change_pct": "9.997093200683594"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "37.85",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002906799316406",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603926",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17060.0",
+            "change_pct": "9.993552207946777"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17.06",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003552207946777",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603992",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "22670.0",
+            "change_pct": "9.995148658752441"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "22.67",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004851341247559",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605060",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "32160.0",
+            "change_pct": "9.986320495605469"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "32.16",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003679504394531",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605288",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "65400.0",
+            "change_pct": "10.008410453796387"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "65.4",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001589546203613",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605366",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7740.0",
+            "change_pct": "9.943181991577148"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.74",
+            "col_22": "9.94"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003181991577148",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605566",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28600.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.6",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688045",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "55870.0",
+            "change_pct": "19.995704650878906"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "55.87",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004295349121094",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688137",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "127200.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "127.2",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "920220",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "54600.0",
+            "change_pct": "30.000001907348633"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "54.6",
+            "col_22": "30"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000001907348633",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "920896",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "16230.0",
+            "change_pct": "29.943954467773438"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "16.23",
+            "col_22": "29.94"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003954467773438",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        }
+      ],
+      "status": "date_aligned_pass"
+    },
+    {
+      "date": "20261102",
+      "request_return_count": 100,
+      "kpl_stock_count": 125,
+      "paired_count": 100,
+      "limit_count_exact_count": 100,
+      "price_scaled_exact_count": 100,
+      "change_pct_within_0_02_count": 100,
+      "change_pct_rounded_exact_count": 100,
+      "pairs": [
+        {
+          "code": "000037",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8780.0",
+            "change_pct": "10.025062561035156"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.78",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004937438964844",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000156",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7280.0",
+            "change_pct": "9.969788551330566"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.28",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000211448669434",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000410",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "5910.0",
+            "change_pct": "10.055866241455078"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "5.91",
+            "col_22": "10.06"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004133758544922",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000417",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "6270.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "6.27",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000525",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "4940.0",
+            "change_pct": "10.022271156311035"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "4.94",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002271156311035",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000530",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8710.0",
+            "change_pct": "9.974746704101562"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.71",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004746704101562",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000599",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4090.0",
+            "change_pct": "9.946236610412598"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.09",
+            "col_22": "9.95"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003763389587402",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000678",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19890.0",
+            "change_pct": "10.011061668395996"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.89",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001061668395996",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000681",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15630.0",
+            "change_pct": "9.992961883544922"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.63",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002961883544922",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000819",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11760.0",
+            "change_pct": "10.009354591369629"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.76",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000645408630371",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000892",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4410.0",
+            "change_pct": "9.975062370300293"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.41",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004937629699707",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000995",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "15600.0",
+            "change_pct": "10.014103889465332"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "15.6",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004103889465332",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001216",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18680.0",
+            "change_pct": "10.011778831481934"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.68",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001778831481934",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001219",
+          "push2ex": {
+            "limit_count": "6.0",
+            "price": "21930.0",
+            "change_pct": "9.979939460754395"
+          },
+          "kpl": {
+            "col_15": "6",
+            "col_21": "21.93",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000060539245605",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001230",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18800.0",
+            "change_pct": "10.005850791931152"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.8",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004149208068848",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001266",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "36500.0",
+            "change_pct": "10.006027221679688"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "36.5",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003972778320312",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002045",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8820.0",
+            "change_pct": "9.975062370300293"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.82",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004937629699707",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002058",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19210.0",
+            "change_pct": "10.022909164428711"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.21",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002909164428711",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002086",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "3110.0",
+            "change_pct": "9.893993377685547"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "3.11",
+            "col_22": "9.89"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003993377685547",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002094",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4800.0",
+            "change_pct": "10.091742515563965"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.8",
+            "col_22": "10.09"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001742515563965",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002095",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15310.0",
+            "change_pct": "9.98563289642334"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.31",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00436710357666",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002172",
+          "push2ex": {
+            "limit_count": "4.0",
+            "price": "6500.0",
+            "change_pct": "9.98307991027832"
+          },
+          "kpl": {
+            "col_15": "4",
+            "col_21": "6.5",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00307991027832",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002174",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11280.0",
+            "change_pct": "10.04878044128418"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.28",
+            "col_22": "10.05"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00121955871582",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002187",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5800.0",
+            "change_pct": "10.056926727294922"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.8",
+            "col_22": "10.06"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003073272705078",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002238",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6610.0",
+            "change_pct": "9.983360290527344"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.61",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003360290527344",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002275",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "16480.0",
+            "change_pct": "10.013350486755371"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "16.48",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003350486755371",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002291",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5360.0",
+            "change_pct": "10.061601638793945"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.36",
+            "col_22": "10.06"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001601638793945",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002292",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8710.0",
+            "change_pct": "9.974746704101562"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.71",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004746704101562",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002362",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "16970.0",
+            "change_pct": "9.980557441711426"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "16.97",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000557441711426",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002558",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20680.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.68",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002578",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3420.0",
+            "change_pct": "9.967845916748047"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.42",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002154083251953",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002623",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19280.0",
+            "change_pct": "9.98288631439209"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.28",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00288631439209",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002811",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17110.0",
+            "change_pct": "10.03215503692627"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17.11",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00215503692627",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002827",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "56980.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "56.98",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002929",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "54540.0",
+            "change_pct": "10.004034042358398"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "54.54",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004034042358398",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002940",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23420.0",
+            "change_pct": "10.0046968460083"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.42",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0046968460083",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002949",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "14080.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "14.08",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002983",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "22220.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "22.22",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002995",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18270.0",
+            "change_pct": "9.993979454040527"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.27",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003979454040527",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "003019",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25430.0",
+            "change_pct": "9.991349220275879"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.43",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001349220275879",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300085",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "26680.0",
+            "change_pct": "20.017993927001953"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "26.68",
+            "col_22": "20.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002006072998047",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300377",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13140.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.14",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300413",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "26760.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "26.76",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300426",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7740.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.74",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300508",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "43920.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "43.92",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300556",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19510.0",
+            "change_pct": "19.987699508666992"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.51",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002300491333008",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301052",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "39190.0",
+            "change_pct": "19.99387550354004"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "39.19",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00387550354004",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301218",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "81440.0",
+            "change_pct": "19.99410629272461"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "81.44",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00410629272461",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301262",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23160.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.16",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600020",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4320.0",
+            "change_pct": "9.923664093017578"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.32",
+            "col_22": "9.92"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003664093017578",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600109",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8450.0",
+            "change_pct": "10.026041030883789"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.45",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003958969116211",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600189",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "9720.0",
+            "change_pct": "9.954751014709473"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "9.72",
+            "col_22": "9.95"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004751014709473",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600199",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7720.0",
+            "change_pct": "9.97150993347168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.72",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00150993347168",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600229",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5690.0",
+            "change_pct": "10.058026313781738"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.69",
+            "col_22": "10.06"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001973686218262",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600259",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "57970.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "57.97",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600261",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "4500.0",
+            "change_pct": "10.024450302124023"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "4.5",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004450302124023",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600293",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3640.0",
+            "change_pct": "9.969788551330566"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.64",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000211448669434",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600299",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8090.0",
+            "change_pct": "10.068026542663574"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.09",
+            "col_22": "10.07"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001973457336426",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600345",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "39330.0",
+            "change_pct": "10.013986587524414"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "39.33",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003986587524414",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600506",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19000.0",
+            "change_pct": "10.01737117767334"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00262882232666",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600570",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20760.0",
+            "change_pct": "10.015897750854492"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.76",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004102249145508",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600576",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5620.0",
+            "change_pct": "9.980430603027344"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.62",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000430603027344",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600633",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10710.0",
+            "change_pct": "9.958932876586914"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.71",
+            "col_22": "9.96"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001067123413086",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600715",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "2240.0",
+            "change_pct": "9.803921699523926"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "2.24",
+            "col_22": "9.8"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003921699523926",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600754",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20570.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.57",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600779",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28120.0",
+            "change_pct": "10.015649795532227"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.12",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004350204467773",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600801",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23540.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.54",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600865",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11780.0",
+            "change_pct": "9.990663528442383"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.78",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000663528442383",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600892",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4370.0",
+            "change_pct": "10.075567245483398"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.37",
+            "col_22": "10.08"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004432754516602",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600960",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4100.0",
+            "change_pct": "9.919570922851562"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.1",
+            "col_22": "9.92"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000429077148438",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601019",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7610.0",
+            "change_pct": "9.971098899841309"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.61",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001098899841309",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601086",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13460.0",
+            "change_pct": "9.967320442199707"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.46",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002679557800293",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601099",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3540.0",
+            "change_pct": "9.937888145446777"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.54",
+            "col_22": "9.94"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002111854553223",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601339",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7570.0",
+            "change_pct": "10.029069900512695"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.57",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000930099487305",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601595",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "30250.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "30.25",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601599",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3470.0",
+            "change_pct": "10.158730506896973"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.47",
+            "col_22": "10.16"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001269493103027",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601999",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6660.0",
+            "change_pct": "10.082645416259766"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.66",
+            "col_22": "10.08"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002645416259766",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603016",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28250.0",
+            "change_pct": "10.00778865814209"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.25",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00221134185791",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603171",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "45950.0",
+            "change_pct": "10.007182121276855"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "45.95",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002817878723145",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603258",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15170.0",
+            "change_pct": "10.007251739501953"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.17",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002748260498047",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603383",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "27390.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "27.39",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603466",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13220.0",
+            "change_pct": "9.983360290527344"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.22",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003360290527344",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603533",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "26720.0",
+            "change_pct": "10.004117012023926"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "26.72",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004117012023926",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603587",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "14190.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "14.19",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603628",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "9900.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "9.9",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603633",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5890.0",
+            "change_pct": "10.09345817565918"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.89",
+            "col_22": "10.09"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00345817565918",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603863",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "12110.0",
+            "change_pct": "9.990917205810547"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "12.11",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000917205810547",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603887",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7570.0",
+            "change_pct": "10.029069900512695"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.57",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000930099487305",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603955",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "27720.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "27.72",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603989",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "21920.0",
+            "change_pct": "9.984947204589844"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "21.92",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004947204589844",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605189",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15700.0",
+            "change_pct": "10.021023750305176"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.7",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001023750305176",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605287",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "47050.0",
+            "change_pct": "10.007014274597168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "47.05",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002985725402832",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605288",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "64570.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "64.57",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605303",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "21310.0",
+            "change_pct": "10.015487670898438"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "21.31",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004512329101562",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605333",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20430.0",
+            "change_pct": "10.016155242919922"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.43",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003844757080078",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605577",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13000.0",
+            "change_pct": "9.98307991027832"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00307991027832",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688175",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25420.0",
+            "change_pct": "20.01888656616211"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.42",
+            "col_22": "20.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00111343383789",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688376",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "50760.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "50.76",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688518",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20140.0",
+            "change_pct": "20.02383804321289"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.14",
+            "col_22": "20.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00383804321289",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688596",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "42620.0",
+            "change_pct": "19.988737106323242"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "42.62",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001262893676758",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        }
+      ],
+      "status": "date_aligned_pass"
+    },
+    {
+      "date": "20261104",
+      "request_return_count": 100,
+      "kpl_stock_count": 118,
+      "paired_count": 100,
+      "limit_count_exact_count": 100,
+      "price_scaled_exact_count": 100,
+      "change_pct_within_0_02_count": 100,
+      "change_pct_rounded_exact_count": 100,
+      "pairs": [
+        {
+          "code": "000017",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6380.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.38",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000096",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8460.0",
+            "change_pct": "10.0130033493042"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.46",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0030033493042",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000426",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "24040.0",
+            "change_pct": "10.022883415222168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "24.04",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002883415222168",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000506",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "13410.0",
+            "change_pct": "10.008203506469727"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "13.41",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001796493530273",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000530",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "9460.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "9.46",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000603",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23680.0",
+            "change_pct": "9.986065864562988"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.68",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003934135437012",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000657",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "39230.0",
+            "change_pct": "10.01121711730957"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "39.23",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00121711730957",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000679",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "7280.0",
+            "change_pct": "9.969788551330566"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "7.28",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000211448669434",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000919",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6670.0",
+            "change_pct": "10.066006660461426"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.67",
+            "col_22": "10.07"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003993339538574",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000962",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "38750.0",
+            "change_pct": "9.991484642028809"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "38.75",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001484642028809",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000975",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23080.0",
+            "change_pct": "10.009532928466797"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.08",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000467071533203",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001233",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "61750.0",
+            "change_pct": "9.992875099182129"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "61.75",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002875099182129",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001282",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17000.0",
+            "change_pct": "10.032362937927246"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002362937927246",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001337",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "37180.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "37.18",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001339",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "57100.0",
+            "change_pct": "9.99807357788086"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "57.1",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00192642211914",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001359",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "69620.0",
+            "change_pct": "10.001579284667969"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "69.62",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001579284667969",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001360",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17250.0",
+            "change_pct": "10.012754440307617"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17.25",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002754440307617",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002008",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "52670.0",
+            "change_pct": "10.00417709350586"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "52.67",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00417709350586",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002058",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "23240.0",
+            "change_pct": "9.98580265045166"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "23.24",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00419734954834",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002081",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4300.0",
+            "change_pct": "9.974424362182617"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.3",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004424362182617",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002088",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "9160.0",
+            "change_pct": "9.963985443115234"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "9.16",
+            "col_22": "9.96"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003985443115234",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002156",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "42330.0",
+            "change_pct": "10.005197525024414"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "42.33",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004802474975586",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002222",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "46870.0",
+            "change_pct": "9.997653007507324"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "46.87",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002346992492676",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002275",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "17380.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "17.38",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002309",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "2650.0",
+            "change_pct": "9.95850658416748"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "2.65",
+            "col_22": "9.96"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00149341583252",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002317",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "24440.0",
+            "change_pct": "9.990999221801758"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "24.44",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000999221801758",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002353",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "90000.0",
+            "change_pct": "9.99755573272705"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "90",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00244426727295",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002371",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "535500.0",
+            "change_pct": "9.999588966369629"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "535.5",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000411033630371",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002388",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "5510.0",
+            "change_pct": "9.980039596557617"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "5.51",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000039596557617",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002409",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "83660.0",
+            "change_pct": "10.006574630737305"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "83.66",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003425369262695",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002428",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "75380.0",
+            "change_pct": "9.995622634887695"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "75.38",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004377365112305",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002529",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6110.0",
+            "change_pct": "10.09009075164795"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.11",
+            "col_22": "10.09"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00009075164795",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002565",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8930.0",
+            "change_pct": "9.975369453430176"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.93",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004630546569824",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002578",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "4140.0",
+            "change_pct": "10.106383323669434"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "4.14",
+            "col_22": "10.11"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003616676330566",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002636",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "64410.0",
+            "change_pct": "10.008540153503418"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "64.41",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001459846496582",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002652",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "4590.0",
+            "change_pct": "10.071942329406738"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "4.59",
+            "col_22": "10.07"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001942329406738",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002674",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18330.0",
+            "change_pct": "10.024009704589844"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.33",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004009704589844",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002716",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "7600.0",
+            "change_pct": "9.985527992248535"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "7.6",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004472007751465",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002741",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19290.0",
+            "change_pct": "9.977194786071777"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.29",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002805213928223",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002811",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20370.0",
+            "change_pct": "9.989200592041016"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "20.37",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000799407958984",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002821",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "148840.0",
+            "change_pct": "9.999260902404785"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "148.84",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000739097595215",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002827",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "68950.0",
+            "change_pct": "10.003190040588379"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "68.95",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003190040588379",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002876",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28060.0",
+            "change_pct": "9.996079444885254"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.06",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003920555114746",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002916",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "225600.0",
+            "change_pct": "10.000487327575684"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "225.6",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000487327575684",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002971",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "34530.0",
+            "change_pct": "10.003186225891113"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "34.53",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003186225891113",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002975",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "77330.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "77.33",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002980",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "71270.0",
+            "change_pct": "10.001543045043945"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "71.27",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001543045043945",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002992",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "33400.0",
+            "change_pct": "10.013175010681152"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "33.4",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003175010681152",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "003021",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "92900.0",
+            "change_pct": "10.00592041015625"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "92.9",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00407958984375",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "003033",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "77350.0",
+            "change_pct": "9.99715518951416"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "77.35",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00284481048584",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300139",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "38230.0",
+            "change_pct": "19.993722915649414"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "38.23",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003722915649414",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300489",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "190300.0",
+            "change_pct": "20.00252342224121"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "190.3",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00252342224121",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300666",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "185530.0",
+            "change_pct": "19.998706817626953"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "185.53",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001293182373047",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300788",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "36060.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "36.06",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301070",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "44460.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "44.46",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301583",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "96190.0",
+            "change_pct": "19.99750518798828"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "96.19",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00249481201172",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301697",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25420.0",
+            "change_pct": "20.01888656616211"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.42",
+            "col_22": "20.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00111343383789",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600206",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "34900.0",
+            "change_pct": "9.990545272827148"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "34.9",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000545272827148",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600371",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10850.0",
+            "change_pct": "10.040567398071289"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.85",
+            "col_22": "10.04"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000567398071289",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600391",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "42350.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "42.35",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600547",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "25510.0",
+            "change_pct": "10.004312515258789"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "25.51",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004312515258789",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600584",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "51740.0",
+            "change_pct": "9.991497039794922"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "51.74",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001497039794922",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600641",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28200.0",
+            "change_pct": "9.984399795532227"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.2",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004399795532227",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600699",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "21320.0",
+            "change_pct": "10.010319709777832"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "21.32",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000319709777832",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600892",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "5290.0",
+            "change_pct": "9.979209899902344"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "5.29",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000790100097656",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600988",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "34540.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "34.54",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601069",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "23420.0",
+            "change_pct": "10.0046968460083"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "23.42",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0046968460083",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601123",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "16580.0",
+            "change_pct": "10.019906997680664"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "16.58",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000093002319336",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601208",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "33310.0",
+            "change_pct": "10.00660514831543"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "33.31",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00339485168457",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601599",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "4200.0",
+            "change_pct": "9.947644233703613"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "4.2",
+            "col_22": "9.95"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002355766296387",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603048",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "21980.0",
+            "change_pct": "10.010009765625"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "21.98",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000009765625",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603061",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "228690.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "228.69",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603115",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "45050.0",
+            "change_pct": "10.01220989227295"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "45.05",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00220989227295",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603127",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "44100.0",
+            "change_pct": "10.002494812011719"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "44.1",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002494812011719",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603186",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "145220.0",
+            "change_pct": "9.998485565185547"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "145.22",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001514434814453",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603203",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "31570.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "31.57",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603248",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18000.0",
+            "change_pct": "10.024450302124023"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004450302124023",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603259",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "148810.0",
+            "change_pct": "10.00147819519043"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "148.81",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00147819519043",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603381",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "17140.0",
+            "change_pct": "10.012836456298828"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "17.14",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002836456298828",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603598",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "19690.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.69",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603662",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "54540.0",
+            "change_pct": "10.004034042358398"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "54.54",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004034042358398",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603767",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15610.0",
+            "change_pct": "10.007046699523926"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.61",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002953300476074",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603777",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "14500.0",
+            "change_pct": "10.015174865722656"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "14.5",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004825134277344",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603893",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "198010.0",
+            "change_pct": "9.999444007873535"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "198.01",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000555992126465",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603950",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "37310.0",
+            "change_pct": "9.99410343170166"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "37.31",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00410343170166",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603955",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28910.0",
+            "change_pct": "10.007610321044922"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.91",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002389678955078",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605111",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "38640.0",
+            "change_pct": "9.991459846496582"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "38.64",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001459846496582",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605287",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "50520.0",
+            "change_pct": "9.993468284606934"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "50.52",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003468284606934",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605288",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "72700.0",
+            "change_pct": "10.001513481140137"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "72.7",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001513481140137",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605488",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "44790.0",
+            "change_pct": "9.995088577270508"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "44.79",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004911422729492",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605577",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "15730.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "15.73",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688037",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "211370.0",
+            "change_pct": "20.001134872436523"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "211.37",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001134872436523",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688200",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "218530.0",
+            "change_pct": "19.9989013671875"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "218.53",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0010986328125",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688361",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "246740.0",
+            "change_pct": "19.99805450439453"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "246.74",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00194549560547",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688507",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "171160.0",
+            "change_pct": "20.002803802490234"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "171.16",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002803802490234",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688517",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "21460.0",
+            "change_pct": "20.022371292114258"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "21.46",
+            "col_22": "20.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002371292114258",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688652",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "94130.0",
+            "change_pct": "20.00255012512207"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "94.13",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00255012512207",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688809",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "223910.0",
+            "change_pct": "20.00107192993164"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "223.91",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00107192993164",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "920298",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "94600.0",
+            "change_pct": "29.998624801635742"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "94.6",
+            "col_22": "30"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001375198364258",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "920770",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "11920.0",
+            "change_pct": "29.989093780517578"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "11.92",
+            "col_22": "29.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000906219482422",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        }
+      ],
+      "status": "date_aligned_pass"
+    },
+    {
+      "date": "20261105",
+      "request_return_count": 84,
+      "kpl_stock_count": 84,
+      "paired_count": 53,
+      "limit_count_exact_count": 48,
+      "price_scaled_exact_count": 47,
+      "change_pct_within_0_02_count": 51,
+      "change_pct_rounded_exact_count": 51,
+      "pairs": [
+        {
+          "code": "000017",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "7020.0",
+            "change_pct": "10.031347274780273"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "7.02",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001347274780273",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000428",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3820.0",
+            "change_pct": "10.086455345153809"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.82",
+            "col_22": "10.09"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003544654846191",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000603",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "26050.0",
+            "change_pct": "10.008445739746094"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "26.05",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001554260253906",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000700",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15000.0",
+            "change_pct": "9.970674514770508"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000674514770508",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "000889",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3270.0",
+            "change_pct": "10.1010103225708"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.27",
+            "col_22": "10.1"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0010103225708",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001269",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "217810.0",
+            "change_pct": "10.002232551574707"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.06",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": false,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.022232551574707",
+          "change_pct_within_0_02_pp": false,
+          "change_pct_rounded_to_2dp_equal": false
+        },
+        {
+          "code": "001330",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6160.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.16",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001360",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "18980.0",
+            "change_pct": "10.028985023498535"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "18.98",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001014976501465",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "001393",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "40910.0",
+            "change_pct": "10.002689361572266"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "40.91",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002689361572266",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002081",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "4730.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "4.73",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002088",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "10080.0",
+            "change_pct": "10.043667793273926"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "10.08",
+            "col_22": "10.04"
+          },
+          "limit_count_equal": false,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003667793273926",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002309",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "2920.0",
+            "change_pct": "10.188679695129395"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "2.92",
+            "col_22": "10.19"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001320304870605",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002318",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "20360.0",
+            "change_pct": "9.994597434997559"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.39",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.004597434997559",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002343",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8890.0",
+            "change_pct": "10.024752616882324"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.89",
+            "col_22": "10.02"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004752616882324",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002421",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "3180.0",
+            "change_pct": "10.034602165222168"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "3.18",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004602165222168",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002506",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "2540.0",
+            "change_pct": "9.956709861755371"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "2.54",
+            "col_22": "9.96"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003290138244629",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002529",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "6720.0",
+            "change_pct": "9.983633041381836"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "6.72",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003633041381836",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "002578",
+          "push2ex": {
+            "limit_count": "4.0",
+            "price": "4550.0",
+            "change_pct": "9.90338134765625"
+          },
+          "kpl": {
+            "col_15": "4",
+            "col_21": "4.55",
+            "col_22": "9.9"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00338134765625",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "003033",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "85090.0",
+            "change_pct": "10.006464004516602"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "85.09",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003535995483398",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300093",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "18660.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "18.66",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "300709",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "41380.0",
+            "change_pct": "20.011600494384766"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "41.38",
+            "col_22": "20.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001600494384766",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301000",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "28080.0",
+            "change_pct": "20.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "28.08",
+            "col_22": "20"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "301697",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "30500.0",
+            "change_pct": "19.984264373779297"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "30.5",
+            "col_22": "19.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004264373779297",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600206",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "38390.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "38.39",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600261",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "4910.0",
+            "change_pct": "10.089685440063477"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.91",
+            "col_22": "10.09"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000314559936523",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600481",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "217810.0",
+            "change_pct": "9.999494552612305"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "4.11",
+            "col_22": "9.89"
+          },
+          "limit_count_equal": false,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.109494552612305",
+          "change_pct_within_0_02_pp": false,
+          "change_pct_rounded_to_2dp_equal": false
+        },
+        {
+          "code": "600539",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "12660.0",
+            "change_pct": "9.991312026977539"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "12.66",
+            "col_22": "9.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001312026977539",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600569",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "1930.0",
+            "change_pct": "10.285714149475098"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "1.93",
+            "col_22": "10.29"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004285850524902",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600641",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "31020.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "31.02",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "600865",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "6060.0",
+            "change_pct": "9.981851577758789"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "12.56",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": false,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.001851577758789",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601599",
+          "push2ex": {
+            "limit_count": "4.0",
+            "price": "4620.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "4",
+            "col_21": "4.62",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "601929",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "2500.0",
+            "change_pct": "10.132158279418945"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "2.5",
+            "col_22": "10.13"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002158279418945",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603151",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "21660.0",
+            "change_pct": "10.005078315734863"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "19.68",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": false,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.004921684265137",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603212",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10670.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.67",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603297",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "105850.0",
+            "change_pct": "9.996882438659668"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "105.85",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003117561340332",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603313",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6420.0",
+            "change_pct": "9.931507110595703"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.42",
+            "col_22": "9.93"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001507110595703",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603381",
+          "push2ex": {
+            "limit_count": "3.0",
+            "price": "18850.0",
+            "change_pct": "9.976662635803223"
+          },
+          "kpl": {
+            "col_15": "3",
+            "col_21": "18.85",
+            "col_22": "9.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003337364196777",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603500",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10290.0",
+            "change_pct": "10.053476333618164"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.29",
+            "col_22": "10.05"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003476333618164",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603598",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "21660.0",
+            "change_pct": "10.005078315734863"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "21.66",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.004921684265137",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603657",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "30800.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "30.8",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603682",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "8230.0",
+            "change_pct": "10.026738166809082"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "8.23",
+            "col_22": "10.03"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003261833190918",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603737",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "24060.0",
+            "change_pct": "10.013717651367188"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "24.06",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003717651367188",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603876",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "15110.0",
+            "change_pct": "9.970888137817383"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "15.11",
+            "col_22": "9.97"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000888137817383",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "603956",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "6710.0",
+            "change_pct": "10.0"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "6.71",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.0",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605069",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10520.0",
+            "change_pct": "10.041841506958008"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.52",
+            "col_22": "10.04"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001841506958008",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605188",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "12420.0",
+            "change_pct": "10.008857727050781"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "12.42",
+            "col_22": "10.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001142272949219",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605287",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "49270.0",
+            "change_pct": "10.002232551574707"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "55.57",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": false,
+          "change_pct_abs_diff": "0.002232551574707",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605339",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "14360.0",
+            "change_pct": "10.038313865661621"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "14.36",
+            "col_22": "10.04"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.001686134338379",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "605488",
+          "push2ex": {
+            "limit_count": "2.0",
+            "price": "49270.0",
+            "change_pct": "10.002232551574707"
+          },
+          "kpl": {
+            "col_15": "2",
+            "col_21": "49.27",
+            "col_22": "10"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002232551574707",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688109",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "68420.0",
+            "change_pct": "19.992984771728516"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "68.42",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.002984771728516",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688316",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "48100.0",
+            "change_pct": "20.009979248046875"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "48.1",
+            "col_22": "20.01"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.000020751953125",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688429",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "10690.0",
+            "change_pct": "19.97755241394043"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "10.69",
+            "col_22": "19.98"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.00244758605957",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        },
+        {
+          "code": "688648",
+          "push2ex": {
+            "limit_count": "1.0",
+            "price": "34810.0",
+            "change_pct": "19.993104934692383"
+          },
+          "kpl": {
+            "col_15": "1",
+            "col_21": "34.81",
+            "col_22": "19.99"
+          },
+          "limit_count_equal": true,
+          "price_scaled_equal": true,
+          "change_pct_abs_diff": "0.003104934692383",
+          "change_pct_within_0_02_pp": true,
+          "change_pct_rounded_to_2dp_equal": true
+        }
+      ],
+      "status": "excluded_inconsistent_recheck",
+      "kpl_nonoverlap_count": 31
+    }
+  ],
+  "network_query_mode": "sequential; cache wrapper bypassed; project requires_push2 rate limiter retained",
+  "date_response_metadata": "get_limit_up_pool extracts data.pool and discards any outer response date; explicit request parameter alone is insufficient when rows conflict with the dated KPL capture",
+  "adjudication_use": "Only dates with complete KPL overlap and all three comparison rules passing support field semantics; 20261105 recheck is preserved as a discrepancy and excluded from positive counts."
+}

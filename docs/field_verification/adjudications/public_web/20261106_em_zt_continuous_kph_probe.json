@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "queried_at": "2026-11-06T18:34:32+08:00",
+  "source": "Eastmoney Push2EX getTopicZTPool via stock_common.sc_datasource._pools.get_limit_up_pool",
+  "comparison_source": "KPH retained historical raw samples with matching root trade_date",
+  "network_policy": "three sequential explicit-date requests; requires_push2 limiter retained; no retries",
+  "field_paths": {
+    "push2ex": "東財-push2ex::zt_continuous (adapter maps zttj.ct)",
+    "kph": "开盘红(kph_limit_ladder)::limit_count"
+  },
+  "results": [
+    {
+      "requested_trade_date": "20261027",
+      "kph_capture_folder": "20261028",
+      "kph_trade_date": "20261027",
+      "kph_row_count": 39,
+      "push2ex_return_count": 41,
+      "overlap_count": 39,
+      "exact_match_count": 38,
+      "mismatch_count": 1,
+      "missing_value_count": 0,
+      "exact_codes": [
+        "000678",
+        "000888",
+        "001219",
+        "001318",
+        "001331",
+        "001400",
+        "002011",
+        "002093",
+        "002187",
+        "002205",
+        "002284",
+        "002623",
+        "002708",
+        "002724",
+        "002820",
+        "002823",
+        "300504",
+        "300539",
+        "301314",
+        "301479",
+        "301682",
+        "600303",
+        "600626",
+        "600715",
+        "600785",
+        "600828",
+        "600838",
+        "601086",
+        "601566",
+        "601956",
+        "603037",
+        "603370",
+        "603376",
+        "603528",
+        "603565",
+        "603758",
+        "603813",
+        "605333"
+      ],
+      "mismatches": [
+        {
+          "code": "002249",
+          "push2ex_zt_continuous": 2.0,
+          "kph_limit_count": 1
+        }
+      ],
+      "missing_values": []
+    },
+    {
+      "requested_trade_date": "20261030",
+      "kph_capture_folder": "20261102",
+      "kph_trade_date": "20261030",
+      "kph_row_count": 44,
+      "push2ex_return_count": 47,
+      "overlap_count": 44,
+      "exact_match_count": 43,
+      "mismatch_count": 1,
+      "missing_value_count": 0,
+      "exact_codes": [
+        "000410",
+        "000417",
+        "000525",
+        "000568",
+        "000596",
+        "000676",
+        "000716",
+        "000897",
+        "000995",
+        "001219",
+        "001287",
+        "002088",
+        "002172",
+        "002275",
+        "002365",
+        "002432",
+        "002582",
+        "002636",
+        "002652",
+        "002946",
+        "003032",
+        "300030",
+        "301132",
+        "301187",
+        "301520",
+        "600113",
+        "600189",
+        "600215",
+        "600258",
+        "600285",
+        "600510",
+        "600721",
+        "601083",
+        "603029",
+        "603198",
+        "603200",
+        "603233",
+        "603273",
+        "603587",
+        "605058",
+        "605169",
+        "605338",
+        "688045"
+      ],
+      "mismatches": [
+        {
+          "code": "002086",
+          "push2ex_zt_continuous": 4.0,
+          "kph_limit_count": 3
+        }
+      ],
+      "missing_values": []
+    },
+    {
+      "requested_trade_date": "20261103",
+      "kph_capture_folder": "20261104",
+      "kph_trade_date": "20261103",
+      "kph_row_count": 41,
+      "push2ex_return_count": 48,
+      "overlap_count": 41,
+      "exact_match_count": 37,
+      "mismatch_count": 4,
+      "missing_value_count": 0,
+      "exact_codes": [
+        "000151",
+        "000591",
+        "000599",
+        "000608",
+        "000679",
+        "001318",
+        "002029",
+        "002058",
+        "002088",
+        "002105",
+        "002292",
+        "002300",
+        "002522",
+        "002578",
+        "002580",
+        "002652",
+        "002692",
+        "002805",
+        "002992",
+        "301513",
+        "600241",
+        "600293",
+        "600327",
+        "600358",
+        "600558",
+        "600630",
+        "600778",
+        "600802",
+        "601123",
+        "601188",
+        "601366",
+        "601566",
+        "603258",
+        "603381",
+        "603402",
+        "603906",
+        "605378"
+      ],
+      "mismatches": [
+        {
+          "code": "002086",
+          "push2ex_zt_continuous": 6.0,
+          "kph_limit_count": 5
+        },
+        {
+          "code": "002696",
+          "push2ex_zt_continuous": 10.0,
+          "kph_limit_count": 1
+        },
+        {
+          "code": "600261",
+          "push2ex_zt_continuous": 5.0,
+          "kph_limit_count": 4
+        },
+        {
+          "code": "600715",
+          "push2ex_zt_continuous": 6.0,
+          "kph_limit_count": 5
+        }
+      ],
+      "missing_values": []
+    }
+  ],
+  "date_alignment": {
+    "basis": "Each Push2EX request used an explicit trade date; its requested_trade_date equals the retained KPH raw root trade_date.",
+    "kph_retained_raw_samples": [
+      {
+        "capture_folder": "20261028",
+        "trade_date": "20261027",
+        "file": "docs/field_verification/20261028/raw_kph.json",
+        "sha256": "2cf561e379873faeb0a65aa66e4b19f066b1dd09ab294023063dcafb8a507e6a"
+      },
+      {
+        "capture_folder": "20261102",
+        "trade_date": "20261030",
+        "file": "docs/field_verification/20261102/raw_kph.json",
+        "sha256": "fafe44887a536d8b51a34b5bbb841cdb4497149e7f5bdcf6ab4b882ebe012d57"
+      },
+      {
+        "capture_folder": "20261104",
+        "trade_date": "20261103",
+        "file": "docs/field_verification/20261104/raw_kph.json",
+        "sha256": "4ab30e5a6edc7a79a28396abad62e6832def1f941231a4ba6e305003ae0e5157"
+      }
+    ],
+    "limitation": "The project adapter returns data.pool and does not retain the Push2EX response's own as-of date metadata; the date evidence is the explicit request date plus matching KPH trade_date."
+  },
+  "totals": {
+    "kph_rows": 124,
+    "push2ex_rows": 136,
+    "overlap": 124,
+    "exact_matches": 118,
+    "integer_mismatches": 6,
+    "missing_values": 0
+  },
+  "decision_relevance": {
+    "push2ex_zt_continuous_to_kph_limit_count": "Reject exact same-number mapping: six integer mismatches across three source-date-aligned days, including 002696 10 versus 1.",
+    "do_not_conflate_with": "东财-push2ex::limit_count to 开盘啦(kpl_limit_up_detail)::raw_columns.col_15, which has separate 271/271 exact date-confirmed evidence."
+  }
+}

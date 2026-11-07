@@ -27,7 +27,7 @@
 | ulist f21 | f117 | 流通市值 |
 | ulist f23 | f167 | PB |
 | ulist f24 | f121 | **60日涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
-| ulist f25 | f122 | **年初至今涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
+| ulist f25 | f122 | **年初至今涨跌幅(%) 同义字段**；来源日期对齐样本 60/60 逐值相等，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
 | ulist f26 | f189 | 上市日期 |
 | ulist f27 | f107 | 市场标记(布尔0/1,北交=0, ≡f107/f110, L1·第十轮复核) |
 | ulist f29 | f180 | ≡ulist:f29 同值(✅多日再确认 §12.3.1.2) |
@@ -41,7 +41,7 @@
 | ulist f41 | f184 | 营收增长率 |
 | ulist f45 | f105 | 最新报告期归母净利润(✅) |
 | ulist f46 | f185 | 净利增长率 |
-| ulist f48 | f190 | 每股未分配利润 |
+| ulist f48 | f190 | 每股未分配利润，同义字段；此处 Push2 f190 不代表 Ulist f190 |
 | ulist f49 | f186 | 毛利率 |
 | ulist f57 | f188 | 资产负债率 |
 | ulist f62 | f137 | 特大单净流入 |

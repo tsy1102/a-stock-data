@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_7be4c50642917f3e9da193ebcc4ded4973fdf59da85e5c1b492fc557e17daff2",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "保留期内9个独立交易日、178组有效样本全部精确相等；数据日期均由来源日期确认。Push2 f170另有3日60/60，Ulist f3另有3日60/60精确互证。接受此候选用于主字段定案，其他两个关系分别保留其来源关系。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md",
+        "adjudications/public_web/20261106_em_high52_probe.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_90ca147b675905d293f4d2fa8036668bdb433a414445ee179ff66a46a4ff21ec",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "ZHB full.change_pct 与 Push2 f170 在3个来源日期共60/60精确相等；来源独立性确认。接受为一个独立跨源字段关系。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_1c482737a4e93d0bd91276edeea394fffefab1208463e30e3dd22bafc5b386aa",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "ZHB full.change_pct 与 Ulist f3 在3个来源日期共60/60精确相等；来源独立性确认。接受为一个独立跨源字段关系。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_f4b80f5b49cd701dc4b1b07d450c23668325bee719aa15c7d9b77bf5563af777",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "拒绝逐值同义映射：来源日期对齐的7日复核为133/140精确相等，7个差异均集中在688553且为17.20/17.22的稳定0.02元差异。近似命中支持相似52周高点语义，但不能写为精确同值关系。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md",
+        "adjudications/public_web/20261106_em_high52_probe.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_3173b424e212f0b4006e97dbbf9f0d00b367468b06958b8b0261ae0d1266616c",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "拒绝逐值同义映射：ZHB与Push2 f174的来源日期对齐样本86组中75组精确相等；其余包含000568的0.01元、688553的0.03元，以及600675滚动窗口边界的0.06元差异。公开API与K线证据支持f174为52周滚动最高价语义，但不支持对其他源声明逐值相同。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md",
+        "adjudications/public_web/20261106_em_high52_probe.json",
+        "https://github.com/xbtlin/ai-berkshire/issues/70"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_975c992c03552958d7813d1dd8c4acdc1e58e70f9565be17481f176172fcf0b8",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T16:55:11+08:00",
+      "rationale": "拒绝ZHB change_ytd与Push2 f122的逐值同义映射：来源日期对齐样本86组中78组精确相等；8个偏差反复集中于688553（0.15-0.16个百分点）和301190（0.07-0.08个百分点），超出舍入误差。Push2 f122与Ulist f25本身仍保持60/60精确关系。",
+      "evidence_refs": [
+        "20261106/historical_second_pass_adjudication/20261106_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

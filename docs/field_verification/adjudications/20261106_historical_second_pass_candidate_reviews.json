@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_0a6b557a1296d4cd58efc086bbb6ce3e41add012c13e363625b0fdc0c4139f04",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "9个来源日期对齐交易日共420组样本中有31个整数反例，且2026-10-16金奥博KPL col_15=1、KPH limit_count=3、标签为4天3板；公开报道确认4日3板。差异不是舍入或单位换算。拒绝两字段直接映射，不否定KPL col_15自身已裁定的当前连续涨停板数语义。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://finance.eastmoney.com/a/202610163898122340.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_8b00d1aadb9b8b86dbd01167570694f8b032c9d897a9f11f82473bc124902073",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "col_15与KPH limit_count虽呈时间序列相关，但420组日期对齐样本的31个整数反例和4天3板实例证明，当前连板数不等于窗口涨停数。拒绝逐值映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_5f12823cf37a269c199ca14c5230f4a44065266f8884fd6bea67ce41d4d3f619",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_22已由日期对齐腾讯[32]的11组样本确认是涨跌幅（%）；KPH seal_money是封单金额（元）。候选来自反向相关线索，字段量纲和语义不同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e4ef00fa9884bfecc56ab7bbebe38a4c5fc07d80e4661a401a8ab550a9f5d6e6",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_21已由日期对齐腾讯[3]的11组样本确认是现价（元）；KPH turnover是成交额（元）。单位同为元不代表语义相同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_038896e090c6bd5c6583c8a4945c5c865b952bcc99878725ad8956edfda2384f",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_21是现价（元），KPH limit_count是连板数（板）；Pearson/Spearman相关不构成同义证据，量纲不同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_4799792adcc77acfdd9f7554c90702f1e1afa6309d1450fc01eb527c2c29af77",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_15是当前连续涨停板数（板），KPH turnover是成交额（元）。相关性线索不能克服字段量纲和语义差异，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_06c8855a9d36f3bf0c1d4af7f374c8e613752dd8eb2e88d2efbe9c345f1692f7",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_15是当前连续涨停板数（板），KPH seal_amount是封单量（单位未确认）。一个是连板计数，一个是封单数量，语义与维度不同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_24fd17fd35cc14ac496de579b5903be95b86c046ed698bffb36d7f7a1f397041",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_15是当前连续涨停板数（板），KPH net_inflow是主力净流入（元）。量纲和语义不同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_f3e4987e480c6de1f1c68e260a8f73ef7966d9838b38c8834de8b860fdddd9d8",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "rationale": "KPL col_15是当前连续涨停板数（板），KPH limit_time是涨停时间（Unix秒）。量纲和语义不同，拒绝映射。 本次以封存的首轮报告字节快照复核，原始候选 ID 和报告 SHA 可重现。",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_first_pass.json",
+        "adjudications/20261106_kpl_raw_columns_semantics.md",
+        "adjudications/public_web/20261106_kpl_raw_fields.md",
+        "https://www.kaipanla.com/page",
+        "https://www.kaipanla.com/article/39873",
+        "https://finance.eastmoney.com/a/202610163898122340.html",
+        "https://finance.eastmoney.com/a/202610163898123090.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_24efeca3b920401edaa1a5983c35be716d6def97d017c755064a0b94a29dcd8e",
+      "disposition": "accepted_for_adjudication",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_pre_review.json",
+        "adjudications/20261106_push2ex_date_aligned_evidence.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "rationale": "三个有效指定日期（2026-10-28、11-02、11-04）的271组来源日期对齐样本中，Push2EX limit_count 与 KPL col_15 逐值相等；13日历史837组也相同但其来源日期未全确认。2026-11-05次日回查出现股票集合和值不一致，已排除。接受来源字段语义定案；因完整候选仍为L4，不写入跨源映射行。",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_975c99fb30bdba793097a2fcdd4ca2b1ab32d4c4627fb0289d379ac2a5819754",
+      "disposition": "accepted_for_adjudication",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_pre_review.json",
+        "adjudications/20261106_push2ex_date_aligned_evidence.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "rationale": "三个有效指定日期的271组样本均满足 Push2EX price / 1000 = KPL col_21；这是现价的单位缩放，不是原值相等。来源字段语义按千分之一元登记，不创建当前关系枚举无法表达的逐值映射。",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_36e6ba7813ddec8ba147b0f3da6dd6ac7d03e99c29dc9d72153a771975a39cbb",
+      "disposition": "accepted_for_adjudication",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_pre_review.json",
+        "adjudications/20261106_push2ex_date_aligned_evidence.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "rationale": "三个有效指定日期的271组样本中，Push2EX change_pct 与 KPL col_22 的差均不超过0.02个百分点，四舍五入至两位后271/271相等；两者是同一涨跌幅口径、精度不同，不登记为原值逐项相等。",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_41e6e7064470292c8cd7cf8193e5b8aca64c73265e1f69ab75d71158a0a9666e",
+      "disposition": "rejected",
+      "evidence_refs": [
+        "20261106/20261106_collision_report_pre_review.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "rationale": "保留范围内 Sina[32] 的280个值有279个为00，TDX hgu 的非零值集中在不同股票；94.6%命中由低信息量常量主导，不能证明语义关联。拒绝本候选，不由此定案Sina[32]自身含义。",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cfca6964d15a1b15464a9bb612eb05318f0c2a6e33832ae1f63146a18d11a57d",
+      "disposition": "rejected",
+      "evidence_refs": [
+        "20261105/20261105_collision_report.json",
+        "adjudications/20261106_historical_second_pass.md"
+      ],
+      "rationale": "来源日期对齐的9个交易日420组中有3个精确分类码反例：2026-10-16 920690、2026-11-02 603110 和 603466。417/420的高命中不能覆盖反例；拒绝KPL sector_code与KPH industry_id逐值同义映射，保留各自原码和未确认的分类层级。",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-06T13:25:14+08:00",
+      "duplicate_of": null
+    }
+  ]
+}

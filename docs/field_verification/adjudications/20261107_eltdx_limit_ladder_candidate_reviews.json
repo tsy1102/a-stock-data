@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_f3c1f8cc476187a844d59eee5a33ac46232dff190030eae4e24636dc4fa6b2fd",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "ELTDX 上游契约和 12/12 来源内换算确认此路径是普通流通股本；与腾讯[72]仅 2/12 完全相等，最大相对差约 1.57e-7。11/12 落在 0.57 个 TDX float32 换算 ULP 内，另 1/12 为 1.36 ULP，且财务更新日期/精度未逐条对齐。认可语义相符但不据此新增严格逐值映射，保留该跨源数值关系待外证。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_c22e47da8af77f1a5595b9850a322eb5fcdeb8db1caa0a5ab1d7bb929e7d85e2",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "Tencent[76] 在本项目注册表中是 Tencent[72] 的同值别名；该候选与代表候选使用相同 12 组样本，只保留一个待外证关系。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": "cc1_f3c1f8cc476187a844d59eee5a33ac46232dff190030eae4e24636dc4fa6b2fd"
+    },
+    {
+      "candidate_id": "cc1_59c18311104ddbbbe9f8dd5e53a5721ffbdb38fc9ecb4dfc6bfc9a364078bc35",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.float_shares ↔ Tencent[73] 的直接同值关系：左侧是普通流通股本，右侧为总股本，业务含义不同。此决定只针对该候选配对。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_bb316e12b90a3fd636f3cd46ff934a98aac39a30f1ae1748721e4f0418f74972",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.float_shares ↔ Tencent[58] 的直接同值关系：普通流通股本是股份数量，Tencent[58] 是成交量字段，量纲和业务含义不一致。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cf893281e4e1dc6e6c2bb0e60a987ec62c1bf6a350c0dd815327be5650fca0f5",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.float_shares ↔ Tencent[45] 的直接同值关系：左侧为股份数量，右侧为总市值，单位和业务含义不一致。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_0517ad3e281c508dfdb6ef3ad6aea447232d550c5bc18a50808598b0e0abe6bd",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.float_shares ↔ Tencent[44] 的直接同值关系：流通市值是金额，左侧为股份数量，单位不符。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_a76932f6ad266a00db9cc70f3bd73eaac580369bcebf68478ae80c2a89b62e16",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.float_shares ↔ Tencent[30] 的直接同值关系：报价时间字段不是股份数量。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_fbcff715f40a73949c48bd5296f825eea04de298d741602d993d470838dbc2fc",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.free_float_shares ↔ Tencent[72] 的直接同值关系：ELTDX 明确将左侧定义为自由流通股本，Tencent[72] 已验证为普通流通股本；不是同一口径。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_1b2925414507665bf7296c532755b919687763e5f072df01278fdcd1f31b57c0",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "Tencent[76] 是 Tencent[72] 的已登记同值别名；该候选按同一字段关系分组。代表候选已因普通流通与自由流通口径不同而拒绝。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": "cc1_fbcff715f40a73949c48bd5296f825eea04de298d741602d993d470838dbc2fc"
+    },
+    {
+      "candidate_id": "cc1_2bc36509cf338f7484a869df982f5aa2545c0be2b5a0880a98e70b0e84f72ff2",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.free_float_shares ↔ Tencent[58] 的直接同值关系：左侧为股份数量，右侧为成交量字段，量纲不符。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_bdae1630e279eed1cf62bf122887b1617f9e2302b2a717011d2b27dd463b47d0",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.free_float_shares ↔ Tencent[32] 的直接同值关系：左侧为股份数量，右侧为涨跌幅百分比，量纲和业务含义不符。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cfecb52f87fa4221c871c397f0a4a7247685c5cff40699b3c7279cfa2014d35c",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[50] 的直接同值关系：Tencent[50] 为委差类盘口数量指标，ELTDX 左侧为人民币买一金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_8c65ce8cb3fe5a125859e207eb89728ca501cb263924a4cb194fb17ee4d604bb",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Sina[10] 的直接同值关系：Sina[10] 是买一量，ELTDX 左侧为买一价乘买一量所得金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_59972dfa6d6db67161cbc845f23b3441f5f0bbc11a689b845af8692c4c7e9bbf",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[79] 的直接同值关系：右侧为区间收益率，不是盘口金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_753e613a037b7a9c15f382df8d20872988a6c6f7928e2a612cf403bdba40796b",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[71] 的直接同值关系：右侧为区间收益率，不是盘口金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_01b30b1a4da19e0290e8a1318548e4e77b395a025ee3bd393f7f18146e7013f6",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[70] 的直接同值关系：右侧为区间收益率，不是盘口金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e291033700c7c6cefa88ee73fa0a0cdd19e69e58b8d5b7e3c5d57d8b7d918f06",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[49] 的直接同值关系：右侧为量比，ELTDX 左侧为金额。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_1a3a9b305e44cecdcb2268acaf0610f20c1306e85544f64cf3077f79d903d0fd",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T07:15:24+08:00",
+      "rationale": "拒绝 limit_ladder.seal_amount ↔ Tencent[43] 的直接同值关系：右侧为振幅百分比，与金额字段不同。",
+      "evidence_refs": [
+        "20261107/historical_final_review_refresh_20261107/20261107_collision_report.json",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

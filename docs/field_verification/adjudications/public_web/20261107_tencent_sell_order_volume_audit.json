@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-07",
+  "evidence_type": "public_data_semantic_adjudication",
+  "target": {
+    "source": "腾讯(qt.gtimg)",
+    "code": "[20]",
+    "canonical": "[20]",
+    "meaning": "卖1量",
+    "unit": "手"
+  },
+  "public_checks": [
+    {
+      "url": "https://qt.gtimg.cn/q=sh600519",
+      "accessed_on": "2026-11-07",
+      "observed_row_timestamp": "20261106161458",
+      "field_19": "1453.00",
+      "field_20": "2",
+      "interpretation_basis": "腾讯公开响应的字段顺序由可公开检查的解析器索引表交叉确认；索引19为卖一价槽位，索引20为卖一量槽位。"
+    },
+    {
+      "url": "https://github.com/mumuy/api/blob/master/docs/stock.md",
+      "evidence": "公开接口字段索引表将 19 标注为卖一，将 20 标注为卖一量（手）。"
+    },
+    {
+      "url": "https://quote.eastmoney.com/sh600519.html",
+      "evidence": "东方财富个股行情页展示卖五至卖一盘口行；页面字段结构为盘口语义旁证，不作为腾讯 API 索引定义的唯一依据。"
+    },
+    {
+      "url": "https://choice.eastmoney.com/FileDownLoad/GXSC.pdf",
+      "evidence": "Choice 实时行情指标包含盘口与内外盘类行情指标，作为产品层语义背景；不主张其是 qt.gtimg.cn 的接口规范。"
+    }
+  ],
+  "retained_sample_checks": {
+    "collision_report": "collision_research_20261107/exploratory/20261107/user_historical_recrack_20261107_round4/20261107_collision_report.json",
+    "collision_report_sha256": "631838be748f8bbc22b179a00146c9b5d019a1376115aa4071b7958bf27552d4",
+    "tdx_ask1_vol_vs_tencent_20": {
+      "distinct_trade_dates": 13,
+      "pairs": 258,
+      "exact_pairs": 258,
+      "nonzero_pairs": 246,
+      "nonzero_exact_pairs": 246,
+      "unique_nonzero_values": 186,
+      "all_daily_pairs_exact": true,
+      "tencent_source_as_of_and_row_timestamp_dates_match": true
+    },
+    "ulist239_f212_vs_tencent_20": {
+      "distinct_trade_dates": 4,
+      "pairs": 80,
+      "raw_exact_pairs": 76,
+      "placeholder_only_mismatches": 4,
+      "normalization": "when Tencent ask1 price is 0 and quantity is 0, normalize Ulist '-' ask1 price/quantity placeholders to zero for semantic comparison",
+      "exact_after_no_offer_normalization": 80
+    }
+  },
+  "decision_scope": {
+    "verified": "Tencent [20] is the first-level ask-side displayed quote quantity, in hands.",
+    "not_claimed": [
+      "No same_number_same_meaning mapping to Ulist f212 is registered because the raw no-offer placeholders differ.",
+      "This evidence does not define deeper order-book levels or market-wide source independence."
+    ]
+  },
+  "public_source_quality": "The Tencent field-index references are reverse-engineered public parser documentation, not an official Tencent API contract. The adjudication combines that index position with the public live payload and retained multi-day exact-value evidence; it is not labeled as source_contract."
+}

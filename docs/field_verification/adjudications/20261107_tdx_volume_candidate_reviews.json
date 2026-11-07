@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_08e224f8be46e327952c064844e47b52b7401deeb5449655cf443b7467949d35",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T16:38:14+08:00",
+      "rationale": "TDX quote_raw.bid1_vol ↔ Tencent [10]：全保留历史 13 个交易日、258 组配对全部精确，256 组非零全部精确；每个交易日均达标。Tencent [10] 已由公开盘口语义与三只股票的收盘后公开行情核验为买一量（手）；同一行时间戳日期对齐。允许进入字段定案，仍需正式 verified_anchor_only 报告复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_post_witness/20261107_collision_report.json",
+        "adjudications/20261107_tdx_cross_source_date_witness.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json",
+        "adjudications/public_web/20261107_tencent_sell_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_25f8e31ac61d33336d7f6bbacbdbaa543b4462f0692776f7a83778f974a7e724",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T16:38:14+08:00",
+      "rationale": "TDX quote_raw.ask1_vol ↔ Tencent [20]：全保留历史 13 个交易日、258 组配对全部精确，246 组非零全部精确；每个交易日均达标。Tencent [20] 已由公开盘口语义、公开解析器索引与同日 TDX 样本核验为卖一量（手）；同一行时间戳日期对齐。允许进入字段定案，仍需正式 verified_anchor_only 报告复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_post_witness/20261107_collision_report.json",
+        "adjudications/20261107_tdx_cross_source_date_witness.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json",
+        "adjudications/public_web/20261107_tencent_sell_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

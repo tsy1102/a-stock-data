@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_a60100bc3f520a21679d44ef5affc51452d084147c3e479abdf7870b53ce5cbd",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T13:47:05+08:00",
+      "rationale": "同档关系在 14 个保留交易日、20 只股票的候选中，Tencent 数量乘 100 后有 159/277 非零样本精确命中；但新浪与腾讯报价时间戳中位相差 2358 秒，280 组中没有一组在 60 秒内。这支持两边都表示同一买档数量且单位约为手/股，但不足以登记逐值映射；待同步采样后可复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_f4598a8bc5c5d7476bf9ef091dca0a0f314fcb4d16d8f00b5bffe879a40a37af",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T13:47:05+08:00",
+      "rationale": "同档关系在 14 个保留交易日、20 只股票的候选中，Tencent 数量乘 100 后有 228/278 非零样本精确命中；但新浪与腾讯报价时间戳中位相差 2358 秒，280 组中没有一组在 60 秒内。这支持两边都表示同一买档数量且单位约为手/股，但不足以登记逐值映射；待同步采样后可复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_b0f0726a60e51ccf6f90bcc70e80ec07a80cabdfe95a962a583c017859dd3a43",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T13:47:05+08:00",
+      "rationale": "同档关系在 14 个保留交易日、20 只股票的候选中，Tencent 数量乘 100 后有 227/278 非零样本精确命中；但新浪与腾讯报价时间戳中位相差 2358 秒，280 组中没有一组在 60 秒内。这支持两边都表示同一买档数量且单位约为手/股，但不足以登记逐值映射；待同步采样后可复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_988f5edacc38dc9bbf4347aede62c7644c898ff9c0f702f60799add21917f640",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T13:47:05+08:00",
+      "rationale": "同档关系在 14 个保留交易日、20 只股票的候选中，Tencent 数量乘 100 后有 239/277 非零样本精确命中；但新浪与腾讯报价时间戳中位相差 2358 秒，280 组中没有一组在 60 秒内。这支持两边都表示同一买档数量且单位约为手/股，但不足以登记逐值映射；待同步采样后可复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_d57ce62c13c8b1bd15e9dc55103c4835159e8a7b5c678661e6919cdaa2cc976d",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T13:47:05+08:00",
+      "rationale": "同档关系在 14 个保留交易日、20 只股票的候选中，Tencent 数量乘 100 后有 241/278 非零样本精确命中；但新浪与腾讯报价时间戳中位相差 2358 秒，280 组中没有一组在 60 秒内。这支持两边都表示同一买档数量且单位约为手/股，但不足以登记逐值映射；待同步采样后可复核。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/user_recrack_exploratory_v2_20261107/20261107_collision_report.json",
+        "adjudications/public_web/20261107_tencent_buy_order_volume_audit.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

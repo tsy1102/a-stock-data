@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "reviewer": "Codex historical evidence review",
+  "reviewed_on": "2026-11-07",
+  "report": "20261107/user_recrack_post_witness_formal/20261107_collision_report.json",
+  "decisions": [
+    {
+      "id": "historical-recrack-tdx-bid1-vol-20261107",
+      "candidate": {
+        "left": "tdx.quote_raw.bid1_vol",
+        "right": "tencent[10]"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "bid1_vol"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[10]"
+      },
+      "action": "verify",
+      "canonical": "bid1_vol",
+      "meaning": "买一量",
+      "unit": "手",
+      "rationale": "全保留历史样本覆盖13个交易日、258组同股票配对，全部精确一致；256组非零配对全部精确一致，每日有效配对均达到L1阈值。锚字段腾讯[10]已由公开行情盘口标签及三只股票收盘后公开行情核验为买一量（手）。目标日期通过同股同日跨源值见证推断，报告明确标注cross_source_dates_inferred；此定案仅确立bid1_vol语义及其与腾讯[10]的映射，不声称TDX自身提供了来源日期。"
+    },
+    {
+      "id": "historical-recrack-tdx-ask1-vol-20261107",
+      "candidate": {
+        "left": "tdx.quote_raw.ask1_vol",
+        "right": "tencent[20]"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ask1_vol"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[20]"
+      },
+      "action": "verify",
+      "canonical": "ask1_vol",
+      "meaning": "卖一量",
+      "unit": "手",
+      "rationale": "全保留历史样本覆盖13个交易日、258组同股票配对，全部精确一致；246组非零配对全部精确一致，每日有效配对均达到L1阈值。锚字段腾讯[20]已由公开行情响应、公开解析器字段索引及历史同日样本核验为卖一量（手）。目标日期通过同股同日跨源值见证推断，报告明确标注cross_source_dates_inferred；此定案仅确立ask1_vol语义及其与腾讯[20]的映射，不声称TDX自身提供了来源日期。"
+    }
+  ]
+}

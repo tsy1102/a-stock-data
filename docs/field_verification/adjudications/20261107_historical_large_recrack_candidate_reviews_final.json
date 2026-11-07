@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_894860c2ebc58bcf0cfe90af26128dd389b746d2916d929c8b2934ccdbd78407",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ ulist239.f190：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_0d8417fa12866ff5eca4e69ec2ce711300e91158642837baa4b4244d07899dc2",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ ulist239.f231：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_009fba2226c8468c0e0671b2da46c9fd8259e0558ce1c23908968e0f068b6d10",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ ulist239.f200：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_5fc38aabde9630d55af050930f6beb8d7bf728285ce486211111df2916f8f63d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ zhb.full.other_qy_jzc：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_24fea5324cc17604cde46b577ad6e52ae020a14b6038e8b7438a29d5fdcd0708",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ zhb.stat.other_qy_jzc：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_41e6e7064470292c8cd7cf8193e5b8aca64c73265e1f69ab75d71158a0a9666e",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ tdx.finance_info.hgu：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_f9a4822619cacbceb0f69d5f5dc325195f8d06a5a1919f605eecee639ae9a7ec",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "ulist239.f190 ↔ tdx.finance_info.hgu：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_305a08ff5a8e23d3403944e37bb3368fefef03dbbd46dce1fb6f4e1652237c0a",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "ulist239.f190 ↔ zhb.full.other_qy_jzc：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_547e69f8f32b0a697849cbab5fc02e71493e9d118d766c6bda6ca9e5f818496d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "ulist239.f190 ↔ zhb.stat.other_qy_jzc：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_443dd828c296bb01c409f6a13460a26caafbfb47b310d2e5c1194a80eb9fafa4",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "zhb.full.other_qy_jzc ↔ ulist239.f231：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_dc295c7e93415b9179d1bad9cc9986e966ba7003956d55bc74c1b89f92ef9c8a",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "zhb.full.other_qy_jzc ↔ ulist239.f200：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_4b54bb193b253991f215b4308baa9af18e4099d865abb55617a433f464e56c8d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ eltdx.quote_snapshot.unknown_after_outer_raw：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_363712fd0628769d72a812d2ffad77fae58a41b2c855df760b86d57f67001345",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "sina[32] ↔ tdx.finance_info.bgu：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_a4cc6a14ed935199ec15ed8efa875c63d19bbad2fd88e4b1fbff3cec42717e09",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "ulist239.f190 ↔ eltdx.quote_snapshot.unknown_after_outer_raw：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_fd6e77aad13fcd14beeda27135320ee833e7668fc2681a9a8ef825527a5d94c9",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "ulist239.f190 ↔ tdx.finance_info.bgu：全历史原始样本复核显示该关系的匹配由双方零值/零占位造成；对应区间非零精确命中为0，所有信息性非零值均失配。因此拒绝这两个字段的直接 same_number_same_meaning 配对，但不据此定义或证伪任一字段本身。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_fd90efb2c86a6fd0ae4ad4c26b681119bbaffa9246456c91bc56c4e757bc6311",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-07T05:55:35+08:00",
+      "rationale": "按来源日期对齐的 9 日、420 组样本仅 370 组精确相同，50 组计数不一致；差异不是舍入或单位换算。拒绝 KPH 同行业涨停数与 KPL row[20] 的直接同值同义关系，但不对 KPL col_20 字段本身定性，继续保持其语义未验证。",
+      "evidence_refs": [
+        "collision_research_20261107/exploratory/20261107/historical_user_recrack_20261107/20261107_collision_report.json",
+        "adjudications/20261107_historical_large_recrack_audit_final.json",
+        "adjudications/20261105_axdata_field_reverse.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

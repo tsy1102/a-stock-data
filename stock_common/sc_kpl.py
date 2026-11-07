@@ -240,9 +240,11 @@ def get_kpl_limit_up_detail(
     字典 §12.17：PidType=1 首板 / 2 二板 / 3 三板 / 4 四板 / 5 更高
     当前归一化字段使用 row[0:2]、row[4:13]、row[14]、row[17]、row[19]；其余位置仅在
     capture_raw=True 时保留于 raw_columns，不应按旧注释中的常量或字段猜测写入业务输出。
-    2026-10-31 的探索报告对 raw_columns.col_15 / col_21 / col_22 给出强跨源候选，
-    但开盘啦公开页面未说明 DailyLimitPerformance 的原始列号映射。合同核验前仍只保留原始值，
-    不作为字段注册表定案。见 docs/field_verification/adjudications/20261105_collection_cracking_audit.md。
+    2026-11-06 的历史实证裁决已将 raw_columns.col_15（当前连续涨停板数）、col_21（现价）
+    和 col_22（当日涨跌幅）登记为来源内 E3 已验证语义。开盘啦公开资料仍未说明
+    DailyLimitPerformance 的原始列号契约；这三列继续只保留在 raw_columns，不新增归一化输出。
+    col_15 与 KPH.limit_count 不同义；与 Eastmoney push2ex 的逐值映射仍待其来源日期确认。
+    证据见 docs/field_verification/adjudications/20261106_kpl_raw_columns_semantics.md。
     """
     p = _base()
     p.update(

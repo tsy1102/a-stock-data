@@ -129,15 +129,6 @@ def _market_prefix(code: str) -> str:
     return "sz"
 
 
-def _market_from_code(code: str) -> int:
-    # V16.2.2: 北交所含 92 新段
-    if code.startswith(("8", "4", "92")):
-        return 2
-    if code.startswith(("6", "9")):
-        return 1
-    return 0
-
-
 def _index_to_market_code(idx_code: str) -> Tuple[int, str]:
     # V17.0.17: 兼容原始 6 位指数代码(如 '000001' 上证 / '399006' 创业板指)。
     # 原实现无脑取前 2 字符当前缀 → 原始 '000001' 被拆成 ('00','0001') 返回 (0,'0001') 坏码,
@@ -721,46 +712,6 @@ def _get_tdx_client() -> Optional[Any]:
             # 仅余兜底出口（下方 return None）。
             _debug_log("tdx _get_tdx_client: eltdx 与 easy_tdx 均不可用")
         return None
-
-
-def _tdx_health_check(client) -> None:
-    """V12.0: TDX 客户端关键接口健康检查。
-
-    仅做日志记录便于调试；K线假数据仍触发换IP（通过抛 RuntimeError 让 _get_tdx_client 重连）。
-    V17.3.x: mootdx 退役，适配 eltdx / easy_tdx 兜底适配器。
-    """
-    try:
-        _df = client.bars(symbol='600519', frequency=9, start=0, offset=1)
-        if _df is None or _df.empty:
-            _debug_log("TDX health check: bars 返回空")
-        else:
-            _debug_log("TDX health check: bars 正常")
-    except Exception as _e:
-        _debug_log(f"TDX health check: bars 异常: {_e}")
-    try:
-        _q = client.quotes(symbol='600519')
-        if _q is None or _q.empty:
-            _debug_log("TDX health check: quotes 不可用")
-        else:
-            _debug_log("TDX health check: quotes 正常")
-    except Exception as _e:
-        _debug_log(f"TDX health check: quotes 异常: {_e}")
-    try:
-        _f = client.finance(symbol='600519')
-        if _f is None or _f.empty:
-            _debug_log("TDX health check: finance 不可用")
-        else:
-            _debug_log("TDX health check: finance 正常")
-    except Exception as _e:
-        _debug_log(f"TDX health check: finance 异常: {_e}")
-    try:
-        _x = client.xdxr(symbol='600519')
-        if _x is None or _x.empty:
-            _debug_log("TDX health check: xdxr 不可用")
-        else:
-            _debug_log("TDX health check: xdxr 正常")
-    except Exception as _e:
-        _debug_log(f"TDX health check: xdxr 异常: {_e}")
 
 
 def _reset_tdx_connections() -> None:

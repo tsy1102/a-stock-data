@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_cc9251abbb5d08e3a82c5ba509d20c4bd74a333405bf229d8cb8998a851e4287",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "接受为同一昨收语义：AxData 文档定义 pre_close 为昨收价，FTShare 契约定义 prev_close 为前收盘价；2026-10-20 至 2026-11-05 的 10 个数据日共 199 组全部精确相等。AxData::data.pre_close 已按其自身接口契约登记到 pre_close。FTShare 底层独立性仍未确认，本决定不把它计为独立来源证据。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_ea8d6fdefb6a45c9cd7ec7d4e519354765453424da91f173132bc0c0cac60635",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "接受为开盘价语义：AxData 与 FTShare 文档均将对应字段定义为开盘价；10 个数据日 199 组全部精确相等。AxData::data.open_price 已按自身接口契约登记到 open_price。独立来源关系不由数值一致推出。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_4852f2a1036bcb8a7d58ed337996b739447582565c106e80aaccc755527d8db2",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "接受为普通流通股的同一语义类别，不接受为逐值精确映射。AxData 文档定义 float_shares 为普通财务口径流通股；199 组中 10 组完全相等、179 组差值不超过 100 股，中位绝对差 36.1875 股、最大 9,223 股且最大相对差 7.56e-7。该微差可作为精度/更新时间近似证据；L1 精确门槛不变。AxData 自身字段语义由接口契约及 TDX 同族样本定案，不依赖 FTShare 独立性。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_1c0c01b4d68766f861819dd557ed36df0ebbf5489fa85e3a7f07cbf0ee04d8c7",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "拒绝 float_shares ↔ shares 的同义映射。AxData 文档定义左侧为普通流通股，FTShare 官方契约定义 shares 为总股本；199 组样本中位绝对差 1,251,375 股、最大差约 307.4 亿股。相关性源于公司股本规模相近，不能消除字段口径差异。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_02bbcdaf7bb1af04b498bd29bc66bc35d671f2ce8dfd9fe71dce26d08156a4c9",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "拒绝 free_float_shares ↔ float_a_shares 的同义映射。AxData 文档定义左侧为自由流通股本 Z 口径，FTShare 契约将右侧定义为 A 股流通股数；199 组样本中位绝对差约 1.398 亿股。两个都是股数不代表口径相同。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_c430192bea70b2658a4392d6ce5fc204b71977e73ec7c6a176b5670ad3193e8f",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "拒绝 free_float_shares ↔ shares 的同义映射。AxData 文档定义左侧为自由流通股本 Z 口径，FTShare 契约定义右侧为总股本；199 组样本中位绝对差约 2.354 亿股。稳定相关性并不等于同一股本口径。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_c7434b7948486db9f8e225a6a299ec809f1e750d105c885e5658d91e7b0301c7",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "拒绝 free_float_shares ↔ ts_millis。左侧是股数，右侧是 Unix 毫秒时间戳，量纲与类型不同；仅少数单股序列随时间趋势相关，属于时序巧合。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_8450255a184b0decb58b38a03e013bc2d8c19f7317f3c8fe21d5ca28b47d6f95",
+      "disposition": "rejected",
+      "reviewer": "Codex historical evidence review",
+      "reviewed_at": "2026-11-07T08:22:04+08:00",
+      "rationale": "拒绝 open_price ↔ prev_close 的同义映射。官方定义分别是当日开盘价和前一交易日收盘价；10 个数据日 199 组中仅 13 组精确，中位绝对差 0.10 元、最大 19.24 元。高相关由相邻交易日价格延续造成。",
+      "evidence_refs": [
+        "20261107/historical_recrack_second_20261107/20261107_collision_report.json",
+        "adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "adjudications/public_web/20261107_axdata_shortline_interface.md",
+        "https://electkismet.github.io/AxData/interfaces/stock_shortline_indicators_tdx.html",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

@@ -13,6 +13,12 @@ from collections import defaultdict
 from scripts import field_registry_api as FRA
 from scripts import source_lineage_api as SLA
 
+_ZHB_RUNTIME_PATH_PREFIXES = {
+    "ZHB-tdxstat": "stat",
+    "ZHB-tdxstat2": "stat2",
+    "ZHB-tipinfo": "tipinfo",
+}
+
 
 def _lineage_aliases(source, lineage):
     """Resolve an exact registry source to its runtime source identity or identities."""
@@ -30,6 +36,21 @@ def _lineage_aliases(source, lineage):
     aliases = SLA.runtime_aliases_for_source(source, lineage)
 
     return [alias for alias in aliases if alias in runtime_sources]
+
+
+def _runtime_codes_for_source_identity(source, alias, code, explicit_runtime_owners=None):
+    """Map a registry identity to its merged and endpoint-specific runtime paths."""
+
+    normalized_code = SLA.normalize_runtime_field_code(alias, code)
+    codes = [normalized_code]
+    prefix = _ZHB_RUNTIME_PATH_PREFIXES.get(source) if alias == "zhb" else None
+    if prefix and normalized_code != prefix and not normalized_code.startswith(f"{prefix}."):
+        qualified_code = SLA.normalize_runtime_field_code(alias, f"{prefix}.{normalized_code}")
+        identity = (source, code)
+        explicit_owners = (explicit_runtime_owners or {}).get((alias, qualified_code), set())
+        if qualified_code not in codes and (not explicit_owners or identity in explicit_owners):
+            codes.append(qualified_code)
+    return tuple(codes)
 
 
 def _verified_official_contract_kind(field, source_config, source_record, adjudications):
@@ -204,6 +225,20 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         for record in records:
             if isinstance(record, dict) and isinstance(record.get("id"), str):
                 adjudications[record["id"]] = record
+    explicit_runtime_owners = defaultdict(set)
+    for candidate in source_fields:
+        if not isinstance(candidate, dict):
+            continue
+        candidate_source = candidate.get("source")
+        candidate_code = candidate.get("code")
+        if not isinstance(candidate_source, str) or not isinstance(candidate_code, str):
+            continue
+        for alias in _lineage_aliases(candidate_source, lineage):
+            normalized_code = SLA.normalize_runtime_field_code(alias, candidate_code)
+            explicit_runtime_owners[(alias, normalized_code)].add(
+                (candidate_source, candidate_code)
+            )
+
     alias_identity_owners = defaultdict(set)
     for candidate in source_fields:
         if not isinstance(candidate, dict):
@@ -213,7 +248,10 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         if not isinstance(candidate_source, str) or not isinstance(candidate_code, str):
             continue
         for alias in _lineage_aliases(candidate_source, lineage):
-            alias_identity_owners[(alias, candidate_code)].add((candidate_source, candidate_code))
+            for runtime_code in _runtime_codes_for_source_identity(
+                candidate_source, alias, candidate_code, explicit_runtime_owners
+            ):
+                alias_identity_owners[(alias, runtime_code)].add((candidate_source, candidate_code))
 
     seen_source_identities = set()
     for field in source_fields:
@@ -253,21 +291,31 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         aliases = _lineage_aliases(source, lineage)
         if field.get("status") == "disproved":
             for alias in aliases:
-                if alias != "zhb" or len(alias_identity_owners[(alias, code)]) == 1:
-                    context["disproved"].add((alias, code))
+                for runtime_code in _runtime_codes_for_source_identity(
+                    source, alias, code, explicit_runtime_owners
+                ):
+                    runtime_identity = (alias, runtime_code)
+                    if alias != "zhb" or len(alias_identity_owners[runtime_identity]) == 1:
+                        context["disproved"].add(runtime_identity)
             continue
         if field.get("status") != "verified":
             continue
-        ambiguous_aliases = set()
+        runtime_identities = []
+        has_ambiguous_identity = False
         for alias in aliases:
-            runtime_identity = (alias, code)
-            context["verified_target_exclusions"].add(runtime_identity)
-            # ZHB folds historical source identities into one runtime namespace.
-            # Other aliases can intentionally retain retired/adapter registry rows;
-            # those must not invalidate an active source's verified anchor.
-            if alias == "zhb" and len(alias_identity_owners[runtime_identity]) > 1:
-                ambiguous_aliases.add(alias)
-        if ambiguous_aliases:
+            for runtime_code in _runtime_codes_for_source_identity(
+                source, alias, code, explicit_runtime_owners
+            ):
+                runtime_identity = (alias, runtime_code)
+                context["verified_target_exclusions"].add(runtime_identity)
+                # ZHB folds historical endpoint identities into one runtime alias.
+                # Endpoint-qualified paths remain distinct; merged paths stay
+                # ambiguous when multiple source identities own the same code.
+                if alias == "zhb" and len(alias_identity_owners[runtime_identity]) > 1:
+                    has_ambiguous_identity = True
+                    continue
+                runtime_identities.append(runtime_identity)
+        if has_ambiguous_identity:
             context["ambiguous_verified"] += 1
         metadata_issues = FRA.source_field_semantic_issues(field)
         if metadata_issues:
@@ -279,19 +327,22 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         if not aliases:
             context["unmapped_verified"] += 1
             continue
-        for alias in aliases:
-            if alias in ambiguous_aliases:
-                continue
-            identity = (alias, code)
-            context["verified"].add(identity)
-            family = SLA.runtime_family(alias, lineage)
-            source_record = lineage.get("sources", {}).get(source, {})
-            source_config = registry_sources.get(source, {})
-            contract_evidence_kind = _verified_official_contract_kind(
-                field, source_config, source_record, adjudications
-            )
+        context["verified"].update(runtime_identities)
+        if not runtime_identities:
+            context["unconfirmed_verified"] += 1
+            continue
+        source_record = lineage.get("sources", {}).get(source, {})
+        source_config = registry_sources.get(source, {})
+        contract_evidence_kind = _verified_official_contract_kind(
+            field, source_config, source_record, adjudications
+        )
+        for identity in runtime_identities:
             if contract_evidence_kind:
                 context["official_contract_verified"].add(identity)
+        has_anchor = False
+        for identity in runtime_identities:
+            alias = identity[0]
+            family = SLA.runtime_family(alias, lineage)
             if (
                 source_record.get("anchor_eligible")
                 and source_record.get("independence_status") == "confirmed"
@@ -300,14 +351,16 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
                 context["anchors"].add(identity)
                 if contract_evidence_kind:
                     context["official_contract_anchors"].add(identity)
+                has_anchor = True
             elif (
                 contract_evidence_kind == "semantic_anchor_contract"
                 and source_record.get("semantic_anchor_basis") == "official_contract"
             ):
                 context["contract_anchors"].add(identity)
                 context["official_contract_anchors"].add(identity)
-            else:
-                context["unconfirmed_verified"] += 1
+                has_anchor = True
+        if not has_anchor:
+            context["unconfirmed_verified"] += 1
 
     for mapping in registry.get("mappings", []):
         if not isinstance(mapping, dict):
@@ -323,25 +376,45 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         if not isinstance(left_code, str) or not isinstance(right_code, str):
             continue
         for left_alias in left_aliases:
+            left_codes = _runtime_codes_for_source_identity(
+                left.get("source"), left_alias, left_code, explicit_runtime_owners
+            )
             for right_alias in right_aliases:
-                normalized_left_code = SLA.normalize_runtime_field_code(left_alias, left_code)
-                normalized_right_code = SLA.normalize_runtime_field_code(right_alias, right_code)
-                if (
-                    left_alias == "zhb"
-                    and len(alias_identity_owners[(left_alias, normalized_left_code)]) != 1
-                ):
-                    continue
-                if (
-                    right_alias == "zhb"
-                    and len(alias_identity_owners[(right_alias, normalized_right_code)]) != 1
-                ):
-                    continue
-                context["known_mappings"].add(
-                    (left_alias, normalized_left_code, right_alias, normalized_right_code)
+                right_codes = _runtime_codes_for_source_identity(
+                    right.get("source"),
+                    right_alias,
+                    right_code,
+                    explicit_runtime_owners,
                 )
-                context["known_mappings"].add(
-                    (right_alias, normalized_right_code, left_alias, normalized_left_code)
-                )
+                for normalized_left_code in left_codes:
+                    for normalized_right_code in right_codes:
+                        if (
+                            left_alias == "zhb"
+                            and len(alias_identity_owners[(left_alias, normalized_left_code)]) != 1
+                        ):
+                            continue
+                        if (
+                            right_alias == "zhb"
+                            and len(alias_identity_owners[(right_alias, normalized_right_code)])
+                            != 1
+                        ):
+                            continue
+                        context["known_mappings"].add(
+                            (
+                                left_alias,
+                                normalized_left_code,
+                                right_alias,
+                                normalized_right_code,
+                            )
+                        )
+                        context["known_mappings"].add(
+                            (
+                                right_alias,
+                                normalized_right_code,
+                                left_alias,
+                                normalized_left_code,
+                            )
+                        )
 
     context["safe_to_run"] = True
 
@@ -421,15 +494,27 @@ def code_of(fid, normalize_runtime_field_code):
 
 
 def is_verified(fid, verified, lineage):
-    return (alias_source(fid, lineage), code_of(fid, SLA.normalize_runtime_field_code)) in verified
+    return (
+        alias_source(fid, lineage),
+        code_of(fid, SLA.normalize_runtime_field_code),
+    ) in verified
 
 
 def is_disproved(fid, disproved, lineage):
-    return (alias_source(fid, lineage), code_of(fid, SLA.normalize_runtime_field_code)) in disproved
+    return (
+        alias_source(fid, lineage),
+        code_of(fid, SLA.normalize_runtime_field_code),
+    ) in disproved
 
 
 def select_collision_fields(
-    store, verified, disproved, anchors, exploratory=False, contract_anchors=None, lineage=None
+    store,
+    verified,
+    disproved,
+    anchors,
+    exploratory=False,
+    contract_anchors=None,
+    lineage=None,
 ):
     """Return unknown cracking targets and the allowed comparison field set.
 

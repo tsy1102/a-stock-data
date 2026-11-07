@@ -62,9 +62,6 @@ exclude = [
     "snapshots",
     "logs",
     ".pytest_cache",
-    "crack_push2_status_codes_20260921",
-    "crack_ulist_f88_95_20260921",
-    "crack_zhb_anchored_20260921",
 ]
 
 # 核心模块更严格（渐进式）
@@ -115,6 +112,4 @@ exclude = '''
   )/
   | ^docs/backups/
   | ^docs/field_verification/20260913_em_ulist_crack/
-  | ^scripts/crack_zhb_anchored_20260921\.py$
 )'''
-force-exclude = 'crack_zhb_anchored_20260921\.py$'

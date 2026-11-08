@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-08",
+  "decisions": [
+    {
+      "id": "20261108-zhb-tdxstat-dividend-yield-alias",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "dividend_yield" },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": { "canonical": "", "meaning": "", "unit": "" },
+      "canonical": "dividend_yield",
+      "meaning": "股息率",
+      "unit": "%",
+      "rationale": "通达信官方扩展接口将 DYRatio 定义为股息率；项目解析器从 ZHB tdxstat 原始列 [10] 生成该路径。按数据日期配对的 220 个保留期股票日样本中，该路径与已验证同源 stat.dividend_yield 完全一致。百分比单位沿用该已验证锚字段；不推断股息率的具体计算公式。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.dividend_yield",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_slow_fields.md",
+        "locator": "§2 表格 dividend_yield 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "DYRatio",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-employee-count-alias",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "employee_count" },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": { "canonical": "", "meaning": "", "unit": "" },
+      "canonical": "employee_count",
+      "meaning": "员工人数",
+      "unit": "人",
+      "rationale": "通达信官方扩展接口将 StaffNum 定义为员工人数；项目解析器从 ZHB tdxstat 原始列 [15] 生成该路径。按数据日期配对的 220 个保留期股票日样本中，该路径与已验证同源 stat.employee_count 完全一致。本裁决不推断该人数所对应的报告期或更新时间。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.employee_count",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_slow_fields.md",
+        "locator": "§2 表格 employee_count 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "StaffNum",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

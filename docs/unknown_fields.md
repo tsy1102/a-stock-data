@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2603；日常来源路径 2459：unverified 1330、candidate 1、conflict 73、disproved 2；历史来源路径 144。
+> 注册字段路径 2603；日常来源路径 2459：unverified 1328、candidate 1、conflict 73、disproved 2；历史来源路径 144。
 > 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1144 |
+| 含义栏为空/占位 | 1142 |
 | 含义栏有文本（仍未验证） | 186 |
 
 ### 历史状态证据的解析结果
@@ -28,7 +28,7 @@
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 781 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 779 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（73）
@@ -115,7 +115,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1330）
+## 三、待破解字段（1328）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -578,8 +578,6 @@
 | ZHB-tdxstat | `change_pct_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat | `dividend_yield` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| ZHB-tdxstat | `employee_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `market` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |

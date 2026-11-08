@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add an audited official-page observation path for source-only field semantics, with retained-sample checks, provider-host validation, exact evidence snapshots, and no cross-source mappings.
+
 - 按通达信官方 `get_market_snapshot_batch` 字段表，定案 21 个基础行情字段的源内语义；单位未由文档说明的字段继续标为未注明，不推断项目采集路径或跨源映射。
 - 按通达信官方 `get_more_info_batch` 字段表定案 77 个已登记扩展字段的来源内语义，并更正 11 个既有日期字段的接口归属；核实 ZHB `[25]` 为合同负债（万元）、`[34]` 为其他权益工具（万元），只更正解释元数据，不改变解析值或缓存行为。
 - 将通达信、同花顺、东方财富、新浪、开盘啦、开盘红等来源的官方站点核验纳入每日采集与碰撞后的字段研究流程；明确按实际提供方、完整来源路径留证，第三方页面只作有标注的次级佐证，并保留现有定案门槛。

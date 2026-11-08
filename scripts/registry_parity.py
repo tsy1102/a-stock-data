@@ -46,6 +46,7 @@ sys.path.insert(0, SCRIPT_DIR)
 import audit_field_completeness as afc
 import gen_field_matrix as gm
 import field_registry_api as fra
+import public_web_adjudications as pwa
 import capture_retention
 
 
@@ -103,6 +104,7 @@ def main(argv=None):
         source_records,
         base_pairs | declared_pairs | adjudication_pairs,
     )
+    public_web_problems = pwa.validate_registry_adjudications(reg, Path(REPO_ROOT))
     addenda_pairs = declared_pairs | adjudication_pairs | capture_path_pairs
     matrix_addenda = {key: set(value) for key, value in e3_matrix.items()}
     for additional_matrix in (
@@ -153,6 +155,7 @@ def main(argv=None):
         list(addenda_problems)
         + adjudication_problems
         + capture_path_problems
+        + public_web_problems
         + scope_problems
         + candidate_problems
         + debt_problems
@@ -172,7 +175,7 @@ def main(argv=None):
         problems.append(f"多源数 {reg_multi} != parity 预期 {expected_multi}")
 
     expected_label = (
-        "baseline-scope-adjusted+E3+official-contract+observation+"
+        "baseline-scope-adjusted+E3+official-contract+observation+public-web+"
         "adjudication+capture-path-addenda"
     )
     if accepted_missing_pairs is not None:
@@ -192,6 +195,9 @@ def main(argv=None):
         f"parity[adjudication-addenda]: "
         f"{'PASS' if not adjudication_problems else 'FAIL'} {len(adjudication_pairs)} 条"
     )
+    print(f"parity[public-web-adjudications]: " f"{'PASS' if not public_web_problems else 'FAIL'}")
+    for problem in public_web_problems:
+        print("  public-web FAIL:", problem)
     print(
         f"parity[capture-path-addenda]: "
         f"{'PASS' if not capture_path_problems else 'FAIL'} {len(capture_path_pairs)} 条"

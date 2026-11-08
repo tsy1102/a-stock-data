@@ -40,6 +40,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import field_registry_api as fra
+import public_web_adjudications as pwa
 import collision_candidate_reviews as ccr
 import derived_relation_evidence as dre
 import gen_field_dict as gfd
@@ -997,6 +998,17 @@ def main(argv: list[str] | None = None) -> int:
             updated, stats = apply_source_contract_adjudications(
                 registry, decision_document, decision_rel
             )
+        elif evidence_basis == "public_web_observation":
+            updated, stats = pwa.apply_public_web_observation_adjudications(
+                registry, decision_document, decision_rel
+            )
+            if stats["public_web_observation_verified"]:
+                affected_codes = {
+                    item["target"]["code"]
+                    for item in decision_document["decisions"]
+                    if isinstance(item, dict) and isinstance(item.get("target"), dict)
+                }
+                _refresh_aggregate_projection(updated, affected_codes)
         elif evidence_basis == "derived_relation":
             lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
             updated, stats = apply_derived_relation_adjudications(
@@ -1032,6 +1044,7 @@ def main(argv: list[str] | None = None) -> int:
             for key in (
                 "verified",
                 "source_contract_verified",
+                "public_web_observation_verified",
                 "derived_relation_verified",
                 "metadata_enriched",
                 "linked",

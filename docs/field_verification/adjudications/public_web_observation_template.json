@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "REPLACE_WITH_REVIEWER",
+  "reviewed_on": "YYYY-MM-DD",
+  "evidence_file": "adjudications/public_web/YYYYMMDD_public_web_research.md",
+  "formula_validation": null,
+  "decisions": [
+    {
+      "id": "YYYYMMDD-source-field",
+      "action": "verify_public_web_observation",
+      "target": {
+        "source": "EXACT_SOURCE_NAME",
+        "code": "EXACT_FULL_CODE_PATH"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "待破解",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "CANONICAL_NAME",
+      "meaning": "FIELD_MEANING",
+      "unit": "UNIT",
+      "rationale": "Explain the exact source-path to official-page label evidence and its limits.",
+      "external_evidence": [
+        "https://official.example/page"
+      ],
+      "page_observations": [
+        {
+          "stock_code": "000001",
+          "data_date": "YYYYMMDD",
+          "source_file": "YYYYMMDD/raw_push2.json",
+          "raw_value": 0,
+          "display_value": 0,
+          "display_increment": 1,
+          "display_unit": "UNIT",
+          "page_url": "https://official.example/page",
+          "page_metric": "Visible official page label and section",
+          "display_text": "Exact value displayed on the page",
+          "missing_as_zero": false
+        },
+        {
+          "stock_code": "000002",
+          "data_date": "YYYYMMDD",
+          "source_file": "YYYYMMDD/raw_push2.json",
+          "raw_value": 1,
+          "display_value": 1,
+          "display_increment": 1,
+          "display_unit": "UNIT",
+          "page_url": "https://official.example/page",
+          "page_metric": "Visible official page label and section",
+          "display_text": "Exact value displayed on the page",
+          "missing_as_zero": false
+        }
+      ]
+    }
+  ]
+}

@@ -9,7 +9,7 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 433,
       "candidate": 1,
-      "conflict": 73,
+      "conflict": 72,
       "disproved": 6,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
@@ -17,20 +17,21 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 102,
       "manual_semantic_retraction": 6,
-      "matched": 830,
+      "matched": 828,
       "official_contract": 31,
       "reference_scope_reconciled": 1,
       "reference_status_conflict": 18,
       "reference_status_missing": 38,
       "registry_status_only_single_source": 737,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "status_conflict": 55,
+      "status_conflict": 54,
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1313,
-      "verified": 1214,
+      "verified": 1215,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
+      "verified_by_public_web_observation": 3,
       "verified_by_source_contract": 182
     },
     "updated_at": "2026-11-07"
@@ -15756,15 +15757,15 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified",
         "东财-资金流(em_fund_flow)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
+        "canonical_differs",
         "meaning_incomplete",
         "unit_incomplete"
       ]
@@ -15782,15 +15783,15 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified",
         "东财-资金流(em_fund_flow)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
+        "canonical_differs",
         "meaning_incomplete",
         "source_statuses_differ",
         "unit_incomplete"
@@ -15811,12 +15812,13 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "conflict",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified",
         "东财-资金流(em_fund_flow)": "conflict"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
         "meaning_incomplete",
         "source_status_conflict",
@@ -136042,16 +136044,17 @@
       "code": "f147",
       "identity": "东财-push2(stock/get)::f147",
       "path": "f147",
-      "canonical": "",
-      "meaning": "待破解",
+      "canonical": "fund_small_buy",
+      "meaning": "小单类别的资金流入金额，不表示投资者账户身份",
       "unit": "元",
-      "section": "",
+      "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f147",
       "sections": [
         "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）",
-        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）"
+        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）",
+        "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f147"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_public_web_observation",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -136067,6 +136070,9 @@
         ],
         "values": [
           "verified"
+        ],
+        "public_web_adjudication_ids": [
+          "20261109-eastmoney-push2-f147"
         ]
       },
       "reference_evidence": [
@@ -136085,14 +136091,52 @@
           "unit": "元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f147",
+          "canonical": "fund_small_buy",
+          "meaning": "小单类别的资金流入金额，不表示投资者账户身份",
+          "unit": "元",
+          "status": "verified",
+          "status_raw": "人工核对官方页面 2026-11-09: 20261109-eastmoney-push2-f147",
+          "adjudication_id": "20261109-eastmoney-push2-f147",
+          "evidence_basis": "official_page_value_observation",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": "-",
+              "display_value": "0",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流入",
+              "display_text": "0",
+              "missing_as_zero": true
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 496233072.0,
+              "display_value": "496230000",
+              "display_increment": "10000",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流入",
+              "display_text": "4.9623亿",
+              "missing_as_zero": false
+            }
+          ]
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f147",
-          "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f147",
         "sources": [
@@ -136106,23 +136150,98 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eastmoney-push2-f147",
+          "action": "verify_public_web_observation",
+          "status": "verified",
+          "evidence_basis": "official_page_value_observation",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/public_web/20261109_push2_fund_flow.json",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "target": {
+            "source": "东财-push2(stock/get)",
+            "code": "f147"
+          },
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "待破解",
+            "unit": "元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "待破解",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "fund_small_buy",
+              "meaning": "小单类别的资金流入金额，不表示投资者账户身份",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "f147",
+              "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
+            ]
+          },
+          "rationale": "2026-11-06 两只不同股票同日页面的“小单/流入”值与 f147 对应；茅台原始缺失哨兵“－”仅在该页面明确显示 0 时按 0 核对，农行显示 4.9623 亿，按 1 万元显示刻度换算后与原始值差 3,072 元。",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": "-",
+              "display_value": "0",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流入",
+              "display_text": "0",
+              "missing_as_zero": true
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 496233072.0,
+              "display_value": "496230000",
+              "display_increment": "10000",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流入",
+              "display_text": "4.9623亿",
+              "missing_as_zero": false
+            }
+          ]
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
       "code": "f148",
       "identity": "东财-push2(stock/get)::f148",
       "path": "f148",
-      "canonical": "",
-      "meaning": "待破解",
+      "canonical": "fund_small_sell",
+      "meaning": "小单类别的资金流出金额，不表示投资者账户身份",
       "unit": "元",
-      "section": "",
+      "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f148",
       "sections": [
         "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）",
-        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）"
+        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）",
+        "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f148"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_public_web_observation",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -136138,6 +136257,9 @@
         ],
         "values": [
           "verified"
+        ],
+        "public_web_adjudication_ids": [
+          "20261109-eastmoney-push2-f148"
         ]
       },
       "reference_evidence": [
@@ -136156,14 +136278,52 @@
           "unit": "元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f148",
+          "canonical": "fund_small_sell",
+          "meaning": "小单类别的资金流出金额，不表示投资者账户身份",
+          "unit": "元",
+          "status": "verified",
+          "status_raw": "人工核对官方页面 2026-11-09: 20261109-eastmoney-push2-f148",
+          "adjudication_id": "20261109-eastmoney-push2-f148",
+          "evidence_basis": "official_page_value_observation",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 108674.0,
+              "display_value": "108674",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流出",
+              "display_text": "10.8674万",
+              "missing_as_zero": false
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 505345584.0,
+              "display_value": "505350000",
+              "display_increment": "10000",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流出",
+              "display_text": "5.0535亿",
+              "missing_as_zero": false
+            }
+          ]
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f148",
-          "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f148",
         "sources": [
@@ -136177,23 +136337,98 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eastmoney-push2-f148",
+          "action": "verify_public_web_observation",
+          "status": "verified",
+          "evidence_basis": "official_page_value_observation",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/public_web/20261109_push2_fund_flow.json",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "target": {
+            "source": "东财-push2(stock/get)",
+            "code": "f148"
+          },
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "待破解",
+            "unit": "元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "待破解",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "fund_small_sell",
+              "meaning": "小单类别的资金流出金额，不表示投资者账户身份",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "f148",
+              "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
+            ]
+          },
+          "rationale": "2026-11-06 两只不同股票同日页面的“小单/流出”值与 f148 对应；茅台 10.8674 万元与原始值相等，农行显示 5.0535 亿元，按 1 万元显示刻度换算后与原始值差 4,416 元。",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 108674.0,
+              "display_value": "108674",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流出",
+              "display_text": "10.8674万",
+              "missing_as_zero": false
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": 505345584.0,
+              "display_value": "505350000",
+              "display_increment": "10000",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时成交分布图｜类型=小单｜流出",
+              "display_text": "5.0535亿",
+              "missing_as_zero": false
+            }
+          ]
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
       "code": "f149",
       "identity": "东财-push2(stock/get)::f149",
       "path": "f149",
-      "canonical": "",
-      "meaning": "待破解",
+      "canonical": "fund_small_today",
+      "meaning": "小单类别资金净流入金额，等于流入金额减流出金额",
       "unit": "元",
-      "section": "",
+      "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f149",
       "sections": [
         "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）",
-        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）"
+        "12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个）",
+        "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f149"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_public_web_observation",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -136210,6 +136445,9 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "public_web_adjudication_ids": [
+          "20261109-eastmoney-push2-f149"
         ]
       },
       "reference_evidence": [
@@ -136228,14 +136466,52 @@
           "unit": "元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "Public page observation adjudication 2026-11-09: 20261109-eastmoney-push2-f149",
+          "canonical": "fund_small_today",
+          "meaning": "小单类别资金净流入金额，等于流入金额减流出金额",
+          "unit": "元",
+          "status": "verified",
+          "status_raw": "人工核对官方页面 2026-11-09: 20261109-eastmoney-push2-f149",
+          "adjudication_id": "20261109-eastmoney-push2-f149",
+          "evidence_basis": "official_page_value_observation",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": -108674.0,
+              "display_value": "-108674",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时资金流向图｜今日小单净流入",
+              "display_text": "-10.8674万",
+              "missing_as_zero": false
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": -9112512.0,
+              "display_value": "-9112512",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时资金流向图｜今日小单净流入",
+              "display_text": "-911.2512万",
+              "missing_as_zero": false
+            }
+          ]
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f149",
-          "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f149",
         "sources": [
@@ -136249,7 +136525,104 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eastmoney-push2-f149",
+          "action": "verify_public_web_observation",
+          "status": "verified",
+          "evidence_basis": "official_page_value_observation",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/public_web/20261109_push2_fund_flow.json",
+          "evidence_file": "adjudications/public_web/20261109_push2_fund_flow.md",
+          "target": {
+            "source": "东财-push2(stock/get)",
+            "code": "f149"
+          },
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "待破解",
+            "unit": "元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "待破解",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "fund_small_today",
+              "meaning": "小单类别资金净流入金额，等于流入金额减流出金额",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "f149",
+              "fund_san_buy(f147) / fund_san_sell(f148) / fund_san_net(f149)"
+            ]
+          },
+          "rationale": "2026-11-06 两只不同股票同日页面的“小单净流入”值与 f149 对应；保留期 9 个日期、154 条原始样本中 f149=f147-f148 对全部 147 条数值样本和 7 条 f147 为“－”的哨兵样本成立。哨兵只在对应官方页面明确显示 0 时作为 0 核对，不改变采集值。",
+          "external_evidence": [
+            "https://data.eastmoney.com/zjlx/600519.html",
+            "https://data.eastmoney.com/zjlx/601288.html"
+          ],
+          "page_observations": [
+            {
+              "stock_code": "600519",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": -108674.0,
+              "display_value": "-108674",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/600519.html",
+              "page_metric": "实时资金流向图｜今日小单净流入",
+              "display_text": "-10.8674万",
+              "missing_as_zero": false
+            },
+            {
+              "stock_code": "601288",
+              "data_date": "20261106",
+              "source_file": "20261106/raw_push2.json",
+              "raw_value": -9112512.0,
+              "display_value": "-9112512",
+              "display_increment": "1",
+              "display_unit": "元",
+              "page_url": "https://data.eastmoney.com/zjlx/601288.html",
+              "page_metric": "实时资金流向图｜今日小单净流入",
+              "display_text": "-911.2512万",
+              "missing_as_zero": false
+            }
+          ],
+          "formula_validation": {
+            "target_code": "f149",
+            "left_code": "f147",
+            "right_code": "f148",
+            "operator": "-",
+            "source_files": [
+              "20261020/raw_push2.json",
+              "20261023/raw_push2.json",
+              "20261026/raw_push2.json",
+              "20261029/raw_push2.json",
+              "20261102/raw_push2.json",
+              "20261103/raw_push2.json",
+              "20261104/raw_push2.json",
+              "20261105/raw_push2.json",
+              "20261106/raw_push2.json"
+            ],
+            "numeric_samples": 147,
+            "numeric_matches": 147,
+            "dash_samples": 7,
+            "dash_matches": 7,
+            "distinct_dates": 9,
+            "distinct_stocks": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",

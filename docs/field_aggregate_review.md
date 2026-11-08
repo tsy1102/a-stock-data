@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 108 个 code；聚合定义不完整 243 个 code；疑似合并文本 317 条逐源记录。
+> 聚合歧义 111 个 code；聚合定义不完整 240 个 code；疑似合并文本 317 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1380,33 +1380,33 @@
 | 东财-ulist239(np/get) · `f146` | — | — | — | `conflict` |
 | 东财-资金流(em_fund_flow) · `f146` | f146 | — | 元 | `verified` |
 
-### `f147` — incomplete
+### `f147` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f147` | — | 待破解 | 元 | `verified` |
+| 东财-push2(stock/get) · `f147` | fund_small_buy | 小单类别的资金流入金额，不表示投资者账户身份 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f147` | f147 | — | — | `verified` |
 | 东财-资金流(em_fund_flow) · `f147` | f147 | — | 元 | `verified` |
 
-### `f148` — incomplete
+### `f148` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f148` | — | 待破解 | 元 | `verified` |
+| 东财-push2(stock/get) · `f148` | fund_small_sell | 小单类别的资金流出金额，不表示投资者账户身份 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f148` | f148 | — | — | `unverified` |
 | 东财-资金流(em_fund_flow) · `f148` | f148 | — | 元 | `verified` |
 
-### `f149` — incomplete
+### `f149` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f149` | — | 待破解 | 元 | `conflict` |
+| 东财-push2(stock/get) · `f149` | fund_small_today | 小单类别资金净流入金额，等于流入金额减流出金额 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f149` | — | — | — | `unverified` |
 | 东财-资金流(em_fund_flow) · `f149` | f149 | — | 元 | `conflict` |
 

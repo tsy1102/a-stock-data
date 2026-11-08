@@ -768,14 +768,14 @@
 
 ### `code` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `code` | code | 股票代码 | 6位字符串 | `verified` |
 | TDX-eltdx(适配层) · `code` | code | — | — | `unverified` |
-| ZHB-tdxstat · `code` | — | — | — | `unverified` |
-| ZHB-tdxstat2 · `code` | — | — | — | `unverified` |
+| ZHB-tdxstat · `code` | code | 代码 | - | `verified` |
+| ZHB-tdxstat2 · `code` | code | 代码 | - | `verified` |
 | ZHB-tipinfo · `code` | — | — | — | `unverified` |
 | 东财-push2ex · `code` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `code` | — | — | — | `verified` |
@@ -813,13 +813,13 @@
 
 ### `date` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `date` | date / category_name | 事件日期 / 类别名称 | — | `unverified` |
-| ZHB-tdxstat · `date` | — | — | — | `unverified` |
-| ZHB-tdxstat2 · `date` | — | — | — | `unverified` |
+| ZHB-tdxstat · `date` | date | 统计日期 | - | `verified` |
+| ZHB-tdxstat2 · `date` | date | 统计日期 | - | `verified` |
 | 东财-datacenter(英文键) · `date` | — | — | — | `unverified` |
 | 同花顺-fuyao · `date` | — | — | — | `unverified` |
 | 巨潮(cninfo) · `date` | — | — | — | `unverified` |
@@ -2776,13 +2776,13 @@
 
 ### `market` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `market` | market | 市场代码 | 0=深/1=沪/2=京 | `verified` |
-| ZHB-tdxstat · `market` | — | — | — | `unverified` |
-| ZHB-tdxstat2 · `market` | — | — | — | `unverified` |
+| ZHB-tdxstat · `market` | market | 市场 | - | `verified` |
+| ZHB-tdxstat2 · `market` | market | 市场 | - | `verified` |
 | reports · `market` | market | 交易所 | — | `verified` |
 | 东财-热榜(em_hot) · `market` | market | 市场 | — | `verified` |
 | 同花顺-fuyao · `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | — | `unverified` |

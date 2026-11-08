@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 443,
+      "aggregate_status_scope_unresolved": 437,
       "candidate": 1,
       "conflict": 73,
       "disproved": 2,
@@ -22,16 +22,16 @@
       "reference_scope_reconciled": 1,
       "reference_status_conflict": 18,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 860,
+      "registry_status_only_single_source": 859,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "status_conflict": 55,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1448,
-      "verified": 1079,
+      "unverified": 1441,
+      "verified": 1086,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
-      "verified_by_source_contract": 81
+      "verified_by_source_contract": 88
     },
     "updated_at": "2026-11-07"
   },
@@ -10732,20 +10732,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚 · DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚#DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd @ 2026-11-08 官方文档及留存样本复核",
+      "canonical": "change_mtd",
+      "meaning": "月初至今涨跌幅",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change_num",
@@ -11563,8 +11560,8 @@
       "source_statuses": {
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
-        "ZHB-tdxstat": "unverified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat": "verified",
+        "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "unverified",
         "东财-push2ex": "unverified",
         "东财-热榜(em_hot)": "verified",
@@ -11576,6 +11573,7 @@
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
         "unit_differs",
@@ -13183,8 +13181,8 @@
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
-        "ZHB-tdxstat": "unverified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat": "verified",
+        "ZHB-tdxstat2": "verified",
         "东财-datacenter(英文键)": "unverified",
         "同花顺-fuyao": "unverified",
         "巨潮(cninfo)": "unverified",
@@ -13198,7 +13196,8 @@
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -26197,8 +26196,8 @@
       "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "verified",
-        "ZHB-tdxstat": "unverified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat": "verified",
+        "ZHB-tdxstat2": "verified",
         "reports": "verified",
         "东财-热榜(em_hot)": "verified",
         "同花顺-fuyao": "unverified",
@@ -26207,10 +26206,10 @@
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
-        "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -97670,13 +97669,15 @@
       "code": "code",
       "identity": "ZHB-tdxstat::code",
       "path": "code",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "code",
+      "meaning": "代码",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -97696,9 +97697,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat-code-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat-code-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验",
+          "canonical": "code",
+          "meaning": "代码",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat-code-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat-code-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 股票代码输入与返回结构",
+            "locator": "stock_list 与外层证券代码键",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "code",
+              "meaning": "代码",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.code",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::code 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "code",
@@ -97721,20 +97766,66 @@
         "meaning": "股票代码",
         "unit": "6位字符串",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat-code-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "code",
+              "meaning": "代码",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat.code 完全一致。代码语义沿用该锚字段；裁决只确认路径别名，不创建跨源映射。通达信官方接口文档说明其批量接口以证券代码列表为输入并以证券代码作为外层键。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 股票代码输入与返回结构",
+            "locator": "stock_list 与外层证券代码键",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.code",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::code 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
       "code": "date",
       "identity": "ZHB-tdxstat::date",
       "path": "date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "date",
+      "meaning": "统计日期",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -97753,9 +97844,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat-date-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat-date-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验",
+          "canonical": "date",
+          "meaning": "统计日期",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat-date-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat-date-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 行情日期字段",
+            "locator": "HqDate",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "date",
+              "meaning": "统计日期",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.date",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::date 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "date",
@@ -97777,7 +97912,51 @@
         "meaning": "日期",
         "unit": "",
         "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat-date-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "date",
+              "meaning": "统计日期",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat.date 完全一致。统计日期语义沿用该锚字段。通达信官方接口文档将 HqDate 标为行情日期；本裁决只确认项目内路径别名，不推断其他来源的日期口径。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 行情日期字段",
+            "locator": "HqDate",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.date",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::date 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -98126,13 +98305,15 @@
       "code": "market",
       "identity": "ZHB-tdxstat::market",
       "path": "market",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "market",
+      "meaning": "市场",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat.market 同源锚#stock_list 与 ZHB-tdxstat::stat.market @ 2026-11-08 留存样本及已验证锚复核",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat.market 同源锚#stock_list 与 ZHB-tdxstat::stat.market @ 2026-11-08 留存样本及已验证锚复核"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -98148,9 +98329,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat-market-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat-market-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat.market 同源锚#stock_list 与 ZHB-tdxstat::stat.market @ 2026-11-08 留存样本及已验证锚复核",
+          "canonical": "market",
+          "meaning": "市场",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat-market-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat-market-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚",
+            "revision": "2026-11-08 留存样本及已验证锚复核",
+            "path": "get_more_info_batch 证券代码上下文；stat.market 同源锚",
+            "locator": "stock_list 与 ZHB-tdxstat::stat.market",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "market",
+              "meaning": "市场",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.market",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::market 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "market",
@@ -98169,7 +98394,51 @@
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat-market-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "market",
+              "meaning": "市场",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat.market 完全一致。市场标签沿用该锚字段；样本未用于推断或扩展市场数字编码。裁决只确认同源路径别名，不创建跨源映射。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚",
+            "revision": "2026-11-08 留存样本及已验证锚复核",
+            "path": "get_more_info_batch 证券代码上下文；stat.market 同源锚",
+            "locator": "stock_list 与 ZHB-tdxstat::stat.market",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "stat.market",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat::market 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -103097,13 +103366,15 @@
       "code": "change_mtd",
       "identity": "ZHB-tdxstat2::change_mtd",
       "path": "change_mtd",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "change_mtd",
+      "meaning": "月初至今涨跌幅",
+      "unit": "%",
+      "section": "source contract: 通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚 · DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚#DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd @ 2026-11-08 官方文档及留存样本复核",
+      "sections": [
+        "source contract: 通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚 · DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚#DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd @ 2026-11-08 官方文档及留存样本复核"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103113,9 +103384,53 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat2-change-mtd-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat2-change-mtd-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚 · DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚#DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd @ 2026-11-08 官方文档及留存样本复核",
+          "canonical": "change_mtd",
+          "meaning": "月初至今涨跌幅",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat2-change-mtd-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat2-change-mtd-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚",
+            "revision": "2026-11-08 官方文档及留存样本复核",
+            "path": "DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚",
+            "locator": "DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd",
+            "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_mtd",
+              "meaning": "月初至今涨跌幅",
+              "unit": "%"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.change_mtd",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::change_mtd 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "change_mtd",
@@ -103128,20 +103443,66 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat2-change-mtd-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_mtd",
+              "meaning": "月初至今涨跌幅",
+              "unit": "%"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat2.change_mtd 完全一致。语义和百分比单位沿用锚字段。通达信 DYNAINFO(69) 文档支持月初至今涨幅这一语义，但本裁决只确认 ZHB 内部别名，不推断其复权基准、计算公式或窗口端点。",
+          "source_contract": {
+            "authority": "通达信公式系统官方文档及项目已验证 ZHB tdxstat2 锚",
+            "revision": "2026-11-08 官方文档及留存样本复核",
+            "path": "DYNAINFO(69) 月初至今涨幅；stat2.change_mtd 同源锚",
+            "locator": "DYNAINFO(69) 与 ZHB-tdxstat2::stat2.change_mtd",
+            "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.change_mtd",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::change_mtd 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
       "code": "code",
       "identity": "ZHB-tdxstat2::code",
       "path": "code",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "code",
+      "meaning": "代码",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103161,9 +103522,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat2-code-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat2-code-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 股票代码输入与返回结构#stock_list 与外层证券代码键 @ 2026-11-08 官方文档核验",
+          "canonical": "code",
+          "meaning": "代码",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat2-code-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat2-code-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 股票代码输入与返回结构",
+            "locator": "stock_list 与外层证券代码键",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "code",
+              "meaning": "代码",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.code",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::code 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "code",
@@ -103186,20 +103591,66 @@
         "meaning": "股票代码",
         "unit": "6位字符串",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat2-code-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "code",
+              "meaning": "代码",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat2.code 完全一致。代码语义沿用该锚字段；裁决只确认路径别名，不创建跨源映射。通达信官方接口文档说明其批量接口以证券代码列表为输入并以证券代码作为外层键。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 股票代码输入与返回结构",
+            "locator": "stock_list 与外层证券代码键",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.code",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::code 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
       "code": "date",
       "identity": "ZHB-tdxstat2::date",
       "path": "date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "date",
+      "meaning": "统计日期",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103218,9 +103669,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat2-date-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat2-date-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 行情日期字段#HqDate @ 2026-11-08 官方文档核验",
+          "canonical": "date",
+          "meaning": "统计日期",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat2-date-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat2-date-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 行情日期字段",
+            "locator": "HqDate",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "date",
+              "meaning": "统计日期",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.date",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::date 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "date",
@@ -103242,7 +103737,51 @@
         "meaning": "日期",
         "unit": "",
         "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat2-date-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "date",
+              "meaning": "统计日期",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat2.date 完全一致。统计日期语义沿用该锚字段。通达信官方接口文档将 HqDate 标为行情日期；本裁决只确认项目内路径别名，不推断其他来源的日期口径。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "2026-11-08 官方文档核验",
+            "path": "get_more_info_batch 行情日期字段",
+            "locator": "HqDate",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.date",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::date 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -103980,13 +104519,15 @@
       "code": "market",
       "identity": "ZHB-tdxstat2::market",
       "path": "market",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "market",
+      "meaning": "市场",
+      "unit": "-",
+      "section": "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat2.market 同源锚#stock_list 与 ZHB-tdxstat2::stat2.market @ 2026-11-08 留存样本及已验证锚复核",
+      "sections": [
+        "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat2.market 同源锚#stock_list 与 ZHB-tdxstat2::stat2.market @ 2026-11-08 留存样本及已验证锚复核"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -104002,9 +104543,53 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat2-market-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat2-market-alias"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚 · get_more_info_batch 证券代码上下文；stat2.market 同源锚#stock_list 与 ZHB-tdxstat2::stat2.market @ 2026-11-08 留存样本及已验证锚复核",
+          "canonical": "market",
+          "meaning": "市场",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat2-market-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat2-market-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚",
+            "revision": "2026-11-08 留存样本及已验证锚复核",
+            "path": "get_more_info_batch 证券代码上下文；stat2.market 同源锚",
+            "locator": "stock_list 与 ZHB-tdxstat2::stat2.market",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "market",
+              "meaning": "市场",
+              "unit": "-"
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.market",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::market 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "market",
@@ -104023,7 +104608,51 @@
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat2-market-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_metadata_aliases.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "market",
+              "meaning": "市场",
+              "unit": "-"
+            }
+          },
+          "rationale": "待核路径在 220 组保留期去重股票日样本中与已验证同源 stat2.market 完全一致。市场标签沿用该锚字段；样本未用于推断或扩展市场数字编码。裁决只确认同源路径别名，不创建跨源映射。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档及项目已验证 ZHB 契约锚",
+            "revision": "2026-11-08 留存样本及已验证锚复核",
+            "path": "get_more_info_batch 证券代码上下文；stat2.market 同源锚",
+            "locator": "stock_list 与 ZHB-tdxstat2::stat2.market",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat2",
+            "code": "stat2.market",
+            "evidence_path": "research/20261108_zhb_tdxstat_metadata_aliases.md",
+            "locator": "§2 表格 ZHB-tdxstat2::market 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",

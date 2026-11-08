@@ -33,6 +33,7 @@
 - [`adjudications/20261108_zhb_tdxstat2_metadata_followup.md`](adjudications/20261108_zhb_tdxstat2_metadata_followup.md)：区分旧字段解释证伪与运行路径状态；复核 14 个竞价/封单兼容路径、250/30 根日K周期、参考字段未定状态、混合 TDX 板块代码，并同步统一层字段元数据。
 - [`research/20261108_zhb_tdxstat_contract_alignment.md`](research/20261108_zhb_tdxstat_contract_alignment.md) 与 [`adjudications/20261108_zhb_tdxstat_contract_alignment.json`](adjudications/20261108_zhb_tdxstat_contract_alignment.json)：按 ZHB 文件名数据日对齐 11 个保留期日期与 ELTDX `stats_date`，核实 `[2]/[26]/[31]/[32]` 并解决 `stat.unknown_26` 的同源别名状态冲突；不增加跨源映射。
 - [`research/20261108_zhb_tdxstat_slow_fields.md`](research/20261108_zhb_tdxstat_slow_fields.md) 与 [`adjudications/20261108_zhb_tdxstat_slow_fields.json`](adjudications/20261108_zhb_tdxstat_slow_fields.json)：按文件名数据日复核 11 个保留期 ZHB 样本，定案 `dividend_yield`、`employee_count` 两条路径为同源已验证字段的精确别名；不推断员工人数报告期或股息率公式。
+- [`research/20261108_zhb_tdxstat_metadata_aliases.md`](research/20261108_zhb_tdxstat_metadata_aliases.md) 与 [`adjudications/20261108_zhb_tdxstat_metadata_aliases.json`](adjudications/20261108_zhb_tdxstat_metadata_aliases.json)：按 2026-10-15 起保留的 11 个数据日期与 220 组去重股票日样本，确认 `tdxstat`/`tdxstat2` 代码、日期、市场别名及 `tdxstat2.change_mtd` 同源别名；不新增跨源映射。
 
 ## 归档格式
 

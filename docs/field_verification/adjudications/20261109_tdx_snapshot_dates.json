@@ -3,7 +3,7 @@
   "adjudication_id": "tdx-snapshot-date-fields-20261109",
   "reviewed_on": "2026-11-09",
   "report": "docs/field_verification/adjudications/20261109_tdx_snapshot_dates.md",
-  "evidence_basis": "official_tdx_snapshot_api_field_contract",
+  "evidence_basis": "official_tdx_more_info_api_field_contract",
   "decisions": [
     {
       "id": "tdx-snapshot-dtdate-recent-20261109",
@@ -11,12 +11,22 @@
       "code": "DTDate_Recent",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "DTDate_Recent", "meaning": "近2年最近跌停板日期", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "DTDate_Recent",
+        "meaning": "近2年最近跌停板日期",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX get_market_snapshot_batch contract lists DTDate_Recent as the most recent limit-down date within two years and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `DTDate_Recent` as 近2年最近跌停板日期 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-notice-date-recent-20261109",
@@ -24,12 +34,22 @@
       "code": "NoticeDate_Recent",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "NoticeDate_Recent", "meaning": "最近业绩预告日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "NoticeDate_Recent",
+        "meaning": "最近业绩预告日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists NoticeDate_Recent as the most recent earnings-forecast date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `NoticeDate_Recent` as 最近业绩预告日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-recent-dz-date-20261109",
@@ -37,12 +57,22 @@
       "code": "RecentDZDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "RecentDZDate", "meaning": "最近定增日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "RecentDZDate",
+        "meaning": "最近定增日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists RecentDZDate as the most recent private-placement date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `RecentDZDate` as 最近定增日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-recent-ggj-date-20261109",
@@ -50,12 +80,22 @@
       "code": "RecentGGJYDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "RecentGGJYDate", "meaning": "最近北上大额交易日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "RecentGGJYDate",
+        "meaning": "最近北上大额交易日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists RecentGGJYDate as the most recent large northbound transaction date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `RecentGGJYDate` as 最近北上大额交易日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-recent-hg-date-20261109",
@@ -63,12 +103,22 @@
       "code": "RecentHGDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "RecentHGDate", "meaning": "最近回购预案日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "RecentHGDate",
+        "meaning": "最近回购预案日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists RecentHGDate as the most recent repurchase-proposal date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `RecentHGDate` as 最近回购预案日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-recent-incent-date-20261109",
@@ -76,12 +126,22 @@
       "code": "RecentIncentDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "RecentIncentDate", "meaning": "最近股权激励预案日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "RecentIncentDate",
+        "meaning": "最近股权激励预案日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists RecentIncentDate as the most recent equity-incentive proposal date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `RecentIncentDate` as 最近股权激励预案日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-recent-release-date-20261109",
@@ -89,12 +149,22 @@
       "code": "RecentReleaseDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "RecentReleaseDate", "meaning": "最近解禁日", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "RecentReleaseDate",
+        "meaning": "最近解禁日",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists RecentReleaseDate as the most recent share-unlock date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `RecentReleaseDate` as 最近解禁日 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-report-date-20261109",
@@ -102,12 +172,22 @@
       "code": "ReportDate",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "ReportDate", "meaning": "最近财报公告日期", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "ReportDate",
+        "meaning": "最近财报公告日期",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists ReportDate as the most recent financial-report announcement date and declares its type str. This is an announcement date, not a financial report period end; the documentation does not state the date encoding. No project capture path or cross-source mapping is claimed.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `ReportDate` as 最近财报公告日期 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-stop-jy-date-recent-20261109",
@@ -115,12 +195,22 @@
       "code": "StopJYDate_Recent",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "StopJYDate_Recent", "meaning": "最近停牌日期", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "StopJYDate_Recent",
+        "meaning": "最近停牌日期",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists StopJYDate_Recent as the most recent suspension date and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `StopJYDate_Recent` as 最近停牌日期 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-top-date-recent-20261109",
@@ -128,12 +218,22 @@
       "code": "TopDate_Recent",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "TopDate_Recent", "meaning": "近2年最近龙虎榜日期", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "TopDate_Recent",
+        "meaning": "近2年最近龙虎榜日期",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists TopDate_Recent as the most recent Dragon-Tiger list date within two years and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `TopDate_Recent` as 近2年最近龙虎榜日期 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     },
     {
       "id": "tdx-snapshot-ztdate-recent-20261109",
@@ -141,16 +241,33 @@
       "code": "ZTDate_Recent",
       "previous_status": "unverified",
       "previous_status_resolution": "registry_status_only_single_source",
-      "previous": {"canonical": "", "meaning": "", "unit": ""},
-      "updated": {"canonical": "ZTDate_Recent", "meaning": "近2年最近涨停板日期", "unit": "日期字符串（官方文档未注明格式）"},
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "ZTDate_Recent",
+        "meaning": "近2年最近涨停板日期",
+        "unit": "日期字符串（官方文档未注明格式）"
+      },
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
-      "rationale": "The official TDX snapshot contract lists ZTDate_Recent as the most recent limit-up date within two years and declares its type str. The documentation does not state the date encoding. This verifies the TDX source field meaning only; it does not claim a project capture path or a ZHB cross-source mapping.",
-      "external_evidence": ["https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"]
+      "rationale": "The official TDX get_more_info_batch contract lists `ZTDate_Recent` as 近2年最近涨停板日期 and declares its type as str. The documentation does not state date encoding. This verifies source-level meaning only; it does not claim project capture or a cross-source mapping.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
     }
   ],
   "evidence": {
     "official_contract": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
-    "scope_note": "The API documents these values as strings and supplies the meanings, but does not document date encoding. The official TDX snapshot fields are not consumed by the current project runtime; no capture-path or cross-source mapping is inferred."
+    "scope_note": "The official get_more_info_batch API documents these values as strings and supplies their meanings, but does not document date encoding. This verifies source semantics only; it does not claim project capture or a ZHB cross-source mapping."
+  },
+  "source_attribution_correction": {
+    "previous_interface": "get_market_snapshot_batch",
+    "correct_interface": "get_more_info_batch",
+    "reason": "The official page lists the 11 recent-date fields in the get_more_info_batch section, not the get_market_snapshot_batch section.",
+    "field_semantics_changed": false,
+    "reviewed_on": "2026-11-09"
   }
 }

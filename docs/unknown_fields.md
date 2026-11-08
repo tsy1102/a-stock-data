@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2607；日常来源路径 2463：unverified 1270、candidate 1、conflict 73、disproved 6；历史来源路径 144。
+> 注册字段路径 2607；日常来源路径 2463：unverified 1193、candidate 1、conflict 73、disproved 6；历史来源路径 144。
 > 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,8 +15,8 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1086 |
-| 含义栏有文本（仍未验证） | 184 |
+| 含义栏为空/占位 | 1010 |
+| 含义栏有文本（仍未验证） | 183 |
 
 ### 历史状态证据的解析结果
 
@@ -27,7 +27,7 @@
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 733 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 656 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（73）
@@ -114,90 +114,16 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1270）
+## 三、待破解字段（1193）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | FTShare REST | `symbol_id` | — | — | — | 含义栏为空/占位 | live_observed_not_documented | FTShare REST 官方接口契约：A股行情列表 |
-| TDX(双命名源) | `BCancel` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `BetaValue` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `CJJEPre1` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `CJJEPre3` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `CashZJ` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ConZAFDateNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `DTPrice` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `DYRatio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `Date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `DynaPE` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ErrorId` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `EverZTCount` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FCAmo` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FCb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FDEPre1` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FDEPre2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FreeLtgb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `FzAmo` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Fzhsl` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `HisHigh` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `HisLow` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `HqDate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `IPO_Price` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `IsKzz` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `IsT0Fund` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `IsZCZGP` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `KfEarnMoney` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Kzz_HSCode` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `L2OrderNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `L2TicNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `LastStartZT` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `LastZTHzNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `Ltgb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Ltsz` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `MA5Value` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `MainBusiness` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `MorePE` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `More_YJL` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OpenAmo` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OpenAmoPre1` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OpenVolPre1` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OpenZAF` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OpenZTBuy` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `OtherQYJzc` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `PB_MRQ` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `PreReceiveZJ` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `QHMainYYMM` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `RDInputFee` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `SCancel` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `SafeValue` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ShapeValue` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ShineValue` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `StaffNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `StaticPE_TTM` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `TPFlag` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `TotalBVol` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `TotalSVol` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `VOpenZAF` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Wtb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `YearZTDay` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Yield` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAF` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre10` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre20` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre2D` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre30` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre5` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPre60` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPreMyMonth` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFPreOneYear` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFYear` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZAFYesterday` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZTGPNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ZTPrice` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `Zgb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Zjl` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Zjl_HB` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `Zsz` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `amount_wan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -228,8 +154,6 @@
 | TDX(双命名源) | `entrust_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `eps` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `eps_raw` | eps_raw | 每股收益原始值 | - | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
-| TDX(双命名源) | `fHSL` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `fLianB` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `fajirenfarengu` | — | 发起人法人股（项目输出键拼写为 fajirenfarengu） | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
 | TDX(双命名源) | `faqiren_faren_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `faren_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -295,7 +219,6 @@
 | TDX(双命名源) | `ushort` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `vol_ratio` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `volume` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `vzangsu` | — | 量涨速（具体计算窗口待确认） | % | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
 | TDX(双命名源) | `wuxing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhigong_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

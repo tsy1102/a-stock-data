@@ -39,8 +39,11 @@
 - [`adjudications/20261109_zhb_tipinfo_financial_fields.md`](adjudications/20261109_zhb_tipinfo_financial_fields.md)：以 15 个保留期 ZHB 包的 84,815 行解析对应及三家发行人半年报、三季报和官方个股日历，定案 `report_period`、累计 `eps` 与预约 `disclose_date`；不推断 EPS 基本/稀释子口径，不将预约日当作实际公告时间，也不新增跨源映射。
 - [`adjudications/20261109_zhb_tipinfo_runtime_aliases.md`](adjudications/20261109_zhb_tipinfo_runtime_aliases.md)：以 15 个保留期 ZHB 包的 84,815 条逐行审计定案 `code`、`zt_date_recent`、`hg_date`、`hg_amount_yi` 与原始列别名；补齐日期/金额单位，按通达信官方快照契约收窄涨停与回购日期说明，不声称 `RecentHGAmo` 是官方公开字段映射。
 - [`adjudications/20261109_zhb_tipinfo_shareholder_columns.md`](adjudications/20261109_zhb_tipinfo_shareholder_columns.md)：以 15 个保留包、84,815 条逐行样本和三类公开权益变动公告，修正 `[8]/[9]` 被旧业绩预告解释遗留为 `disproved` 的状态错误；旧 `div_*` 别名仍保持证伪。
-- [`adjudications/20261109_tdx_snapshot_dates.md`](adjudications/20261109_tdx_snapshot_dates.md)：依据通达信官方 `get_market_snapshot_batch` 字段表定案 11 个日期字段的语义；记录均为字符串，但官方未注明日期格式，不补造项目采集或跨源映射。
+- [`adjudications/20261109_tdx_snapshot_dates.md`](adjudications/20261109_tdx_snapshot_dates.md)：更正 11 个日期字段的接口归属为 `get_more_info_batch`（旧报告误写为 `get_market_snapshot_batch`）；字段语义不变，官方未注明日期格式，不补造项目采集或跨源映射。
 - [`adjudications/20261109_tdx_snapshot_quote_fields.md`](adjudications/20261109_tdx_snapshot_quote_fields.md)：依据通达信官方 `get_market_snapshot_batch` 字段表定案 21 个基础行情字段；保留文档未注明的单位和涨速窗口，不推断项目采集路径或跨源映射。
+- [`adjudications/20261109_tdx_more_info_fields.md`](adjudications/20261109_tdx_more_info_fields.md)：依据通达信官方 `get_more_info_batch` 字段表定案 77 个已登记的来源内语义；逐项保留单位、编码、算法和口径边界，不把未登记的四个期货/期权字段补入项目，也不声称项目实际采集。
+- [`adjudications/public_web/20261109_tdx_more_info_fields.md`](adjudications/public_web/20261109_tdx_more_info_fields.md)：记录 TDX 官方接口分节及万科、平安银行 2026 三季报对 ZHB `[25]`、`[34]` 账务字段名称与万元单位的交叉核验。
+- [`adjudications/20261109_zhb_accounting_metadata_corrections.md`](adjudications/20261109_zhb_accounting_metadata_corrections.md)：以 2026-11-06 保留 ZHB 文件和两家发行人的官方三季报，纠正 `ZHB-tdxstat::[25]`、`[34]` 的字段名与单位；解析值和兼容键不变。
 
 ## 归档格式
 

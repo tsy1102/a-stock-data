@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "zhb-tdxstat-pre_receive_zj-metadata-correction-20261109",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "[25]"
+      },
+      "canonical": "[25]",
+      "meaning": "合同负债（万元）",
+      "unit": "万元",
+      "previous": {
+        "canonical": "[25]",
+        "meaning": "预收资金 PreReceiveZJ（万元）",
+        "unit": ""
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "ZHB 文件名为数据日期；保留文件 cache/zhb/zhb_20261106.zip 的 tdxstat.cfg 中，000002 的 [25] 为 6588884.44。core/zhb_client.py::_parse_tdxstat将第 25 列原值读为 float，不作缩放。万科 2026 年三季报 2026-09-30 合并资产负债表“合同负债”为 65888844417.49 元，除以 10,000 并四舍五入到两位小数为 6588884.441749 万元，与 ZHB 完全一致。故纠正旧字段名为合同负债、单位为万元；不把此结果解释为 TDX 跨源逐值映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "[25]",
+          "meaning": "预收资金 PreReceiveZJ（万元）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "[25]",
+          "meaning": "合同负债（万元）",
+          "unit": "万元"
+        },
+        "rationale": "ZHB 文件名为数据日期；保留文件 cache/zhb/zhb_20261106.zip 的 tdxstat.cfg 中，000002 的 [25] 为 6588884.44。core/zhb_client.py::_parse_tdxstat将第 25 列原值读为 float，不作缩放。万科 2026 年三季报 2026-09-30 合并资产负债表“合同负债”为 65888844417.49 元，除以 10,000 并四舍五入到两位小数为 6588884.441749 万元，与 ZHB 完全一致。故纠正旧字段名为合同负债、单位为万元；不把此结果解释为 TDX 跨源逐值映射。"
+      },
+      "source_contract": {
+        "authority": "巨潮资讯网：万科企业股份有限公司 2026 年第三季度报告",
+        "path": "2026-09-30 合并资产负债表 / 合同负债",
+        "locator": "65,888,844,417.49 元；报告发布日期 2026-10-30",
+        "revision": "2026 年第三季度报告",
+        "url": "https://static.cninfo.com.cn/finalpage/2026-10-30/1225644984.PDF"
+      }
+    },
+    {
+      "id": "zhb-tdxstat-other_qy_jzc-metadata-correction-20261109",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "[34]"
+      },
+      "canonical": "[34]",
+      "meaning": "其他权益工具（万元）",
+      "unit": "万元",
+      "previous": {
+        "canonical": "[34]",
+        "meaning": "其他权益净资产 OtherQYJzc（元）",
+        "unit": ""
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "ZHB 文件名为数据日期；保留文件 cache/zhb/zhb_20261106.zip 的 tdxstat.cfg 中，000001 的 [34] 为 8000000.00。core/zhb_client.py::_parse_tdxstat将第 34 列原值读为 float，不作缩放。平安银行 2026 年三季报 2026-09-30 合并资产负债表“其他权益工具”为 80000 人民币百万元，换算为 8000000 万元，与 ZHB 完全一致。故纠正旧字段名为其他权益工具、单位为万元；不把此结果解释为 TDX 跨源逐值映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "[34]",
+          "meaning": "其他权益净资产 OtherQYJzc（元）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "[34]",
+          "meaning": "其他权益工具（万元）",
+          "unit": "万元"
+        },
+        "rationale": "ZHB 文件名为数据日期；保留文件 cache/zhb/zhb_20261106.zip 的 tdxstat.cfg 中，000001 的 [34] 为 8000000.00。core/zhb_client.py::_parse_tdxstat将第 34 列原值读为 float，不作缩放。平安银行 2026 年三季报 2026-09-30 合并资产负债表“其他权益工具”为 80000 人民币百万元，换算为 8000000 万元，与 ZHB 完全一致。故纠正旧字段名为其他权益工具、单位为万元；不把此结果解释为 TDX 跨源逐值映射。"
+      },
+      "source_contract": {
+        "authority": "巨潮资讯网：平安银行股份有限公司 2026 年第三季度报告",
+        "path": "2026-09-30 合并资产负债表 / 其他权益工具",
+        "locator": "80,000 人民币百万元；报告发布日期 2026-10-24",
+        "revision": "2026 年第三季度报告",
+        "url": "https://static.cninfo.com.cn/finalpage/2026-10-24/1225621667.PDF"
+      }
+    }
+  ]
+}

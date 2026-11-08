@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 108 个 code；聚合定义不完整 243 个 code；疑似合并文本 312 条逐源记录。
+> 聚合歧义 108 个 code；聚合定义不完整 243 个 code；疑似合并文本 317 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -396,11 +396,11 @@
 
 ### `[25]` — ambiguous
 
-聚合问题：meaning_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat · `[25]` | [25] | 预收资金 PreReceiveZJ（万元） | — | `verified` |
+| ZHB-tdxstat · `[25]` | [25] | 合同负债（万元） | 万元 | `verified` |
 | 新浪(hq.sinajs) · `[25]` | [25] | 卖三价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[25]` | [25] | 卖四价 | 元 | `verified` |
 
@@ -498,11 +498,11 @@
 
 ### `[34]` — ambiguous
 
-聚合问题：meaning_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat · `[34]` | [34] | 其他权益净资产 OtherQYJzc（元） | — | `verified` |
+| ZHB-tdxstat · `[34]` | [34] | 其他权益工具（万元） | 万元 | `verified` |
 | 腾讯(qt.gtimg) · `[34]` | [34] | 最低价 | 元 | `verified` |
 
 ### `[3]` — ambiguous
@@ -3588,8 +3588,12 @@
 | FTShare REST | `change_rate` | change_rate | 日涨跌幅；0.03 表示 3% | `verified` |
 | FTShare REST | `close` | close | 收盘价/最新价 | `verified` |
 | TDX(双命名源) | `Inside` | Inside | 内盘；板块指数时表示跌停家数 | `verified` |
+| TDX(双命名源) | `IsT0Fund` | IsT0Fund | 是否是 T+0 基金 | `verified` |
 | TDX(双命名源) | `JZC` | JZC | 净资产/股东权益 | `verified` |
+| TDX(双命名源) | `More_YJL` | More_YJL | ETF/LOF 溢价率 | `verified` |
 | TDX(双命名源) | `Outside` | Outside | 外盘；板块指数时表示涨停家数 | `verified` |
+| TDX(双命名源) | `ShapeValue` | ShapeValue | 短期形态+中期形态+长期形态编号 | `verified` |
+| TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
 | TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | `unverified` |
@@ -3597,6 +3601,7 @@
 | TDX(双命名源) | `net_profit_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
 | TDX(双命名源) | `total_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
+| TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
 | TDX-eltdx(适配层) | `close` | time / open / high / low / close | 时间 / OHLC | `unverified` |
 | TDX-eltdx(适配层) | `down_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
 | TDX-eltdx(适配层) | `high` | time / open / high / low / close | 时间 / OHLC | `unverified` |

@@ -1,0 +1,2023 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "tdx-more-info-HqDate-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "HqDate"
+      },
+      "canonical": "HqDate",
+      "meaning": "行情日期",
+      "unit": "日期字符串（格式未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `HqDate`，类型为 str，字段说明为“行情日期”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `HqDate`（类型 str；说明：行情日期）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-fHSL-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "fHSL"
+      },
+      "canonical": "fHSL",
+      "meaning": "换手率",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `fHSL`，类型为 str，字段说明为“换手率”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `fHSL`（类型 str；说明：换手率）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-fLianB-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "fLianB"
+      },
+      "canonical": "fLianB",
+      "meaning": "量比",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `fLianB`，类型为 str，字段说明为“量比”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `fLianB`（类型 str；说明：量比）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Wtb-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Wtb"
+      },
+      "canonical": "Wtb",
+      "meaning": "委比",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Wtb`，类型为 str，字段说明为“委比”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Wtb`（类型 str；说明：委比）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Zsz-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Zsz"
+      },
+      "canonical": "Zsz",
+      "meaning": "总市值(亿)",
+      "unit": "亿（币种未注明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Zsz`，类型为 str，字段说明为“总市值(亿)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Zsz`（类型 str；说明：总市值(亿)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Ltsz-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Ltsz"
+      },
+      "canonical": "Ltsz",
+      "meaning": "流通市值(亿)",
+      "unit": "亿（币种未注明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Ltsz`，类型为 str，字段说明为“流通市值(亿)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Ltsz`（类型 str；说明：流通市值(亿)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-BetaValue-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "BetaValue"
+      },
+      "canonical": "BetaValue",
+      "meaning": "贝塔系数",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `BetaValue`，类型为 str，字段说明为“贝塔系数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `BetaValue`（类型 str；说明：贝塔系数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-DynaPE-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "DynaPE"
+      },
+      "canonical": "DynaPE",
+      "meaning": "动态市盈率",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `DynaPE`，类型为 str，字段说明为“动态市盈率”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `DynaPE`（类型 str；说明：动态市盈率）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-MorePE-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "MorePE"
+      },
+      "canonical": "MorePE",
+      "meaning": "市盈率（港股:动, 其他扩展:静）",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `MorePE`，类型为 str，字段说明为“市盈率（港股:动, 其他扩展:静）”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `MorePE`（类型 str；说明：市盈率（港股:动, 其他扩展:静））",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-StaticPE_TTM-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "StaticPE_TTM"
+      },
+      "canonical": "StaticPE_TTM",
+      "meaning": "市盈率(TTM)",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `StaticPE_TTM`，类型为 str，字段说明为“市盈率(TTM)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `StaticPE_TTM`（类型 str；说明：市盈率(TTM)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-DYRatio-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "DYRatio"
+      },
+      "canonical": "DYRatio",
+      "meaning": "股息率",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `DYRatio`，类型为 str，字段说明为“股息率”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `DYRatio`（类型 str；说明：股息率）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-PB_MRQ-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "PB_MRQ"
+      },
+      "canonical": "PB_MRQ",
+      "meaning": "市净率(MRQ)",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `PB_MRQ`，类型为 str，字段说明为“市净率(MRQ)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `PB_MRQ`（类型 str；说明：市净率(MRQ)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-More_YJL-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "More_YJL"
+      },
+      "canonical": "More_YJL",
+      "meaning": "ETF/LOF 溢价率",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `More_YJL`，类型为 str，字段说明为“ETF/LOF 溢价率”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `More_YJL`（类型 str；说明：ETF/LOF 溢价率）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FreeLtgb-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FreeLtgb"
+      },
+      "canonical": "FreeLtgb",
+      "meaning": "自由流通股本(万)",
+      "unit": "万股",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FreeLtgb`，类型为 str，字段说明为“自由流通股本(万)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FreeLtgb`（类型 str；说明：自由流通股本(万)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Yield-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Yield"
+      },
+      "canonical": "Yield",
+      "meaning": "应计利息(债券)/占款天数(回购)",
+      "unit": "债券应计利息单位未注明 / 回购占款天数（天）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Yield`，类型为 str，字段说明为“应计利息(债券)/占款天数(回购)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Yield`（类型 str；说明：应计利息(债券)/占款天数(回购)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-MainBusiness-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "MainBusiness"
+      },
+      "canonical": "MainBusiness",
+      "meaning": "主营构成",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `MainBusiness`，类型为 str，字段说明为“主营构成”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `MainBusiness`（类型 str；说明：主营构成）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-SafeValue-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "SafeValue"
+      },
+      "canonical": "SafeValue",
+      "meaning": "安全分",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `SafeValue`，类型为 str，字段说明为“安全分”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `SafeValue`（类型 str；说明：安全分）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ShineValue-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ShineValue"
+      },
+      "canonical": "ShineValue",
+      "meaning": "亮点数",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ShineValue`，类型为 str，字段说明为“亮点数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ShineValue`（类型 str；说明：亮点数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ShapeValue-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ShapeValue"
+      },
+      "canonical": "ShapeValue",
+      "meaning": "短期形态+中期形态+长期形态编号",
+      "unit": "形态编号（编码未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ShapeValue`，类型为 str，字段说明为“短期形态+中期形态+长期形态编号”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ShapeValue`（类型 str；说明：短期形态+中期形态+长期形态编号）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-TPFlag-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "TPFlag"
+      },
+      "canonical": "TPFlag",
+      "meaning": "停牌标识",
+      "unit": "标识值（编码未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `TPFlag`，类型为 str，字段说明为“停牌标识”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `TPFlag`（类型 str；说明：停牌标识）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZTPrice-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZTPrice"
+      },
+      "canonical": "ZTPrice",
+      "meaning": "涨停价",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZTPrice`，类型为 str，字段说明为“涨停价”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZTPrice`（类型 str；说明：涨停价）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-DTPrice-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "DTPrice"
+      },
+      "canonical": "DTPrice",
+      "meaning": "跌停价",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `DTPrice`，类型为 str，字段说明为“跌停价”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `DTPrice`（类型 str；说明：跌停价）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-vzangsu-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "vzangsu"
+      },
+      "canonical": "vzangsu",
+      "meaning": "量涨速（官方未说明单位、计算窗口和算法）",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "量涨速（具体计算窗口待确认）",
+        "unit": "%"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `vzangsu`，类型为 str，字段说明为“量涨速”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `vzangsu`（类型 str；说明：量涨速）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "量涨速（具体计算窗口待确认）",
+          "unit": "%"
+        },
+        "updated": {
+          "canonical": "vzangsu",
+          "meaning": "量涨速（官方未说明单位、计算窗口和算法）",
+          "unit": "官方文档未注明"
+        },
+        "rationale": "旧注册单位 `%` 未获通达信官方字段表支持；官方只标为“量涨速”，未说明数值单位或窗口，故撤回该单位并保留语义边界。"
+      }
+    },
+    {
+      "id": "tdx-more-info-Fzhsl-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Fzhsl"
+      },
+      "canonical": "Fzhsl",
+      "meaning": "分钟换手率",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Fzhsl`，类型为 str，字段说明为“分钟换手率”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Fzhsl`（类型 str；说明：分钟换手率）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FzAmo-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FzAmo"
+      },
+      "canonical": "FzAmo",
+      "meaning": "2 分钟金额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FzAmo`，类型为 str，字段说明为“2 分钟金额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FzAmo`（类型 str；说明：2 分钟金额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-VOpenZAF-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "VOpenZAF"
+      },
+      "canonical": "VOpenZAF",
+      "meaning": "抢筹涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `VOpenZAF`，类型为 str，字段说明为“抢筹涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `VOpenZAF`（类型 str；说明：抢筹涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OpenZAF-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OpenZAF"
+      },
+      "canonical": "OpenZAF",
+      "meaning": "开盘涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OpenZAF`，类型为 str，字段说明为“开盘涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OpenZAF`（类型 str；说明：开盘涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAF-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAF"
+      },
+      "canonical": "ZAF",
+      "meaning": "涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAF`，类型为 str，字段说明为“涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAF`（类型 str；说明：涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFYesterday-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFYesterday"
+      },
+      "canonical": "ZAFYesterday",
+      "meaning": "昨日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFYesterday`，类型为 str，字段说明为“昨日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFYesterday`（类型 str；说明：昨日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre2D-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre2D"
+      },
+      "canonical": "ZAFPre2D",
+      "meaning": "前天涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre2D`，类型为 str，字段说明为“前天涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre2D`（类型 str；说明：前天涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre5-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre5"
+      },
+      "canonical": "ZAFPre5",
+      "meaning": "5 日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre5`，类型为 str，字段说明为“5 日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre5`（类型 str；说明：5 日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre10-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre10"
+      },
+      "canonical": "ZAFPre10",
+      "meaning": "10 日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre10`，类型为 str，字段说明为“10 日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre10`（类型 str；说明：10 日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre20-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre20"
+      },
+      "canonical": "ZAFPre20",
+      "meaning": "20 日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre20`，类型为 str，字段说明为“20 日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre20`（类型 str；说明：20 日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre30-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre30"
+      },
+      "canonical": "ZAFPre30",
+      "meaning": "30 日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre30`，类型为 str，字段说明为“30 日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre30`（类型 str；说明：30 日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPre60-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPre60"
+      },
+      "canonical": "ZAFPre60",
+      "meaning": "60 日涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPre60`，类型为 str，字段说明为“60 日涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPre60`（类型 str；说明：60 日涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFYear-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFYear"
+      },
+      "canonical": "ZAFYear",
+      "meaning": "年初至今涨幅",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFYear`，类型为 str，字段说明为“年初至今涨幅”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFYear`（类型 str；说明：年初至今涨幅）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPreMyMonth-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPreMyMonth"
+      },
+      "canonical": "ZAFPreMyMonth",
+      "meaning": "涨幅(本月来)",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPreMyMonth`，类型为 str，字段说明为“涨幅(本月来)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPreMyMonth`（类型 str；说明：涨幅(本月来)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZAFPreOneYear-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZAFPreOneYear"
+      },
+      "canonical": "ZAFPreOneYear",
+      "meaning": "涨幅(一年来)",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZAFPreOneYear`，类型为 str，字段说明为“涨幅(一年来)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZAFPreOneYear`（类型 str；说明：涨幅(一年来)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Zjl-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Zjl"
+      },
+      "canonical": "Zjl",
+      "meaning": "主买净额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Zjl`，类型为 str，字段说明为“主买净额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Zjl`（类型 str；说明：主买净额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Zjl_HB-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Zjl_HB"
+      },
+      "canonical": "Zjl_HB",
+      "meaning": "主力净流入(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Zjl_HB`，类型为 str，字段说明为“主力净流入(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Zjl_HB`（类型 str；说明：主力净流入(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-TotalBVol-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "TotalBVol"
+      },
+      "canonical": "TotalBVol",
+      "meaning": "总买量",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `TotalBVol`，类型为 str，字段说明为“总买量”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `TotalBVol`（类型 str；说明：总买量）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-TotalSVol-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "TotalSVol"
+      },
+      "canonical": "TotalSVol",
+      "meaning": "总卖量",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `TotalSVol`，类型为 str，字段说明为“总卖量”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `TotalSVol`（类型 str；说明：总卖量）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-BCancel-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "BCancel"
+      },
+      "canonical": "BCancel",
+      "meaning": "总撤买量",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `BCancel`，类型为 str，字段说明为“总撤买量”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `BCancel`（类型 str；说明：总撤买量）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-SCancel-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "SCancel"
+      },
+      "canonical": "SCancel",
+      "meaning": "总撤卖量",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `SCancel`，类型为 str，字段说明为“总撤卖量”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `SCancel`（类型 str；说明：总撤卖量）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-L2TicNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "L2TicNum"
+      },
+      "canonical": "L2TicNum",
+      "meaning": "L2 逐笔成交数",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `L2TicNum`，类型为 str，字段说明为“L2 逐笔成交数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `L2TicNum`（类型 str；说明：L2 逐笔成交数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-L2OrderNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "L2OrderNum"
+      },
+      "canonical": "L2OrderNum",
+      "meaning": "L2 逐笔委托数",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `L2OrderNum`，类型为 str，字段说明为“L2 逐笔委托数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `L2OrderNum`（类型 str；说明：L2 逐笔委托数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FCAmo-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FCAmo"
+      },
+      "canonical": "FCAmo",
+      "meaning": "封单额(万元)，> 0为涨停 < 0为跌停",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FCAmo`，类型为 str，字段说明为“封单额(万元)，> 0为涨停 < 0为跌停”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FCAmo`（类型 str；说明：封单额(万元)，> 0为涨停 < 0为跌停）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FCb-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FCb"
+      },
+      "canonical": "FCb",
+      "meaning": "封成比",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FCb`，类型为 str，字段说明为“封成比”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FCb`（类型 str；说明：封成比）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OpenAmo-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OpenAmo"
+      },
+      "canonical": "OpenAmo",
+      "meaning": "开盘金额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OpenAmo`，类型为 str，字段说明为“开盘金额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OpenAmo`（类型 str；说明：开盘金额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OpenZTBuy-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OpenZTBuy"
+      },
+      "canonical": "OpenZTBuy",
+      "meaning": "竞价涨停买入金额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OpenZTBuy`，类型为 str，字段说明为“竞价涨停买入金额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OpenZTBuy`（类型 str；说明：竞价涨停买入金额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OpenAmoPre1-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OpenAmoPre1"
+      },
+      "canonical": "OpenAmoPre1",
+      "meaning": "昨开盘金额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OpenAmoPre1`，类型为 str，字段说明为“昨开盘金额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OpenAmoPre1`（类型 str；说明：昨开盘金额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OpenVolPre1-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OpenVolPre1"
+      },
+      "canonical": "OpenVolPre1",
+      "meaning": "昨开盘量",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OpenVolPre1`，类型为 str，字段说明为“昨开盘量”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OpenVolPre1`（类型 str；说明：昨开盘量）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-CJJEPre1-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "CJJEPre1"
+      },
+      "canonical": "CJJEPre1",
+      "meaning": "昨成交额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `CJJEPre1`，类型为 str，字段说明为“昨成交额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `CJJEPre1`（类型 str；说明：昨成交额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-CJJEPre3-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "CJJEPre3"
+      },
+      "canonical": "CJJEPre3",
+      "meaning": "3 日成交额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `CJJEPre3`，类型为 str，字段说明为“3 日成交额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `CJJEPre3`（类型 str；说明：3 日成交额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FDEPre1-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FDEPre1"
+      },
+      "canonical": "FDEPre1",
+      "meaning": "昨封单额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FDEPre1`，类型为 str，字段说明为“昨封单额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FDEPre1`（类型 str；说明：昨封单额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-FDEPre2-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FDEPre2"
+      },
+      "canonical": "FDEPre2",
+      "meaning": "前封单额(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `FDEPre2`，类型为 str，字段说明为“前封单额(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `FDEPre2`（类型 str；说明：前封单额(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ZTGPNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ZTGPNum"
+      },
+      "canonical": "ZTGPNum",
+      "meaning": "板块指数的涨停家数",
+      "unit": "家",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ZTGPNum`，类型为 str，字段说明为“板块指数的涨停家数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ZTGPNum`（类型 str；说明：板块指数的涨停家数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-LastStartZT-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "LastStartZT"
+      },
+      "canonical": "LastStartZT",
+      "meaning": "几天",
+      "unit": "天（参照起点未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `LastStartZT`，类型为 str，字段说明为“几天”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `LastStartZT`（类型 str；说明：几天）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-LastZTHzNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "LastZTHzNum"
+      },
+      "canonical": "LastZTHzNum",
+      "meaning": "几板",
+      "unit": "板（统计窗口未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `LastZTHzNum`，类型为 str，字段说明为“几板”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `LastZTHzNum`（类型 str；说明：几板）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-EverZTCount-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "EverZTCount"
+      },
+      "canonical": "EverZTCount",
+      "meaning": "连板天",
+      "unit": "天（连续口径未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `EverZTCount`，类型为 str，字段说明为“连板天”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `EverZTCount`（类型 str；说明：连板天）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-ConZAFDateNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ConZAFDateNum"
+      },
+      "canonical": "ConZAFDateNum",
+      "meaning": "连涨天数",
+      "unit": "天",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `ConZAFDateNum`，类型为 str，字段说明为“连涨天数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `ConZAFDateNum`（类型 str；说明：连涨天数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-YearZTDay-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "YearZTDay"
+      },
+      "canonical": "YearZTDay",
+      "meaning": "年涨停天数",
+      "unit": "天",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `YearZTDay`，类型为 str，字段说明为“年涨停天数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `YearZTDay`（类型 str；说明：年涨停天数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-MA5Value-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "MA5Value"
+      },
+      "canonical": "MA5Value",
+      "meaning": "5 日均价",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `MA5Value`，类型为 str，字段说明为“5 日均价”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `MA5Value`（类型 str；说明：5 日均价）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-HisHigh-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "HisHigh"
+      },
+      "canonical": "HisHigh",
+      "meaning": "52 周最高",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `HisHigh`，类型为 str，字段说明为“52 周最高”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `HisHigh`（类型 str；说明：52 周最高）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-HisLow-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "HisLow"
+      },
+      "canonical": "HisLow",
+      "meaning": "52 周最低",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `HisLow`，类型为 str，字段说明为“52 周最低”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `HisLow`（类型 str；说明：52 周最低）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-IPO_Price-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "IPO_Price"
+      },
+      "canonical": "IPO_Price",
+      "meaning": "发行价",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `IPO_Price`，类型为 str，字段说明为“发行价”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `IPO_Price`（类型 str；说明：发行价）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-IsT0Fund-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "IsT0Fund"
+      },
+      "canonical": "IsT0Fund",
+      "meaning": "是否是 T+0 基金",
+      "unit": "标志值（编码未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `IsT0Fund`，类型为 str，字段说明为“是否是 T+0 基金”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `IsT0Fund`（类型 str；说明：是否是 T+0 基金）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-IsZCZGP-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "IsZCZGP"
+      },
+      "canonical": "IsZCZGP",
+      "meaning": "是否是注册制 A 股",
+      "unit": "标志值（编码未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `IsZCZGP`，类型为 str，字段说明为“是否是注册制 A 股”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `IsZCZGP`（类型 str；说明：是否是注册制 A 股）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-IsKzz-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "IsKzz"
+      },
+      "canonical": "IsKzz",
+      "meaning": "是否是可转债",
+      "unit": "标志值（编码未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `IsKzz`，类型为 str，字段说明为“是否是可转债”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `IsKzz`（类型 str；说明：是否是可转债）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-Kzz_HSCode-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Kzz_HSCode"
+      },
+      "canonical": "Kzz_HSCode",
+      "meaning": "可转债对应的正股代码",
+      "unit": "证券代码",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `Kzz_HSCode`，类型为 str，字段说明为“可转债对应的正股代码”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `Kzz_HSCode`（类型 str；说明：可转债对应的正股代码）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-QHMainYYMM-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "QHMainYYMM"
+      },
+      "canonical": "QHMainYYMM",
+      "meaning": "主力合约关联的月份(期货)",
+      "unit": "月份（字符串格式未说明）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `QHMainYYMM`，类型为 str，字段说明为“主力合约关联的月份(期货)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `QHMainYYMM`（类型 str；说明：主力合约关联的月份(期货)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-KfEarnMoney-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "KfEarnMoney"
+      },
+      "canonical": "KfEarnMoney",
+      "meaning": "扣非净利润(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `KfEarnMoney`，类型为 str，字段说明为“扣非净利润(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `KfEarnMoney`（类型 str；说明：扣非净利润(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-RDInputFee-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "RDInputFee"
+      },
+      "canonical": "RDInputFee",
+      "meaning": "研发费用(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `RDInputFee`，类型为 str，字段说明为“研发费用(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `RDInputFee`（类型 str；说明：研发费用(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-CashZJ-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "CashZJ"
+      },
+      "canonical": "CashZJ",
+      "meaning": "货币资金(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `CashZJ`，类型为 str，字段说明为“货币资金(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `CashZJ`（类型 str；说明：货币资金(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-PreReceiveZJ-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "PreReceiveZJ"
+      },
+      "canonical": "PreReceiveZJ",
+      "meaning": "合同负债(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `PreReceiveZJ`，类型为 str，字段说明为“合同负债(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `PreReceiveZJ`（类型 str；说明：合同负债(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-OtherQYJzc-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "OtherQYJzc"
+      },
+      "canonical": "OtherQYJzc",
+      "meaning": "其它权益工具(万元)",
+      "unit": "万元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `OtherQYJzc`，类型为 str，字段说明为“其它权益工具(万元)”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `OtherQYJzc`（类型 str；说明：其它权益工具(万元)）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "tdx-more-info-StaffNum-20261109",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "StaffNum"
+      },
+      "canonical": "StaffNum",
+      "meaning": "员工人数",
+      "unit": "人",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方文档的 get_more_info_batch 返回字段表直接列出 `StaffNum`，类型为 str，字段说明为“员工人数”。本裁决只确认 TDX 上游字段描述；官方未注明的单位、编码、算法或计算窗口不作推断，也不据此声称本项目当前采集该路径或建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_more_info_batch 返回数据字段表",
+        "locator": "字段 `StaffNum`（类型 str；说明：员工人数）",
+        "revision": "官方网页于 2026-11-09 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

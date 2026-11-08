@@ -909,7 +909,7 @@ class ZhbData:
                   证伪: 非板型码、非涨停事件码([23]=0 含263个涨停样本)、不由单一特征决定(仅ma_order增益0.405bit)。
                   🔴 治理护栏: 维持「禁作定案语义」(TdxW.exe CShortCutPage 词表与数值码映射待定)
             [24] cash_zj         现金总额(元) ★2026-08-04官方TdxQuant确认
-            [25] pre_receive_zj  预收资金(万元) ★2026-08-04官方TdxQuant确认
+            [25] pre_receive_zj  合同负债(万元) ★2026-11-09保留期ZHB样本与万科2026年三季报交叉核验；键名为历史兼容名称
             [26] unknown_26      年涨停天 YearZTDay ★V17.4.24(2026-09-24) 升 L1 定案:
                   窗口 = 个股自身最近 243 个交易日(含当日, 含一字板); ihelp.dat L64官方定义
                   「近一年内的涨停次数(不包括未开板的涨停)」——「未开板」= 未开板次新股(#FUNC_TDXStatZS L432),
@@ -931,7 +931,7 @@ class ZhbData:
             [33] zt_lianban       ✅ 连板天(当前连续涨停天数) ★V17.4.24 L1结构铁证: 违反
                   [33]≤[32]≤[31] 的 0 例/8469样本; 分布 0:5552 1:2350 2:353 3:118 4:56。
                   ⚠️ 口径修正: 仅当前处于涨停时填充, 其余为**空**(非0); 空值 5784/14253
-            [34] other_qy_jzc    其他权益净资产(元) ★2026-08-04官方TdxQuant确认
+            [34] other_qy_jzc    其他权益工具(万元) ★2026-11-09保留期ZHB样本与平安银行2026年三季报交叉核验；键名为历史兼容名称
         """
         data = self.raw_files.get("tdxstat.cfg", b"")
         if not data:
@@ -1002,8 +1002,8 @@ class ZhbData:
                 # V17.2.7(2026-09-12) 补抽 8 个历史遗漏列(原 docstring 已定义但解析器未抽取):
                 #   Col[2]=unknown_2(BetaValue 贝塔系数；官方未说明周期/基准) / Col[11]=free_ltgb(自由流通股本万股,官方确认)
                 #   Col[16]=rd_input_fee(研发投入万元,官方确认) / Col[22]=shape_value(个股形态/板块代码,官方L1)
-                #   Col[23]=zt_type_code(当日行情类型分档码) / Col[25]=pre_receive_zj(预收资金万元,官方确认)
-                #   Col[26]=unknown_26(YearZTDay 年涨停天数) / Col[34]=other_qy_jzc(其他权益净资产元,官方确认)
+                #   Col[23]=zt_type_code(当日行情类型分档码) / Col[25]=pre_receive_zj(合同负债万元; 历史兼容键名)
+                #   Col[26]=unknown_26(YearZTDay 年涨停天数) / Col[34]=other_qy_jzc(其他权益工具万元; 历史兼容键名)
                 "unknown_2": _safe_cast(parts, 2, float),
                 "free_ltgb": _safe_cast(parts, 11, float),
                 "rd_input_fee": _safe_cast(parts, 16, float),

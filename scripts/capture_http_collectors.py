@@ -314,10 +314,19 @@ def collect_sina_extended(pool: list, deps: CaptureHttpDependencies) -> dict:
 
         if finance_available:
             for index, report_type in enumerate(report_types):
-                report = get_sina_financial_report_raw(code, report_type, num_periods=1)
+                error_detail: Dict[str, Any] = {}
+                report = get_sina_financial_report_raw(
+                    code,
+                    report_type,
+                    num_periods=1,
+                    error_out=error_detail,
+                )
                 if report is None:
+                    error_suffix = f" ({str(error_detail)[:240]})" if error_detail else ""
                     record["financial_reports"][report_type] = {
-                        "__error__": "Sina financial report request or response failed"
+                        "__error__": (
+                            "Sina financial report request or response failed" + error_suffix
+                        )
                     }
                     finance_available = False
                     for pending_type in report_types[index + 1 :]:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ssl
 from types import SimpleNamespace
 
 import pytest
@@ -121,7 +122,7 @@ def test_kpl_uses_explicit_direct_urllib_opener(monkeypatch):
     assert calls[0][1] == 15
 
 
-def test_plate_rotation_uses_explicit_direct_urllib_opener(monkeypatch):
+def test_plate_rotation_uses_direct_system_trust_context(monkeypatch):
     calls = []
     waits = []
     monkeypatch.setattr(sc_network, "_source_rate_limit_wait", lambda url: waits.append(url))
@@ -138,9 +139,64 @@ def test_plate_rotation_uses_explicit_direct_urllib_opener(monkeypatch):
     result = sc_plate_rot._post("/api/test", {"from": "ths"})
 
     assert result == {"html": ""}
+    assert sc_plate_rot._BASE == "https://v.duanxianxia.com"
     assert sc_plate_rot._DIRECT_PROXY_HANDLER.proxies == {}
     assert waits == [sc_plate_rot._BASE]
     assert len(calls) == 1
+    request, timeout = calls[0]
+    assert request.full_url == f"{sc_plate_rot._BASE}/api/test"
+    assert request.data == b"from=ths"
+    assert request.get_method() == "POST"
+    assert timeout == 15
+    assert sc_plate_rot._TLS_CONTEXT.verify_mode == ssl.CERT_REQUIRED
+    assert sc_plate_rot._TLS_CONTEXT.check_hostname is True
+
+
+def test_plate_rotation_request_failure_is_preserved(monkeypatch):
+    monkeypatch.setattr(sc_plate_rot, "_throttle", lambda: None)
+    monkeypatch.setattr(
+        sc_network,
+        "_source_rate_limit_wait",
+        lambda _url: None,
+    )
+
+    def fail_open(*_args, **_kwargs):
+        raise OSError("CERTIFICATE_VERIFY_FAILED")
+
+    monkeypatch.setattr(sc_plate_rot, "_DIRECT_OPENER", SimpleNamespace(open=fail_open))
+
+    assert sc_plate_rot._post("/api/test", {"from": "ths"}) == {"_err": "CERTIFICATE_VERIFY_FAILED"}
+
+
+def test_plate_rotation_request_failure_is_not_returned_as_empty_matrix(monkeypatch):
+    monkeypatch.setattr(
+        sc_plate_rot,
+        "_post",
+        lambda *_args, **_kwargs: {"_err": "CERTIFICATE_VERIFY_FAILED"},
+    )
+
+    with pytest.raises(RuntimeError, match="CERTIFICATE_VERIFY_FAILED"):
+        sc_plate_rot.get_plate_rotation_matrix.__wrapped__(source="kaipan", days=20, top_n=30)
+
+    assert not sc_plate_rot._valid_plate_rotation_matrix(
+        {"dates": [], "source": "kaipan", "plates": []}
+    )
+    assert sc_plate_rot._valid_plate_rotation_matrix(
+        {
+            "dates": ["2026-11-06"],
+            "source": "kaipan",
+            "plates": [{"rank": 1, "cells": [{"code": "801001"}]}],
+        }
+    )
+
+
+def test_plate_rotation_header_only_response_is_reported_as_missing_dates(monkeypatch):
+    html = "<tr><td style='width:50px'>rank</td></tr><tr id='long' class='kaipan'></tr>"
+    monkeypatch.setattr(sc_plate_rot, "_post", lambda *_args, **_kwargs: {"html": html})
+
+    with pytest.raises(ValueError) as exc_info:
+        sc_plate_rot.get_plate_rotation_matrix.__wrapped__(source="kaipan", days=20, top_n=30)
+    assert f"response parse failed: no date headers ({len(html)} HTML chars)" in str(exc_info.value)
 
 
 def test_official_get_uses_direct_shared_requests_session(monkeypatch):

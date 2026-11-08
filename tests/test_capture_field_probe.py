@@ -26,6 +26,27 @@ def _fake_kpl_detail(pid_type=1, capture_raw=False):
     return [{"code": "600000", "zt_time": 1790645140, "seal_amount": 1.0}]
 
 
+def _fake_plate_rotation_matrix(**_kwargs):
+    return {
+        "dates": ["2026-09-24"],
+        "source": "kaipan",
+        "plates": [
+            {
+                "rank": 1,
+                "cells": [
+                    {
+                        "date": "2026-09-24",
+                        "code": "BK0001",
+                        "name": "fixture",
+                        "value": "1.0",
+                        "color": "red",
+                    }
+                ],
+            }
+        ],
+    }
+
+
 def test_startup_scope_label_shows_selected_sources_and_context_mode():
     assert (
         capture_probe._startup_scope_label(["ftshare", "kph"], True)
@@ -79,7 +100,7 @@ def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
 
     def fake_datacenter(*args, **kwargs):
@@ -117,7 +138,7 @@ def test_market_sources_skips_dragon_tiger_by_default(monkeypatch):
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(
         stock_common,
@@ -199,7 +220,7 @@ def test_market_source_failures_do_not_skip_sibling_calls(monkeypatch):
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
@@ -228,7 +249,7 @@ def test_market_source_none_response_is_an_error(monkeypatch):
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
@@ -254,7 +275,7 @@ def test_market_source_missing_export_does_not_skip_sibling_calls(monkeypatch):
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
@@ -2009,6 +2030,88 @@ def test_kph_ladder_rate_limit_skips_history_request(monkeypatch):
     assert result["stocks"] == {}
 
 
+def _stub_market_capture_dependencies(monkeypatch):
+    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 11, 6))
+    monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: [])
+    monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
+
+
+def test_market_sources_derives_plate_top_from_the_single_matrix_request(monkeypatch):
+    _stub_market_capture_dependencies(monkeypatch)
+    calls = []
+    matrix = {
+        "dates": ["2026-11-06"],
+        "source": "kaipan",
+        "plates": [
+            {
+                "rank": 1,
+                "cells": [
+                    {
+                        "date": "2026-11-06",
+                        "code": "801001",
+                        "name": "测试板块",
+                        "value": "3.2",
+                        "color": "red",
+                    }
+                ],
+            }
+        ],
+    }
+
+    def get_matrix(**kwargs):
+        calls.append(kwargs)
+        return matrix
+
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", get_matrix)
+    monkeypatch.setattr(
+        stock_common,
+        "get_plate_rotation_top",
+        lambda: pytest.fail("top rows must be derived from the captured matrix"),
+    )
+
+    result = capture_probe.collect_market_sources([], include_kpl_detail=False)
+
+    assert calls == [{"source": "kaipan", "days": 20, "top_n": 30}]
+    assert result["plate_rotation_top"] == [
+        {
+            "rank": 1,
+            "code": "801001",
+            "name": "测试板块",
+            "value": "3.2",
+            "color": "red",
+        }
+    ]
+
+
+def test_market_sources_preserves_plate_rotation_error_instead_of_empty_success(monkeypatch):
+    _stub_market_capture_dependencies(monkeypatch)
+    calls = []
+
+    def fail_matrix(**kwargs):
+        calls.append(kwargs)
+        raise RuntimeError("CERTIFICATE_VERIFY_FAILED")
+
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", fail_matrix)
+    monkeypatch.setattr(
+        stock_common,
+        "get_plate_rotation_top",
+        lambda: pytest.fail("top rows must not issue a second request"),
+    )
+
+    result = capture_probe.collect_market_sources([], include_kpl_detail=False)
+
+    assert calls == [{"source": "kaipan", "days": 20, "top_n": 30}]
+    assert "CERTIFICATE_VERIFY_FAILED" in result["plate_rotation_matrix"]["__error__"]
+    assert result["plate_rotation_top"] == result["plate_rotation_matrix"]
+
+
 def test_market_sources_can_omit_kpl_detail_when_collected_separately(monkeypatch):
     monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {})
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: [])
@@ -2024,7 +2127,7 @@ def test_market_sources_can_omit_kpl_detail_when_collected_separately(monkeypatc
     monkeypatch.setattr(
         stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
     )
-    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", _fake_plate_rotation_matrix)
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
 
     result = capture_probe.collect_market_sources([], include_kpl_detail=False)

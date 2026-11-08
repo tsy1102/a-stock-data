@@ -925,15 +925,31 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> List[Dict[str
 
 
 def get_sina_financial_report_raw(
-    code: str, report_type: str, num_periods: int = 1
+    code: str,
+    report_type: str,
+    num_periods: int = 1,
+    error_out: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Fetch one Sina statement type without normalization or persistent caching.
 
     This is the evidence-capture adapter for the three raw statement contracts.
     The report date and ``item_title`` keys must remain attached to each item;
     callers should not flatten the numeric values into an unkeyed stock scalar.
+    An optional error_out dictionary receives bounded transport and response-shape diagnostics.
     """
+    if error_out is not None:
+        error_out.clear()
     if not code.isdigit() or len(code) != 6:
+        if error_out is not None:
+            error_out.update(
+                {
+                    "code": "invalid_stock_code",
+                    "phase": "validation",
+                    "request_attempt_state": "not_attempted",
+                    "retryable_hint": False,
+                    "raw_error": "stock code must contain six digits",
+                }
+            )
         return None
     if report_type not in {"fzb", "lrb", "llb"}:
         raise ValueError("report_type must be one of: fzb, lrb, llb")
@@ -949,6 +965,7 @@ def get_sina_financial_report_raw(
         "page": "1",
         "num": str(num_periods),
     }
+    phase = "request"
     try:
         response = _quick_request(
             url,
@@ -956,16 +973,59 @@ def get_sina_financial_report_raw(
             headers={"User-Agent": UA},
             timeout=15,
             max_retries=1,
+            error_out=error_out,
         )
         if response is None:
+            if error_out is not None and not error_out:
+                error_out.update(
+                    {
+                        "code": "no_response",
+                        "phase": "request",
+                        "request_attempt_state": "unknown",
+                        "retryable_hint": None,
+                        "raw_error": "Sina financial endpoint returned no response",
+                    }
+                )
             return None
+        phase = "response_parse"
         payload = response.json()
+        if not isinstance(payload, dict):
+            if error_out is not None:
+                error_out.update(
+                    {
+                        "code": "response_contract_error",
+                        "phase": phase,
+                        "request_attempt_state": "completed",
+                        "retryable_hint": False,
+                        "raw_error": f"expected JSON object, received {type(payload).__name__}",
+                    }
+                )
+            return None
         result_data = ((payload or {}).get("result") or {}).get("data") or {}
         report_list = result_data.get("report_list")
         if not isinstance(report_list, dict):
+            if error_out is not None:
+                error_out.update(
+                    {
+                        "code": "response_contract_error",
+                        "phase": phase,
+                        "request_attempt_state": "completed",
+                        "retryable_hint": False,
+                        "raw_error": "missing result.data.report_list object",
+                    }
+                )
             return None
         return {"report_type": report_type, "report_list": report_list}
     except Exception as exc:
+        if error_out is not None:
+            error_out.setdefault("code", type(exc).__name__)
+            error_out.setdefault("phase", phase)
+            error_out.setdefault(
+                "request_attempt_state",
+                "unknown" if phase == "request" else "completed",
+            )
+            error_out.setdefault("retryable_hint", None)
+            error_out.setdefault("raw_error", f"{type(exc).__name__}: {exc}"[:240])
         _debug_log(f"datasource get_sina_financial_report_raw ({code}, {report_type}): {exc}")
         return None
 

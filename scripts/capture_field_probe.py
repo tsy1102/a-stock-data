@@ -747,11 +747,20 @@ def collect_market_sources(
                     "kpl_plate_strength",
                     "kpl_broken_ratio",
                     "kpl_limit_up_detail",
+                    "plate_rotation_matrix",
                 }
                 and isinstance(result, dict)
                 and ("__error__" in result or "__skipped__" in result)
             ):
                 out[name] = result
+            elif name == "plate_rotation_matrix" and (
+                not isinstance(result, dict)
+                or not isinstance(result.get("dates"), list)
+                or not result["dates"]
+                or not isinstance(result.get("plates"), list)
+                or not result["plates"]
+            ):
+                out[name] = {"__error__": "empty or malformed response from plate_rotation_matrix"}
             elif name in {
                 "cls_market_emotion",
                 "kph_limit_ladder",
@@ -818,7 +827,31 @@ def collect_market_sources(
         days=20,
         top_n=30,
     )
-    capture_one("plate_rotation_top", "get_plate_rotation_top")
+    matrix = out["plate_rotation_matrix"]
+    if isinstance(matrix, dict) and ("__error__" in matrix or "__skipped__" in matrix):
+        error_key = "__error__" if "__error__" in matrix else "__skipped__"
+        out["plate_rotation_top"] = {error_key: matrix[error_key]}
+    else:
+        top: List[Dict[str, Any]] = []
+        for plate in matrix["plates"][:10]:
+            if not isinstance(plate, dict):
+                continue
+            cells = plate.get("cells")
+            if not isinstance(cells, list) or not cells or not isinstance(cells[0], dict):
+                continue
+            cell = cells[0]
+            top.append(
+                {
+                    "rank": plate.get("rank"),
+                    "code": cell.get("code"),
+                    "name": cell.get("name"),
+                    "value": cell.get("value"),
+                    "color": cell.get("color"),
+                }
+            )
+        out["plate_rotation_top"] = (
+            top if top else {"__error__": "plate_rotation_matrix contained no top rows"}
+        )
     if not include_context:
         return out
     try:

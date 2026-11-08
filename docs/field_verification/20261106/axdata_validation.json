@@ -1,0 +1,565 @@
+{
+  "schema_version": "1.2",
+  "status": "already_recorded",
+  "data_date": "2026-11-06",
+  "capture_directory_date": "2026-11-06",
+  "latest_completed_trade_date": "2026-11-06",
+  "data_date_domain": "mixed",
+  "market_phase": "closed",
+  "evaluated_at": "2026-11-08T10:33:03+08:00",
+  "eligibility_reason": null,
+  "queue": {
+    "status": "ok",
+    "interface_count": 257,
+    "field_occurrence_count": 3343,
+    "field_occurrences_below_e3": 3343,
+    "interface_relation_status_counts": {
+      "direct_call": 1,
+      "family_candidate_only": 88,
+      "no_project_route": 141,
+      "same_endpoint_candidate": 21,
+      "same_provider_different_endpoint": 5,
+      "stream_only": 1
+    },
+    "active_probe_allowlist": [
+      "tencent_realtime_snapshot"
+    ],
+    "other_candidates": "static review only until route, parameters, date basis, and request safety are approved"
+  },
+  "passive_evidence": {
+    "axdata_shortline_vs_eltdx": {
+      "status": "compared",
+      "target_trade_date": "2026-11-06",
+      "matched_trade_date": "2026-11-06",
+      "axdata_observed_dates": [
+        "2026-11-06"
+      ],
+      "eltdx_observed_dates": [
+        "2026-11-06"
+      ],
+      "paired_stocks": 20,
+      "paired_codes": [
+        "000007",
+        "000011",
+        "000037",
+        "000568",
+        "000678",
+        "002034",
+        "002242",
+        "300031",
+        "300788",
+        "301190",
+        "600309",
+        "600519",
+        "600675",
+        "600825",
+        "601288",
+        "688327",
+        "688553",
+        "688589",
+        "920118",
+        "920508"
+      ],
+      "field_comparisons": {
+        "alignment_status": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "auction_prev_volume_ratio": {
+          "equal": 3,
+          "different": 17,
+          "both_null": 0
+        },
+        "beta_60d": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "code": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "float_market_value": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "float_shares": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "free_float_market_value": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "free_float_shares": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "full_code": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "instrument_id": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "ladder_level": {
+          "equal": 0,
+          "different": 0,
+          "both_null": 20
+        },
+        "limit_board_text": {
+          "equal": 1,
+          "different": 0,
+          "both_null": 19
+        },
+        "limit_stat_days": {
+          "equal": 2,
+          "different": 0,
+          "both_null": 18
+        },
+        "limit_status": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "limit_up_count_in_stat_days": {
+          "equal": 2,
+          "different": 0,
+          "both_null": 18
+        },
+        "limit_up_streak_days": {
+          "equal": 1,
+          "different": 0,
+          "both_null": 19
+        },
+        "market_id": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "open_amount": {
+          "equal": 2,
+          "different": 18,
+          "both_null": 0
+        },
+        "open_change_pct": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "open_prev_amount_ratio": {
+          "equal": 5,
+          "different": 15,
+          "both_null": 0
+        },
+        "open_prev_seal_ratio": {
+          "equal": 0,
+          "different": 0,
+          "both_null": 20
+        },
+        "open_price": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "open_turnover_z": {
+          "equal": 10,
+          "different": 10,
+          "both_null": 0
+        },
+        "open_volume_hand": {
+          "equal": 2,
+          "different": 18,
+          "both_null": 0
+        },
+        "open_volume_ratio": {
+          "equal": 2,
+          "different": 18,
+          "both_null": 0
+        },
+        "opening_rush": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "pe_ttm": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "pre_close": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "prev2_seal_amount": {
+          "equal": 1,
+          "different": 0,
+          "both_null": 19
+        },
+        "prev_amount": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "prev_open_amount": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "prev_open_volume_hand": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "prev_seal_amount": {
+          "equal": 0,
+          "different": 0,
+          "both_null": 20
+        },
+        "previous_trade_date": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "seal_amount": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "seal_prev_ratio": {
+          "equal": 0,
+          "different": 0,
+          "both_null": 20
+        },
+        "seal_to_amount_ratio": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "seal_to_float_ratio": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        },
+        "symbol": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "target_trade_date": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "tdx_code": {
+          "equal": 0,
+          "different": 20,
+          "both_null": 0
+        },
+        "year_limit_up_days": {
+          "equal": 20,
+          "different": 0,
+          "both_null": 0
+        }
+      },
+      "requests_added": 0
+    },
+    "kph_limit_up_history_vs_kpl_detail": {
+      "status": "compared",
+      "target_trade_date": "2026-11-06",
+      "matched_trade_date": "2026-11-06",
+      "kph_trade_date": "2026-11-06",
+      "kpl_trade_date": "2026-11-06",
+      "kph_rows": 30,
+      "kpl_rows": 32,
+      "paired_stocks": 30,
+      "field_comparisons": {
+        "limit_time": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        },
+        "seal_amount": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        },
+        "seal_money": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        },
+        "net_inflow": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        },
+        "turnover": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        },
+        "turnover_rate": {
+          "equal": 30,
+          "different": 0,
+          "missing": 0
+        }
+      },
+      "requests_added": 0
+    }
+  },
+  "endpoint_identities": {
+    "stock_shortline_indicators_tdx": {
+      "status": "observing",
+      "interface_id": "stock_shortline_indicators_tdx",
+      "reference_source": "eltdx",
+      "evidence_dates": [],
+      "confirmed_fields": [],
+      "unresolved_fields": [],
+      "last_mismatch": {
+        "data_date": "2026-10-16",
+        "fields": [
+          "auction_prev_volume_ratio",
+          "instrument_id",
+          "open_amount",
+          "open_prev_amount_ratio",
+          "open_turnover_z",
+          "open_volume_hand",
+          "open_volume_ratio",
+          "opening_rush",
+          "tdx_code"
+        ],
+        "reason": "field_value_mismatch"
+      },
+      "reason": "value_mismatch_observed",
+      "minimum_data_dates": 3,
+      "minimum_symbols_per_date": 18,
+      "minimum_fields": 5,
+      "matched_data_dates": 0,
+      "minimum_matched_symbols": 0
+    },
+    "kph_limit_up_history": {
+      "status": "observing",
+      "interface_id": "kph_limit_up_history",
+      "reference_source": "kpl",
+      "evidence_dates": [],
+      "confirmed_fields": [],
+      "unresolved_fields": [
+        "__identity__",
+        "industry_id",
+        "industry_limit_up_count",
+        "limit_count",
+        "limit_tag",
+        "market_cap",
+        "name",
+        "open_time",
+        "reason",
+        "themes"
+      ],
+      "reason": "contract_changed_reopened",
+      "minimum_data_dates": 3,
+      "minimum_symbols_per_date": 18,
+      "minimum_fields": 5,
+      "matched_data_dates": 0,
+      "minimum_matched_symbols": 0
+    }
+  },
+  "probe": {
+    "status": "sampled",
+    "interface_id": "tencent_realtime_snapshot",
+    "family": "tencent",
+    "code": "920508",
+    "request_count": 1,
+    "params": {
+      "code": [
+        "920508.BJ"
+      ]
+    },
+    "collected_at": "2026-11-08T10:33:05+08:00",
+    "source_as_of_date": "2026-11-06",
+    "source_date_domain": "trading_day_realtime_snapshot",
+    "source_relation": "same-provider comparison against the project's raw Tencent quote",
+    "project_raw_file": "raw_tencent.json",
+    "field_mapping_basis": "AxData reconciliation E2 sample plus current Tencent raw index registry",
+    "project_source_as_of_date": "2026-11-06",
+    "comparison": {
+      "status": "not_same_dated_snapshot",
+      "axdata_quote_time": "20261106153238",
+      "project_quote_time": "20261106153232",
+      "axdata_quote_date": "2026-11-06",
+      "project_quote_date": "2026-11-06",
+      "target_trade_date": "2026-11-06",
+      "field_comparisons": {}
+    },
+    "source_identity": {
+      "status": "observing",
+      "interface_id": "tencent_realtime_snapshot",
+      "reference_source": "project_tencent",
+      "minimum_data_dates": 3,
+      "minimum_distinct_symbols": 3,
+      "minimum_information_fields_per_sample": 5,
+      "matched_data_dates": 0,
+      "matched_symbols": 0,
+      "evidence_dates": [],
+      "value_equivalent_fields": [],
+      "confirmed_fields": [],
+      "semantic_unresolved_fields": [],
+      "unresolved_fields": [
+        "amount",
+        "change",
+        "change_pct",
+        "float_market_value",
+        "high",
+        "last_price",
+        "limit_down_price",
+        "limit_up_price",
+        "low",
+        "open",
+        "pb",
+        "pe_dynamic",
+        "pre_close",
+        "total_market_value",
+        "turnover_rate",
+        "volume"
+      ],
+      "last_probe_data_date": "2026-11-04",
+      "last_mismatch": {
+        "data_date": "2026-11-04",
+        "code": "688327",
+        "fields": [
+          "float_market_value",
+          "total_market_value"
+        ],
+        "reason": "value_mismatch"
+      },
+      "reason": "value_mismatch_reopened"
+    },
+    "project_sample": {
+      "n_fields": 87,
+      "fields": [
+        "62",
+        "殷图网联",
+        "920508",
+        "13.21",
+        "13.37",
+        "13.18",
+        "5359",
+        "3209",
+        "2149",
+        "13.22",
+        "5",
+        "13.21",
+        "40",
+        "13.20",
+        "1",
+        "13.19",
+        "2",
+        "13.12",
+        "7",
+        "13.30",
+        "2",
+        "13.37",
+        "1",
+        "13.40",
+        "2",
+        "13.51",
+        "54",
+        "13.52",
+        "60",
+        "",
+        "20261106153232",
+        "-0.16",
+        "-1.20",
+        "13.69",
+        "13.04",
+        "13.21/5359/7200081",
+        "5359",
+        "720.01",
+        "1.68",
+        "385.87",
+        "",
+        "13.69",
+        "13.04",
+        "4.86",
+        "4.21",
+        "7.93",
+        "4.14",
+        "17.38",
+        "9.36",
+        "0.84",
+        "-64",
+        "13.44",
+        "-754.82",
+        "375.93",
+        "",
+        "",
+        "",
+        "720.0081",
+        "0.0000",
+        "0",
+        " ",
+        "GP",
+        "-40.50",
+        "1.85",
+        "0.00",
+        "1.07",
+        "0.80",
+        "27.93",
+        "12.39",
+        "-4.90",
+        "-14.61",
+        "-13.77",
+        "31905925",
+        "60000000",
+        "-36.78",
+        "-43.21",
+        "31905925",
+        "",
+        "",
+        "-51.15",
+        "0.69",
+        "",
+        "CNY",
+        "0",
+        "NBFND",
+        "0.00",
+        "0"
+      ]
+    },
+    "axdata_record": {
+      "instrument_id": "920508.BJ",
+      "symbol": "920508",
+      "exchange": "BSE",
+      "asset_type": "stock",
+      "name": "殷图网联",
+      "quote_time": "20261106153238",
+      "last_price": 13.21,
+      "pre_close": 13.37,
+      "open": 13.18,
+      "high": 13.69,
+      "low": 13.04,
+      "change": -0.16,
+      "change_pct": -1.2,
+      "volume": 5359.0,
+      "amount": 7200081.0,
+      "turnover_rate": 1.68,
+      "pe_dynamic": 385.87,
+      "pb": 4.14,
+      "total_market_value": 7.93,
+      "float_market_value": 4.21,
+      "limit_up_price": 17.38,
+      "limit_down_price": 9.36,
+      "currency": "CNY"
+    }
+  }
+}

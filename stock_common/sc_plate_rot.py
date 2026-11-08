@@ -16,13 +16,16 @@ from __future__ import annotations
 import json
 import logging
 import re
+import ssl
 import threading
-from stock_common.sc_rate_utils import advance_interval_timestamp
 import urllib.parse
 import urllib.request
 from typing import Any, Dict, List
 
+import truststore
+
 from core.stock_cache import TTL, cached
+from stock_common.sc_rate_utils import advance_interval_timestamp
 
 _logger = logging.getLogger("sc_plate_rot")
 
@@ -30,14 +33,31 @@ _UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
     "(KHTML, like Gecko) Version/17.0 Safari/605.1.15"
 )
-_BASE = "https://duanxianxia.com"
+# The apex redirects API POSTs to v.duanxianxia.com and returns an empty table; use the API host directly.
+_BASE = "https://v.duanxianxia.com"
 _QUERY_INTERVAL = 0.6
+# The system trust store can build chains for this site's v-subdomain that its static CA bundle misses.
+_TLS_CONTEXT = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 _DIRECT_PROXY_HANDLER = urllib.request.ProxyHandler({})
-_DIRECT_OPENER = urllib.request.build_opener(_DIRECT_PROXY_HANDLER)
+_DIRECT_OPENER = urllib.request.build_opener(
+    _DIRECT_PROXY_HANDLER,
+    urllib.request.HTTPSHandler(context=_TLS_CONTEXT),
+)
 
 _last_request = 0.0
 # V16.4.1: 节流时间戳加锁(多线程并发下原间隔被打穿)
 _throttle_lock = threading.Lock()
+
+
+def _valid_plate_rotation_matrix(value: Any) -> bool:
+    """Accept only a parsed matrix with dates and at least one plate row."""
+    return (
+        isinstance(value, dict)
+        and isinstance(value.get("dates"), list)
+        and bool(value["dates"])
+        and isinstance(value.get("plates"), list)
+        and bool(value["plates"])
+    )
 
 
 def _throttle() -> None:
@@ -65,8 +85,8 @@ def _post(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
         method="POST",
     )
     try:
-        with _DIRECT_OPENER.open(req, timeout=15) as r:
-            payload = json.loads(r.read().decode("utf-8", errors="ignore"))
+        with _DIRECT_OPENER.open(req, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="ignore"))
         if isinstance(payload, dict):
             return payload
         return {"_err": "unexpected JSON response shape"}
@@ -80,7 +100,12 @@ def _parse_dates(html: str) -> List[str]:
     return re.findall(r"line-height:160%;'>(\d{4}-\d{2}-\d{2})", html)
 
 
-@cached(category="plate_rotation", ttl_seconds=TTL["plate_rotation"], trading_day=True)
+@cached(
+    category="plate_rotation",
+    ttl_seconds=TTL["plate_rotation"],
+    valid_if=_valid_plate_rotation_matrix,
+    trading_day=True,
+)
 def get_plate_rotation_matrix(
     source: str = "kaipan", days: int = 20, top_n: int = 30
 ) -> Dict[str, Any]:
@@ -100,8 +125,10 @@ def get_plate_rotation_matrix(
     """
     d = _post("/api/getPlateRotatData", {"from": source, "days": days})
     if "_err" in d:
-        return {"dates": [], "source": source, "plates": []}
-    html = d.get("html", "")
+        raise RuntimeError(f"plate rotation request failed: {d['_err']}")
+    html = d.get("html")
+    if not isinstance(html, str):
+        raise ValueError("plate rotation response parse failed: expected an HTML string")
     dates = _parse_dates(html)
     cell_re = re.compile(
         r"<td class='plate plate\d+'\s*code='(\d+)'\s*name='([^']+)'[^>]*>"
@@ -125,6 +152,12 @@ def get_plate_rotation_matrix(
             )
         if cells:
             out.append({"rank": rank, "cells": cells})
+    if not dates:
+        raise ValueError(
+            "plate rotation response parse failed: " f"no date headers ({len(html)} HTML chars)"
+        )
+    if not out:
+        raise ValueError("plate rotation response parse failed: no parseable plate rows")
     return {"dates": dates, "source": source, "plates": out}
 
 

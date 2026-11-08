@@ -282,7 +282,7 @@ def test_sina_extended_captures_structured_reports_and_flow_scalars(monkeypatch)
 
     report_calls = []
 
-    def report(code, report_type, num_periods=1):
+    def report(code, report_type, num_periods=1, error_out=None):
         report_calls.append((code, report_type, num_periods))
         return {
             "report_type": report_type,
@@ -326,8 +326,17 @@ def test_sina_extended_stops_finance_requests_after_first_failure(monkeypatch):
     report_calls = []
     flow_calls = []
 
-    def fail_report(code, report_type, num_periods=1):
+    def fail_report(code, report_type, num_periods=1, error_out=None):
         report_calls.append((code, report_type))
+        if error_out is not None:
+            error_out.update(
+                {
+                    "code": "dns_resolution_failure",
+                    "phase": "dns",
+                    "request_attempt_state": "not_attempted",
+                    "raw_error": "DNS resolution failed",
+                }
+            )
         return None
 
     def flow(code, days=1):
@@ -342,6 +351,10 @@ def test_sina_extended_stops_finance_requests_after_first_failure(monkeypatch):
     assert report_calls == [("600519", "fzb")]
     assert flow_calls == ["600519", "000001"]
     assert "__error__" in result["stocks"]["600519"]["financial_reports"]["fzb"]
+    assert (
+        "dns_resolution_failure"
+        in result["stocks"]["600519"]["financial_reports"]["fzb"]["__error__"]
+    )
     assert "__skipped__" in result["stocks"]["000001"]["financial_reports"]["fzb"]
 
 
@@ -351,7 +364,7 @@ def test_sina_extended_marks_incomplete_flow_rows_as_errors_and_stops(monkeypatc
     monkeypatch.setattr(
         stock_common,
         "get_sina_financial_report_raw",
-        lambda code, report_type, num_periods=1: {
+        lambda code, report_type, num_periods=1, error_out=None: {
             "report_type": report_type,
             "report_list": {},
         },
@@ -371,3 +384,27 @@ def test_sina_extended_marks_incomplete_flow_rows_as_errors_and_stops(monkeypatc
     assert first["money_flow"] == [{"opendate": "2026-10-16", "trade": "1", "turnover": "2"}]
     assert "netamount" in first["__error__"]
     assert second["money_flow"]["__skipped__"].startswith("deferred:")
+
+
+def test_sina_raw_adapter_returns_transport_diagnostics(monkeypatch):
+    from stock_common.sc_datasource import _financials
+
+    request_diagnostics = {
+        "code": "tls_error",
+        "phase": "request",
+        "request_attempt_state": "attempted",
+        "raw_error": "certificate verification failed",
+    }
+    calls = []
+
+    def failed_request(*args, **kwargs):
+        calls.append((args, kwargs))
+        kwargs["error_out"].update(request_diagnostics)
+        return None
+
+    monkeypatch.setattr(_financials, "_quick_request", failed_request)
+    error_out = {}
+    assert _financials.get_sina_financial_report_raw("000568", "fzb", error_out=error_out) is None
+    assert error_out == request_diagnostics
+    assert calls[0][1]["max_retries"] == 1
+    assert calls[0][1]["error_out"] is error_out

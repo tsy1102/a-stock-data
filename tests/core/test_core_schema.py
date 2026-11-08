@@ -100,6 +100,19 @@ class TestFieldSpecTable(unittest.TestCase):
         for f in ["pe_ttm", "pb", "dividend_yield", "industry"]:
             self.assertIn(f, zhb, f"{f} should be ZHB sufficient")
 
+    def test_main_net_flow_contract_excludes_zhb_auction_aliases(self):
+        fields = (
+            "main_net_buy_hands",
+            "main_net_buy_hands_1d",
+            "main_net_buy_amount",
+            "main_net_buy_amount_1d",
+        )
+        for name in fields:
+            with self.subTest(name=name):
+                spec = schema.get_field_spec(name)
+                self.assertNotIn(schema.DataSource.ZHB, spec.source_preference)
+                self.assertFalse(spec.zhb_t_minus_1_acceptable)
+
 
 # ═══════════════════════════════════════════════════
 # V13.0: NormalizedQuote 骨架测试

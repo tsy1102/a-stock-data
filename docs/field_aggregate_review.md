@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 108 个 code；聚合定义不完整 240 个 code；疑似合并文本 293 条逐源记录。
+> 聚合歧义 108 个 code；聚合定义不完整 240 个 code；疑似合并文本 300 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2690,7 +2690,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat2 · `main_net_buy_hands` | [9] | 与原始列 [9] 同值的历史兼容键，不代表主力净买入手数 | 手 | `disproved` |
+| ZHB-tdxstat2 · `main_net_buy_hands` | [9] | 当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | 手 | `verified` |
 | 同花顺-fuyao · `main_net_buy_hands` | — | — | — | `unverified` |
 
 ### `main_sell` — incomplete
@@ -3526,7 +3526,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat2 · `zt_seal_amount_1d` | [6] | 与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | 万元 | `disproved` |
+| ZHB-tdxstat2 · `zt_seal_amount_1d` | [6] | 前一交易日涨跌停封单额；涨停为正、跌停为负。 | 万元 | `verified` |
 | 同花顺-fuyao · `zt_seal_amount_1d` | — | — | — | `unverified` |
 
 ### `zt_seal_amount_2d` — incomplete
@@ -3535,7 +3535,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat2 · `zt_seal_amount_2d` | [8] | 与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | 万元 | `disproved` |
+| ZHB-tdxstat2 · `zt_seal_amount_2d` | [8] | 前第二交易日涨跌停封单额；涨停为正、跌停为负。 | 万元 | `verified` |
 | 同花顺-fuyao · `zt_seal_amount_2d` | — | — | — | `unverified` |
 
 ### `zt_time` — incomplete
@@ -3613,22 +3613,29 @@
 | ZHB-tdxstat | `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | `conflict` |
 | ZHB-tdxstat | `stat.zt_type_code` | stat.zt_type_code | 行情状态/涨跌强度分档码 | `verified` |
 | ZHB-tdxstat2 | `[13]` | [13] | 通达信板块归属(881=行业板块稳定 / 880=概念·风格板块动态) | `verified` |
-| ZHB-tdxstat2 | `change_250k_bar` | change_250d_return | 近 250 根日 K 线滚动涨跌幅；与同一来源下 stat2.change_250k_bar 的 250 分钟字段不同，复权方式及窗口端点未证实与其他来源相同。 | `verified` |
+| ZHB-tdxstat2 | `change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
+| ZHB-tdxstat2 | `change_30k_bar` | change_30d_return | 近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
+| ZHB-tdxstat2 | `change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | `unverified` |
 | ZHB-tdxstat2 | `high_52w` | stat2.high_52w | 52周最高价；full.high_52w 是 stat2.high_52w 的直接合并别名。 | `verified` |
-| ZHB-tdxstat2 | `main_net_buy_amount` | [14] | 与原始列 [14] 同值的历史兼容键，不代表主力净流入额 | `disproved` |
-| ZHB-tdxstat2 | `main_net_buy_amount_1d` | [15] | 与原始列 [15] 同值的历史兼容键，不代表主力净流入额 | `disproved` |
-| ZHB-tdxstat2 | `main_net_buy_hands` | [9] | 与原始列 [9] 同值的历史兼容键，不代表主力净买入手数 | `disproved` |
-| ZHB-tdxstat2 | `main_net_buy_hands_1d` | [10] | 与原始列 [10] 同值的历史兼容键，不代表主力净买入手数 | `disproved` |
-| ZHB-tdxstat2 | `stat2.main_net_buy_amount` | [14] | 与原始列 [14] 同值的历史兼容键，不代表主力净流入额 | `disproved` |
-| ZHB-tdxstat2 | `stat2.main_net_buy_amount_1d` | [15] | 与原始列 [15] 同值的历史兼容键，不代表主力净流入额 | `disproved` |
-| ZHB-tdxstat2 | `stat2.main_net_buy_hands` | [9] | 与原始列 [9] 同值的历史兼容键，不代表主力净买入手数 | `disproved` |
-| ZHB-tdxstat2 | `stat2.main_net_buy_hands_1d` | [10] | 与原始列 [10] 同值的历史兼容键，不代表主力净买入手数 | `disproved` |
-| ZHB-tdxstat2 | `stat2.zt_seal_amount` | [4] | 与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
-| ZHB-tdxstat2 | `stat2.zt_seal_amount_1d` | [6] | 与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
-| ZHB-tdxstat2 | `stat2.zt_seal_amount_2d` | [8] | 与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
-| ZHB-tdxstat2 | `zt_seal_amount` | [4] | 与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
-| ZHB-tdxstat2 | `zt_seal_amount_1d` | [6] | 与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
-| ZHB-tdxstat2 | `zt_seal_amount_2d` | [8] | 与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单 | `disproved` |
+| ZHB-tdxstat2 | `industry_code` | tdx_board_code | 当日通达信板块归属代码；样本包含行业类与主题/风格类板块，不是行业专属代码。 | `verified` |
+| ZHB-tdxstat2 | `main_net_buy_amount` | [14] | 当日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
+| ZHB-tdxstat2 | `main_net_buy_amount_1d` | [15] | 前一交易日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
+| ZHB-tdxstat2 | `main_net_buy_hands` | [9] | 当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
+| ZHB-tdxstat2 | `main_net_buy_hands_1d` | [10] | 前一交易日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
+| ZHB-tdxstat2 | `stat2.change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
+| ZHB-tdxstat2 | `stat2.change_30k_bar` | change_30d_return | 近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
+| ZHB-tdxstat2 | `stat2.change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | `unverified` |
+| ZHB-tdxstat2 | `stat2.industry_code` | tdx_board_code | 当日通达信板块归属代码；样本包含行业类与主题/风格类板块，不是行业专属代码。 | `verified` |
+| ZHB-tdxstat2 | `stat2.main_net_buy_amount` | [14] | 当日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
+| ZHB-tdxstat2 | `stat2.main_net_buy_amount_1d` | [15] | 前一交易日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
+| ZHB-tdxstat2 | `stat2.main_net_buy_hands` | [9] | 当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
+| ZHB-tdxstat2 | `stat2.main_net_buy_hands_1d` | [10] | 前一交易日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
+| ZHB-tdxstat2 | `stat2.zt_seal_amount` | [4] | 当日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
+| ZHB-tdxstat2 | `stat2.zt_seal_amount_1d` | [6] | 前一交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
+| ZHB-tdxstat2 | `stat2.zt_seal_amount_2d` | [8] | 前第二交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
+| ZHB-tdxstat2 | `zt_seal_amount` | [4] | 当日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
+| ZHB-tdxstat2 | `zt_seal_amount_1d` | [6] | 前一交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
+| ZHB-tdxstat2 | `zt_seal_amount_2d` | [8] | 前第二交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
 | ZHB-tipinfo | `[13]` | [13] | 解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标"股权登记日/配股"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解） | `verified` |
 | ZHB-tipinfo | `[19]` | [19] | 回购预案公告日 = 官方 RecentHGDate（"HG"=HuiGou 回购；二进制 `回购预案:上限%.2f亿元` 实证） | `verified` |
 | ZHB-tipinfo | `[20]` | [20] | 回购预案金额上限(亿元) = 官方 RecentHGAmo（二进制 `回购预案:上限%.2f亿元` 一锤定音；旧标"增发配股价"证伪） | `verified` |

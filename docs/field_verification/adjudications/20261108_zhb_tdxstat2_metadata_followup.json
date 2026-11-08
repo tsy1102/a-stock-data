@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108",
+  "reviewed_on": "2026-11-08",
+  "data_floor": "20261015",
+  "report": "adjudications/20261108_zhb_tdxstat2_metadata_followup.md",
+  "scope": {
+    "source_identity": "ZHB-tdxstat2",
+    "purpose": "Separate disproved legacy meaning hypotheses from verified runtime path identities, then correct superseded stat2 metadata.",
+    "runtime_contract_changed": false,
+    "parser_cache_or_serialization_changed": false,
+    "excluded_samples": [
+      {
+        "capture_folder": "20261015",
+        "reason": "The embedded zhb_date is 20261014, before the retention floor; excluded from every statistic in this record."
+      },
+      {
+        "capture_folder": "20261019",
+        "reason": "Exact duplicate of the 20261016 capture and data date; excluded from independent counts."
+      },
+      {
+        "capture_folder": "20261102",
+        "reason": "The embedded zhb_date duplicates 20261030; excluded from independent date counts."
+      }
+    ],
+    "missing_capture_folders": ["20261022", "20261027"]
+  },
+  "decisions": [
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.main_net_buy_hands", "stat2.main_net_buy_hands"],
+      "canonical": "[9]",
+      "meaning": "当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。",
+      "unit": "手",
+      "status": "verified",
+      "superseded_hypothesis": "主力净买入手数"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.main_net_buy_hands_1d", "stat2.main_net_buy_hands_1d"],
+      "canonical": "[10]",
+      "meaning": "前一交易日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。",
+      "unit": "手",
+      "status": "verified",
+      "superseded_hypothesis": "前一交易日主力净买入手数"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.main_net_buy_amount", "stat2.main_net_buy_amount"],
+      "canonical": "[14]",
+      "meaning": "当日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。",
+      "unit": "万元",
+      "status": "verified",
+      "superseded_hypothesis": "主力净流入额"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.main_net_buy_amount_1d", "stat2.main_net_buy_amount_1d"],
+      "canonical": "[15]",
+      "meaning": "前一交易日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。",
+      "unit": "万元",
+      "status": "verified",
+      "superseded_hypothesis": "前一交易日主力净流入额"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.zt_seal_amount", "stat2.zt_seal_amount"],
+      "canonical": "[4]",
+      "meaning": "当日涨跌停封单额；涨停为正、跌停为负。历史兼容键仅写“涨停”，会遗漏跌停负值。",
+      "unit": "万元",
+      "status": "verified",
+      "superseded_hypothesis": "仅表示涨停封单额"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.zt_seal_amount_1d", "stat2.zt_seal_amount_1d"],
+      "canonical": "[6]",
+      "meaning": "前一交易日涨跌停封单额；涨停为正、跌停为负。历史兼容键仅写“涨停”，会遗漏跌停负值。",
+      "unit": "万元",
+      "status": "verified",
+      "superseded_hypothesis": "仅表示前一交易日涨停封单额"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.zt_seal_amount_2d", "stat2.zt_seal_amount_2d"],
+      "canonical": "[8]",
+      "meaning": "前第二交易日涨跌停封单额；涨停为正、跌停为负。历史兼容键仅写“涨停”，会遗漏跌停负值。",
+      "unit": "万元",
+      "status": "verified",
+      "superseded_hypothesis": "仅表示前第二交易日涨停封单额"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.change_30k_bar", "stat2.change_30k_bar"],
+      "canonical": "change_30d_return",
+      "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "unit": "%",
+      "status": "verified",
+      "status_scope": "30根日K线窗口语义；不代表精确公式或跨源逐值等价。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.change_30k_bar_ref", "stat2.change_30k_bar_ref"],
+      "canonical": "",
+      "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+      "unit": "%",
+      "status": "unverified",
+      "status_scope": "保留待核；相关性不作为字段定案。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.change_250k_bar", "stat2.change_250k_bar"],
+      "canonical": "change_250d_return",
+      "meaning": "近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "unit": "%",
+      "status": "verified",
+      "status_scope": "纠正“stat2 路径为250分钟”的旧解释；full/stat2 为同源路径别名。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "runtime_paths": ["full.industry_code", "stat2.industry_code"],
+      "canonical": "tdx_board_code",
+      "meaning": "当日通达信板块归属代码；样本包含行业类和主题/风格类板块，不是行业专属代码。",
+      "unit": "代码",
+      "status": "verified",
+      "status_scope": "兼容键名保留；按完整来源路径记录。"
+    }
+  ],
+  "evidence": {
+    "full_stat2_runtime_path_comparison": {
+      "independent_zhb_dates": [
+        "20261016", "20261019", "20261023", "20261027", "20261028",
+        "20261030", "20261102", "20261103", "20261104", "20261106"
+      ],
+      "stock_date_pairs": 200,
+      "equality_includes_matching_nulls": true,
+      "path_results": [
+        {"key": "main_net_buy_hands", "exact": 200, "non_null": 197},
+        {"key": "main_net_buy_hands_1d", "exact": 200, "non_null": 198},
+        {"key": "main_net_buy_amount", "exact": 200, "non_null": 197},
+        {"key": "main_net_buy_amount_1d", "exact": 200, "non_null": 198},
+        {"key": "zt_seal_amount", "exact": 200, "non_null": 11},
+        {"key": "zt_seal_amount_1d", "exact": 200, "non_null": 12},
+        {"key": "zt_seal_amount_2d", "exact": 200, "non_null": 12},
+        {"key": "change_30k_bar", "exact": 200, "non_null": 200},
+        {"key": "change_30k_bar_ref", "exact": 200, "non_null": 200},
+        {"key": "change_250k_bar", "exact": 200, "non_null": 200},
+        {"key": "industry_code", "exact": 200, "non_null": 200}
+      ],
+      "capture_files": [
+        {"capture_folder": "20261016", "path": "docs/field_verification/20261016/raw_zhb.json", "zhb_date": "20261016", "sha256": "2151f93d7da5da1f88b12285c6fce71d11c73df21b1bd3a11503c8031f6fff64"},
+        {"capture_folder": "20261020", "path": "docs/field_verification/20261020/raw_zhb.json", "zhb_date": "20261019", "sha256": "4c3c61cfb7b7bce6bbe03c652906a755ddbf3d6c5bdd223bfd2c4a37d0cbdc18"},
+        {"capture_folder": "20261023", "path": "docs/field_verification/20261023/raw_zhb.json", "zhb_date": "20261023", "sha256": "3bf95a831d5a3f1e64e71d061a01f3df3490126bad9d256e32184c4bb10d2ad7"},
+        {"capture_folder": "20261028", "path": "docs/field_verification/20261028/raw_zhb.json", "zhb_date": "20261027", "sha256": "79329814fef114650f5c804b151617c706cf6bf0b4d76f4b3c9b448fe9818132"},
+        {"capture_folder": "20261029", "path": "docs/field_verification/20261029/raw_zhb.json", "zhb_date": "20261028", "sha256": "9e8aef8d9241eb557a17d974aadec659953c57f81f32ddac1cd3ef7c854f14d8"},
+        {"capture_folder": "20261030", "path": "docs/field_verification/20261030/raw_zhb.json", "zhb_date": "20261030", "sha256": "83f3775cf55945424e9be28e8d47d52a1e2448fdc5daaaf526939e6121a7ef33"},
+        {"capture_folder": "20261103", "path": "docs/field_verification/20261103/raw_zhb.json", "zhb_date": "20261102", "sha256": "71d7be6c5c5e3bdfbbf7ffa9d554350a731e862949c7d454080141da1dd3c550"},
+        {"capture_folder": "20261104", "path": "docs/field_verification/20261104/raw_zhb.json", "zhb_date": "20261103", "sha256": "6a6f42a1088df0b01075721efe7282c2443ac19fc4f4be3cf2842c013194c721"},
+        {"capture_folder": "20261105", "path": "docs/field_verification/20261105/raw_zhb.json", "zhb_date": "20261104", "sha256": "2dca8c9c150288423a3dba7c2ff1fb68a2cc1d46361a6d7f1c5b93df882ebfc3"},
+        {"capture_folder": "20261106", "path": "docs/field_verification/20261106/raw_zhb.json", "zhb_date": "20261106", "sha256": "c275f1691ec6356504d29e26168c589610aa83c4270364ae30b70fc73dd1bc0b"}
+      ]
+    },
+    "official_tdx_semantic_anchor": {
+      "adjudication_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+      "sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+      "official_contract_urls": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+      ]
+    },
+    "change_30k_daily_kline_comparison": {
+      "data_date": "20261106",
+      "stock_count": 20,
+      "kline_rows_per_stock": 30,
+      "return_calculation": "(last_close / first_close - 1) * 100 over the captured 30-row daily K-line tail",
+      "kline_file": "docs/field_verification/20261106/raw_em_kline_f61.json",
+      "kline_sha256": "873360060220fd38dafb1ebc14db5e5ac2d43900caae80e2629e27256864371c",
+      "change_30k_bar": {
+        "pearson": 0.9999607088321523,
+        "median_abs_difference_percentage_points": 0.0018614718614715642,
+        "mean_abs_difference_percentage_points": 0.14109249566556614,
+        "within_0_01_percentage_points": 17,
+        "max_abs_difference_percentage_points": 2.0783847283406667,
+        "outliers": {"300788": 0.246972, "600825": 0.460943, "601288": 2.078385}
+      },
+      "change_30k_bar_ref": {
+        "pearson": 0.9992672308130716,
+        "median_abs_difference_percentage_points": 1.2538353955425987,
+        "mean_abs_difference_percentage_points": 1.8209744212871175,
+        "within_0_01_percentage_points": 0,
+        "max_abs_difference_percentage_points": 8.766972176759394
+      }
+    },
+    "industry_code_lookup": {
+      "capture_pairs": 200,
+      "unique_nonblank_codes": 103,
+      "unmapped_codes": 0,
+      "tdxzs3_member": "tdxzs3.cfg",
+      "tdxzs3_line_count": 1071,
+      "archive_file": "cache/zhb/zhb_20261106.zip",
+      "archive_sha256": "e26d331cbd3710177073fd95aecb355df2f441f2622a5b08acb92b7d1fd5b1ae",
+      "mapped_capture_counts": {"881/type12": 42, "880/type4": 89, "880/type5": 69},
+      "examples": ["酿酒|881130|12|1|0|X2102", "持续增长|880895|5|1|0|持续增长"]
+    },
+    "reviewed_unverified_placeholders": [
+      {"source": "ZHB-tdxstat2", "path": "float", "decision": "remain unverified; no canonical meaning or unit inferred"},
+      {"source": "ZHB-tdxstat2", "path": "YYYYMMDD", "decision": "remain unverified; no canonical meaning or unit inferred"}
+    ]
+  }
+}

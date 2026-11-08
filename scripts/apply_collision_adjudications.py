@@ -33,6 +33,7 @@ FIELD_DICT_PATH = REPO_ROOT / "docs" / "field_dict.md"
 UNKNOWN_FIELDS_PATH = REPO_ROOT / "docs" / "unknown_fields.md"
 SOURCE_MAP_PATH = REPO_ROOT / "docs" / "source_repository_map.md"
 METADATA_GAPS_PATH = REPO_ROOT / "docs" / "field_metadata_gaps.md"
+AGGREGATE_REVIEW_PATH = REPO_ROOT / "docs" / "field_aggregate_review.md"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 if str(REPO_ROOT) not in sys.path:
@@ -415,6 +416,132 @@ def apply_adjudications(
     return updated, stats
 
 
+def _is_same_source_alias_conflict(record: dict[str, Any], source: str) -> bool:
+    """Identify the legacy candidate-vs-same-source-verified alias conflict."""
+    evidence = record.get("status_evidence")
+    if not isinstance(evidence, dict):
+        return False
+    reference_statuses = evidence.get("reference_statuses")
+    values = evidence.get("values")
+    sources = evidence.get("registry_aggregate_sources")
+    if reference_statuses != ["candidate"]:
+        return False
+    if (
+        not isinstance(values, list)
+        or any(not isinstance(value, str) for value in values)
+        or set(values) != {"candidate", "verified"}
+    ):
+        return False
+    if evidence.get("registry_aggregate_status") != "verified" or sources != [source]:
+        return False
+    if record.get("attribute_conflicts") not in (None, {}, []):
+        return False
+    reference_evidence = record.get("reference_evidence")
+    return (
+        isinstance(reference_evidence, list)
+        and bool(reference_evidence)
+        and all(
+            isinstance(item, dict) and item.get("status") == "candidate"
+            for item in reference_evidence
+        )
+    )
+
+
+def _validate_same_source_alias(
+    raw_alias: Any,
+    target: tuple[str, str],
+    after_metadata: dict[str, str],
+    by_identity: dict[tuple[str, str], dict[str, Any]],
+) -> dict[str, Any] | None:
+    if raw_alias is None:
+        return None
+    alias = _require_object(raw_alias, "decision.same_source_alias")
+    required = {
+        "source",
+        "code",
+        "evidence_path",
+        "locator",
+        "observed_pairs",
+        "mismatches",
+    }
+    if set(alias) != required:
+        raise ValueError(
+            "decision.same_source_alias must contain exactly " + ", ".join(sorted(required))
+        )
+    identity = (
+        _non_empty_string(alias.get("source"), "same_source_alias.source"),
+        _non_empty_string(alias.get("code"), "same_source_alias.code"),
+    )
+    if identity[0] != target[0]:
+        raise ValueError("same-source alias must use the target's source")
+    if identity == target:
+        raise ValueError("same-source alias must point to a different code path")
+    alias_record = by_identity.get(identity)
+    if alias_record is None:
+        raise ValueError(f"unknown same-source alias: {identity[0]}::{identity[1]}")
+    if alias_record.get("status") != "verified":
+        raise ValueError("same-source alias anchor must already be verified")
+    if alias_record.get("attribute_conflicts") not in (None, {}, []):
+        raise ValueError("same-source alias anchor has attribute conflicts")
+    alias_status_evidence = alias_record.get("status_evidence")
+    if not isinstance(alias_status_evidence, dict):
+        raise ValueError("same-source alias anchor must retain verified status evidence")
+    reference_statuses = alias_status_evidence.get("reference_statuses")
+    values = alias_status_evidence.get("values")
+    if (
+        not isinstance(reference_statuses, list)
+        or any(not isinstance(status, str) for status in reference_statuses)
+        or set(reference_statuses) != {"verified"}
+        or alias_status_evidence.get("registry_aggregate_status") != "verified"
+        or not isinstance(values, list)
+        or any(not isinstance(status, str) for status in values)
+        or set(values) != {"verified"}
+    ):
+        raise ValueError("same-source alias anchor status evidence is not unambiguously verified")
+    reference_evidence = alias_record.get("reference_evidence")
+    if (
+        not isinstance(reference_evidence, list)
+        or not reference_evidence
+        or any(
+            not isinstance(item, dict) or item.get("status") != "verified"
+            for item in reference_evidence
+        )
+    ):
+        raise ValueError("same-source alias anchor reference evidence is not verified")
+    alias_metadata = _metadata(alias_record)
+    if not alias_metadata["meaning"]:
+        raise ValueError("same-source alias anchor must have a verified meaning")
+    if (
+        after_metadata["meaning"] != alias_metadata["meaning"]
+        or after_metadata["unit"] != alias_metadata["unit"]
+    ):
+        raise ValueError("same-source alias meaning and unit must match its verified anchor")
+
+    evidence_path_value = _non_empty_string(
+        alias.get("evidence_path"), "same_source_alias.evidence_path"
+    )
+    evidence_path, evidence_relative = _inside_verification_dir(
+        evidence_path_value, "same-source alias evidence"
+    )
+    if not evidence_path.is_file():
+        raise ValueError("same-source alias evidence file does not exist")
+    locator = _non_empty_string(alias.get("locator"), "same_source_alias.locator")
+    observed_pairs = alias.get("observed_pairs")
+    mismatches = alias.get("mismatches")
+    if type(observed_pairs) is not int or observed_pairs <= 0:
+        raise ValueError("same_source_alias.observed_pairs must be a positive integer")
+    if type(mismatches) is not int or mismatches != 0:
+        raise ValueError("same_source_alias.mismatches must be zero")
+    return {
+        "source": identity[0],
+        "code": identity[1],
+        "evidence_path": evidence_relative,
+        "locator": locator,
+        "observed_pairs": observed_pairs,
+        "mismatches": mismatches,
+    }
+
+
 def apply_source_contract_adjudications(
     registry: dict[str, Any], decision_document: dict[str, Any], decision_path: str
 ) -> tuple[dict[str, Any], dict[str, int]]:
@@ -494,6 +621,9 @@ def apply_source_contract_adjudications(
             decision.get("source_contract"), "decision.source_contract"
         )
         after_metadata = {"canonical": canonical, "meaning": meaning, "unit": unit}
+        same_source_alias = _validate_same_source_alias(
+            decision.get("same_source_alias"), target, after_metadata, by_identity
+        )
         metadata_correction = _validate_source_contract_metadata_correction(
             decision.get("metadata_correction"), previous_metadata, after_metadata
         )
@@ -518,6 +648,8 @@ def apply_source_contract_adjudications(
             "rationale": rationale,
             "source_contract": source_contract,
         }
+        if same_source_alias is not None:
+            adjudication["same_source_alias"] = copy.deepcopy(same_source_alias)
         if metadata_correction is not None:
             adjudication["metadata_correction"] = copy.deepcopy(metadata_correction)
 
@@ -546,12 +678,16 @@ def apply_source_contract_adjudications(
         if current_status != previous_status or current_resolution != previous_resolution:
             raise ValueError(f"target status changed since review: {target[0]}::{target[1]}")
         if previous_status == "conflict":
-            if (
-                previous_resolution != "status_conflict"
-                or not _is_registry_aggregate_status_conflict(target_record)
+            status_only_conflict = _is_registry_aggregate_status_conflict(target_record)
+            alias_conflict = same_source_alias is not None and _is_same_source_alias_conflict(
+                target_record, target[0]
+            )
+            if previous_resolution != "status_conflict" or not (
+                status_only_conflict or alias_conflict
             ):
                 raise ValueError(
-                    "source-contract verification cannot resolve semantic or attribute conflicts"
+                    "source-contract verification cannot resolve semantic or attribute conflicts "
+                    "without a verified same-source alias"
                 )
         if _metadata(target_record) != previous_metadata:
             raise ValueError(f"target metadata changed since review: {target[0]}::{target[1]}")
@@ -584,18 +720,19 @@ def apply_source_contract_adjudications(
         reference_evidence = target_record.setdefault("reference_evidence", [])
         if not isinstance(reference_evidence, list):
             raise TypeError("source field reference_evidence must be a list")
-        reference_evidence.append(
-            {
-                "section": section,
-                **after_metadata,
-                "status_raw": f"人工核验上游契约 {reviewed_on}：{decision_id}",
-                "status": "verified",
-                "adjudication_id": decision_id,
-                "evidence_basis": "authoritative_source_contract",
-                "source_contract": copy.deepcopy(source_contract),
-                "metadata_change": copy.deepcopy(adjudication["metadata_change"]),
-            }
-        )
+        reference_record = {
+            "section": section,
+            **after_metadata,
+            "status_raw": f"人工核验上游契约 {reviewed_on}：{decision_id}",
+            "status": "verified",
+            "adjudication_id": decision_id,
+            "evidence_basis": "authoritative_source_contract",
+            "source_contract": copy.deepcopy(source_contract),
+            "metadata_change": copy.deepcopy(adjudication["metadata_change"]),
+        }
+        if same_source_alias is not None:
+            reference_record["same_source_alias"] = copy.deepcopy(same_source_alias)
+        reference_evidence.append(reference_record)
         sections = target_record.setdefault("sections", [])
         if not isinstance(sections, list):
             raise TypeError("source field sections must be a list")
@@ -890,10 +1027,12 @@ def main(argv: list[str] | None = None) -> int:
             UNKNOWN_FIELDS_PATH: gfd.render_unknown_fields(updated),
             SOURCE_MAP_PATH: gfd.render_source_repository_map(updated, lineage),
             METADATA_GAPS_PATH: gfd.render_field_metadata_gaps(updated),
+            AGGREGATE_REVIEW_PATH: gfd.render_field_aggregate_review(updated),
         }
         _atomic_write_batch(outputs)
         print(
-            "Updated field_registry.json and regenerated field_dict.md, unknown_fields.md, source_repository_map.md, field_metadata_gaps.md"
+            "Updated field_registry.json and regenerated field_dict.md, unknown_fields.md, "
+            "source_repository_map.md, field_metadata_gaps.md, field_aggregate_review.md"
         )
         return 0
     except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError) as exc:

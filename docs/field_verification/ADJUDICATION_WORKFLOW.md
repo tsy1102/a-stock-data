@@ -143,9 +143,15 @@ $decisions = 'docs\field_verification\adjudications\YYYYMMDD_review.json'
 .\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions $decisions --apply
 ```
 
-应用会以事务式写入更新 `field_registry.json`、兼容聚合字段状态和 `meta.source_field_stats`，并重生成 `field_dict.md`、`unknown_fields.md`、`source_repository_map.md`、`field_metadata_gaps.md`。验证记录会保留报告路径、样本日期、命中情况、复核人、决定理由、外部证据、变更前后值和唯一决定 ID。确认等价的字段对还会写入 `mappings`，供后续碰撞跳过已定案关系；使用现有关系值 `same_number_same_meaning`。兼容聚合视图仅在所有逐源记录对某元数据项均为相同非空值时才展示该项；数值代码相同但来源定义不同或任一来源缺少定义时，聚合语义留空，避免把某源的 `fNN` 含义误投射到另一源。
+应用会以事务式写入更新 `field_registry.json`、兼容聚合字段状态和 `meta.source_field_stats`，并重生成 `field_dict.md`、`unknown_fields.md`、`source_repository_map.md`、`field_metadata_gaps.md`、`field_aggregate_review.md`。验证记录会保留报告路径、样本日期、命中情况、复核人、决定理由、外部证据、变更前后值和唯一决定 ID。确认等价的字段对还会写入 `mappings`，供后续碰撞跳过已定案关系；使用现有关系值 `same_number_same_meaning`。兼容聚合视图仅在所有逐源记录对某元数据项均为相同非空值时才展示该项；数值代码相同但来源定义不同或任一来源缺少定义时，聚合语义留空，避免把某源的 `fNN` 含义误投射到另一源。
 
 `field_matrix.md` 表达字段和来源的覆盖关系，状态/语义变更不改变该投影。应用后仍应运行 `registry_parity.py`、`verify_sync_check.py` 和对应测试。
+
+### 同源别名导致的历史状态冲突
+
+少量历史字段可能因“本字段仍留有候选标记、同源注册表聚合已验证”而显示 `status_conflict`。只有当裁决显式提供 `same_source_alias`，并满足以下全部条件时，来源契约流程才允许收敛：别名身份与目标来源相同且路径不同；锚字段已验证、无属性冲突；裁决后的含义和单位与锚字段完全一致；证据文件位于 `docs/field_verification/` 内并存在；证据记录至少一个同日样本配对且差异数为零。决策会保存别名身份、证据路径与样本计数，不会创建跨源映射。
+
+此例外仅针对上述候选/已验证同源别名形态。语义冲突、属性冲突、跨源别名、未验证锚字段、元数据不一致或缺失证据仍会被拒绝。常规 `verify_source_contract` 冲突限制保持不变。
 
 ## GitHub 仓库确认状态
 

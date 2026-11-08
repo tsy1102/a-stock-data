@@ -992,18 +992,18 @@ class ZhbData:
                 "change_5d": _safe_cast(parts, 28, float),
                 "change_10k_bar": _safe_cast(parts, 29, float),
                 "change_10d": _safe_cast(parts, 30, float),
-                # V17.0(2026-08-15) 涨停族暴露(双日定案):
-                #   [31]=近期异动周期计数(⚠️, 非严格连板; 2026-08-25 同日对撞东财池仅77%匹配, 降级)
-                #   [32]=涨停累计计数(LastZTHzNum, 恒值, 待终核)
-                #   [33]=连板数(✅ L1: 2026-08-27 涨停天梯20/20; 原 ztlx 涨停类型假设证伪)
+                # TDX 扩展接口字段对照（见 docs/field_verification/research/20261108_zhb_tdxstat_contract_alignment.md）：
+                #   [31]=LastStartZT（“几天”统计天数；窗口边界未公开）
+                #   [32]=LastZTHzNum（“几板”统计数；精确口径未公开）
+                #   [33]=EverZTCount（连板天）
                 "zt_streak_cycle": _safe_cast(parts, 31, int),
                 "zt_count": _safe_cast(parts, 32, int),
                 "zt_lianban": _safe_cast(parts, 33, int),
                 # V17.2.7(2026-09-12) 补抽 8 个历史遗漏列(原 docstring 已定义但解析器未抽取):
-                #   Col[2]=unknown_2(连续浮点,疑资金类指标) / Col[11]=free_ltgb(自由流通股本万股,官方确认)
+                #   Col[2]=unknown_2(BetaValue 贝塔系数；官方未说明周期/基准) / Col[11]=free_ltgb(自由流通股本万股,官方确认)
                 #   Col[16]=rd_input_fee(研发投入万元,官方确认) / Col[22]=shape_value(个股形态/板块代码,官方L1)
                 #   Col[23]=zt_type_code(当日行情类型分档码) / Col[25]=pre_receive_zj(预收资金万元,官方确认)
-                #   Col[26]=unknown_26(0-48恒定分类码) / Col[34]=other_qy_jzc(其他权益净资产元,官方确认)
+                #   Col[26]=unknown_26(YearZTDay 年涨停天数) / Col[34]=other_qy_jzc(其他权益净资产元,官方确认)
                 "unknown_2": _safe_cast(parts, 2, float),
                 "free_ltgb": _safe_cast(parts, 11, float),
                 "rd_input_fee": _safe_cast(parts, 16, float),

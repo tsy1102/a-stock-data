@@ -7,31 +7,31 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 454,
-      "candidate": 2,
-      "conflict": 74,
+      "aggregate_status_scope_unresolved": 443,
+      "candidate": 1,
+      "conflict": 73,
       "disproved": 2,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
       "live_observed_not_documented": 1,
       "manual_collision_adjudication": 29,
-      "manual_public_data_semantic_adjudication": 16,
+      "manual_public_data_semantic_adjudication": 50,
       "manual_semantic_retraction": 2,
-      "matched": 868,
+      "matched": 850,
       "official_contract": 31,
       "reference_scope_reconciled": 1,
       "reference_status_conflict": 18,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 869,
+      "registry_status_only_single_source": 862,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "status_conflict": 56,
+      "status_conflict": 55,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1466,
-      "verified": 1059,
-      "verified_by_empirical_addendum": 70,
+      "unverified": 1450,
+      "verified": 1077,
+      "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
-      "verified_by_source_contract": 75
+      "verified_by_source_contract": 79
     },
     "updated_at": "2026-11-07"
   },
@@ -6494,16 +6494,14 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
-        "ZHB-tdxstat": "unverified",
+        "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "meaning_differs",
-        "source_statuses_differ",
-        "unit_differs",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -6521,7 +6519,7 @@
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
-        "ZHB-tdxstat": "unverified",
+        "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "unverified",
         "腾讯(qt.gtimg)": "verified"
       },
@@ -6529,8 +6527,7 @@
       "aggregation_issues": [
         "meaning_differs",
         "source_statuses_differ",
-        "unit_differs",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -35360,12 +35357,12 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_2",
-      "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
-      "unit": "-",
+      "meaning": "BetaValue（Beta 系数）",
+      "unit": "",
       "status_raw": "⚠️ 候选",
-      "status": "candidate",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat": "candidate"
+        "ZHB-tdxstat": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35378,17 +35375,15 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_26",
-      "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
-      "unit": "-",
+      "meaning": "年内涨停天数 YearZTDay",
+      "unit": "",
       "status_raw": "⚠️ 候选",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat": "conflict"
+        "ZHB-tdxstat": "verified"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "stat.unseal_date",
@@ -95920,14 +95915,15 @@
       "identity": "ZHB-tdxstat::[31]",
       "path": "[31]",
       "canonical": "[31]",
-      "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
-      "unit": "",
+      "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+      "unit": "天",
       "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
       "sections": [
-        "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
+        "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#LastStartZT @ 官方文档核验日期 2026-11-08"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -95939,6 +95935,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat-031-last-start-zt"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat-031-last-start-zt"
         ]
       },
       "reference_evidence": [
@@ -95949,6 +95951,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#LastStartZT @ 官方文档核验日期 2026-11-08",
+          "canonical": "[31]",
+          "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+          "unit": "天",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat-031-last-start-zt",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat-031-last-start-zt",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "LastStartZT",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[31]",
+              "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[31]",
+              "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+              "unit": "天"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -95965,7 +95996,56 @@
         "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
         "unit": "元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat-031-last-start-zt",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_contract_alignment.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[31]",
+              "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[31]",
+              "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+              "unit": "天"
+            }
+          },
+          "rationale": "通达信官方扩展接口将 LastStartZT 定义为“几天”；ELTDX 的 tdxstat 列位说明将 [31] 对应到 limit_stat_days，本项目解析器也直接读取 [31]。按 stats_date 与 ZHB 文件名数据日对齐后，11 个保留期日期的 39 组非空值与 181 组双空值均一致。此结论不推断窗口边界或非涨停日回填规则。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "LastStartZT",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "[31]",
+              "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
+              "unit": ""
+            },
+            "updated": {
+              "canonical": "[31]",
+              "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+              "unit": "天"
+            },
+            "rationale": "官方接口标签、ELTDX 列位交叉参考、本项目解析器及日期对齐样本共同纠正旧的模糊计数解释；不登记未公开的窗口细节。"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -95973,14 +96053,15 @@
       "identity": "ZHB-tdxstat::[32]",
       "path": "[32]",
       "canonical": "[32]",
-      "meaning": "待破解",
-      "unit": "",
+      "meaning": "“几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开）",
+      "unit": "板",
       "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
       "sections": [
-        "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
+        "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#LastZTHzNum @ 官方文档核验日期 2026-11-08"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -95992,6 +96073,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tdxstat-032-last-zt-count"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tdxstat-032-last-zt-count"
         ]
       },
       "reference_evidence": [
@@ -96002,6 +96089,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#LastZTHzNum @ 官方文档核验日期 2026-11-08",
+          "canonical": "[32]",
+          "meaning": "“几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开）",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tdxstat-032-last-zt-count",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tdxstat-032-last-zt-count",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "LastZTHzNum",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[32]",
+              "meaning": "待破解",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[32]",
+              "meaning": "“几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开）",
+              "unit": "板"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -96018,7 +96134,43 @@
         "meaning": "待破解",
         "unit": "%",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tdxstat-032-last-zt-count",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_contract_alignment.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[32]",
+              "meaning": "待破解",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[32]",
+              "meaning": "“几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开）",
+              "unit": "板"
+            }
+          },
+          "rationale": "通达信官方扩展接口将 LastZTHzNum 定义为“几板”；ELTDX 的 tdxstat 列位说明将 [32] 对应到 limit_up_count_in_stat_days，本项目解析器也直接读取 [32]。按 stats_date 与 ZHB 文件名数据日对齐后，11 个保留期日期的 39 组非空值与 181 组双空值均一致。此结论不推断精确统计窗口或计数边界。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "LastZTHzNum",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -99673,14 +99825,15 @@
       "identity": "ZHB-tdxstat::stat.unknown_2",
       "path": "stat.unknown_2",
       "canonical": "stat.unknown_2",
-      "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
-      "unit": "-",
+      "meaning": "BetaValue（Beta 系数）",
+      "unit": "",
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "sections": [
-        "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
+        "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#BetaValue @ 官方文档核验日期 2026-11-08"
       ],
-      "status": "candidate",
-      "status_resolution": "matched",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "candidate"
@@ -99694,6 +99847,12 @@
         ],
         "values": [
           "candidate"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-stat-unknown-2-beta-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-stat-unknown-2-beta-alias"
         ]
       },
       "reference_evidence": [
@@ -99704,6 +99863,43 @@
           "unit": "-",
           "status_raw": "⚠️ 候选",
           "status": "candidate"
+        },
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#BetaValue @ 官方文档核验日期 2026-11-08",
+          "canonical": "stat.unknown_2",
+          "meaning": "BetaValue（Beta 系数）",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-stat-unknown-2-beta-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-stat-unknown-2-beta-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "BetaValue",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "stat.unknown_2",
+              "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "stat.unknown_2",
+              "meaning": "BetaValue（Beta 系数）",
+              "unit": ""
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "[2]",
+            "evidence_path": "research/20261108_zhb_tdxstat_contract_alignment.md",
+            "locator": "§3 表格 [2] 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -99718,7 +99914,64 @@
         "meaning": "贝塔系数(60日)·L2候选(列[2]=BetaValue; 口径已唯一确定, 待真实指数序列升L1)",
         "unit": "-",
         "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-stat-unknown-2-beta-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_contract_alignment.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "candidate",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "stat.unknown_2",
+              "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "stat.unknown_2",
+              "meaning": "BetaValue（Beta 系数）",
+              "unit": ""
+            }
+          },
+          "rationale": "官方接口确认 BetaValue 为贝塔系数；本项目解析器将原始列 [2] 暴露为 stat.unknown_2，保留期内同日 220/220 股票日值与 ELTDX 对应列完全相等。60 日标签仅见于 ELTDX 社区字段名，官方接口未说明计算周期或基准，因此不作为本字段的已确认定义。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "BetaValue",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "[2]",
+            "evidence_path": "research/20261108_zhb_tdxstat_contract_alignment.md",
+            "locator": "§3 表格 [2] 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "stat.unknown_2",
+              "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+              "unit": "-"
+            },
+            "updated": {
+              "canonical": "stat.unknown_2",
+              "meaning": "BetaValue（Beta 系数）",
+              "unit": ""
+            },
+            "rationale": "将已由同源原始列和值证实的字段语义与尚未由官方资料确认的 60 日窗口、指数基准假设分开。"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -99726,14 +99979,15 @@
       "identity": "ZHB-tdxstat::stat.unknown_26",
       "path": "stat.unknown_26",
       "canonical": "stat.unknown_26",
-      "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
-      "unit": "-",
+      "meaning": "年内涨停天数 YearZTDay",
+      "unit": "",
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "sections": [
-        "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
+        "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
+        "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#YearZTDay @ 官方文档核验日期 2026-11-08"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "candidate"
@@ -99748,6 +100002,12 @@
         "values": [
           "candidate",
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-stat-unknown-26-year-zt-alias"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-stat-unknown-26-year-zt-alias"
         ]
       },
       "reference_evidence": [
@@ -99758,6 +100018,43 @@
           "unit": "-",
           "status_raw": "⚠️ 候选",
           "status": "candidate"
+        },
+        {
+          "section": "source contract: 通达信 TdxQuant 官方接口文档 · get_more_info_batch 返回字段列表#YearZTDay @ 官方文档核验日期 2026-11-08",
+          "canonical": "stat.unknown_26",
+          "meaning": "年内涨停天数 YearZTDay",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-stat-unknown-26-year-zt-alias",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-stat-unknown-26-year-zt-alias",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "YearZTDay",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay",
+              "unit": ""
+            }
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "[26]",
+            "evidence_path": "research/20261108_zhb_tdxstat_contract_alignment.md",
+            "locator": "§3 表格 [26] 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -99772,7 +100069,64 @@
         "meaning": "年涨停天 YearZTDay(窗口=个股自身最近243个交易日,含一字板)",
         "unit": "天",
         "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-stat-unknown-26-year-zt-alias",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tdxstat_contract_alignment.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay",
+              "unit": ""
+            }
+          },
+          "rationale": "官方接口将 YearZTDay 定义为年涨停天数；本项目解析器将原始列 [26] 暴露为 stat.unknown_26，保留期内同日 220/220 股票日值与已验证的同源 [26] 完全相等。旧冲突来自 stat.unknown_26 的历史候选标记与同源已验证聚合状态不一致；此裁决按同源别名证据解决，不创建跨源映射，也不复用保留期前的历史窗口结论。",
+          "source_contract": {
+            "authority": "通达信 TdxQuant 官方接口文档",
+            "revision": "官方文档核验日期 2026-11-08",
+            "path": "get_more_info_batch 返回字段列表",
+            "locator": "YearZTDay",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "same_source_alias": {
+            "source": "ZHB-tdxstat",
+            "code": "[26]",
+            "evidence_path": "research/20261108_zhb_tdxstat_contract_alignment.md",
+            "locator": "§3 表格 [26] 行",
+            "observed_pairs": 220,
+            "mismatches": 0
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
+              "unit": "-"
+            },
+            "updated": {
+              "canonical": "stat.unknown_26",
+              "meaning": "年内涨停天数 YearZTDay",
+              "unit": ""
+            },
+            "rationale": "删除未达到当前保留期证据要求的候选门槛描述，并按已验证同源锚字段统一语义。"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",

@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-08",
+  "decisions": [
+    {
+      "id": "20261108-zhb-tdxstat-031-last-start-zt",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "[31]" },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "[31]",
+        "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
+        "unit": ""
+      },
+      "canonical": "[31]",
+      "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+      "unit": "天",
+      "rationale": "通达信官方扩展接口将 LastStartZT 定义为“几天”；ELTDX 的 tdxstat 列位说明将 [31] 对应到 limit_stat_days，本项目解析器也直接读取 [31]。按 stats_date 与 ZHB 文件名数据日对齐后，11 个保留期日期的 39 组非空值与 181 组双空值均一致。此结论不推断窗口边界或非涨停日回填规则。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "[31]",
+          "meaning": "连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count)",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "[31]",
+          "meaning": "“几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开）",
+          "unit": "天"
+        },
+        "rationale": "官方接口标签、ELTDX 列位交叉参考、本项目解析器及日期对齐样本共同纠正旧的模糊计数解释；不登记未公开的窗口细节。"
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "LastStartZT",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-032-last-zt-count",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "[32]" },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": { "canonical": "[32]", "meaning": "待破解", "unit": "" },
+      "canonical": "[32]",
+      "meaning": "“几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开）",
+      "unit": "板",
+      "rationale": "通达信官方扩展接口将 LastZTHzNum 定义为“几板”；ELTDX 的 tdxstat 列位说明将 [32] 对应到 limit_up_count_in_stat_days，本项目解析器也直接读取 [32]。按 stats_date 与 ZHB 文件名数据日对齐后，11 个保留期日期的 39 组非空值与 181 组双空值均一致。此结论不推断精确统计窗口或计数边界。",
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "LastZTHzNum",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261108-zhb-stat-unknown-2-beta-alias",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "stat.unknown_2" },
+      "previous_status": "candidate",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "stat.unknown_2",
+        "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+        "unit": "-"
+      },
+      "canonical": "stat.unknown_2",
+      "meaning": "BetaValue（Beta 系数）",
+      "unit": "",
+      "rationale": "官方接口确认 BetaValue 为贝塔系数；本项目解析器将原始列 [2] 暴露为 stat.unknown_2，保留期内同日 220/220 股票日值与 ELTDX 对应列完全相等。60 日标签仅见于 ELTDX 社区字段名，官方接口未说明计算周期或基准，因此不作为本字段的已确认定义。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.unknown_2",
+          "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "stat.unknown_2",
+          "meaning": "BetaValue（Beta 系数）",
+          "unit": ""
+        },
+        "rationale": "将已由同源原始列和值证实的字段语义与尚未由官方资料确认的 60 日窗口、指数基准假设分开。"
+      },
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "[2]",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_contract_alignment.md",
+        "locator": "§3 表格 [2] 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "BetaValue",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261108-zhb-stat-unknown-26-year-zt-alias",
+      "action": "verify_source_contract",
+      "target": { "source": "ZHB-tdxstat", "code": "stat.unknown_26" },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "stat.unknown_26",
+        "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
+        "unit": "-"
+      },
+      "canonical": "stat.unknown_26",
+      "meaning": "年内涨停天数 YearZTDay",
+      "unit": "",
+      "rationale": "官方接口将 YearZTDay 定义为年涨停天数；本项目解析器将原始列 [26] 暴露为 stat.unknown_26，保留期内同日 220/220 股票日值与已验证的同源 [26] 完全相等。旧冲突来自 stat.unknown_26 的历史候选标记与同源已验证聚合状态不一致；此裁决按同源别名证据解决，不创建跨源映射，也不复用保留期前的历史窗口结论。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.unknown_26",
+          "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "stat.unknown_26",
+          "meaning": "年内涨停天数 YearZTDay",
+          "unit": ""
+        },
+        "rationale": "删除未达到当前保留期证据要求的候选门槛描述，并按已验证同源锚字段统一语义。"
+      },
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "[26]",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_contract_alignment.md",
+        "locator": "§3 表格 [26] 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方接口文档",
+        "revision": "官方文档核验日期 2026-11-08",
+        "path": "get_more_info_batch 返回字段列表",
+        "locator": "YearZTDay",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

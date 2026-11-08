@@ -468,21 +468,21 @@
 
 ### `[31]` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat · `[31]` | [31] | 连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count) | — | `unverified` |
+| ZHB-tdxstat · `[31]` | [31] | “几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开） | 天 | `verified` |
 | 新浪(hq.sinajs) · `[31]` | [31] | 时间 | HH:MM:SS | `verified` |
 | 腾讯(qt.gtimg) · `[31]` | [31] | 涨跌额 | 元 | `verified` |
 
 ### `[32]` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| ZHB-tdxstat · `[32]` | [32] | 待破解 | — | `unverified` |
+| ZHB-tdxstat · `[32]` | [32] | “几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开） | 板 | `verified` |
 | 新浪(hq.sinajs) · `[32]` | [32] | 状态码 | - | `unverified` |
 | 腾讯(qt.gtimg) · `[32]` | [32] | 涨跌幅 | % | `verified` |
 
@@ -3308,14 +3308,6 @@
 | 市场源(market_sources) · `speed` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `speed` | speed | 涨速 | — | `unverified` |
 
-### `stat.unknown_26` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| ZHB-tdxstat · `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | - | `conflict` |
-
 ### `status` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
@@ -3603,14 +3595,14 @@
 | TDX-eltdx(适配层) | `up_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
 | TDX-eltdx(适配层) | `vol_rise_speed` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | `unverified` |
 | ZHB-tdxstat | `[22]` | [22] | 形态/板块代码 ShapeValue | `verified` |
+| ZHB-tdxstat | `[31]` | [31] | “几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开） | `verified` |
+| ZHB-tdxstat | `[32]` | [32] | “几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开） | `verified` |
 | ZHB-tdxstat | `[5]` | [5] | 连涨/连跌天数 | `verified` |
 | ZHB-tdxstat | `[9]` | [9] | 市盈率（静态/LYR） | `verified` |
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
 | ZHB-tdxstat | `change_ytd` | change_ytd | 年初至今涨跌幅（YTD，%）；历史对照支持该字段类别，但复权基准未证实与其他来源相同。 | `verified` |
 | ZHB-tdxstat | `pe_lyr` | pe_lyr | 静态市盈率（LYR/上一完整年度业绩口径）；180 组、9 个来源日期与已验证静态 PE 参照相符，最大差 0.006 倍；精度差异不证明跨源逐值相同。 | `verified` |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
-| ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | `candidate` |
-| ZHB-tdxstat | `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | `conflict` |
 | ZHB-tdxstat | `stat.zt_type_code` | stat.zt_type_code | 行情状态/涨跌强度分档码 | `verified` |
 | ZHB-tdxstat2 | `[13]` | [13] | 通达信板块归属(881=行业板块稳定 / 880=概念·风格板块动态) | `verified` |
 | ZHB-tdxstat2 | `change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |

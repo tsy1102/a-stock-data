@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2603；日常来源路径 2459：unverified 1332、candidate 2、conflict 74、disproved 2；历史来源路径 144。
+> 注册字段路径 2603；日常来源路径 2459：unverified 1330、candidate 1、conflict 73、disproved 2；历史来源路径 144。
 > 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1145 |
-| 含义栏有文本（仍未验证） | 187 |
+| 含义栏为空/占位 | 1144 |
+| 含义栏有文本（仍未验证） | 186 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 406 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 404 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `manual_public_data_semantic_adjudication` | 2 | 按注册表原始状态判定代码保留 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
@@ -31,11 +31,10 @@
 | `registry_status_only_single_source` | 781 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（74）
+## 一、状态冲突（禁止作为锚点，优先复核）（73）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| ZHB-tdxstat | `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | - | 含义栏有文本（仍未验证） | status_conflict | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 | reports | `attachPages` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `attachSize` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `author` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
@@ -110,14 +109,13 @@
 | 新浪(扩展API) | `turnover` | turnover | 换手率% | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 | 腾讯(qt.gtimg) | `[86]` | — | 收盘集合竞价净未匹配手数(带符号)（L2 机制确认） | 手 | 含义栏有文本（仍未验证） | reference_status_conflict | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 
-## 二、候选字段（2）
+## 二、候选字段（1）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1332）
+## 三、待破解字段（1330）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -572,8 +570,6 @@
 | TDX-eltdx(适配层) | `zong_xian_jin_liu_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `zong_zi_chan_raw_float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat | `[31]` | [31] | 连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count) | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
-| ZHB-tdxstat | `[32]` | [32] | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | ZHB-tdxstat | `board_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_10k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_5k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

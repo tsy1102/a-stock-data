@@ -538,6 +538,63 @@ def _source_contract_inputs():
     return registry, decision_document
 
 
+def _same_source_alias_conflict_inputs(evidence_path):
+    registry, document = _source_contract_inputs()
+    target = registry["source_fields"][0]
+    anchor_meaning = "由上游接口契约确认的字段含义"
+    registry["source_fields"].append(
+        {
+            "source": "target-source",
+            "code": "raw.value",
+            "canonical": "raw.value",
+            "meaning": anchor_meaning,
+            "unit": "元",
+            "status": "verified",
+            "status_resolution": "matched",
+            "status_evidence": {
+                "reference_statuses": ["verified"],
+                "registry_aggregate_status": "verified",
+                "values": ["verified"],
+            },
+            "attribute_conflicts": {},
+            "reference_evidence": [{"status": "verified"}],
+        }
+    )
+    target.update(
+        {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "status_evidence": {
+                "reference_statuses": ["candidate"],
+                "reference_status_raw": ["候选"],
+                "registry_aggregate_status": "verified",
+                "registry_aggregate_sources": ["target-source"],
+                "values": ["candidate", "verified"],
+            },
+            "reference_evidence": [{"status": "candidate"}],
+            "attribute_conflicts": {},
+        }
+    )
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "previous_status": "conflict",
+            "previous_status_resolution": "status_conflict",
+            "meaning": anchor_meaning,
+            "unit": "元",
+            "same_source_alias": {
+                "source": "target-source",
+                "code": "raw.value",
+                "evidence_path": str(evidence_path),
+                "locator": "§3 表格第 1 行",
+                "observed_pairs": 20,
+                "mismatches": 0,
+            },
+        }
+    )
+    return registry, document
+
+
 def test_source_contract_verifies_one_field_without_creating_cross_source_mapping():
     registry, document = _source_contract_inputs()
 
@@ -633,6 +690,128 @@ def test_source_contract_resolves_only_registry_aggregate_status_conflict():
         "already_applied": 0,
         "mappings_added": 0,
     }
+
+
+def test_source_contract_resolves_legacy_conflict_through_verified_same_source_alias(
+    tmp_path, monkeypatch
+):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "research" / "alias_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(evidence_path)
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["code"] == "unknown.value")
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["adjudications"][0]["same_source_alias"] == {
+        "source": "target-source",
+        "code": "raw.value",
+        "evidence_path": "research/alias_evidence.md",
+        "locator": "§3 表格第 1 行",
+        "observed_pairs": 20,
+        "mismatches": 0,
+    }
+    assert updated["mappings"] == []
+    assert stats["status_conflicts_resolved"] == 1
+    repeated, repeat_stats = apply_source_contract_adjudications(
+        updated, document, "adjudications/source_contract_review.json"
+    )
+    assert repeated == updated
+    assert repeat_stats["already_applied"] == 1
+
+
+@pytest.mark.parametrize(
+    "change,match",
+    [
+        (
+            lambda d: d["decisions"][0]["same_source_alias"].update(
+                source="anchor-source", code="quote.value"
+            ),
+            "target's source",
+        ),
+        (
+            lambda d: d["decisions"][0]["same_source_alias"].update(mismatches=1),
+            "mismatches must be zero",
+        ),
+        (
+            lambda d: d["decisions"][0]["same_source_alias"].update(
+                evidence_path="C:\\outside\\evidence.md"
+            ),
+            "inside docs/field_verification",
+        ),
+    ],
+)
+def test_source_contract_rejects_unsafe_same_source_alias_evidence(
+    change, match, tmp_path, monkeypatch
+):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "research" / "alias_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(evidence_path)
+    change(document)
+
+    with pytest.raises(ValueError, match=match):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def test_source_contract_rejects_unverified_same_source_alias_anchor(tmp_path, monkeypatch):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "research" / "alias_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(evidence_path)
+    next(row for row in registry["source_fields"] if row["code"] == "raw.value")[
+        "status"
+    ] = "candidate"
+
+    with pytest.raises(ValueError, match="anchor must already be verified"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def test_source_contract_rejects_missing_same_source_alias_evidence(tmp_path, monkeypatch):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "research" / "missing_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(evidence_path)
+
+    with pytest.raises(ValueError, match="evidence file does not exist"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def test_source_contract_rejects_same_source_alias_metadata_mismatch(tmp_path, monkeypatch):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "research" / "alias_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(evidence_path)
+    document["decisions"][0]["meaning"] = "不同字段含义"
+
+    with pytest.raises(ValueError, match="meaning and unit must match"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
 
 
 @pytest.mark.parametrize(
@@ -754,6 +933,11 @@ def test_cli_applies_source_contract_and_loads_lineage_for_generated_view(tmp_pa
         "render_field_metadata_gaps",
         lambda _registry: "metadata gaps\n",
     )
+    monkeypatch.setattr(
+        adjudication_module.gfd,
+        "render_field_aggregate_review",
+        lambda _registry: "aggregate review\n",
+    )
     monkeypatch.setattr(adjudication_module, "_atomic_write_batch", captured_outputs.update)
 
     result = adjudication_module.main(["--decisions", str(decision_path), "--apply"])
@@ -764,6 +948,7 @@ def test_cli_applies_source_contract_and_loads_lineage_for_generated_view(tmp_pa
     target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
     assert target["status"] == "verified"
     assert captured_outputs[adjudication_module.SOURCE_MAP_PATH] == "source map\n"
+    assert captured_outputs[adjudication_module.AGGREGATE_REVIEW_PATH] == "aggregate review\n"
 
 
 @pytest.mark.parametrize(

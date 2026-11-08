@@ -31,6 +31,7 @@
 - [`adjudications/20261108_zhb_tipinfo_market_code.md`](adjudications/20261108_zhb_tipinfo_market_code.md)：以 2026-10-15 起保留的 15 个日期化 ZHB 压缩包和通达信官方市场枚举核实 `ZHB-tipinfo::[0]` 为市场代码（0=深、1=沪、2=京）；`[17]/[18]` 在保留样本中仍全空但用途未定。
 - [`adjudications/20261108_zhb_tdxstat2_fields.md`](adjudications/20261108_zhb_tdxstat2_fields.md)：以 15 个保留期日期化 ZHB 包和通达信官方接口文档，定案 `tdxstat2` 开盘竞价、成交额、涨跌停封单字段；纠正主力流入误名、万元单位和回测历史日期回退。
 - [`adjudications/20261108_zhb_tdxstat2_metadata_followup.md`](adjudications/20261108_zhb_tdxstat2_metadata_followup.md)：区分旧字段解释证伪与运行路径状态；复核 14 个竞价/封单兼容路径、250/30 根日K周期、参考字段未定状态、混合 TDX 板块代码，并同步统一层字段元数据。
+- [`research/20261108_zhb_tdxstat_contract_alignment.md`](research/20261108_zhb_tdxstat_contract_alignment.md) 与 [`adjudications/20261108_zhb_tdxstat_contract_alignment.json`](adjudications/20261108_zhb_tdxstat_contract_alignment.json)：按 ZHB 文件名数据日对齐 11 个保留期日期与 ELTDX `stats_date`，核实 `[2]/[26]/[31]/[32]` 并解决 `stat.unknown_26` 的同源别名状态冲突；不增加跨源映射。
 
 ## 归档格式
 

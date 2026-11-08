@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 108 个 code；聚合定义不完整 242 个 code；疑似合并文本 302 条逐源记录。
+> 聚合歧义 108 个 code；聚合定义不完整 242 个 code；疑似合并文本 310 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -593,25 +593,25 @@
 
 ### `[8]` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[8]` | [8] | T-2 日涨跌幅 (%) | — | `verified` |
 | ZHB-tdxstat2 · `[8]` | [8] | 前第二交易日涨跌停封单额（涨停为正，跌停为负） | 万元 | `verified` |
-| ZHB-tipinfo · `[8]` | [8] | 业绩预告日 = 官方 ForecastDate（二进制 `业绩预告:%s` 实证；旧标"分红日"证伪——Col[9] 全市场 83.0% 负值, 分红恒非负） | — | `verified` |
+| ZHB-tipinfo · `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | `disproved` |
 | 新浪(hq.sinajs) · `[8]` | [8] | 成交量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[8]` | [8] | 内盘 | 手 | `unverified` |
 
 ### `[9]` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[9]` | [9] | 市盈率（静态/LYR） | — | `verified` |
 | ZHB-tdxstat2 · `[9]` | [9] | 当日开盘集合竞价成交量 | 手 | `verified` |
-| ZHB-tipinfo · `[9]` | [9] | 业绩预告金额 (万元, 可负) = 官方 ForecastAmount（Col[9] 全市场 83.0% 负值/median=-95.98, 分红恒非负 → 必为预告净利） | — | `verified` |
+| ZHB-tipinfo · `[9]` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | `disproved` |
 | 新浪(hq.sinajs) · `[9]` | [9] | 成交额 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[9]` | [9]-[18] | 买一~买五 价/量 | 元/手 | `verified` |
 
@@ -3653,9 +3653,17 @@
 | ZHB-tipinfo | `[20]` | [20] | 回购预案金额上限(亿元) = 官方 RecentHGAmo（二进制 `回购预案:上限%.2f亿元` 一锤定音；旧标"增发配股价"证伪） | `verified` |
 | ZHB-tipinfo | `[21]` | [21] | 股权激励预案/草案公告日 | `verified` |
 | ZHB-tipinfo | `[6]` | [6] | 阶段新高日 = 官方 TopDate_Recent（"Top"=顶部/新高, 旧标"最近除息日"为音近误读, 已证伪） | `verified` |
-| ZHB-tipinfo | `[8]` | [8] | 业绩预告日 = 官方 ForecastDate（二进制 `业绩预告:%s` 实证；旧标"分红日"证伪——Col[9] 全市场 83.0% 负值, 分红恒非负） | `verified` |
-| ZHB-tipinfo | `[9]` | [9] | 业绩预告金额 (万元, 可负) = 官方 ForecastAmount（Col[9] 全市场 83.0% 负值/median=-95.98, 分红恒非负 → 必为预告净利） | `verified` |
+| ZHB-tipinfo | `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `disproved` |
+| ZHB-tipinfo | `[9]` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `disproved` |
+| ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `disproved` |
+| ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `disproved` |
+| ZHB-tipinfo | `shareholder_change_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `verified` |
+| ZHB-tipinfo | `shareholder_change_shares_wan` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `verified` |
+| ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `disproved` |
+| ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `disproved` |
 | ZHB-tipinfo | `tipinfo.equity_incentive_date` | tipinfo.equity_incentive_date | 股权激励预案/草案公告日 | `verified` |
+| ZHB-tipinfo | `tipinfo.shareholder_change_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `verified` |
+| ZHB-tipinfo | `tipinfo.shareholder_change_shares_wan` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `verified` |
 | reports | `BUY_RATIO` | BUY_RATIO / SELL_RATIO | 买入/卖出占比 | `unverified` |
 | reports | `BUY_SEAT` | BUY_SEAT / SELL_SEAT | 买入/卖出前5席位数 | `unverified` |
 | reports | `NextTwoYear` | predictThisYearEps / NextYear / NextTwoYear | 今年/明年/后年 EPS 预测 | `verified` |

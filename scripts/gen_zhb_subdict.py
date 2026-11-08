@@ -31,6 +31,12 @@ _SOURCES = [
     (r"^###\s*3\.\s*`tipinfo\.dat`", "tipinfo", "tipinfo.dat（财报日历与业绩快照）"),
 ]
 
+# This source-level correction supersedes the immutable historical contract text.
+_CURRENT_TIPINFO_CONTRACT_REPLACEMENTS = {
+    "tipinfo.div_date": "tipinfo.shareholder_change_date",
+    "tipinfo.div_amount": "tipinfo.shareholder_change_shares_wan",
+}
+
 # positional row:  | **[N]** | ... |
 _ROW_RE = re.compile(r"^\|\s*\*\*\[(\d+)\]\*\*\s*\|(.*)\|\s*$")
 # contract table row inside §1.1 / §2.1 / §3.1:  | stat.xxx | ... |
@@ -104,6 +110,43 @@ def _contract_rows(sec: str, frag: str):
     return rows
 
 
+def _current_tipinfo_corrections(positional_rows: list[str], contract_rows: list[str]):
+    """Overlay the current adjudication on the immutable historical ZHB source text."""
+    positional_replacements = {
+        8: "| **[8]** | `shareholder_change_date` | 股东持股变动关联日期（交易日、区间截止日或协议签署日） | ✅ | `YYYYMMDD` | `20250909` / `20241114` / `20250218` | 股东权益变动日期 |",
+        9: "| **[9]** | `shareholder_change_shares_wan` | 股东持股变动数量（万股；正值为增持/转入，负值为减持/转出） | ✅ | `万股`（带符号，保留2位小数） | `156.95` / `-1356.22` / `-100881.75` | 股东权益变动数量 |",
+    }
+    contract_replacements = {
+        "tipinfo.div_date": "| tipinfo.shareholder_change_date | 股东持股变动关联日期（交易日、区间截止日或协议签署日） | YYYYMMDD | ✅ |",
+        "tipinfo.div_amount": "| tipinfo.shareholder_change_shares_wan | 股东持股变动数量（万股；正值为增持/转入，负值为减持/转出） | 万股 | ✅ |",
+    }
+    corrected_positional = []
+    seen_positional = set()
+    for line in positional_rows:
+        match = _ROW_RE.match(line)
+        if match and int(match.group(1)) in positional_replacements:
+            index = int(match.group(1))
+            corrected_positional.append(positional_replacements[index])
+            seen_positional.add(index)
+        else:
+            corrected_positional.append(line)
+    corrected_contract = []
+    seen_contract = set()
+    for line in contract_rows:
+        for old_token, replacement in contract_replacements.items():
+            if line.startswith(f"| {old_token} |"):
+                corrected_contract.append(replacement)
+                seen_contract.add(old_token)
+                break
+        else:
+            corrected_contract.append(line)
+    if seen_positional != set(positional_replacements):
+        raise RuntimeError(f"tipinfo positional correction rows missing: {seen_positional}")
+    if seen_contract != set(contract_replacements):
+        raise RuntimeError(f"tipinfo contract correction rows missing: {seen_contract}")
+    return corrected_positional, corrected_contract
+
+
 def extract_main_zhb(main_path: str = MAIN) -> dict:
     """{source_key: set(int cols)} from main dict positional tables (authority)."""
     md = open(main_path, encoding="utf-8").read()
@@ -120,7 +163,7 @@ def extract_main_zhb(main_path: str = MAIN) -> dict:
 
 
 def extract_main_contract(main_path: str = MAIN) -> dict:
-    """{source_key: set(token)} standard-contract tokens from main dict."""
+    """{source_key: set(token)} current tokens overlaid on historical source text."""
     md = open(main_path, encoding="utf-8").read()
     sec = _zhb_section(md)
     out: dict[str, set[str]] = {}
@@ -130,6 +173,11 @@ def extract_main_contract(main_path: str = MAIN) -> dict:
             m = _CONTRACT_RE.match(ln)
             if m:
                 toks.add(f"{m.group(1)}.{m.group(2)}")
+        if key == "tipinfo":
+            for old_token, current_token in _CURRENT_TIPINFO_CONTRACT_REPLACEMENTS.items():
+                if old_token in toks:
+                    toks.remove(old_token)
+                    toks.add(current_token)
         out[key] = toks
     return out
 
@@ -195,6 +243,7 @@ def build_mirror(main_path: str = MAIN) -> str:
         "> - 覆盖闸门 `verify_sync_check.check_zhb_mirror_coverage` 强制本文件 Col[N] 集合"
         "与主字典逐字段一致（完全覆盖、不得越权发明字段）。\n"
         "> - 字段语义、层级（L1/L2/⚠️/❌）、单位、实测值均以主字典为准，争议以主字典现行条文裁决。\n"
+        "> - 2026-11-08 纠错：tipinfo `[8]/[9]` 当前定义见[裁定记录](../field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md)；只读历史协议档案保留原误标。\n"
     )
     parts.append(
         "## 覆盖范围\n\n"
@@ -212,6 +261,8 @@ def build_mirror(main_path: str = MAIN) -> str:
     for frag, key, title in _SOURCES:
         pos = _positional_rows(sec, frag)
         con = _contract_rows(sec, frag)
+        if key == "tipinfo":
+            pos, con = _current_tipinfo_corrections(pos, con)
         parts.append(f"## {key}（镜像自 §三 {title}）\n")
         parts.append(
             "> 下表逐行复制主字典位置式 `**[N]**` 契约表，列定义与主字典完全一致："

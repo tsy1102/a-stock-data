@@ -1162,7 +1162,7 @@ class ZhbData:
     def _parse_tipinfo(self) -> Dict[str, Dict[str, Any]]:
         """解析 tipinfo.dat（22字段，5609只股票）。
 
-        字段映射（与 field_dict.md §3 财报日历契约对齐；V17.3.6 校正旧误标）：
+        字段映射（按原始列位置解析；语义证据见 field_registry.json）：
 
             [0]  market           市场代码
             [1]  code             股票代码
@@ -1171,9 +1171,8 @@ class ZhbData:
             [4]  disclose_date    财报披露日
             [5]  zt_date_recent   最近涨停日（⚠️ 旧误标 ex_date/除权除息日，dict §3 已证伪）
             [10] dt_date_recent  最近跌停日（DTDate_Recent；2026-09-23 主数据 zhb_20260921.zip 解析实锤: 600519=20181029/000001=20150119/000002=20241009/000858=20200716/300750=空 全中；Gemini 终局候选值一致）
-            [8]  div_date         业绩预告日（ForecastDate；⚠️ 旧误标"分红日"，dict §3 已证伪——
-                                 Col[9] 全市场 83% 负值、分红恒非负 → 必为预告净利）
-            [9]  div_amount       业绩预告净利润(万元, 可负)（ForecastAmount；旧误标"每10股分红元"）
+            [8]  shareholder_change_date 股东持股变动关联日期；可为交易日、区间截止日或协议签署日
+            [9]  shareholder_change_shares_wan 股东持股变动数量(万股；正值增持/转入，负值减持/转出)
             [13] unlock_date      最新解禁日（Gemini 20260921 终局 + 字典实例 茅台 col14=48867.90万 互证）
             [14] unlock_shares_wan 最新解禁数量(万股)
             [19] hg_date          回购预案公告日（RecentHGDate；TdxW 串池 `回购预案:上限%.2f亿元` 实锤，dict §3 ✅）
@@ -1199,8 +1198,8 @@ class ZhbData:
                 "disclose_date": parts[4].strip() if len(parts) > 4 else "",
                 "zt_date_recent": parts[5].strip() if len(parts) > 5 else "",
                 "dt_date_recent": parts[10].strip() if len(parts) > 10 else "",
-                "div_date": parts[8].strip() if len(parts) > 8 else "",
-                "div_amount": _safe_cast(parts, 9, float),
+                "shareholder_change_date": parts[8].strip() if len(parts) > 8 else "",
+                "shareholder_change_shares_wan": _safe_cast(parts, 9, float),
             }
             # 解禁族（Gemini 20260921 + 字典实例互证；非空才挂，避免噪声）
             if len(parts) > 14:
@@ -1214,7 +1213,7 @@ class ZhbData:
         return result
 
     def get_tip_info(self, code: str) -> Optional[Dict[str, Any]]:
-        """获取指定股票的财报日历信息。"""
+        """获取指定股票的财报日历与股东持股变动信息。"""
         return self.tip_info.get(code)
 
     # ── xgsg 新股申购 ──
@@ -2357,7 +2356,7 @@ def is_data_fresh(max_delay_days: int = 3) -> bool:
 
 
 def get_tip_info(code: str) -> Optional[Dict[str, Any]]:
-    """获取指定股票的财报日历信息（便捷函数）。"""
+    """获取指定股票的财报日历与股东持股变动信息（便捷函数）。"""
     zhb = get_zhb()
     if zhb is None:
         return None

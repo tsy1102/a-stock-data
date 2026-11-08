@@ -10,24 +10,24 @@
       "aggregate_status_scope_unresolved": 435,
       "candidate": 1,
       "conflict": 73,
-      "disproved": 2,
+      "disproved": 8,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
       "live_observed_not_documented": 1,
       "manual_collision_adjudication": 29,
-      "manual_public_data_semantic_adjudication": 50,
-      "manual_semantic_retraction": 2,
-      "matched": 843,
+      "manual_public_data_semantic_adjudication": 54,
+      "manual_semantic_retraction": 8,
+      "matched": 839,
       "official_contract": 31,
       "reference_scope_reconciled": 1,
       "reference_status_conflict": 18,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 853,
+      "registry_status_only_single_source": 851,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "status_conflict": 55,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1433,
+      "unverified": 1431,
       "verified": 1094,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
@@ -7726,7 +7726,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "[8]",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -7734,12 +7734,13 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
-        "ZHB-tipinfo": "verified",
+        "ZHB-tipinfo": "disproved",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "meaning_differs",
         "source_statuses_differ",
         "unit_differs",
@@ -7765,7 +7766,7 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
-        "ZHB-tipinfo": "verified",
+        "ZHB-tipinfo": "disproved",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
@@ -7773,6 +7774,7 @@
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
+        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -13508,20 +13510,17 @@
       "sources": [
         "ZHB-tipinfo"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tipinfo": "unverified"
+        "ZHB-tipinfo": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "div_date",
@@ -13529,20 +13528,17 @@
       "sources": [
         "ZHB-tipinfo"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tipinfo": "unverified"
+        "ZHB-tipinfo": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "dividend_per_share",
@@ -33252,6 +33248,42 @@
       "aggregation_issues": []
     },
     {
+      "code": "shareholder_change_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "ZHB-tipinfo": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "shareholder_change_shares_wan",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "ZHB-tipinfo": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "shares",
       "source": null,
       "sources": [
@@ -37132,14 +37164,14 @@
       "sources": [
         "ZHB-tipinfo"
       ],
-      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
-      "canonical": "tipinfo.div_amount",
-      "meaning": "业绩预告金额",
-      "unit": "万元",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
       "status_raw": "✅",
-      "status": "verified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tipinfo": "verified"
+        "ZHB-tipinfo": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -37150,14 +37182,14 @@
       "sources": [
         "ZHB-tipinfo"
       ],
-      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
-      "canonical": "tipinfo.div_date",
-      "meaning": "业绩预告日",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
       "unit": "YYYYMMDD",
       "status_raw": "✅",
-      "status": "verified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tipinfo": "verified"
+        "ZHB-tipinfo": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -37281,6 +37313,42 @@
       "meaning": "报告期",
       "unit": "YYYYMMDD/季",
       "status_raw": "✅",
+      "status": "verified",
+      "source_statuses": {
+        "ZHB-tipinfo": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "tipinfo.shareholder_change_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "ZHB-tipinfo": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "tipinfo.shareholder_change_shares_wan",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "status_raw": "",
       "status": "verified",
       "source_statuses": {
         "ZHB-tipinfo": "verified"
@@ -45268,6 +45336,18 @@
     ],
     "sector_code": [
       "开盘啦(kpl)"
+    ],
+    "shareholder_change_date": [
+      "ZHB"
+    ],
+    "tipinfo.shareholder_change_date": [
+      "ZHB"
+    ],
+    "shareholder_change_shares_wan": [
+      "ZHB"
+    ],
+    "tipinfo.shareholder_change_shares_wan": [
+      "ZHB"
     ]
   },
   "mappings": [
@@ -109391,15 +109471,15 @@
       "code": "[8]",
       "identity": "ZHB-tipinfo::[8]",
       "path": "[8]",
-      "canonical": "[8]",
-      "meaning": "业绩预告日 = 官方 ForecastDate（二进制 `业绩预告:%s` 实证；旧标\"分红日\"证伪——Col[9] 全市场 83.0% 负值, 分红恒非负）",
-      "unit": "",
-      "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
       "sections": [
-        "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)"
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -109407,17 +109487,14 @@
         "reference_status_raw": [
           "✅"
         ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
-          "ZHB-tdxstat",
-          "ZHB-tdxstat2",
-          "ZHB-tipinfo",
-          "新浪(hq.sinajs)",
-          "腾讯(qt.gtimg)"
+          "ZHB-tipinfo"
         ],
         "values": [
-          "verified"
-        ]
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:[8]"
       },
       "reference_evidence": [
         {
@@ -109433,35 +109510,16 @@
       "registry_aggregate": {
         "code": "[8]",
         "sources": [
-          "ZHB-tdxstat",
-          "ZHB-tdxstat2",
-          "ZHB-tipinfo",
-          "新浪(hq.sinajs)",
-          "腾讯(qt.gtimg)"
+          "ZHB-tipinfo"
         ],
-        "status": "verified",
+        "status": "disproved",
         "status_raw": "✅",
-        "canonical": "[8]",
-        "meaning": "T-2 日涨跌幅 (%)",
-        "unit": "float",
-        "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "[9]",
-      "identity": "ZHB-tipinfo::[9]",
-      "path": "[9]",
-      "canonical": "[9]",
-      "meaning": "业绩预告金额 (万元, 可负) = 官方 ForecastAmount（Col[9] 全市场 83.0% 负值/median=-95.98, 分红恒非负 → 必为预告净利）",
-      "unit": "",
-      "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
-      "sections": [
-        "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)"
-      ],
-      "status": "verified",
-      "status_resolution": "matched",
-      "status_evidence": {
+        "canonical": "tipinfo.shareholder_change_date",
+        "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+        "unit": "YYYYMMDD",
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
         "reference_statuses": [
           "verified"
         ],
@@ -109480,6 +109538,59 @@
           "verified"
         ]
       },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:[8]",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
+      }
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "[9]",
+      "identity": "ZHB-tipinfo::[9]",
+      "path": "[9]",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:[9]"
+      },
       "reference_evidence": [
         {
           "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
@@ -109494,18 +109605,55 @@
       "registry_aggregate": {
         "code": "[9]",
         "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "disproved",
+        "status_raw": "✅",
+        "canonical": "tipinfo.shareholder_change_shares_wan",
+        "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+        "unit": "万股",
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": "verified",
+        "registry_aggregate_sources": [
           "ZHB-tdxstat",
           "ZHB-tdxstat2",
           "ZHB-tipinfo",
           "新浪(hq.sinajs)",
           "腾讯(qt.gtimg)"
         ],
-        "status": "verified",
-        "status_raw": "✅",
-        "canonical": "[9]",
-        "meaning": "市盈率（静态/LYR）",
-        "unit": "手",
-        "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
+        "values": [
+          "verified"
+        ]
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:[9]",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
       }
     },
     {
@@ -109609,23 +109757,26 @@
       "code": "div_amount",
       "identity": "ZHB-tipinfo::div_amount",
       "path": "div_amount",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tipinfo"
         ],
         "values": [
-          "unverified"
-        ]
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:div_amount"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -109634,27 +109785,14 @@
         "sources": [
           "ZHB-tipinfo"
         ],
-        "status": "unverified",
+        "status": "disproved",
         "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
-      }
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "div_date",
-      "identity": "ZHB-tipinfo::div_date",
-      "path": "div_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
-      "status_evidence": {
+        "canonical": "shareholder_change_shares_wan",
+        "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+        "unit": "万股",
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
         "registry_aggregate_status": "unverified",
@@ -109665,6 +109803,55 @@
           "unverified"
         ]
       },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:div_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
+      }
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "div_date",
+      "identity": "ZHB-tipinfo::div_date",
+      "path": "div_date",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:div_date"
+      },
       "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
@@ -109672,12 +109859,45 @@
         "sources": [
           "ZHB-tipinfo"
         ],
-        "status": "unverified",
+        "status": "disproved",
         "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
+        "canonical": "shareholder_change_date",
+        "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+        "unit": "YYYYMMDD",
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:div_date",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
       }
     },
     {
@@ -110097,15 +110317,15 @@
       "code": "tipinfo.div_amount",
       "identity": "ZHB-tipinfo::tipinfo.div_amount",
       "path": "tipinfo.div_amount",
-      "canonical": "tipinfo.div_amount",
-      "meaning": "业绩预告金额",
-      "unit": "万元",
-      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
       "sections": [
-        "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -110113,13 +110333,14 @@
         "reference_status_raw": [
           "✅"
         ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tipinfo"
         ],
         "values": [
-          "verified"
-        ]
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.div_amount"
       },
       "reference_evidence": [
         {
@@ -110137,29 +110358,14 @@
         "sources": [
           "ZHB-tipinfo"
         ],
-        "status": "verified",
+        "status": "disproved",
         "status_raw": "✅",
-        "canonical": "tipinfo.div_amount",
-        "meaning": "业绩预告金额",
-        "unit": "万元",
-        "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
-      }
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "tipinfo.div_date",
-      "identity": "ZHB-tipinfo::tipinfo.div_date",
-      "path": "tipinfo.div_date",
-      "canonical": "tipinfo.div_date",
-      "meaning": "业绩预告日",
-      "unit": "YYYYMMDD",
-      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
-      "sections": [
-        "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
-      ],
-      "status": "verified",
-      "status_resolution": "matched",
-      "status_evidence": {
+        "canonical": "tipinfo.shareholder_change_shares_wan",
+        "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+        "unit": "万股",
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
         "reference_statuses": [
           "verified"
         ],
@@ -110173,6 +110379,59 @@
         "values": [
           "verified"
         ]
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.div_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
+      }
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.div_date",
+      "identity": "ZHB-tipinfo::tipinfo.div_date",
+      "path": "tipinfo.div_date",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "manual_semantic_retraction",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "disproved"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.div_date"
       },
       "reference_evidence": [
         {
@@ -110190,12 +110449,49 @@
         "sources": [
           "ZHB-tipinfo"
         ],
-        "status": "verified",
+        "status": "disproved",
         "status_raw": "✅",
-        "canonical": "tipinfo.div_date",
-        "meaning": "业绩预告日",
+        "canonical": "tipinfo.shareholder_change_date",
+        "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
         "unit": "YYYYMMDD",
-        "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
+        "section": "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      },
+      "superseded_status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": "verified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "verified"
+        ]
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.div_date",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+        "sample_as_of_dates": [
+          "20261015",
+          "20261106"
+        ],
+        "evidence_files": [
+          "cache/zhb/zhb_20261015.zip",
+          "cache/zhb/zhb_20261106.zip"
+        ],
+        "external_evidence": [
+          "https://data.eastmoney.com/stockcalendar/002475.html",
+          "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+          "https://www.fangda.com/investor/index_p16.html",
+          "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+          "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+        ],
+        "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md"
       }
     },
     {
@@ -199045,6 +199341,354 @@
       },
       "reference_evidence": [],
       "attribute_conflicts": {}
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "shareholder_change_date",
+      "identity": "ZHB-tipinfo::shareholder_change_date",
+      "path": "shareholder_change_date",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "shareholder_change_date",
+          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+          "unit": "YYYYMMDD",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "shareholder_change_date",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_date",
+      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_date",
+      "path": "tipinfo.shareholder_change_date",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "tipinfo.shareholder_change_date",
+          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+          "unit": "YYYYMMDD",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "tipinfo.shareholder_change_date",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "shareholder_change_shares_wan",
+      "identity": "ZHB-tipinfo::shareholder_change_shares_wan",
+      "path": "shareholder_change_shares_wan",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "shareholder_change_shares_wan",
+          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+          "unit": "万股",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "shareholder_change_shares_wan",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_shares_wan",
+      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_shares_wan",
+      "path": "tipinfo.shareholder_change_shares_wan",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "tipinfo.shareholder_change_shares_wan",
+          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+          "unit": "万股",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "tipinfo.shareholder_change_shares_wan",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
     }
   ],
   "source_field_addenda": [
@@ -199718,6 +200362,50 @@
       "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
       "matrix_field": "year_limit_up_days",
       "matrix_source": "AxData"
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "shareholder_change_date",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+      "matrix_field": "shareholder_change_date",
+      "matrix_source": "ZHB"
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_date",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+      "matrix_field": "tipinfo.shareholder_change_date",
+      "matrix_source": "ZHB"
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "shareholder_change_shares_wan",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+      "matrix_field": "shareholder_change_shares_wan",
+      "matrix_source": "ZHB"
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_shares_wan",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+      "matrix_field": "tipinfo.shareholder_change_shares_wan",
+      "matrix_source": "ZHB"
     }
   ],
   "source_contract_addenda": [

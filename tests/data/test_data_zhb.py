@@ -158,6 +158,34 @@ def test_zhb_tipinfo():
         assert isinstance(tip, dict) or tip is None
 
 
+def test_parse_tipinfo_shareholder_change_fields():
+    zhb = zhb_client.ZhbData()
+    samples = {
+        "002475": ("20250909", "156.95"),
+        "000055": ("20241114", "-1356.22"),
+    }
+    lines = []
+    for code, (change_date, change_shares_wan) in samples.items():
+        parts = [""] * 22
+        parts[0] = "0"
+        parts[1] = code
+        parts[2] = "20260930"
+        parts[3] = "1.0"
+        parts[4] = "20261030"
+        parts[8] = change_date
+        parts[9] = change_shares_wan
+        lines.append("|".join(parts))
+    zhb.raw_files["tipinfo.dat"] = ("\n".join(lines) + "\n").encode("gbk")
+
+    parsed = zhb.tip_info
+    assert parsed["002475"]["shareholder_change_date"] == "20250909"
+    assert parsed["002475"]["shareholder_change_shares_wan"] == 156.95
+    assert parsed["000055"]["shareholder_change_date"] == "20241114"
+    assert parsed["000055"]["shareholder_change_shares_wan"] == -1356.22
+    assert "div_date" not in parsed["002475"]
+    assert "div_amount" not in parsed["002475"]
+
+
 def test_zhb_ipo_list():
     ipo_list = get_ipo_list()
     assert isinstance(ipo_list, list)

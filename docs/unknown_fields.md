@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2603；日常来源路径 2459：unverified 1313、candidate 1、conflict 73、disproved 2；历史来源路径 144。
+> 注册字段路径 2607；日常来源路径 2463：unverified 1311、candidate 1、conflict 73、disproved 8；历史来源路径 144。
 > 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1127 |
+| 含义栏为空/占位 | 1125 |
 | 含义栏有文本（仍未验证） | 186 |
 
 ### 历史状态证据的解析结果
@@ -28,7 +28,7 @@
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 772 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 770 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（73）
@@ -115,7 +115,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1313）
+## 三、待破解字段（1311）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -582,8 +582,6 @@
 | ZHB-tipinfo | `[18]` | [18] | 恒空占位符 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
 | ZHB-tipinfo | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tipinfo | `disclose_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| ZHB-tipinfo | `div_amount` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| ZHB-tipinfo | `div_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tipinfo | `eps` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tipinfo | `equity_incentive_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tipinfo | `forecast_date_recent` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -1433,12 +1431,18 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（2）
+## 四、已证伪（默认不重复破解）（8）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
+| ZHB-tipinfo | `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `[9]` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 
 ## 已退出来源字段（仅历史证据，不进入默认破解）
 

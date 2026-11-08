@@ -494,12 +494,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if _hist_src == "qfq":
             L("    ℹ️ 口径注: 前复权价(含分红送转回溯), 跨除权比较有效; 窗口≈近2.6年")
         else:
-            _exd = (_zhb_data or {}).get("ex_date", "") if _zhb_data else ""
-            _divd = (_zhb_data or {}).get("div_date", "") if _zhb_data else ""
-            if _exd or _divd:
-                L(
-                    "    ⚠️ 口径注: 兜底为不复权价(该股有除权记录), 跨除权比较偏保守, 请以前复权口径复核"
-                )
+            L(
+                "    ⚠️ 口径注: 兜底为不复权价；若历史窗口内发生除权除息，跨日比较可能偏差，请以前复权口径复核"
+            )
         # V17.0.7: 回调分级从原嵌套结构拉平(原 elif 挂在不复权口径注分支下,
         # qfq 主路径时黄金坑/显著回调两级信号全部静默丢失)
         if ext_deviation <= -40:

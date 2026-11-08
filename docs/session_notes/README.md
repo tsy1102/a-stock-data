@@ -50,6 +50,6 @@ docs/session_notes/
 ## 与新会话的衔接
 
 新会话开始时:
-1. 读 AGENTS.md §12(活跃待办) + 最新一份 session_notes/YYYYMMDD.md
-2. 如需恢复更早上下文, 按需读历史纪要
+1. 按任务从 `docs/PROJECT_CONTEXT.md` §0 路由；字段调查状态见 `docs/field_verification/README.md`。
+2. 仅需恢复对话态信息时再读最新一份 `session_notes/YYYYMMDD.md`；更早纪要按需读取。
 3. 项目事实均已在文件系统(field_dict/代码/采集数据), 纪要只补"对话态信息"

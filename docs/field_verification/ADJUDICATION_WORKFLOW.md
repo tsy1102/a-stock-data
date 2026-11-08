@@ -1,6 +1,6 @@
 # 碰撞候选人工定案与注册表同步
 
-`collide.py` 只发现候选，不直接改变主字典。只有经过逐项证据复核的决定，才能通过此流程写入逐源字段注册表。数值命中本身不是语义定案。用户要求运行采集并碰撞时，授权包含对达到现行规则的候选完成本流程；执行者应自行完成预览、应用和验证，无需再次请求进入定案。未达到门槛的候选保持原状态，并记录证据缺口。
+`collide.py` 只发现候选，不直接改变主字典。报告完整性与全量候选审阅按 [`COLLISION_REPORT_REVIEW.md`](COLLISION_REPORT_REVIEW.md) 执行。只有经过逐项证据复核的决定，才能通过此流程写入逐源字段注册表。数值命中本身不是语义定案。用户要求运行采集并碰撞时，授权包含对达到现行规则的候选完成本流程；执行者应自行完成预览、应用和验证，无需再次请求进入定案。未达到门槛的候选保持原状态，并记录证据缺口。
 
 ## 候选审阅状态（schema 5 起）
 
@@ -9,8 +9,9 @@ schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成�
 复制 [`review_templates/candidate_review_template.json`](review_templates/candidate_review_template.json) 后填写决定，先预览，再显式应用：
 
 ```powershell
-python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/YYYYMMDD_candidate_review.json
-python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/YYYYMMDD_candidate_review.json --apply
+$decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.json'
+.\scripts\run_with_system_python.ps1 scripts\review_collision_candidates.py --decision $decision
+.\scripts\run_with_system_python.ps1 scripts\review_collision_candidates.py --decision $decision --apply
 ```
 
 每项决定必须引用至少一份包含该候选的碰撞 JSON；工具保存引用路径与 SHA-256，并验证候选身份。批量决定可用 `{"schema_version":1,"decisions":[...]}`，重复成员必须逐项指向同一个代表候选，台账和报告会保留代表/成员双向索引。合法处置为 `duplicate_grouped`、`insufficient_evidence`、`needs_external_evidence`、`accepted_for_adjudication`、`rejected`；每条记录都带审阅人、带时区时间、理由、证据引用和历史事件。
@@ -131,13 +132,15 @@ python.exe scripts/review_collision_candidates.py --decision docs/field_verifica
 在仓库根目录运行：
 
 ```powershell
-python.exe scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_review.json
+$decisions = 'docs\field_verification\adjudications\YYYYMMDD_review.json'
+.\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions $decisions
 ```
 
 预览会验证报告、完整字段身份、来源谱系和决定内容，不写文件。检查预览无误后，显式应用：
 
 ```powershell
-python.exe scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_review.json --apply
+$decisions = 'docs\field_verification\adjudications\YYYYMMDD_review.json'
+.\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions $decisions --apply
 ```
 
 应用会以事务式写入更新 `field_registry.json`、兼容聚合字段状态和 `meta.source_field_stats`，并重生成 `field_dict.md`、`unknown_fields.md`、`source_repository_map.md`、`field_metadata_gaps.md`。验证记录会保留报告路径、样本日期、命中情况、复核人、决定理由、外部证据、变更前后值和唯一决定 ID。确认等价的字段对还会写入 `mappings`，供后续碰撞跳过已定案关系；使用现有关系值 `same_number_same_meaning`。兼容聚合视图仅在所有逐源记录对某元数据项均为相同非空值时才展示该项；数值代码相同但来源定义不同或任一来源缺少定义时，聚合语义留空，避免把某源的 `fNN` 含义误投射到另一源。

@@ -33,7 +33,7 @@ flowchart TD
 | 字段身份与逐源状态 | [`field_verification/field_registry.json`](field_verification/field_registry.json)；[`field_dict.md`](field_dict.md) 是生成导航 |
 | 字段日期与来源新鲜度 | `core/data_provider.py`、对应适配器和契约测试 |
 | 路由、限流、重试、缓存及并发 | 对应运行时代码和测试；采集操作见 [`field_verification/DAILY_RUNBOOK.md`](field_verification/DAILY_RUNBOOK.md) 与 [`../scripts/README.md`](../scripts/README.md) |
-| 候选分析和正式字段裁决 | [`field_verification/CRACKING_METHODOLOGY.md`](field_verification/CRACKING_METHODOLOGY.md)、[`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) |
-| Python 验收流程 | [`../AGENTS.md`](../AGENTS.md) §9、[`../tests/README.md`](../tests/README.md) |
+| 碰撞报告审阅、候选分析和正式字段裁决 | [`field_verification/COLLISION_REPORT_REVIEW.md`](field_verification/COLLISION_REPORT_REVIEW.md)、[`field_verification/CRACKING_METHODOLOGY.md`](field_verification/CRACKING_METHODOLOGY.md)、[`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) |
+| Python 验收流程 | [`../AGENTS.md`](../AGENTS.md) §4、[`../tests/README.md`](../tests/README.md) |
 
 ZHB、缓存和数据日期的特殊边界应在相应解析器、测试和每日运行卡核实。字段契约或运行路由变化后，只更新受影响的权威来源与本页必要的稳定导航。

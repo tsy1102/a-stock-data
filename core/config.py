@@ -41,7 +41,6 @@ CIRCUIT_BREAKER_FAILURE_THRESHOLD = 10
 CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS = 60
 """熔断器重置时间（秒）：断路后等待多久进入半开状态"""
 
-# V16.4.1: 原 TOKEN_BUCKET_RPS_EASTMONEY / TOKEN_BUCKET_RPS_TENCENT 为死配置
-# （无任何调用方）——令牌桶 rps 实际全部由 sc_network._DOMAIN_LIMITS 分域管理
-# （push2 系 0.4rps 最严，其余东财域 1.0rps，腾讯/新浪 5rps）。
+# 原 TOKEN_BUCKET_RPS_EASTMONEY / TOKEN_BUCKET_RPS_TENCENT 常量无调用方，已删除。
+# 令牌桶 RPS 策略由 stock_common.sc_network 管理，避免在此重复维护易变速率。
 # V16.4.1 审查清理: 另删 8 个 0 引用常量(HTTP_TIMEOUT_LONG/CACHE_*/MARKET_*/PRE_MARKET_CUTOFF)

@@ -10,8 +10,9 @@
 |---|---|
 | 字段身份、逐源语义和状态 | [`field_registry.json`](field_registry.json) 中的 `(source, 完整 code path)` |
 | 数值、比例、有效样本及来源资格门槛 | [`scripts/collision_rules.py`](../../scripts/collision_rules.py)；[`COLLISION_RULES.md`](COLLISION_RULES.md) 是生成镜像 |
-| 日期域、快照择优和样本资格 | [`scripts/collision_dates.py`](../../scripts/collision_dates.py)、[`temporal_policy.json`](temporal_policy.json) |
-| 每日采集、报告完整性和审阅顺序 | [`DAILY_RUNBOOK.md`](DAILY_RUNBOOK.md) |
+| 日期域、快照择优和样本资格 | [`scripts/collision_dates.py`](../../scripts/collision_dates.py)、[`scripts/temporal_policy.py`](../../scripts/temporal_policy.py)、[`temporal_policy.json`](temporal_policy.json) |
+| 每日采集和归档核对 | [`DAILY_RUNBOOK.md`](DAILY_RUNBOOK.md) |
+| 碰撞报告完整性和候选审阅 | [`COLLISION_REPORT_REVIEW.md`](COLLISION_REPORT_REVIEW.md) |
 | 候选审阅、单源契约与正式写回 | [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) |
 
 代码与说明冲突时，先核对当前代码、测试和生成来源；按用户当前要求修正文档或规则。不要把旧示例、旧报告数字或历史事故说明当作当前执行条件。
@@ -49,7 +50,7 @@
 
 ## 形成结论与维护项目
 
-1. 在完整候选报告中核对 `report_completeness`、候选身份、有效日期和所有明细；具体命令及分页规则见每日运行卡。
+1. 在完整候选报告中核对 `report_completeness`、候选身份、有效日期和所有明细；具体命令及分页规则见 [`COLLISION_REPORT_REVIEW.md`](COLLISION_REPORT_REVIEW.md)。
 2. 将每个候选记录为可继续验证、证据不足、来源/日期无效、需外部契约、已证伪或重复关系，并引用可复核的报告、原始样本或上游定位。
 3. 按 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 预览和应用裁决，再检查生成视图、注册表 parity 与相关回归。机器候选或审阅记录本身不改变主字典。
 4. 定案字段继续采集，作为后续对照锚。字段语义确认不自动改变采集源优先级、限流、五大报告路由或冗余退出状态；这些变更须单独依据实际消费方和来源证据审查。

@@ -26,7 +26,7 @@
   .\scripts\run_with_system_python.ps1 scripts\verify_sync_check.py
   ```
 
-- 按改动范围运行 Black、MyPy 和语法检查；验证标准及报告格式见 [`AGENTS.md`](AGENTS.md) §9。
+- 按改动范围验证；代码修改的完整验收与报告要求见 [`AGENTS.md`](AGENTS.md) §4。
 - 字段、来源身份、缓存键、单位或日期语义变更，必须先追踪所有调用方与序列化契约，再同步 registry 投影、相关测试和文档。
 - 不要静默吞掉异常；降级分支应保留可诊断信息。改动涉及的缓存类别或 schema 若语义变化，按架构约定升级。
 

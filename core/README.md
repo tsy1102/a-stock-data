@@ -38,8 +38,7 @@ core/
 
 ## 设计约束
 
-- **跨层访问器集中在 `_accessors.py`**：该模块避免 `core` 与 `stock_common.sc_datasource` 的导入期循环；新增跨层取数逻辑时，保持函数体内懒导入，并通过现有导入顺序测试验证。
-- **懒 import 仍是硬约定**: 模块间互相引用(尤其 ↔ `stock_common` 的数据源子模块)一律函数体内懒 import, 防止重新引入循环依赖(历史踩坑: zhb_client↔stock_calendar 递归爆栈, 见 AGENTS.md §12)。
+- **跨层导入使用懒导入**：`_accessors.py` 集中 `core` 与 `stock_common.sc_datasource` 的取数边界；模块互引应在函数体内导入，避免导入期循环，并通过现有导入顺序测试验证。
 - **`__file__` 路径**: 模块内基于 `__file__` 的仓库根推导已按包化上提一级
   (`dirname(dirname(abspath(__file__)))` = 仓库根); 新增路径推导遵循同一模式。
 - **CLI 运行**: `python -m core.zhb_sync ...` / `python -m core.stock_cache <action>`

@@ -1,99 +1,51 @@
-# 每日采集与字段碰撞运行卡
+# 每日采集与字段核验运行卡
 
-本页是日常执行入口，不复制完整字段规则。碰撞阈值以 scripts/collision_rules.py 和生成的 COLLISION_RULES.md 为准；日期/样本选择以 collision_dates.py 为准；方法、覆盖与写回分别见下方权威文档。
+本页规定日常执行顺序；不重复维护阈值、接口限速、报告审阅细则或裁决门槛。对应真源：采集器和来源策略见 [`scripts/README.md`](../../scripts/README.md)，碰撞日期/时效见 `scripts/collision_dates.py`、`scripts/temporal_policy.py` 与 [`temporal_policy.json`](temporal_policy.json)，报告审阅见 [`COLLISION_REPORT_REVIEW.md`](COLLISION_REPORT_REVIEW.md)，网页核验见 [`PUBLIC_WEB_VERIFICATION.md`](PUBLIC_WEB_VERIFICATION.md)，注册表写回见 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md)。
 
 ## 日常顺序
 
-1. **定数据日。** 默认 `data_date` 是运行时最近已完成的 A 股交易日：交易日 15:00 起包含当天，15:00 前取上一个交易日；周末、节假日及调休休市日取最近已完成的交易日。项目采集目录固定为 `docs/field_verification/<data_date>/`，同一数据日多次运行复用该目录。`capture_date/run_date` 是实际运行自然日，`data_date` 是目录标识的目标数据日，逐源 `source_capture_date/source_capture_started_at` 记录实际请求时刻，来源 `as_of_date` 仍是上游实际提供的数据日；公告新闻按自然日窗口处理。样本保留边界按根目录 `AGENTS.md` 执行，不回补更早 raw 或日期化 ZHB 缓存。对本地日期化 ZHB 包，文件名 `zhb_YYYYMMDD.zip` 是 ZHB 自己的数据日期，不改变采集目录命名；采集 JSON 的 `zhb_date` 是解析器写入的派生元数据。
+1. **确定数据日。** 默认 `data_date` 为最近已完成的 A 股交易日：交易日 15:00 起包含当天，15:00 前取上一个交易日；休市日取最近已完成的交易日。采集目录使用 `docs/field_verification/<data_date>/`，同一数据日复用目录。`capture_date/run_date` 表示运行自然日，逐源 `source_capture_date/source_capture_started_at` 表示实际采集时间，`as_of_date` 表示来源数据日期。日期化 ZHB 包以 `zhb_YYYYMMDD.zip` 文件名作为 ZHB 数据日；它可以不同于项目采集目录日期。样本保留起点和旧数据限制遵守根目录 [`AGENTS.md`](../../AGENTS.md)，不得回补或读取保留起点之前的 raw、ZHB 压缩包或解析缓存。
 
 2. **运行字段采集。**
 
        .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py
 
-   需要刷新动态股票池时显式加 --refresh-pool；需要龙虎榜/人气榜等市场上下文时加 --include-context，或单独用 --only exchange / --only em_hot（会自动启用上下文）。这一步不等于运行五大报告脚本，也不会自动启动碰撞。默认 `tdx_f10` 只采财务分析和股本；分红接口 `0x000f` 没有日期范围、会返回整段历史，因此分红留给报告按需读取，不写入每日原始样本或碰撞证据。`TDX` 与 `eltdx` 属于同一来源族，不因此增加独立来源锚或字段矩阵关系。
+   需要刷新动态股票池时加 `--refresh-pool`；需要龙虎榜/人气榜等市场上下文时加 `--include-context`，也可用 `--only exchange` 或 `--only em_hot` 单独选择。此命令只采集字段样本，不运行五大报告，也不启动碰撞。采集的日期参数、同日重跑行为和来源清单见 `scripts/README.md`。
 
-3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json`：运行时间、目录与 `meta.data_date` 一致性、日期域、市场阶段、逐源采集时间、`as_of_date`、ZHB 实际日期、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝；ZHB 的文件名日期与目录数据日可不同，因为它们分别描述 ZHB 缓存日期和本项目采集目标日。盘前采集上一个交易日时，来源日期早于实际采集日可被碰撞器判为已收盘样本；以报告中的资格与告警为准，不因开盘时刻机械排除。
+3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json` 中的 `data_date`、运行时间、市场阶段、逐源采集时间、`as_of_date`、ZHB 日期、来源状态、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝。盘前采集上一交易日时，来源日期早于采集自然日仍可能是已收盘样本；以来源级资格和报告诊断为准。
 
-   已有完整收盘快照时默认幂等跳过；盘中快照可在收盘后刷新。对同一数据日重跑默认命令时，脚本留在原目录，只补采缺失、失败、部分类或内容不完整的来源，并保留已完整来源的 raw 与逐源采集时间。旧 `meta.json` 若没有逐源时间，脚本只把原目录级日期标为 `legacy_global_metadata`，不伪装成精确的来源采集时刻。`--only <source>` 会明确重新请求所选源，`--overwrite` 会强制刷新所选数据；两者都在同一数据日目录内更新对应文件。来源 `as_of_date` 仍单独决定有效样本日，同一有效日不能冒充独立日期。
+   同一数据日重跑默认跳过完整来源，只补采缺失或不完整来源并保留既有成功样本。`--only <source>` 会重新请求指定来源，`--overwrite` 会强制刷新所选范围；重采前备份该来源 raw 和 `meta.json`。旧 `meta.json` 缺少逐源时间时，按 `legacy_global_metadata` 处理，不推断精确请求时刻。需要检查历史来源日期对应关系时运行：
 
-   2026-11-07 对 20261015 起保留目录的命名核查结果见[采集目录数据日命名审计](capture_folder_date_audit_20261107.md)：15 个含 raw 的目录均与 `meta.data_date` 一致，无历史 raw 目录需要迁移。
+       .\scripts\run_with_system_python.ps1 scripts\audit_source_date_mapping.py
 
-4. **遵守限流并处理瞬时失败。** 来源按采集器顺序运行，不并发重试。通用同步/异步请求层对传输超时、连接类异常和 HTTP 408/5xx 按调用方 `max_retries` 总尝试次数（含首次请求）做有界退避；Eastmoney 专用 `em_get` 最多额外请求一次，每次重试重新取得令牌并遵守跨进程节奏。Eastmoney 同时执行全局间隔和风险组间隔，并在同一跨进程锁内原子预留：push2/push2his/83/1/2 共用 0.25 RPS 组，push2ex 为 0.6 RPS 组，push2delay 为 1.0 RPS 组；全局间隔至少为 `max(1 秒, EM_MIN_INTERVAL) + 0.1–0.3 秒`，因此实际频率取更慢的限制。这些是项目的保守配置，不代表上游公布的限流承诺。HTTP 403/429 不在这些共享请求层重试，push2 显式设置 `max_retries=1` 时仍只发一次。单次超时、连接重置、临时 DNS 故障或 HTTP 408/5xx 不得直接当作该源永久失败；请求层重试结束后，采集器继续执行其他来源。DNS 预检遇到即时解析错误时只重试 DNS 一次，不增加上游 HTTP 请求；DNS 解析错误在 HTTP 发出前终止，不计入东财断连、熔断或封禁计数，结构化诊断会标记为 `dns_resolution_failure` / `not_attempted`。首轮结束后，若 `meta.json` 仍将某源标为 `partial`/`failed`，且错误证据属于上述瞬时故障、该源策略允许重试，可对该源做**一次串行单源补采**：沿用同一 `--date`，使用 `--only <source>`，不要重跑全量采集或 `--all`。重试前把该源现有 `raw_<source>.json`（若存在）及 `meta.json` 复制到仓库 `.tmp/capture_retry/<data_date>/`；`--only` 会重新请求并覆盖该源文件。重试后比较来源日期、必需路径、成功样本覆盖与错误/缺股数；只有结果确实改善且没有丢失原有成功样本时才保留，否则恢复原文件。每源每天最多做一次这种采集器级补采。
+4. **按故障类型处置网络错误。** 项目采集 HTTP 请求遵守直连策略；不要为排障改动 TUN、VPN 或系统代理设置。Google Drive 上传按其独立配置处理。网络限速数值、风险组和请求层重试次数以 `scripts/README.md` 与适配器实现为准，本页不复制易变参数。
 
-   `meta.json` 中 `sources.<source>.error_diagnostics` 保留 `categories` 与 `request_attempt_states` 汇总，并给出至多 20 组明细：分类代码、阶段、风险族、尝试状态、可重试提示、主机、HTTP 状态、脱敏错误样例和路径样例。分类来自错误标记文本，不证明远端收到请求；`retryable_hint` 只用于排查、不会改变重试策略。明细超量时检查 `omitted_detail_groups`；最终以 raw 中的原始错误和逐请求记录为准。
+   | 证据/状态 | 处理方式 |
+   |---|---|
+   | DNS `dns_resolution_failure` / `not_attempted` | 请求未到达上游，不按东财封禁计数；先保留诊断并继续其他来源。需要单独探测时使用下方健康检查命令。 |
+   | 超时、连接错误、HTTP 408/5xx | 先让请求层按适配器策略完成有限重试；采集结束后仅在来源策略允许时考虑单源补采。 |
+   | HTTP 403/429、封禁、`circuit_open`、`blocked_until_manual_review` | 不叠加采集器级重试，停止受限风险组本轮请求；继续未受限的独立来源。 |
+   | HTTP 400/401/404、参数或稳定契约错误 | 不补采，定位请求参数、接口或代码问题。 |
 
-   HTTP 403、429、明确封禁、`circuit_open` 或 `blocked_until_manual_review` 属于限流/封禁：共享请求层不重试 403/429，适配器内部其他明确限次处理也不叠加采集器级重跑；适配器最终返回受限状态后，立即停止该 Eastmoney 风险组本轮剩余请求（push2 家族别名共享停止状态；push2ex 和 push2delay 分组独立），不换同组端点继续试，但继续其他未受限风险组与独立来源。所有 Eastmoney 风险组仍共享全局节流。400/401/404、参数错误、稳定的解析/契约错误也不做采集器级补采，应定位接口或代码问题。若来源已有更严格的防封或禁止重试约束，遵守该约束。默认再次运行同一数据日的完整采集命令会只补采不完整来源；若要有意重采单一来源，可先备份该源的 raw 与 meta，再使用 `--only <source>`。手工单源补采每源每天最多一次，仍失败就保留失败记录并报告证据缺口，不把一次失败静默当作已完成。不要把 main.py --all 当作字段采集命令；collide.py --all 只扩展历史分析窗口，不发网络请求。各源白名单、退役/复验条件见 [scripts/README.md](../../scripts/README.md)。
+   `error_diagnostics` 和 `retryable_hint` 用于诊断，不替代来源重试策略。人工单源补采每来源、每数据日最多一次是**操作规约**，采集器不强制计数；仅对允许重试的瞬时故障使用同一 `--date` 和 `--only <source>`。先把 raw 与 `meta.json` 备份到 `.tmp/capture_retry/<data_date>/`，补采后比较来源日期、必需路径、成功样本覆盖和错误数；无改善或丢失既有成功样本时恢复备份。403/429、封禁、熔断和稳定契约错误不进行此补采。
 
-   手动核对东方财富时使用 `scripts/check_em_health.py`；默认每个端点单次请求并复用共享限流，JSON 输出到 `.tmp/eastmoney_health/`。它遇到封禁、403/429 或传输故障后停止同风险族探测；退出码 `2` 表示本地熔断跳过或空样本，不能当作接口实测失败。可用 `--probe push2his` 等只检查一个端点。该脚本不会改生产采集路由或重试策略。
+   东方财富健康检查默认每个选中端点单次请求，受本地熔断或空样本影响的退出码 `2` 不代表接口实测失败：
 
-5. **单独运行碰撞。**
+       .\scripts\run_with_system_python.ps1 scripts\check_em_health.py
+       .\scripts\run_with_system_python.ps1 scripts\check_em_health.py --probe push2his
+
+   该工具只诊断端点，不改变采集路由或重试策略。采集器实际限流、风险组停止和来源复验条件见 [`scripts/README.md`](../../scripts/README.md)。
+
+5. **运行本地碰撞。**
 
        .\scripts\run_with_system_python.ps1 scripts\collide.py
 
-    默认分析截至报告日最近 7 个日历确认的交易日；新闻/公告另按自然日窗口处理。窗口按交易日历定界，不按现存采集目录数倒推；某个交易日缺采集目录时会保留该日并报告缺口，不再用更早日期补位。来源数据日可能由后续采集目录提供，须结合来源级 `as_of_date` 和 `source_coverage` 核对。样本发现统一跳过 20261015 之前的目录，因此 `--window N` 与 `--all` 都只覆盖该保留起点之后的数据。碰撞是本地分析，不请求数据源。只有确需分析已归档的龙虎榜/人气榜上下文时才加 --include-context。
+   默认使用最近 7 个已确认交易日；新闻/公告按自然日窗口处理。碰撞不请求网络，按来源 `as_of_date` 和有效期筛选样本，且不读取保留起点之前的数据。`collide.py --all` 只扩大本地历史窗口；不要把 `main.py --all` 当作字段采集命令。仅需分析龙虎榜/人气榜上下文时才加 `--include-context`。同一报告日期已有报告或审阅材料时，用 `--run-tag <标签>` 写入独立目录；标签和目标目录规则见 `scripts/collide.py`。
 
-    若同一报告日期已有报告或审查台账引用，使用 `--run-tag <标签>` 将新报告写入该日期的独立子目录；标签仅接受字母、数字、下划线和连字符，目标目录已存在时命令会停止以保护既有证据。
+6. **审阅碰撞报告。** 按 [`COLLISION_REPORT_REVIEW.md`](COLLISION_REPORT_REVIEW.md) 核对报告完整性、交易窗口、来源覆盖和全部候选明细。报告未通过完整性或日期资格检查时，暂停语义结论和主字典裁决；重建材料只能使用保留起点之后允许读取的归档。
 
-6. **完整审阅报告，先过完整性闸门。** 检查 `trading_window` 是否是日历上的最近 N 个交易日，并核对缺采集目录警告、窗口中的样本日期、来源日期、采集阶段、每日样本量、信息配对、来源独立性和告警；来源级日期可能由后续采集目录补到，不能只看目录名。把 `actionable_L1` 与 `mapped_pair_revalidations` 分开。候选覆盖区逐个未知目标给出比较、覆盖、候选、来源失败、公式线索和复核股票。
+7. **核验公开网页。** 报告审阅通过后，按 [`PUBLIC_WEB_VERIFICATION.md`](PUBLIC_WEB_VERIFICATION.md) 选择官方页面并留证。Chrome 网页核验依该文档执行，不以 TUN/直连状态预检作为启动条件；不要改变系统网络设置或绕过网站访问控制。
 
-    先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 只说明报告结构和候选明细对账完整，不代表人工已审完，也不代表交易日连续或所有来源采集成功；这些要以 `trading_window`、诊断和逐源 `source_coverage` 核查。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和独立的 `candidate_triage.approximate_matches`。近似命中只用于安排网页/原始样本复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
+8. **完成候选审阅与正式裁决。** 候选审阅台账和注册表写回是分开的步骤。符合条件的候选按 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 预览、显式应用并检查 registry parity、字典同步和相关回归；未达到门槛的候选保留证据缺口，不直接改主字典。
 
-    大报告先用只读查询器定位并分页，避免把整份 JSON 一次性放入模型上下文。先列章节，再按来源或完整字段路径筛选；按候选身份核对时使用原样完整的 `candidate_id`：
-
-        $report = 'docs\field_verification\20261101\20261101_collision_report.json'
-        python.exe scripts\query_collision_report.py --report $report --list-sections
-        python.exe scripts\query_collision_report.py --report $report `
-            --section method_candidate_inventory --source ftshare_rest --limit 25
-        python.exe scripts\query_collision_report.py --report $report `
-            --section method_candidate_inventory --field ftshare_rest.turnover_rate --limit 10 --format json
-
-    未传 `--section` 但指定筛选条件时，默认搜索 `method_candidate_inventory`、`actionable_L1`、`L1-C`、`L4`、`formula_candidates` 和 `candidate_triage.approximate_matches`，避免把摘要副本重复计入。每次输出都带原报告 SHA-256、完整性状态、匹配总数、选择集 SHA-256、页偏移和是否读完；分页时保持相同筛选条件，并按 `next_offset` 继续直到 `exhausted=true`。默认 `compact` 使用列定义、行数组和 `present_columns`，保留缺失键与显式 null 的区别；需直接读取对象时用 `--format json`。来源名忽略大小写且按完整来源名匹配，字段路径精确区分大小写。查询器拒绝旧 schema、保留起点前的报告、完整性不匹配或候选身份异常；它只读，不会把查询记录成已审阅，也不代替人工逐条检查和裁决。
-
-    人工处置写入独立台账，不直接改注册表：从 [候选审阅模板](review_templates/candidate_review_template.json) 复制出一份决定 JSON，填入候选的 `candidate_id`、处置、审阅人、带时区的 `reviewed_at`、理由和证据引用。至少引用一份包含该候选的碰撞 JSON；工具会记录该文件的 SHA-256。先预览，再显式写入：
-
-        python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/candidate_review.json
-        python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/candidate_review.json --apply
-
-    批量决定可用根对象 `{"schema_version":1,"decisions":[...]}`，每个成员采用模板中的决定字段。重复归并时，每个成员都填写 `duplicate_grouped` 和同一个代表候选 `duplicate_of`；报告会保留代表到成员的反向索引。状态含义：`insufficient_evidence` 表示当前证据不够，`needs_external_evidence` 表示须补权威外部材料，`rejected` 表示拒绝该关系候选，`accepted_for_adjudication` 表示可进入既有裁决流程。写入审阅台账后重新运行本地碰撞，使新报告反映状态；schema 5 的 L1 注册表裁决要求对应候选先达到 `accepted_for_adjudication`。审阅记录不会单独升级字段或修改主字典。
-
-    若完整性状态异常、候选身份/处置数对不上、集合缺失或数量不一致，暂停语义结论与主字典裁决；从原始采集归档重建缺失明细。无法重建时，明确记录未审条数、字段范围和缺失原因，不得把未展示内容视为无结果。`candidate_review.human_review.status=pending` 表示审阅尚未完成，不等同于机器清单不完整；台账不可用或身份校验不通过时，不得宣称候选已审。旧版报告若没有 `report_completeness` 或全量方法候选清单，按可能截断处理；缺失索引 `.tmp/field_evidence_coverage/` 时则按报告给出的不可用状态记录证据缺口。
-
-   名称拆词、相关性、公式/时间序列、AxData/Levistock 汇总接口都只提供候选或来源身份辅助证据，不能绕过当前 L1/L1-U 门槛或独立性规则。FTShare 旧私有 MCP 已退役；公开 REST `ftshare_rest` 是日常采集源，官方文档定义的字段参与默认碰撞并作为语义契约锚，强多日匹配单列 `L1-C`，不代表底层来源独立或自动定案。旧 `FTShare` raw 默认排除，仅显式 `--all` / `--exploratory` 可研究。
-
-每次碰撞报告的 `source_coverage` 必须同时阅读 JSON 全量统计与 Markdown 汇总，按来源核对契约定义、窗口观察样本、实际参与比较次数及 L1/L1-C/L4 结果。契约字段数不是实测覆盖数；已确认独立来源（如 Fuyao）的契约字段仍按普通独立锚处理。Fuyao 竞价响应时间只作采集时间诊断，不替代来源数据日期。
-
-## 第 7 步：对未知候选做公开网页核验
-
-第 6 步确认报告和候选明细完整后，先按 `source_lineage.json` 核对每个候选的实际数据提供方，再依 [`PUBLIC_WEB_VERIFICATION.md`](PUBLIC_WEB_VERIFICATION.md) 优先查该提供方的官方文档和官网查询页面。每轮最多处理 5 个候选路径（包括延续的待补证项）；优先处理有新日期/新假设/新材料可核的旧 `needs_external_evidence` 项，再处理本轮有明确、可检验假设的碰撞/公式候选，最后按既定顺序推进未知队列。保存 candidate_id、精确来源路径、报告 SHA、官方页面链接、访问时间、页面标签/数值/单位/有效日期、样本对齐和结论；只有提供方页面没有可比资料或该网站本身就是登记来源时，才将第三方网站作为次级佐证。不得只凭搜索摘要或一次数值吻合定案。
-
-网页核验是每日采集和破解后的证据补充阶段，不发起生产采集请求，也不会自动改主字典。若页面只佐证语义猜测但无法证明项目 raw 路径的映射，保留 `needs_external_evidence` 并记录具体缺口；证据满足现有规则后再走下方定案闭环。每次运行汇报已核验数、各结论状态、待处理数和下次继续位置。
-
-## 字段时效分类与来源日期
-
-字段语义是否可由多日样本采纳，与该样本的来源有效日期是否已证实，是两项独立结论。逐源分类保存在 [`temporal_policy.json`](temporal_policy.json)，身份仍为 `(source, 完整 code)`；未列字段默认为 `unclassified`，不会根据同名短码或短期数值不变自动推断为静态字段。
-
-- `daily_market`、`intraday_sensitive` 和 `unclassified` 字段只有在来源元数据提供 `source_as_of`，或记录自身有 `event_date` / `trade_date` 时，样本才计入 L1/L1-U。目标 `data_date`、`meta_data_date` 或目录日期不能代替来源日期。
-- `slow_changing`、`static_reference` 可用已收盘的跨源多日样本验证语义关系，即使日期来源尚未证实；碰撞 JSON/Markdown 会标为 `semantic_only_date_unconfirmed`。该标记不证明数据新鲜度、有效日期或来源间日期对齐，也不自动写入字典。
-- 同一原始行情记录中的逐源已验证 Unix 时间戳可作为该行数据日期见证；仅当时间戳换算出的中国市场日期、样本键日期和样本 `as_of_date` 三者一致时，才标记 `record.timestamp` 并允许日变字段进入 L1。缺失或日期冲突的行继续按未确认处理，不自动改写样本日期，也不拿采集日期补位。见证字段身份由 `temporal_policy.json` 精确登记。
-- `periodic_or_event` 必须提供字段值级 `effective_date` / `report_period` / `event_date`。当前通用采集结构未为所有此类字段提供值级日期时，保持 L1 排除，不能用采集日替代报告期。
-- 更新分类时只编辑逐源策略，写明原因并确认注册表状态；运行碰撞时按 lineage 别名精确解析回注册表身份。策略失效或状态漂移会关闭分类，所有字段回退到严格 `unclassified` 门控。
-
-使用历史 `meta.json` 检查采集日、目标数据日和来源日期的对应关系：
-
-```powershell
-python.exe scripts\audit_source_date_mapping.py
-```
-
-审计只读 `20261015` 起保留的 `meta.json`，不读取 raw、不联网、不以采集目录名补出来源日期；同时对比目录级运行日、逐源采集日、目标数据日与来源 `as_of_date`。旧记录缺逐源采集日时会显示为目录级日期回退，不作为精确源级时刻。对日期化 ZHB 缓存，采集元数据中的 `zhb_date` 由解析器按缓存文件名日期生成；该审计观察日期偏移，不把观察规律冒充上游契约。结果是当前保留样本的快照，字段来源日期仍须逐次由来源证据确认。
-
-## 破解与主字典闭环
-
-- 字段定义已确认后，应停止重复破解同一关系并让已确认字段作为未知字段的锚；**继续采集**字段，除非该具体源路由另行满足 scripts/README.md 中的冗余退出与复验条件。
-- 用户要求运行采集并碰撞时，授权包含对证据充分候选完成 adjudication、预览、应用、生成视图和验证；无需再次询问是否进入定案。执行者必须自行逐项核对语义、单位、来源独立性和完整性门槛；未达到条件的候选继续保留并报告缺少的证据。按 [ADJUDICATION_WORKFLOW.md](ADJUDICATION_WORKFLOW.md) 执行后检查 registry parity、字典同步和对应回归。候选报告本身不会自动改变主字典。
-- 每日碰撞候选完整审阅后继续执行 [PUBLIC_WEB_VERIFICATION.md](PUBLIC_WEB_VERIFICATION.md)，不能因已有数值碰撞就跳过公开页面核验；网页佐证结果仍需经过既有人工候选审阅与注册表裁决流程。
-- 定义/单位冲突须先逐来源、逐完整路径处理；不能把某源的字段含义投射给同名短 code 的其他源，也不能把汇总/包装库当作新的独立底层来源。
-
-## 按需读取与每次汇报
-
-- 常规运行先读本页、当日 meta.json 和本轮碰撞报告；只有具体候选需要时，再读 [CRACKING_METHODOLOGY.md](CRACKING_METHODOLOGY.md) 对应方法、原始样本、registry 精确记录或上游源码。完整索引见 [EVIDENCE_COVERAGE.md](EVIDENCE_COVERAGE.md)。不要全文加载大体积 registry、unknown queue 或历史状态 JSON。
-- 汇报：实际采集日与有效来源日、成功/失败/跳过、碰撞窗口、候选与证据等级、是否满足裁决条件、主字典/注册表是否变化、验证结果及下一步证据缺口。
+9. **汇报结果。** 说明实际采集日和来源有效日、成功/失败/跳过、碰撞窗口、候选和证据状态、是否更新注册表/主字典、验证结果及未解决的证据缺口。

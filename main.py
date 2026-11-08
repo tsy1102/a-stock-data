@@ -151,7 +151,6 @@ def check_dependencies():
         ("requests", "requests"),
         ("yaml", "PyYAML"),
         ("aiohttp", "aiohttp"),
-        ("aiosqlite", "aiosqlite"),
         ("eltdx", "eltdx"),
         ("easy_tdx", "easy-tdx"),
         ("pandas", "pandas"),

@@ -2,6 +2,7 @@
 
 import builtins
 import importlib.util
+from pathlib import Path
 
 import pytest
 
@@ -49,4 +50,10 @@ def test_required_dependencies_match_runtime_adapters(monkeypatch, capsys):
     assert "easy_tdx" in checked
     assert "eltdx" in checked
     assert "openpyxl" in checked
+    assert "aiosqlite" not in checked
     assert "pytdx" not in checked
+
+
+def test_requirements_do_not_install_unused_aiosqlite():
+    requirements = Path(__file__).resolve().parents[2] / "requirements.txt"
+    assert "aiosqlite" not in requirements.read_text(encoding="utf-8")

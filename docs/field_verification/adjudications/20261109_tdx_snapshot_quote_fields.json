@@ -1,0 +1,499 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tdx-snapshot-basic-quote-fields-20261109",
+  "reviewed_on": "2026-11-09",
+  "evidence_basis": "manual_public_data_semantic_adjudication",
+  "report": "docs/field_verification/adjudications/20261109_tdx_snapshot_quote_fields.md",
+  "evidence": [
+    {
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+      "publisher": "通达信量化平台官方文档",
+      "retrieved_on": "2026-11-09"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "tdx-snapshot-quote-itemnum-20261109",
+      "source": "TDX(双命名源)",
+      "code": "ItemNum",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "ItemNum",
+        "meaning": "快照笔数",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists ItemNum as 快照笔数 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-lastclose-20261109",
+      "source": "TDX(双命名源)",
+      "code": "LastClose",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "LastClose",
+        "meaning": "前收盘价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists LastClose as 前收盘价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-open-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Open",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Open",
+        "meaning": "开盘价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Open as 开盘价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-max-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Max",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Max",
+        "meaning": "最高价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Max as 最高价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-min-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Min",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Min",
+        "meaning": "最低价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Min as 最低价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-now-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Now",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Now",
+        "meaning": "现价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Now as 现价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-volume-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Volume",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Volume",
+        "meaning": "总手",
+        "unit": "手"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Volume as 总手 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-nowvol-20261109",
+      "source": "TDX(双命名源)",
+      "code": "NowVol",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "NowVol",
+        "meaning": "现手（总手差）",
+        "unit": "手"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists NowVol as 现手（总手差） and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-amount-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Amount",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Amount",
+        "meaning": "总成交金额",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Amount as 总成交金额 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-inside-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Inside",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Inside",
+        "meaning": "内盘；板块指数时表示跌停家数",
+        "unit": "单位随证券类型变化"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Inside as 内盘；板块指数时表示跌停家数 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-outside-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Outside",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Outside",
+        "meaning": "外盘；板块指数时表示涨停家数",
+        "unit": "单位随证券类型变化"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Outside as 外盘；板块指数时表示涨停家数 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-tickdiff-20261109",
+      "source": "TDX(双命名源)",
+      "code": "TickDiff",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "TickDiff",
+        "meaning": "笔涨跌（价位差）",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists TickDiff as 笔涨跌（价位差） and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-inoutflag-20261109",
+      "source": "TDX(双命名源)",
+      "code": "InOutFlag",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "InOutFlag",
+        "meaning": "内外盘标志：0=Buy，1=Sell，2=Unknown",
+        "unit": "枚举值"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists InOutFlag as 内外盘标志：0=Buy，1=Sell，2=Unknown and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-jjjz-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Jjjz",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Jjjz",
+        "meaning": "基金净值",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Jjjz as 基金净值 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-uphome-20261109",
+      "source": "TDX(双命名源)",
+      "code": "UpHome",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "UpHome",
+        "meaning": "上涨家数（对指数有效）",
+        "unit": "家"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists UpHome as 上涨家数（对指数有效） and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-downhome-20261109",
+      "source": "TDX(双命名源)",
+      "code": "DownHome",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "DownHome",
+        "meaning": "下跌家数（对指数有效）",
+        "unit": "家"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists DownHome as 下跌家数（对指数有效） and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-before5minnow-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Before5MinNow",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Before5MinNow",
+        "meaning": "5 分钟前价格",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Before5MinNow as 5 分钟前价格 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-average-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Average",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Average",
+        "meaning": "均价",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Average as 均价 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-xsflag-20261109",
+      "source": "TDX(双命名源)",
+      "code": "XsFlag",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "XsFlag",
+        "meaning": "小数位数",
+        "unit": "位"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists XsFlag as 小数位数 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-zangsu-20261109",
+      "source": "TDX(双命名源)",
+      "code": "Zangsu",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "Zangsu",
+        "meaning": "涨速（官方文档未注明计算窗口）",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists Zangsu as 涨速（官方文档未注明计算窗口） and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    },
+    {
+      "id": "tdx-snapshot-quote-zafpre3-20261109",
+      "source": "TDX(双命名源)",
+      "code": "ZAFPre3",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "ZAFPre3",
+        "meaning": "3 日涨幅",
+        "unit": "官方文档未注明"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The official TDX get_market_snapshot_batch contract lists ZAFPre3 as 3 日涨幅 and declares the field type as str. The contract does not specify a unit unless shown above. This verifies source semantics only; it does not claim this project captures the field or maps it to a business-level canonical attribute.",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      ]
+    }
+  ]
+}

@@ -1168,17 +1168,17 @@ class ZhbData:
 
             [0]  market           市场代码
             [1]  code             股票代码
-            [2]  report_period    财报期 (如 20260331 = 2026Q1)
-            [3]  eps              每股收益(元)
-            [4]  disclose_date    财报披露日
-            [5]  zt_date_recent   最近涨停日（⚠️ 旧误标 ex_date/除权除息日，dict §3 已证伪）
+            [2]  report_period    财报报告期截止日 (YYYYMMDD)
+            [3]  eps              报告期累计每股收益 (元/股；基本/稀释/扣非口径未区分)
+            [4]  disclose_date    财报预约披露日 (YYYYMMDD；不代表实际公告时间)
+            [5]  zt_date_recent   近2年最近涨停板日期（通达信官方 ZTDate_Recent）
             [10] dt_date_recent  最近跌停日（DTDate_Recent；2026-09-23 主数据 zhb_20260921.zip 解析实锤: 600519=20181029/000001=20150119/000002=20241009/000858=20200716/300750=空 全中；Gemini 终局候选值一致）
             [8]  shareholder_change_date 股东持股变动关联日期；可为交易日、区间截止日或协议签署日
             [9]  shareholder_change_shares_wan 股东持股变动数量(万股；正值增持/转入，负值减持/转出)
             [13] unlock_date      最新解禁日（Gemini 20260921 终局 + 字典实例 茅台 col14=48867.90万 互证）
             [14] unlock_shares_wan 最新解禁数量(万股)
-            [19] hg_date          回购预案公告日（RecentHGDate；TdxW 串池 `回购预案:上限%.2f亿元` 实锤，dict §3 ✅）
-            [20] hg_amount_yi     回购预案金额上限(亿元)（RecentHGAmo；同串池一锤定音，dict §3 ✅；V17.3.8 接线）
+            [19] hg_date          最近回购预案日（通达信官方 RecentHGDate；不代表实际公告时间）
+            [20] hg_amount_yi     回购预案金额上限(亿元；TdxW 二进制提示 `回购预案:上限%.2f亿元`；不声明公开字段码映射）
         """
         data = self.raw_files.get("tipinfo.dat", b"")
         if not data:
@@ -1215,7 +1215,7 @@ class ZhbData:
         return result
 
     def get_tip_info(self, code: str) -> Optional[Dict[str, Any]]:
-        """获取指定股票的财报日历与股东持股变动信息。"""
+        """获取指定股票的财报、涨跌停、股东持股变动与回购预案信息。"""
         return self.tip_info.get(code)
 
     # ── xgsg 新股申购 ──

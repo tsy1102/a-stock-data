@@ -36,6 +36,11 @@
 - [`research/20261108_zhb_tdxstat_slow_fields.md`](research/20261108_zhb_tdxstat_slow_fields.md) 与 [`adjudications/20261108_zhb_tdxstat_slow_fields.json`](adjudications/20261108_zhb_tdxstat_slow_fields.json)：按文件名数据日复核 11 个保留期 ZHB 样本，定案 `dividend_yield`、`employee_count` 两条路径为同源已验证字段的精确别名；不推断员工人数报告期或股息率公式。
 - [`research/20261108_zhb_tdxstat_metadata_aliases.md`](research/20261108_zhb_tdxstat_metadata_aliases.md) 与 [`adjudications/20261108_zhb_tdxstat_metadata_aliases.json`](adjudications/20261108_zhb_tdxstat_metadata_aliases.json)：按 2026-10-15 起保留的 11 个数据日期与 220 组去重股票日样本，确认 `tdxstat`/`tdxstat2` 代码、日期、市场别名及 `tdxstat2.change_mtd` 同源别名；不新增跨源映射。
 - [`research/20261108_zhb_tdxstat_semantic_corrections.md`](research/20261108_zhb_tdxstat_semantic_corrections.md) 与 [`adjudications/20261108_zhb_tdxstat_semantic_corrections.json`](adjudications/20261108_zhb_tdxstat_semantic_corrections.json)：根据 ZHB 解析器位置契约和 11 个保留数据日，纠正七项 `tdxstat` 已验证字段的旧语义/单位，并确认八项 `tdxstat`/`tdxstat2` 同源别名；区分上市后首次开板日期与限售股解禁日期，不新增跨源映射。
+- [`adjudications/20261109_zhb_tipinfo_financial_fields.md`](adjudications/20261109_zhb_tipinfo_financial_fields.md)：以 15 个保留期 ZHB 包的 84,815 行解析对应及三家发行人半年报、三季报和官方个股日历，定案 `report_period`、累计 `eps` 与预约 `disclose_date`；不推断 EPS 基本/稀释子口径，不将预约日当作实际公告时间，也不新增跨源映射。
+- [`adjudications/20261109_zhb_tipinfo_runtime_aliases.md`](adjudications/20261109_zhb_tipinfo_runtime_aliases.md)：以 15 个保留期 ZHB 包的 84,815 条逐行审计定案 `code`、`zt_date_recent`、`hg_date`、`hg_amount_yi` 与原始列别名；补齐日期/金额单位，按通达信官方快照契约收窄涨停与回购日期说明，不声称 `RecentHGAmo` 是官方公开字段映射。
+- [`adjudications/20261109_zhb_tipinfo_shareholder_columns.md`](adjudications/20261109_zhb_tipinfo_shareholder_columns.md)：以 15 个保留包、84,815 条逐行样本和三类公开权益变动公告，修正 `[8]/[9]` 被旧业绩预告解释遗留为 `disproved` 的状态错误；旧 `div_*` 别名仍保持证伪。
+- [`adjudications/20261109_tdx_snapshot_dates.md`](adjudications/20261109_tdx_snapshot_dates.md)：依据通达信官方 `get_market_snapshot_batch` 字段表定案 11 个日期字段的语义；记录均为字符串，但官方未注明日期格式，不补造项目采集或跨源映射。
+- [`adjudications/20261109_tdx_snapshot_quote_fields.md`](adjudications/20261109_tdx_snapshot_quote_fields.md)：依据通达信官方 `get_market_snapshot_batch` 字段表定案 21 个基础行情字段；保留文档未注明的单位和涨速窗口，不推断项目采集路径或跨源映射。
 
 ## 归档格式
 

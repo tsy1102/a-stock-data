@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "zhb-tipinfo-financial-fields-20261109",
+  "reviewed_on": "2026-11-09",
+  "data_floor": "2026-10-15",
+  "report": "docs/field_verification/adjudications/20261109_zhb_tipinfo_financial_fields.md",
+  "evidence_basis": "manual_public_data_semantic_adjudication",
+  "scope": {
+    "source": "ZHB-tipinfo",
+    "runtime_paths": ["report_period", "eps", "disclose_date"],
+    "raw_paths": ["[2]", "[3]", "[4]"],
+    "parser": "core/zhb_client.py::_parse_tipinfo",
+    "runtime_contract_changed": false,
+    "parser_cache_or_serialization_changed": false,
+    "sample_archives": 15,
+    "sample_rows": 84815,
+    "stocks_cross_checked": 3,
+    "report_periods_cross_checked": ["20260630", "20260930"],
+    "unresolved_subtype": "ZHB EPS does not distinguish basic, diluted, or adjusted EPS; sample values coincide."
+  },
+  "decisions": [
+    {
+      "id": "zhb-tipinfo-report-period-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "report_period",
+      "runtime_paths": ["report_period"],
+      "raw_alias": "[2]",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "report_period",
+        "meaning": "财报报告期截止日",
+        "unit": "YYYYMMDD"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The parser maps raw column [2] to report_period identically in all 84,815 rows from 15 retained archives. The 20260630 and 20260930 values for three issuers match their official reports' period-end dates. TDX official financial-data documentation separately defines tag_time as the report period. No alias mapping or cache semantics are changed.",
+      "same_source_alias_evidence": {
+        "path": "docs/field_verification/adjudications/20261109_zhb_tipinfo_alias_audit.csv",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "zhb-tipinfo-raw-col2-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "[2]",
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {"canonical": "[2]", "meaning": "财报期", "unit": ""},
+      "updated": {
+        "canonical": "[2]",
+        "meaning": "财报报告期截止日",
+        "unit": "YYYYMMDD"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "Corrects the incomplete label and missing date unit using exact parser-to-column equality across the retained archives and official issuer report periods."
+    },
+    {
+      "id": "zhb-tipinfo-eps-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "eps",
+      "runtime_paths": ["eps"],
+      "raw_alias": "[3]",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "eps",
+        "meaning": "报告期累计每股收益（基本/稀释/扣非口径未区分）",
+        "unit": "元/股"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The parser maps raw column [3] to eps identically in all 84,815 retained rows. For three issuers, values at report periods 20260630 and 20260930 exactly match the cumulative year-to-date per-share earnings shown in official interim and Q3 reports. TDX official documentation defines the financial-data category and FN1 basic EPS, but no exact raw-column-to-FN1 equivalence is asserted because the subtype is not distinguishable in the compared values.",
+      "same_source_alias_evidence": {
+        "path": "docs/field_verification/adjudications/20261109_zhb_tipinfo_alias_audit.csv",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "zhb-tipinfo-raw-col3-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "[3]",
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {"canonical": "[3]", "meaning": "每股收益", "unit": ""},
+      "updated": {
+        "canonical": "[3]",
+        "meaning": "报告期累计每股收益（基本/稀释/扣非口径未区分）",
+        "unit": "元/股"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "Corrects the generic EPS label and missing unit; the reported subtype remains explicitly unresolved."
+    },
+    {
+      "id": "zhb-tipinfo-disclose-date-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "disclose_date",
+      "runtime_paths": ["disclose_date"],
+      "raw_alias": "[4]",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "disclose_date",
+        "meaning": "财报预约披露日",
+        "unit": "YYYYMMDD"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "The parser maps raw column [4] to disclose_date in all 84,815 retained rows. Three issuer values for the 20260930 report period match Eastmoney's official appointment calendar. Kweichow Moutai's report was officially announced on 2026-10-30 16:00, before its 2026-10-31 appointment date, while the 2026-11-06 ZHB archive still contains 20261031. This disproves the actual-publication-date interpretation. Ping An Bank's appointment value matches the report date and is only a positive match, not a discriminator.",
+      "same_source_alias_evidence": {
+        "path": "docs/field_verification/adjudications/20261109_zhb_tipinfo_alias_audit.csv",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      },
+      "public_evidence": "docs/field_verification/adjudications/public_web/20261109_zhb_tipinfo_financial_fields.md"
+    },
+    {
+      "id": "zhb-tipinfo-raw-col4-20261109",
+      "source": "ZHB-tipinfo",
+      "code": "[4]",
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {"canonical": "[4]", "meaning": "财报披露日", "unit": ""},
+      "updated": {
+        "canonical": "[4]",
+        "meaning": "财报预约披露日",
+        "unit": "YYYYMMDD"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "Narrows the old generic label to the appointment-date semantics observed against official calendars; it is not the actual filing timestamp."
+    }
+  ],
+  "evidence": {
+    "archive_summary": {
+      "path": "docs/field_verification/adjudications/20261109_zhb_tipinfo_alias_audit.csv",
+      "sha256": "aa8fa6e2c4042599d8120c78eb339f951f4225b2199fcc0cccbde0e00da28096",
+      "rows": 15,
+      "stock_row_observations": 84815
+    },
+    "representative_samples": {
+      "path": "docs/field_verification/adjudications/20261109_zhb_tipinfo_samples.csv",
+      "sha256": "d71d4620cebe61acb97a96243d09a6d0f8862955b76dcf46cd8c1b5098be70a7",
+      "rows": 45,
+      "stocks": ["000001", "300750", "600519"]
+    },
+    "public_web_research": "docs/field_verification/adjudications/public_web/20261109_zhb_tipinfo_financial_fields.md",
+    "parser_source": "core/zhb_client.py::_parse_tipinfo"
+  }
+}

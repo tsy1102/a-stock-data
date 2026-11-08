@@ -36,3 +36,7 @@
 `_parse_tipinfo()` 改用 `shareholder_change_date` 与 `shareholder_change_shares_wan`；采集快照后续写入的新路径为 `stocks[code].tipinfo.shareholder_change_*`。项目内没有读取旧 `div_*` 键的有效消费者，ZHB 统计缓存也不缓存 `tipinfo`，无需升级缓存版本。
 
 `get_lng_report.py` 曾从 `get_zhb_single_stock_data()` 结果读取 `ex_date` 和 `div_date` 来决定是否打印不复权提示，但该合并结果只包含 `tdxstat`、`tdxstat2` 与 `report_date`，这两个键从未存在。现改为不复权兜底时直接说明窗口内若有除权除息，跨日比较可能偏差。
+
+## 后续状态（2026-11-09）
+
+本报告当时将 `[8]/[9]` 的旧“业绩预告”语义标为证伪；该状态后来被误写到原始来源字段当前状态上。基于 2026-10-15 起 15 个保留 ZHB 包的 84,815 条精确解析对应及既有公告核验，原始列 `[8]/[9]` 现已按本报告“当前定义”恢复为 `verified`。历史业绩预告解释仍保留为已证伪参考；`div_date`、`div_amount` 等旧别名继续证伪。详见 [`20261109_zhb_tipinfo_shareholder_columns.md`](adjudications/20261109_zhb_tipinfo_shareholder_columns.md)。

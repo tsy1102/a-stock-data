@@ -152,7 +152,7 @@ def zhb_field_safe(
 
 
 def get_zhb_tip_info(code: str) -> Optional[Dict[str, Any]]:
-    """V9.6: 获取个股财报日历信息（财报期/EPS/披露日/除权日/分红日）。"""
+    """V9.6: 获取个股财报信息（报告期/EPS/预约披露日及股东变动字段）。"""
     try:
         from core.zhb_client import get_tip_info
 

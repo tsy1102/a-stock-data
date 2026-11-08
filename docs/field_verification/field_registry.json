@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-08",
+    "updated": "2026-11-09",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -27,8 +27,8 @@
       "status_conflict": 55,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1431,
-      "verified": 1094,
+      "unverified": 1429,
+      "verified": 1096,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_source_contract": 103
@@ -10591,11 +10591,11 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "canonical": "change_30d_return",
-      "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "status_raw": "E3 follow-up (2026-11-08)",
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
       "status": "verified",
       "source_statuses": {
         "ZHB-tdxstat2": "verified"
@@ -10609,19 +10609,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
-      "canonical": "",
-      "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+      "canonical": "change_30bar_lag30_return",
+      "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "status_raw": "E3 review; unresolved",
-      "status": "unverified",
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change_5d",
@@ -35570,11 +35568,11 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "canonical": "change_30d_return",
-      "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "status_raw": "E3 follow-up (2026-11-08)",
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
       "status": "verified",
       "source_statuses": {
         "ZHB-tdxstat2": "verified"
@@ -35588,19 +35586,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
-      "canonical": "",
-      "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+      "canonical": "change_30bar_lag30_return",
+      "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "status_raw": "E3 review; unresolved",
-      "status": "unverified",
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "stat2.change_mtd",
@@ -104518,11 +104514,12 @@
       "identity": "ZHB-tdxstat2::change_30k_bar",
       "path": "change_30k_bar",
       "canonical": "change_30d_return",
-      "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "sections": [
-        "2026-11-08 tdxstat2 metadata follow-up"
+        "2026-11-08 tdxstat2 metadata follow-up",
+        "2026-11-09 tdxstat2 30-bar formula adjudication"
       ],
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
@@ -104531,7 +104528,7 @@
           "verified"
         ],
         "reference_status_raw": [
-          "E3 follow-up (2026-11-08)"
+          "E3 public K-line formula adjudication (2026-11-09)"
         ],
         "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
@@ -104540,10 +104537,10 @@
         "values": [
           "verified"
         ],
-        "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar",
+        "adjudication_evidence_id": "zhb-tdxstat2-30bar-formula-20261109:change_30k_bar",
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
-        "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+        "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659"
       },
       "reference_evidence": [
         {
@@ -104556,6 +104553,18 @@
           "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar",
           "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
           "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+          "evidence_level": "E3"
+        },
+        {
+          "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+          "canonical": "change_30d_return",
+          "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
+          "unit": "%",
+          "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-30bar-formula-20261109:change_30k_bar",
+          "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+          "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659",
           "evidence_level": "E3"
         }
       ],
@@ -104573,47 +104582,90 @@
         "section": ""
       },
       "superseded_status_evidence": {
-        "status": "unverified",
-        "status_resolution": "registry_status_only_single_source",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
+        "status": "verified",
+        "status_resolution": "manual_public_data_semantic_adjudication",
+        "canonical": "change_30d_return",
+        "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+        "unit": "%",
+        "section": "2026-11-08 tdxstat2 metadata follow-up",
+        "status_raw": "E3 follow-up (2026-11-08)",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "E3 follow-up (2026-11-08)"
+          ],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "ZHB-tdxstat2"
+          ],
+          "values": [
+            "verified"
+          ],
+          "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+          "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        },
+        "reference_evidence": [
+          {
+            "section": "2026-11-08 tdxstat2 metadata follow-up",
+            "canonical": "change_30d_return",
+            "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+            "unit": "%",
+            "status_raw": "E3 follow-up (2026-11-08)",
+            "status": "verified",
+            "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar",
+            "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+            "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+            "evidence_level": "E3"
+          }
+        ],
+        "previous_superseded_status_evidence": {
+          "status": "unverified",
+          "status_resolution": "registry_status_only_single_source",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        }
       },
-      "status_raw": "E3 follow-up (2026-11-08)"
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)"
     },
     {
       "source": "ZHB-tdxstat2",
       "code": "change_30k_bar_ref",
       "identity": "ZHB-tdxstat2::change_30k_bar_ref",
       "path": "change_30k_bar_ref",
-      "canonical": "",
-      "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+      "canonical": "change_30bar_lag30_return",
+      "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "sections": [
-        "2026-11-08 tdxstat2 metadata follow-up"
+        "2026-11-08 tdxstat2 metadata follow-up",
+        "2026-11-09 tdxstat2 30-bar formula adjudication"
       ],
-      "status": "unverified",
+      "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
-          "unverified"
+          "verified"
         ],
         "reference_status_raw": [
-          "E3 review; unresolved"
+          "E3 public K-line formula adjudication (2026-11-09)"
         ],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
+          "verified"
         ],
-        "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar_ref",
+        "adjudication_evidence_id": "zhb-tdxstat2-30bar-formula-20261109:change_30k_bar_ref",
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
-        "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+        "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659"
       },
       "reference_evidence": [
         {
@@ -104626,6 +104678,18 @@
           "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar_ref",
           "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
           "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+          "evidence_level": "E3"
+        },
+        {
+          "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+          "canonical": "change_30bar_lag30_return",
+          "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
+          "unit": "%",
+          "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-30bar-formula-20261109:change_30k_bar_ref",
+          "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+          "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659",
           "evidence_level": "E3"
         }
       ],
@@ -104644,13 +104708,55 @@
       },
       "superseded_status_evidence": {
         "status": "unverified",
-        "status_resolution": "registry_status_only_single_source",
+        "status_resolution": "manual_public_data_semantic_adjudication",
         "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
+        "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+        "unit": "%",
+        "section": "2026-11-08 tdxstat2 metadata follow-up",
+        "status_raw": "E3 review; unresolved",
+        "status_evidence": {
+          "reference_statuses": [
+            "unverified"
+          ],
+          "reference_status_raw": [
+            "E3 review; unresolved"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "ZHB-tdxstat2"
+          ],
+          "values": [
+            "unverified"
+          ],
+          "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar_ref",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+          "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        },
+        "reference_evidence": [
+          {
+            "section": "2026-11-08 tdxstat2 metadata follow-up",
+            "canonical": "",
+            "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+            "unit": "%",
+            "status_raw": "E3 review; unresolved",
+            "status": "unverified",
+            "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:change_30k_bar_ref",
+            "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+            "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+            "evidence_level": "E3"
+          }
+        ],
+        "previous_superseded_status_evidence": {
+          "status": "unverified",
+          "status_resolution": "registry_status_only_single_source",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        }
       },
-      "status_raw": "E3 review; unresolved"
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)"
     },
     {
       "source": "ZHB-tdxstat2",
@@ -106572,12 +106678,13 @@
       "identity": "ZHB-tdxstat2::stat2.change_30k_bar",
       "path": "stat2.change_30k_bar",
       "canonical": "change_30d_return",
-      "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+      "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "sections": [
         "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-        "2026-11-08 tdxstat2 metadata follow-up"
+        "2026-11-08 tdxstat2 metadata follow-up",
+        "2026-11-09 tdxstat2 30-bar formula adjudication"
       ],
       "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
@@ -106586,7 +106693,7 @@
           "verified"
         ],
         "reference_status_raw": [
-          "E3 follow-up (2026-11-08)"
+          "E3 public K-line formula adjudication (2026-11-09)"
         ],
         "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
@@ -106595,10 +106702,10 @@
         "values": [
           "verified"
         ],
-        "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar",
+        "adjudication_evidence_id": "zhb-tdxstat2-30bar-formula-20261109:stat2.change_30k_bar",
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
-        "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+        "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659"
       },
       "reference_evidence": [
         {
@@ -106611,6 +106718,18 @@
           "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar",
           "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
           "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+          "evidence_level": "E3"
+        },
+        {
+          "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+          "canonical": "change_30d_return",
+          "meaning": "30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
+          "unit": "%",
+          "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-30bar-formula-20261109:stat2.change_30k_bar",
+          "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+          "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659",
           "evidence_level": "E3"
         }
       ],
@@ -106629,57 +106748,100 @@
       },
       "superseded_status_evidence": {
         "status": "verified",
-        "status_resolution": "matched",
-        "canonical": "stat2.change_30k_bar",
-        "meaning": "30分钟K线涨跌",
-        "unit": "-",
-        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+        "status_resolution": "manual_public_data_semantic_adjudication",
+        "canonical": "change_30d_return",
+        "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+        "unit": "%",
+        "section": "2026-11-08 tdxstat2 metadata follow-up",
+        "status_raw": "E3 follow-up (2026-11-08)",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "E3 follow-up (2026-11-08)"
+          ],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "ZHB-tdxstat2"
+          ],
+          "values": [
+            "verified"
+          ],
+          "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+          "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        },
         "reference_evidence": [
           {
-            "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-            "canonical": "stat2.change_30k_bar",
-            "meaning": "30分钟K线涨跌",
-            "unit": "-",
-            "status_raw": "✅",
-            "status": "verified"
+            "section": "2026-11-08 tdxstat2 metadata follow-up",
+            "canonical": "change_30d_return",
+            "meaning": "近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。",
+            "unit": "%",
+            "status_raw": "E3 follow-up (2026-11-08)",
+            "status": "verified",
+            "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar",
+            "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+            "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+            "evidence_level": "E3"
           }
-        ]
+        ],
+        "previous_superseded_status_evidence": {
+          "status": "verified",
+          "status_resolution": "matched",
+          "canonical": "stat2.change_30k_bar",
+          "meaning": "30分钟K线涨跌",
+          "unit": "-",
+          "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+          "reference_evidence": [
+            {
+              "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+              "canonical": "stat2.change_30k_bar",
+              "meaning": "30分钟K线涨跌",
+              "unit": "-",
+              "status_raw": "✅",
+              "status": "verified"
+            }
+          ]
+        }
       },
-      "status_raw": "E3 follow-up (2026-11-08)"
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)"
     },
     {
       "source": "ZHB-tdxstat2",
       "code": "stat2.change_30k_bar_ref",
       "identity": "ZHB-tdxstat2::stat2.change_30k_bar_ref",
       "path": "stat2.change_30k_bar_ref",
-      "canonical": "",
-      "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+      "canonical": "change_30bar_lag30_return",
+      "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
       "unit": "%",
-      "section": "2026-11-08 tdxstat2 metadata follow-up",
+      "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
       "sections": [
         "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-        "2026-11-08 tdxstat2 metadata follow-up"
+        "2026-11-08 tdxstat2 metadata follow-up",
+        "2026-11-09 tdxstat2 30-bar formula adjudication"
       ],
-      "status": "unverified",
+      "status": "verified",
       "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
-          "unverified"
+          "verified"
         ],
         "reference_status_raw": [
-          "E3 review; unresolved"
+          "E3 public K-line formula adjudication (2026-11-09)"
         ],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
+          "verified"
         ],
-        "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar_ref",
+        "adjudication_evidence_id": "zhb-tdxstat2-30bar-formula-20261109:stat2.change_30k_bar_ref",
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
-        "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+        "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659"
       },
       "reference_evidence": [
         {
@@ -106692,6 +106854,18 @@
           "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar_ref",
           "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
           "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+          "evidence_level": "E3"
+        },
+        {
+          "section": "2026-11-09 tdxstat2 30-bar formula adjudication",
+          "canonical": "change_30bar_lag30_return",
+          "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。",
+          "unit": "%",
+          "status_raw": "E3 public K-line formula adjudication (2026-11-09)",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-30bar-formula-20261109:stat2.change_30k_bar_ref",
+          "evidence_file": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.json",
+          "evidence_sha256": "338560e758a6b483d4af0c4866cb9e276a1dd4206bb1c881cba42e4c0b31a659",
           "evidence_level": "E3"
         }
       ],
@@ -106709,24 +106883,66 @@
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
       },
       "superseded_status_evidence": {
-        "status": "verified",
-        "status_resolution": "matched",
-        "canonical": "stat2.change_30k_bar_ref",
-        "meaning": "30分钟K线涨跌",
-        "unit": "-",
-        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+        "status": "unverified",
+        "status_resolution": "manual_public_data_semantic_adjudication",
+        "canonical": "",
+        "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+        "unit": "%",
+        "section": "2026-11-08 tdxstat2 metadata follow-up",
+        "status_raw": "E3 review; unresolved",
+        "status_evidence": {
+          "reference_statuses": [
+            "unverified"
+          ],
+          "reference_status_raw": [
+            "E3 review; unresolved"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "ZHB-tdxstat2"
+          ],
+          "values": [
+            "unverified"
+          ],
+          "adjudication_evidence_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar_ref",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+          "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98"
+        },
         "reference_evidence": [
           {
-            "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-            "canonical": "stat2.change_30k_bar_ref",
-            "meaning": "30分钟K线涨跌",
-            "unit": "-",
-            "status_raw": "✅",
-            "status": "verified"
+            "section": "2026-11-08 tdxstat2 metadata follow-up",
+            "canonical": "",
+            "meaning": "候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。",
+            "unit": "%",
+            "status_raw": "E3 review; unresolved",
+            "status": "unverified",
+            "adjudication_id": "zhb-tdxstat2-metadata-followup-20261108:stat2.change_30k_bar_ref",
+            "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_metadata_followup.json",
+            "evidence_sha256": "fb25839d0cd8e6a539935858439098ad8d1e92c1f069a0820c21f5a360554a98",
+            "evidence_level": "E3"
           }
-        ]
+        ],
+        "previous_superseded_status_evidence": {
+          "status": "verified",
+          "status_resolution": "matched",
+          "canonical": "stat2.change_30k_bar_ref",
+          "meaning": "30分钟K线涨跌",
+          "unit": "-",
+          "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+          "reference_evidence": [
+            {
+              "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+              "canonical": "stat2.change_30k_bar_ref",
+              "meaning": "30分钟K线涨跌",
+              "unit": "-",
+              "status_raw": "✅",
+              "status": "verified"
+            }
+          ]
+        }
       },
-      "status_raw": "E3 review; unresolved"
+      "status_raw": "E3 public K-line formula adjudication (2026-11-09)"
     },
     {
       "source": "ZHB-tdxstat2",

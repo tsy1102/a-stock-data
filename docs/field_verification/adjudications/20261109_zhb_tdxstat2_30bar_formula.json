@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "zhb-tdxstat2-30bar-formula-20261109",
+  "reviewed_on": "2026-11-09",
+  "data_floor": "2026-10-15",
+  "report": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula.md",
+  "scope": {
+    "source_identity": [
+      "ZHB-tdxstat2::change_30k_bar",
+      "ZHB-tdxstat2::stat2.change_30k_bar",
+      "ZHB-tdxstat2::change_30k_bar_ref",
+      "ZHB-tdxstat2::stat2.change_30k_bar_ref"
+    ],
+    "purpose": "Determine the precise daily-bar return formula and reference-bar offset of tdxstat2 columns 19 and 20 using date-aligned public K-line evidence.",
+    "runtime_contract_changed": false,
+    "parser_cache_or_serialization_changed": false,
+    "sample_capture_folders": [
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261105",
+      "20261106"
+    ],
+    "sample_zhb_data_dates": [
+      "20261030",
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261106"
+    ],
+    "sample_rows": 100,
+    "sample_stocks": 20,
+    "excluded_samples": [],
+    "unexplained_exception": "All five outliers for each candidate formula are 600825; no cause is established."
+  },
+  "decisions": [
+    {
+      "source": "ZHB-tdxstat2",
+      "registry_paths": [
+        "change_30k_bar",
+        "stat2.change_30k_bar"
+      ],
+      "runtime_paths": [
+        "full.change_30k_bar",
+        "stat2.change_30k_bar"
+      ],
+      "canonical": "change_30d_return",
+      "meaning": "30 根收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)。20 只股票、5 个数据日的前复权对照中 95/100 组误差不超过 0.01 个百分点；600825 的 5 组偏差仍未解释。",
+      "unit": "%",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "formula": "100 * (close[t] / close[t-29] - 1)",
+      "supersedes": "Refines the already verified near-30-bar description by fixing the reference close at lag 29; the old r/median-difference notes are historical, not the definition."
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "registry_paths": [
+        "change_30k_bar_ref",
+        "stat2.change_30k_bar_ref"
+      ],
+      "runtime_paths": [
+        "full.change_30k_bar_ref",
+        "stat2.change_30k_bar_ref"
+      ],
+      "canonical": "change_30bar_lag30_return",
+      "meaning": "目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)。20 只股票、5 个数据日的前复权对照中 95/100 组误差不超过 0.01 个百分点；600825 的 5 组偏差仍未解释。",
+      "unit": "%",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "formula": "100 * (close[t] / close[t-30] - 1)",
+      "supersedes": "Resolves the prior unverified formula candidate. It does not mean the same baseline as change_30k_bar and creates no cross-source mapping."
+    }
+  ],
+  "evidence": {
+    "evidence_level": "E3",
+    "sample_csv": {
+      "path": "docs/field_verification/adjudications/20261109_zhb_tdxstat2_30bar_formula_samples.csv",
+      "sha256": "6b882624bf7dfd6fbbecfccca4ef040d5d7e03acb39f496010700305ae54191d",
+      "rows": 100,
+      "fields": 20,
+      "data_dates": [
+        "20261030",
+        "20261102",
+        "20261103",
+        "20261104",
+        "20261106"
+      ]
+    },
+    "public_kline_source": {
+      "provider": "Eastmoney public K-line endpoint",
+      "url": "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+      "request_parameters": {
+        "secid": "market-specific security ID for each stock",
+        "klt": "101",
+        "fqt": "1 for front-adjusted comparison; 0 for unadjusted sensitivity check",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+        "end": "20500101",
+        "lmt": "150"
+      },
+      "date_field": "f51",
+      "close_field": "f53",
+      "response_file_written_at": "2026-11-08T22:58:38+08:00",
+      "request_policy": "Sequential requests through the project's rate-limited _quick_request wrapper.",
+      "adjustment_note": "The Eastmoney quote page displayed 前复权. This is the comparison series that best fits the sample; it does not prove the internal adjustment basis of the ZHB source."
+    },
+    "official_formula_reference": {
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-tdxpy.html",
+      "checked_on": "2026-11-09",
+      "supports": "The official formula example expresses percentage change as (C - REF(C, 1)) / REF(C, 1) * 100."
+    },
+    "official_kline_reference": {
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10g60jt68sc.html",
+      "checked_on": "2026-11-09",
+      "supports": "The K-line interface documents Close and dividend_type values none/front/back; it supports the price-series and adjustment terminology, but does not document these ZHB columns directly."
+    },
+    "eastmoney_quote_reference": {
+      "url": "https://quote.eastmoney.com/sh600825.html",
+      "checked_on": "2026-11-09",
+      "supports": "The 600825 quote page identifies 新华传媒 and showed the 前复权 K-line selection during review."
+    },
+    "formula_comparison": {
+      "tolerance": "absolute error <= 0.01 percentage points",
+      "lag29": {
+        "formula": "100 * (close[t] / close[t-29] - 1)",
+        "front_adjusted_matches": 95,
+        "total": 100,
+        "matches_within_0_005_percentage_points": 95,
+        "median_absolute_error_percentage_points": 0.0022504662,
+        "maximum_matching_error_percentage_points": 0.0049773756,
+        "unadjusted_matches": 85,
+        "exceptions": [
+          {"date": "20261030", "stock_code": "600825", "zhb_value": "151.6", "formula_value": "166.6666666667", "absolute_error_percentage_points": "15.0666666667"},
+          {"date": "20261102", "stock_code": "600825", "zhb_value": "134.84", "formula_value": "148.4063745020", "absolute_error_percentage_points": "13.5663745020"},
+          {"date": "20261103", "stock_code": "600825", "zhb_value": "131.83", "formula_value": "143.2806324111", "absolute_error_percentage_points": "11.4506324111"},
+          {"date": "20261104", "stock_code": "600825", "zhb_value": "128.44", "formula_value": "140.1980198020", "absolute_error_percentage_points": "11.7580198020"},
+          {"date": "20261106", "stock_code": "600825", "zhb_value": "143.69", "formula_value": "144.1509433962", "absolute_error_percentage_points": "0.4609433962"}
+        ]
+      },
+      "lag30": {
+        "formula": "100 * (close[t] / close[t-30] - 1)",
+        "front_adjusted_matches": 95,
+        "total": 100,
+        "matches_within_0_005_percentage_points": 95,
+        "median_absolute_error_percentage_points": 0.00281845575,
+        "maximum_matching_error_percentage_points": 0.0049651972,
+        "unadjusted_matches": 84,
+        "exceptions": [
+          {"date": "20261030", "stock_code": "600825", "zhb_value": "151.6", "formula_value": "173.7704918033", "absolute_error_percentage_points": "22.1704918033"},
+          {"date": "20261102", "stock_code": "600825", "zhb_value": "134.84", "formula_value": "148.9021956088", "absolute_error_percentage_points": "14.0621956088"},
+          {"date": "20261103", "stock_code": "600825", "zhb_value": "131.83", "formula_value": "145.2191235060", "absolute_error_percentage_points": "13.3891235060"},
+          {"date": "20261104", "stock_code": "600825", "zhb_value": "128.44", "formula_value": "139.7233201581", "absolute_error_percentage_points": "11.2833201581"},
+          {"date": "20261106", "stock_code": "600825", "zhb_value": "143.69", "formula_value": "150.2901353965", "absolute_error_percentage_points": "6.6001353965"}
+        ]
+      }
+    },
+    "runtime_alias_comparison": {
+      "full_stat2_equal_rows": 100,
+      "total_rows": 100,
+      "columns": ["change_30k_bar", "change_30k_bar_ref"]
+    },
+    "interpretation_limits": [
+      "The five 600825 exceptions remain unresolved; no cause is inferred.",
+      "The comparison establishes the observed formula and baseline offsets, not the ZHB provider's internal K-line provider or adjustment configuration.",
+      "The prior 0/20 approximate ZAFPre30 comparison remains valid for that dataset and does not establish a mapping."
+    ]
+  }
+}

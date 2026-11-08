@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2607；日常来源路径 2463：unverified 1311、candidate 1、conflict 73、disproved 8；历史来源路径 144。
+> 注册字段路径 2607；日常来源路径 2463：unverified 1309、candidate 1、conflict 73、disproved 8；历史来源路径 144。
 > 另有 178 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -16,7 +16,7 @@
 | 分类 | 数量 |
 |:--|--:|
 | 含义栏为空/占位 | 1125 |
-| 含义栏有文本（仍未验证） | 186 |
+| 含义栏有文本（仍未验证） | 184 |
 
 ### 历史状态证据的解析结果
 
@@ -24,7 +24,6 @@
 |:--|--:|:--|
 | `aggregate_status_scope_unresolved` | 396 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
-| `manual_public_data_semantic_adjudication` | 2 | 按注册表原始状态判定代码保留 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
@@ -115,7 +114,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1311）
+## 三、待破解字段（1309）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -574,9 +573,7 @@
 | ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat2 | `change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | % | 含义栏有文本（仍未验证） | manual_public_data_semantic_adjudication | 2026-11-08 tdxstat2 metadata follow-up |
 | ZHB-tdxstat2 | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat2 | `stat2.change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | % | 含义栏有文本（仍未验证） | manual_public_data_semantic_adjudication | 2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕；2026-11-08 tdxstat2 metadata follow-up |
 | ZHB-tipinfo | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tipinfo | `[17]` | [17] | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
 | ZHB-tipinfo | `[18]` | [18] | 恒空占位符 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |

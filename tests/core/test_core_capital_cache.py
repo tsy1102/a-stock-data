@@ -76,7 +76,7 @@ def test_schema_mismatch_rebuild(cap_module, monkeypatch):
 
     def _fake_fetch(code):
         captured["fetched"] = code
-        return {"total_shares": 100.0, "float_shares": 50.0, "updated_at": "2026-08-11"}
+        return {"total_shares": 100.0, "float_shares": 50.0, "updated_at": _days_ago(1)}
 
     monkeypatch.setattr(cc, "_fetch_share_capital", _fake_fetch)
     r = cc.get_share_capital("000001")

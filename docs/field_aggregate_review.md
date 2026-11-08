@@ -3626,8 +3626,8 @@
 | ZHB-tdxstat | `streak_days` | streak_days | 连涨/连跌天数（正值为连涨，负值为连跌） | `verified` |
 | ZHB-tdxstat2 | `[13]` | [13] | 通达信板块归属(881=行业板块稳定 / 880=概念·风格板块动态) | `verified` |
 | ZHB-tdxstat2 | `change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
-| ZHB-tdxstat2 | `change_30k_bar` | change_30d_return | 近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
-| ZHB-tdxstat2 | `change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | `unverified` |
+| ZHB-tdxstat2 | `change_30k_bar` | change_30d_return | 30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。 | `verified` |
+| ZHB-tdxstat2 | `change_30k_bar_ref` | change_30bar_lag30_return | 目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。 | `verified` |
 | ZHB-tdxstat2 | `high_52w` | stat2.high_52w | 52周最高价；full.high_52w 是 stat2.high_52w 的直接合并别名。 | `verified` |
 | ZHB-tdxstat2 | `industry_code` | tdx_board_code | 当日通达信板块归属代码；样本包含行业类与主题/风格类板块，不是行业专属代码。 | `verified` |
 | ZHB-tdxstat2 | `main_net_buy_amount` | [14] | 当日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
@@ -3635,8 +3635,8 @@
 | ZHB-tdxstat2 | `main_net_buy_hands` | [9] | 当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
 | ZHB-tdxstat2 | `main_net_buy_hands_1d` | [10] | 前一交易日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | `verified` |
 | ZHB-tdxstat2 | `stat2.change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
-| ZHB-tdxstat2 | `stat2.change_30k_bar` | change_30d_return | 近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
-| ZHB-tdxstat2 | `stat2.change_30k_bar_ref` | — | 候选字段与近30根日K线滚动涨跌幅高度相关；公式、基准和期间细节未确定。 | `unverified` |
+| ZHB-tdxstat2 | `stat2.change_30k_bar` | change_30d_return | 30 个收盘价样本的累计涨跌幅，以目标数据日之前第 29 根日 K 收盘价为基准：100 × (C[t] / C[t-29] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。 | `verified` |
+| ZHB-tdxstat2 | `stat2.change_30k_bar_ref` | change_30bar_lag30_return | 目标数据日收盘价相对之前第 30 根日 K 收盘价的累计涨跌幅：100 × (C[t] / C[t-30] - 1)；前复权公开日 K 对照 95/100 组误差不超过 0.01 个百分点，600825 的五组偏差未解释。 | `verified` |
 | ZHB-tdxstat2 | `stat2.industry_code` | tdx_board_code | 当日通达信板块归属代码；样本包含行业类与主题/风格类板块，不是行业专属代码。 | `verified` |
 | ZHB-tdxstat2 | `stat2.main_net_buy_amount` | [14] | 当日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |
 | ZHB-tdxstat2 | `stat2.main_net_buy_amount_1d` | [15] | 前一交易日开盘集合竞价成交额；历史兼容键，不表示主力净流入额。 | `verified` |

@@ -233,14 +233,17 @@ def get_zhb_amount_wan(code: str) -> Optional[float]:
 
 
 def get_zhb_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
-    """V10.3: 获取主力资金流向数据。
+    """获取 ZHB 竞价字段（沿用历史兼容函数名和返回键名）。
+
+    返回键 ``main_net_buy_*`` 是历史遗留命名，实际表示开盘集合竞价量/额，
+    不能用于解释主力净买入或主力资金净流入。
 
     Returns:
         {
-            "main_net_buy_hands": float,       # T日主力净买入量(手)
-            "main_net_buy_hands_1d": float,    # T-1日主力净买入量(手)
-            "main_net_buy_amount": float,      # T日主力净流入额(万元)
-            "main_net_buy_amount_1d": float,   # T-1日主力净流入额(万元)
+            "main_net_buy_hands": float,       # T日开盘集合竞价成交量(手)
+            "main_net_buy_hands_1d": float,    # 前一交易日开盘集合竞价成交量(手)
+            "main_net_buy_amount": float,      # T日开盘集合竞价成交额(万元)
+            "main_net_buy_amount_1d": float,   # 前一交易日开盘集合竞价成交额(万元)
         }
         None if zhb不可用
     """

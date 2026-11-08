@@ -5833,7 +5833,7 @@
       "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
@@ -5841,7 +5841,6 @@
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -5955,7 +5954,7 @@
       "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "unverified",
         "腾讯(qt.gtimg)": "verified"
@@ -5988,7 +5987,7 @@
       "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
@@ -5996,7 +5995,6 @@
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -7769,7 +7767,7 @@
       "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
@@ -7778,7 +7776,6 @@
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -8212,13 +8209,15 @@
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -8237,13 +8236,15 @@
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "verified",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -25834,20 +25835,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[14]",
+      "meaning": "与原始列 [14] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "main_net_buy_amount_1d",
@@ -25855,20 +25853,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[15]",
+      "meaning": "与原始列 [15] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "main_net_buy_hands",
@@ -25884,13 +25879,15 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "disproved",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -25899,20 +25896,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[10]",
+      "meaning": "与原始列 [10] 同值的历史兼容键，不代表主力净买入手数",
+      "unit": "手",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "main_pct",
@@ -35499,10 +35493,10 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "canonical": "stat2.amount",
-      "meaning": "成交额",
-      "unit": "元",
+      "meaning": "当日总成交额",
+      "unit": "万元",
       "status_raw": "✅ L1",
       "status": "verified",
       "source_statuses": {
@@ -35517,10 +35511,10 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "canonical": "stat2.amount_1d",
-      "meaning": "成交额",
-      "unit": "元",
+      "meaning": "前一交易日总成交额",
+      "unit": "万元",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -35535,10 +35529,10 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "canonical": "stat2.amount_2d",
-      "meaning": "成交额",
-      "unit": "元",
+      "meaning": "前第二交易日总成交额",
+      "unit": "万元",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -35733,14 +35727,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.main_net_buy_amount",
-      "meaning": "主力净流入额",
-      "unit": "元",
-      "status_raw": "✅ L1",
-      "status": "verified",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[14]",
+      "meaning": "与原始列 [14] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35751,14 +35745,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.main_net_buy_amount_1d",
-      "meaning": "主力净流入额",
-      "unit": "元",
-      "status_raw": "✅",
-      "status": "verified",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[15]",
+      "meaning": "与原始列 [15] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35769,14 +35763,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.main_net_buy_hands",
-      "meaning": "主力净流入手数",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[9]",
+      "meaning": "与原始列 [9] 同值的历史兼容键，不代表主力净买入手数",
       "unit": "手",
-      "status_raw": "✅",
-      "status": "verified",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35787,14 +35781,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.main_net_buy_hands_1d",
-      "meaning": "主力净流入手数",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[10]",
+      "meaning": "与原始列 [10] 同值的历史兼容键，不代表主力净买入手数",
       "unit": "手",
-      "status_raw": "✅",
-      "status": "verified",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35823,14 +35817,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.zt_seal_amount",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "status_raw": "✅",
-      "status": "verified",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[4]",
+      "meaning": "与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35841,14 +35835,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.zt_seal_amount_1d",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "status_raw": "✅",
-      "status": "verified",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[6]",
+      "meaning": "与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -35859,14 +35853,14 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
-      "canonical": "stat2.zt_seal_amount_2d",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "status_raw": "✅",
-      "status": "verified",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[8]",
+      "meaning": "与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "verified"
+        "ZHB-tdxstat2": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -40610,20 +40604,17 @@
       "sources": [
         "ZHB-tdxstat2"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "canonical": "[4]",
+      "meaning": "与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified"
+        "ZHB-tdxstat2": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zt_seal_amount_1d",
@@ -40639,13 +40630,15 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "disproved",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -40662,13 +40655,15 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "ZHB-tdxstat2": "unverified",
+        "ZHB-tdxstat2": "disproved",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -100236,14 +100231,15 @@
       "identity": "ZHB-tdxstat2::[10]",
       "path": "[10]",
       "canonical": "[10]",
-      "meaning": "待破解",
+      "meaning": "前一交易日开盘集合竞价成交量",
       "unit": "手",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -100257,16 +100253,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[10]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[10]",
-          "meaning": "待破解",
+          "meaning": "前一交易日开盘集合竞价成交量",
           "unit": "手",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[10]",
+          "meaning": "前一交易日开盘集合竞价成交量",
+          "unit": "手",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -100285,7 +100300,60 @@
         "meaning": "股息率 (%) = 官方 DYRatio",
         "unit": "手",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "[10]",
+        "meaning": "待破解",
+        "unit": "手",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[10]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -100476,14 +100544,15 @@
       "identity": "ZHB-tdxstat2::[14]",
       "path": "[14]",
       "canonical": "[14]",
-      "meaning": "待破解",
+      "meaning": "当日开盘集合竞价成交额",
       "unit": "万元",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -100497,16 +100566,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[14]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[14]",
-          "meaning": "待破解",
+          "meaning": "当日开盘集合竞价成交额",
           "unit": "万元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[14]",
+          "meaning": "当日开盘集合竞价成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -100525,7 +100613,60 @@
         "meaning": "扣非净利润 (万元) = 官方 KfEarnMoney",
         "unit": "万元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "[14]",
+        "meaning": "待破解",
+        "unit": "万元",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[14]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -100533,14 +100674,15 @@
       "identity": "ZHB-tdxstat2::[15]",
       "path": "[15]",
       "canonical": "[15]",
-      "meaning": "待破解",
+      "meaning": "前一交易日开盘集合竞价成交额",
       "unit": "万元",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -100554,16 +100696,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[15]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[15]",
-          "meaning": "待破解",
+          "meaning": "前一交易日开盘集合竞价成交额",
           "unit": "万元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[15]",
+          "meaning": "前一交易日开盘集合竞价成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -100582,7 +100743,60 @@
         "status": "conflict",
         "status_raw": "",
         "unit": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "[15]",
+        "meaning": "待破解",
+        "unit": "万元",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[15]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -101078,14 +101292,15 @@
       "identity": "ZHB-tdxstat2::[4]",
       "path": "[4]",
       "canonical": "[4]",
-      "meaning": "limit_up_down_seal: 封单额（万元，涨停为正/跌停为负）",
-      "unit": "float",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "meaning": "当日涨跌停封单额（涨停为正，跌停为负）",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -101103,16 +101318,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[4]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[4]",
-          "meaning": "limit_up_down_seal: 封单额（万元，涨停为正/跌停为负）",
-          "unit": "float",
+          "meaning": "当日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[4]",
+          "meaning": "当日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -101131,7 +101365,60 @@
         "meaning": "数据快照日期",
         "unit": "float",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "[4]",
+        "meaning": "limit_up_down_seal: 封单额（万元，涨停为正/跌停为负）",
+        "unit": "float",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[4]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -101200,14 +101487,15 @@
       "identity": "ZHB-tdxstat2::[6]",
       "path": "[6]",
       "canonical": "[6]",
-      "meaning": "昨日封单额（Col[4] 滚动滞后值）",
-      "unit": "float",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "meaning": "前一交易日涨跌停封单额（涨停为正，跌停为负）",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -101225,16 +101513,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[6]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[6]",
-          "meaning": "昨日封单额（Col[4] 滚动滞后值）",
-          "unit": "float",
+          "meaning": "前一交易日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[6]",
+          "meaning": "前一交易日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -101253,7 +101560,60 @@
         "meaning": "T 日涨跌幅 (%)",
         "unit": "float",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "[6]",
+        "meaning": "昨日封单额（Col[4] 滚动滞后值）",
+        "unit": "float",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[6]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -101322,14 +101682,15 @@
       "identity": "ZHB-tdxstat2::[8]",
       "path": "[8]",
       "canonical": "[8]",
-      "meaning": "前日封单额（Col[4] 二次滚动滞后）",
-      "unit": "float",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "meaning": "前第二交易日涨跌停封单额（涨停为正，跌停为负）",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -101347,16 +101708,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[8]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[8]",
-          "meaning": "前日封单额（Col[4] 二次滚动滞后）",
-          "unit": "float",
+          "meaning": "前第二交易日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[8]",
+          "meaning": "前第二交易日涨跌停封单额（涨停为正，跌停为负）",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -101375,7 +101755,60 @@
         "meaning": "T-2 日涨跌幅 (%)",
         "unit": "float",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "[8]",
+        "meaning": "前日封单额（Col[4] 二次滚动滞后）",
+        "unit": "float",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[8]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -101383,14 +101816,15 @@
       "identity": "ZHB-tdxstat2::[9]",
       "path": "[9]",
       "canonical": "[9]",
-      "meaning": "待破解",
+      "meaning": "当日开盘集合竞价成交量",
       "unit": "手",
-      "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+        "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -101404,16 +101838,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[9]",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
           "canonical": "[9]",
-          "meaning": "待破解",
+          "meaning": "当日开盘集合竞价成交量",
           "unit": "手",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "[9]",
+          "meaning": "当日开盘集合竞价成交量",
+          "unit": "手",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -101432,7 +101885,60 @@
         "meaning": "市盈率（静态/LYR）",
         "unit": "手",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "[9]",
+        "meaning": "待破解",
+        "unit": "手",
+        "section": "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:[9]",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -101587,13 +102093,15 @@
       "code": "amount_1d",
       "identity": "ZHB-tdxstat2::amount_1d",
       "path": "amount_1d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "amount_1d",
+      "meaning": "前一交易日总成交额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -101604,10 +102112,30 @@
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:amount_1d",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "amount_1d",
+          "meaning": "前一交易日总成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "amount_1d",
@@ -101622,20 +102150,75 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:amount_1d",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
       "code": "amount_2d",
       "identity": "ZHB-tdxstat2::amount_2d",
       "path": "amount_2d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "amount_2d",
+      "meaning": "前第二交易日总成交额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -101646,10 +102229,30 @@
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:amount_2d",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "amount_2d",
+          "meaning": "前第二交易日总成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "amount_2d",
@@ -101664,7 +102267,60 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:amount_2d",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -102326,23 +102982,24 @@
       "code": "main_net_buy_amount",
       "identity": "ZHB-tdxstat2::main_net_buy_amount",
       "path": "main_net_buy_amount",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "[14]",
+      "meaning": "与原始列 [14] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_amount"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -102357,6 +103014,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[14]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -102364,23 +103039,24 @@
       "code": "main_net_buy_amount_1d",
       "identity": "ZHB-tdxstat2::main_net_buy_amount_1d",
       "path": "main_net_buy_amount_1d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "[15]",
+      "meaning": "与原始列 [15] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_amount_1d"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -102395,6 +103071,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_amount_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[15]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -102402,24 +103096,24 @@
       "code": "main_net_buy_hands",
       "identity": "ZHB-tdxstat2::main_net_buy_hands",
       "path": "main_net_buy_hands",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[9]",
+      "meaning": "与原始列 [9] 同值的历史兼容键，不代表主力净买入手数",
+      "unit": "手",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
-          "同花顺-fuyao",
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_hands"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -102435,6 +103129,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_hands",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[9]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -102442,23 +103154,24 @@
       "code": "main_net_buy_hands_1d",
       "identity": "ZHB-tdxstat2::main_net_buy_hands_1d",
       "path": "main_net_buy_hands_1d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "[10]",
+      "meaning": "与原始列 [10] 同值的历史兼容键，不代表主力净买入手数",
+      "unit": "手",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_hands_1d"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -102473,6 +103186,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:main_net_buy_hands_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[10]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -102531,14 +103262,15 @@
       "identity": "ZHB-tdxstat2::stat2.amount",
       "path": "stat2.amount",
       "canonical": "stat2.amount",
-      "meaning": "成交额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "meaning": "当日总成交额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -102552,16 +103284,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
           "canonical": "stat2.amount",
-          "meaning": "成交额",
-          "unit": "元",
+          "meaning": "当日总成交额",
+          "unit": "万元",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "stat2.amount",
+          "meaning": "当日总成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -102576,7 +103327,60 @@
         "meaning": "成交额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.amount",
+        "meaning": "成交额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -102584,14 +103388,15 @@
       "identity": "ZHB-tdxstat2::stat2.amount_1d",
       "path": "stat2.amount_1d",
       "canonical": "stat2.amount_1d",
-      "meaning": "成交额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "meaning": "前一交易日总成交额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -102605,16 +103410,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount_1d",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
           "canonical": "stat2.amount_1d",
-          "meaning": "成交额",
-          "unit": "元",
+          "meaning": "前一交易日总成交额",
+          "unit": "万元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "stat2.amount_1d",
+          "meaning": "前一交易日总成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -102629,7 +103453,60 @@
         "meaning": "成交额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.amount_1d",
+        "meaning": "成交额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount_1d",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -102637,14 +103514,15 @@
       "identity": "ZHB-tdxstat2::stat2.amount_2d",
       "path": "stat2.amount_2d",
       "canonical": "stat2.amount_2d",
-      "meaning": "成交额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "meaning": "前第二交易日总成交额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -102658,16 +103536,35 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount_2d",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
       },
       "reference_evidence": [
         {
           "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
           "canonical": "stat2.amount_2d",
-          "meaning": "成交额",
-          "unit": "元",
+          "meaning": "前第二交易日总成交额",
+          "unit": "万元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+          "canonical": "stat2.amount_2d",
+          "meaning": "前第二交易日总成交额",
+          "unit": "万元",
+          "status_raw": "2026-11-08 official TDX contract + retained ZHB history; evidence sha256=571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "status": "verified",
+          "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          ]
         }
       ],
       "attribute_conflicts": {},
@@ -102682,7 +103579,60 @@
         "meaning": "成交额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.amount_2d",
+        "meaning": "成交额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.amount_2d",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "通达信官方接口/公式文档与 2026-10-15 起保留 ZHB 包的跨交易日全量滞后关系共同确认；具体覆盖与来源见定案文件。",
+          "sample_as_of_dates": [
+            "20261015",
+            "20261016",
+            "20261019",
+            "20261020",
+            "20261022",
+            "20261023",
+            "20261027",
+            "20261028",
+            "20261029",
+            "20261030",
+            "20261102",
+            "20261103",
+            "20261104",
+            "20261105",
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261015.zip",
+            "cache/zhb/zhb_20261016.zip",
+            "cache/zhb/zhb_20261019.zip",
+            "cache/zhb/zhb_20261020.zip",
+            "cache/zhb/zhb_20261022.zip",
+            "cache/zhb/zhb_20261023.zip",
+            "cache/zhb/zhb_20261027.zip",
+            "cache/zhb/zhb_20261028.zip",
+            "cache/zhb/zhb_20261029.zip",
+            "cache/zhb/zhb_20261030.zip",
+            "cache/zhb/zhb_20261102.zip",
+            "cache/zhb/zhb_20261103.zip",
+            "cache/zhb/zhb_20261104.zip",
+            "cache/zhb/zhb_20261105.zip",
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md",
+          "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+          "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27"
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat2",
@@ -103219,29 +104169,24 @@
       "code": "stat2.main_net_buy_amount",
       "identity": "ZHB-tdxstat2::stat2.main_net_buy_amount",
       "path": "stat2.main_net_buy_amount",
-      "canonical": "stat2.main_net_buy_amount",
-      "meaning": "主力净流入额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "canonical": "[14]",
+      "meaning": "与原始列 [14] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ L1"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_amount"
       },
       "reference_evidence": [
         {
@@ -103265,6 +104210,24 @@
         "meaning": "主力净流入额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.main_net_buy_amount",
+        "meaning": "主力净流入额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[14]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103272,29 +104235,24 @@
       "code": "stat2.main_net_buy_amount_1d",
       "identity": "ZHB-tdxstat2::stat2.main_net_buy_amount_1d",
       "path": "stat2.main_net_buy_amount_1d",
-      "canonical": "stat2.main_net_buy_amount_1d",
-      "meaning": "主力净流入额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "canonical": "[15]",
+      "meaning": "与原始列 [15] 同值的历史兼容键，不代表主力净流入额",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_amount_1d"
       },
       "reference_evidence": [
         {
@@ -103318,6 +104276,24 @@
         "meaning": "主力净流入额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.main_net_buy_amount_1d",
+        "meaning": "主力净流入额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_amount_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[15]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103325,29 +104301,24 @@
       "code": "stat2.main_net_buy_hands",
       "identity": "ZHB-tdxstat2::stat2.main_net_buy_hands",
       "path": "stat2.main_net_buy_hands",
-      "canonical": "stat2.main_net_buy_hands",
-      "meaning": "主力净流入手数",
+      "canonical": "[9]",
+      "meaning": "与原始列 [9] 同值的历史兼容键，不代表主力净买入手数",
       "unit": "手",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_hands"
       },
       "reference_evidence": [
         {
@@ -103371,6 +104342,24 @@
         "meaning": "主力净流入手数",
         "unit": "手",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.main_net_buy_hands",
+        "meaning": "主力净流入手数",
+        "unit": "手",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_hands",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[9]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103378,29 +104367,24 @@
       "code": "stat2.main_net_buy_hands_1d",
       "identity": "ZHB-tdxstat2::stat2.main_net_buy_hands_1d",
       "path": "stat2.main_net_buy_hands_1d",
-      "canonical": "stat2.main_net_buy_hands_1d",
-      "meaning": "主力净流入手数",
+      "canonical": "[10]",
+      "meaning": "与原始列 [10] 同值的历史兼容键，不代表主力净买入手数",
       "unit": "手",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_hands_1d"
       },
       "reference_evidence": [
         {
@@ -103424,6 +104408,24 @@
         "meaning": "主力净流入手数",
         "unit": "手",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.main_net_buy_hands_1d",
+        "meaning": "主力净流入手数",
+        "unit": "手",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.main_net_buy_hands_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[10]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103484,29 +104486,24 @@
       "code": "stat2.zt_seal_amount",
       "identity": "ZHB-tdxstat2::stat2.zt_seal_amount",
       "path": "stat2.zt_seal_amount",
-      "canonical": "stat2.zt_seal_amount",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "canonical": "[4]",
+      "meaning": "与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount"
       },
       "reference_evidence": [
         {
@@ -103530,6 +104527,24 @@
         "meaning": "涨停封单额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.zt_seal_amount",
+        "meaning": "涨停封单额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[4]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103537,29 +104552,24 @@
       "code": "stat2.zt_seal_amount_1d",
       "identity": "ZHB-tdxstat2::stat2.zt_seal_amount_1d",
       "path": "stat2.zt_seal_amount_1d",
-      "canonical": "stat2.zt_seal_amount_1d",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "canonical": "[6]",
+      "meaning": "与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount_1d"
       },
       "reference_evidence": [
         {
@@ -103583,6 +104593,24 @@
         "meaning": "涨停封单额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.zt_seal_amount_1d",
+        "meaning": "涨停封单额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[6]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103590,29 +104618,24 @@
       "code": "stat2.zt_seal_amount_2d",
       "identity": "ZHB-tdxstat2::stat2.zt_seal_amount_2d",
       "path": "stat2.zt_seal_amount_2d",
-      "canonical": "stat2.zt_seal_amount_2d",
-      "meaning": "涨停封单额",
-      "unit": "元",
-      "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕",
+      "canonical": "[8]",
+      "meaning": "与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
       "sections": [
-        "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount_2d"
       },
       "reference_evidence": [
         {
@@ -103636,6 +104659,24 @@
         "meaning": "涨停封单额",
         "unit": "元",
         "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "stat2.zt_seal_amount_2d",
+        "meaning": "涨停封单额",
+        "unit": "元",
+        "section": "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:stat2.zt_seal_amount_2d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[8]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103643,23 +104684,24 @@
       "code": "zt_seal_amount",
       "identity": "ZHB-tdxstat2::zt_seal_amount",
       "path": "zt_seal_amount",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "[4]",
+      "meaning": "与原始列 [4] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -103674,6 +104716,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[4]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103681,24 +104741,24 @@
       "code": "zt_seal_amount_1d",
       "identity": "ZHB-tdxstat2::zt_seal_amount_1d",
       "path": "zt_seal_amount_1d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[6]",
+      "meaning": "与原始列 [6] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
-          "同花顺-fuyao",
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount_1d"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -103714,6 +104774,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[6]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {
@@ -103721,24 +104799,24 @@
       "code": "zt_seal_amount_2d",
       "identity": "ZHB-tdxstat2::zt_seal_amount_2d",
       "path": "zt_seal_amount_2d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[8]",
+      "meaning": "与原始列 [8] 同值的历史兼容键；值含涨停正值和跌停负值，不只表示涨停封单",
+      "unit": "万元",
+      "section": "2026-11-08 TDX official contract and retained ZHB history adjudication",
+      "sections": [
+        "2026-11-08 TDX official contract and retained ZHB history adjudication"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
-          "同花顺-fuyao",
           "ZHB-tdxstat2"
         ],
         "values": [
-          "unverified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount_2d"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -103754,6 +104832,24 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudication_evidence": {
+        "id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108:zt_seal_amount_2d",
+        "decision": "disproved",
+        "decision_date": "2026-11-08",
+        "reason": "历史兼容键名造成错误语义；解析器将此值直接读取自对应原始列，不能作为单独的主力净流入或涨停封单字段。",
+        "correct_source_field": "ZHB-tdxstat2::[8]",
+        "evidence_file": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.json",
+        "evidence_sha256": "571a0b5aa1f63a92a3b589a7e2722e43790e64a5f9262c2f1a2d85e08dd66b27",
+        "decision_note": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
       }
     },
     {

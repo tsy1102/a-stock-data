@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "zhb-tdxstat2-auction-amount-seal-semantics-20261108",
+  "reviewed_on": "2026-11-08",
+  "data_floor": "20261015",
+  "scope": {
+    "source_identity": "ZHB-tdxstat2",
+    "paths": [
+      {
+        "path": "[9]",
+        "meaning": "当日开盘集合竞价成交量",
+        "unit": "手"
+      },
+      {
+        "path": "[10]",
+        "meaning": "前一交易日开盘集合竞价成交量",
+        "unit": "手"
+      },
+      {
+        "path": "[14]",
+        "meaning": "当日开盘集合竞价成交额",
+        "unit": "万元"
+      },
+      {
+        "path": "[15]",
+        "meaning": "前一交易日开盘集合竞价成交额",
+        "unit": "万元"
+      },
+      {
+        "path": "[3]/[5]/[7]",
+        "meaning": "当日/前一日/前第二交易日总成交额",
+        "unit": "万元"
+      },
+      {
+        "path": "[4]/[6]/[8]",
+        "meaning": "当日/前一日/前第二交易日涨跌停封单额；涨停为正、跌停为负",
+        "unit": "万元"
+      }
+    ],
+    "legacy_aliases_disproved": [
+      "main_net_buy_amount",
+      "main_net_buy_amount_1d",
+      "main_net_buy_hands",
+      "main_net_buy_hands_1d",
+      "zt_seal_amount",
+      "zt_seal_amount_1d",
+      "zt_seal_amount_2d",
+      "stat2.main_net_buy_amount",
+      "stat2.main_net_buy_amount_1d",
+      "stat2.main_net_buy_hands",
+      "stat2.main_net_buy_hands_1d",
+      "stat2.zt_seal_amount",
+      "stat2.zt_seal_amount_1d",
+      "stat2.zt_seal_amount_2d"
+    ],
+    "retained_archive_count": 15,
+    "retained_archives": [
+      {
+        "date": "20261015",
+        "path": "cache/zhb/zhb_20261015.zip",
+        "sha256": "87fbb693e79678e35f8e1bbf5b8058923461699e2fe4e0cce3f63bef0ae73ce3"
+      },
+      {
+        "date": "20261016",
+        "path": "cache/zhb/zhb_20261016.zip",
+        "sha256": "46ff2275fb002b85099513531c80ef81ec134655b610a1b1ea9b95553a200add"
+      },
+      {
+        "date": "20261019",
+        "path": "cache/zhb/zhb_20261019.zip",
+        "sha256": "8d223c1985c5f6727dfd176b17049d7ce1d918f0faa606334eee056986156191"
+      },
+      {
+        "date": "20261020",
+        "path": "cache/zhb/zhb_20261020.zip",
+        "sha256": "429f2fde54aeb162acb2e66987ce1bdb15c74a47e693b90d00dc78ce0197d9e3"
+      },
+      {
+        "date": "20261022",
+        "path": "cache/zhb/zhb_20261022.zip",
+        "sha256": "4495ff01bb472ebdc832ed6f4d1e21f0ed39a5fd02fe340e8ed0b98a24ad4e0e"
+      },
+      {
+        "date": "20261023",
+        "path": "cache/zhb/zhb_20261023.zip",
+        "sha256": "ef688fa6fc531d05644a96bcf5bcfe4157eeb16d30db41b6aa5fe54fc746812b"
+      },
+      {
+        "date": "20261027",
+        "path": "cache/zhb/zhb_20261027.zip",
+        "sha256": "17cbe926e42e3e46a557f58e7b1536be4ffefc5300799c4f235c4a8252c5ae69"
+      },
+      {
+        "date": "20261028",
+        "path": "cache/zhb/zhb_20261028.zip",
+        "sha256": "8fe6f2be45e9eb6e1ce28571b6a50ff6a2496f4e6cc5b2bd156bfbb6fb79c377"
+      },
+      {
+        "date": "20261029",
+        "path": "cache/zhb/zhb_20261029.zip",
+        "sha256": "7bedf58bc2ecf66983c2613939a13b8b11cd83252bbf4054efa30a56311670b3"
+      },
+      {
+        "date": "20261030",
+        "path": "cache/zhb/zhb_20261030.zip",
+        "sha256": "128e47f1f608e0f13df929c2b00735dbd69c3f27859b2194080b11452ce08835"
+      },
+      {
+        "date": "20261102",
+        "path": "cache/zhb/zhb_20261102.zip",
+        "sha256": "15a2a41041a7e8130c6d1f77a99e9c71717ab6250cd5caa027fe0b7f800f2186"
+      },
+      {
+        "date": "20261103",
+        "path": "cache/zhb/zhb_20261103.zip",
+        "sha256": "cac852c98a221465ca8521ca460ca232c4a8cbc062c7b9ed58d9c9dfc94a7e7b"
+      },
+      {
+        "date": "20261104",
+        "path": "cache/zhb/zhb_20261104.zip",
+        "sha256": "cb92662cc38edd8945feb939f3b00816682814b699abfc2cec402f4aa02c7ba1"
+      },
+      {
+        "date": "20261105",
+        "path": "cache/zhb/zhb_20261105.zip",
+        "sha256": "4a1676998210eca240fb64a7630a4d6fee190f7441f0c81ae3beccaaafd4f6b9"
+      },
+      {
+        "date": "20261106",
+        "path": "cache/zhb/zhb_20261106.zip",
+        "sha256": "e26d331cbd3710177073fd95aecb355df2f441f2622a5b08acb92b7d1fd5b1ae"
+      }
+    ]
+  },
+  "official_references": [
+    {
+      "authority": "通达信量化平台（财富趋势科技）",
+      "interface": "getmarketsnapshot_batch",
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+      "claims": [
+        "OpenAmo: 开盘金额（万元）",
+        "OpenAmoPre1: 昨日开盘金额（万元）",
+        "OpenVolPre1: 昨日开盘成交量（手）",
+        "CJJEPre1: 昨日成交额（万元）",
+        "FCAmo/FDEPre1/FDEPre2: 当日/前日/前两日涨跌停封单额（万元，跌停为负）"
+      ]
+    },
+    {
+      "authority": "通达信公式函数列表",
+      "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+      "claims": [
+        "DYNAINFO(15): 开盘金额",
+        "DYNAINFO(30): 前一交易日开盘成交量",
+        "DYNAINFO(93): 前一交易日成交额",
+        "DYNAINFO(95)/(96): 当日/历史涨跌停封单额，跌停为负"
+      ]
+    }
+  ],
+  "empirical_checks": {
+    "auction_volume_lag": {
+      "current_path": "[9]",
+      "next_session_path": "[10]",
+      "adjacent_session_transitions": 12,
+      "exact_pairs": 88990,
+      "informative_pairs": 88990,
+      "hit_rate": 1.0
+    },
+    "auction_amount_lag": {
+      "current_path": "[14]",
+      "next_session_path": "[15]",
+      "adjacent_session_transitions": 12,
+      "exact_pairs": 88990,
+      "informative_pairs": 88990,
+      "hit_rate": 1.0
+    },
+    "amount_history": {
+      "amount_1d_vs_previous_session_amount": {
+        "exact_pairs": 96439,
+        "informative_pairs": 96439
+      },
+      "amount_2d_vs_two_sessions_prior_amount": {
+        "exact_pairs": 72212,
+        "informative_pairs": 72212
+      }
+    },
+    "seal_history": {
+      "previous_session_nonblank_exact": {
+        "exact_pairs": 1082,
+        "informative_pairs": 1082
+      },
+      "previous_session_both_blank": 95357,
+      "two_sessions_prior_nonblank_exact": {
+        "exact_pairs": 834,
+        "informative_pairs": 834
+      },
+      "two_sessions_prior_both_blank": 71378,
+      "one_sided_blank_pairs": 0
+    },
+    "same_day_tdx_snapshot_20261106": {
+      "stocks": 20,
+      "open_amount_scaled_to_yuan_exact": {
+        "exact_pairs": 20,
+        "informative_pairs": 20
+      },
+      "open_volume_formula_exact": {
+        "exact_pairs": 2,
+        "informative_pairs": 20
+      },
+      "open_volume_formula_rounds_to_integer": 15,
+      "open_volume_formula_max_abs_error_hand": 1.0123456790115597,
+      "volume_formula_used_as_strict_mapping": false
+    },
+    "transition_pair_count_range": [
+      7193,
+      7622
+    ],
+    "nonadjacent_gaps_skipped": [
+      "20261020->20261022",
+      "20261023->20261027"
+    ]
+  },
+  "decisions": [
+    "将 [9]/[10]/[14]/[15] 定案为开盘竞价当前值与前一交易日值；[9] 的当日语义由官方 OpenVolPre1 定义及次日全量滞后等值共同推出。",
+    "将 amount_1d/amount_2d 与 stat2.amount* 明确为万元口径，修正 stat2.amount* 旧单位元。",
+    "将 [4]/[6]/[8] 和对应 stat2 封单额别名的单位改为万元，保留涨停正、跌停负的符号口径。",
+    "对历史 main_net_buy_* 与 zt_seal_amount* 错义兼容键记为 disproved，并指向对应原始列；不改解析器返回键或缓存结构。",
+    "不登记严格跨源映射；开盘量反推公式的舍入命中仅作为量级旁证。"
+  ],
+  "evidence_document": "docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md"
+}

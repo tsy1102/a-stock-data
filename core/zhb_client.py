@@ -1064,8 +1064,9 @@ class ZhbData:
             [19] change_30k_bar     近30根K线涨跌幅(含噪) ★V16.3 O28(K线缓存k30 r=0.96+)
             [20] change_30k_bar_ref 近30根K线涨跌幅(更纯,中位差2.55) ★V16.3 O28
 
-        V10.3 更新：通过双日Delta验证和公式验算([9]*100*收盘价/10000≈[14])，
-                   确认[9]/[14]为T日主力净买入量/额，[10]/[15]为T-1日滚动值。
+        历史注释曾将 [9]/[14] 误判为主力净买入。2026-11-08 复核确认：它们分别是
+        开盘集合竞价成交量（手）和成交额（万元）；[10]/[15] 是前一交易日的对应值。
+        证据与单位核验见 docs/field_verification/adjudications/20261108_zhb_tdxstat2_fields.md。
 
         V16.2.17 Col[13] 重新定性（原注释"行业板块代码"为误标）：
             [13] 实为通达信 **T日"特色板块"归属**（动态条件板块），非行业代码。证据：
@@ -1138,7 +1139,7 @@ class ZhbData:
         return result
 
     def get_stock_stat2(self, code: str) -> Optional[Dict[str, Any]]:
-        """获取指定股票的资金流向和板块归属。"""
+        """获取指定股票的成交额、开盘竞价数据、统计指标和关联板块代码。"""
         return self.stock_stats2.get(code)
 
     def get_industry_code(self, code: str) -> str:
@@ -2241,7 +2242,7 @@ def get_stock_stat(code: str) -> Optional[Dict[str, Any]]:
 
 
 def get_stock_stat2(code: str) -> Optional[Dict[str, Any]]:
-    """获取指定股票的成交额、行业归属、52周高低价等数据（便捷函数）。"""
+    """获取指定股票的成交额、统计指标、52周高低价和关联板块代码。"""
     zhb = get_zhb()
     if zhb is None:
         return None
@@ -2311,17 +2312,20 @@ def get_amount_wan(code: str) -> Optional[float]:
 
 
 def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
-    """V10.3: 获取主力资金流向数据。
+    """获取 ZHB 统计文件中的开盘集合竞价数据（保留历史兼容键名）。
+
+    返回键名 ``main_net_buy_*`` 是历史遗留名；ZHB 对应值实际为竞价量/额，
+    不能解释为主力净买入量/主力净流入额。真实资金流向由统一层另行取数。
 
     Args:
         code: 股票代码
 
     Returns:
         {
-            "main_net_buy_hands": float,       # T日主力净买入量(手)
-            "main_net_buy_hands_1d": float,    # T-1日主力净买入量(手)
-            "main_net_buy_amount": float,      # T日主力净流入额(万元)
-            "main_net_buy_amount_1d": float,   # T-1日主力净流入额(万元)
+            "main_net_buy_hands": float,       # T日开盘集合竞价成交量(手)
+            "main_net_buy_hands_1d": float,    # 前一交易日开盘集合竞价成交量(手)
+            "main_net_buy_amount": float,      # T日开盘集合竞价成交额(万元)
+            "main_net_buy_amount_1d": float,   # 前一交易日开盘集合竞价成交额(万元)
         }
         None if zhb不可用
     """

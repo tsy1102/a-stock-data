@@ -2,7 +2,7 @@
 """backtest_topn.py — V14.3.2 top_n 回测验证脚本
 
 目的：
-  - 用 cache/zhb 目录下连续 4 天 (7/21, 7/22, 7/23, 7/24) 的 ZHB 数据
+  - 用 cache/zhb 目录中保留期内的 ZHB 数据
   - 验证不同 top_n (100/200/300/500/1000) 对 22 策略的选股质量
   - 给出每个策略的"推荐 top_n"差异化建议
 
@@ -23,6 +23,7 @@ from __future__ import annotations
 import csv
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Set, Tuple
 
@@ -45,24 +46,33 @@ from core.zhb_client import _parse_zhb_data
 # 配置
 # ═══════════════════════════════════════
 
-DAYS = ["20260721", "20260722", "20260723", "20260724"]
+MIN_SAMPLE_DAY = "20261015"
 TOP_N_CANDIDATES = [100, 200, 300, 500, 1000]
 
 
-def discover_days() -> List[str]:
-    """M15 修复：原 DAYS 硬编码固定 4 个 ZHB 包，缺失即 FileNotFoundError。
+def _is_retained_day(day: str) -> bool:
+    """Return whether ``day`` is a valid YYYYMMDD date within the retained sample window."""
+    if len(day) != 8 or not day.isdigit() or day < MIN_SAMPLE_DAY:
+        return False
+    try:
+        parsed_day = date.fromisoformat(f"{day[:4]}-{day[4:6]}-{day[6:8]}")
+        return parsed_day.strftime("%Y%m%d") == day and parsed_day <= date.today()
+    except ValueError:
+        return False
 
-    现优先从 CACHE_DIR 实际存在的 zhb_*.zip 发现可用日期；目录为空才回退硬编码 DAYS。
-    """
-    if CACHE_DIR.exists():
-        _found = sorted(
-            p.name[len("zhb_") : -len(".zip")]
-            for p in CACHE_DIR.glob("zhb_*.zip")
-            if p.name.startswith("zhb_") and p.name.endswith(".zip")
-        )
-        if _found:
-            return _found
-    return list(DAYS)
+
+def discover_days() -> List[str]:
+    """Discover valid retained ZHB dates without falling back to expired samples."""
+    if not CACHE_DIR.exists():
+        return []
+    days = []
+    for path in CACHE_DIR.glob("zhb_*.zip"):
+        if not path.name.startswith("zhb_") or not path.name.endswith(".zip"):
+            continue
+        day = path.name[len("zhb_") : -len(".zip")]
+        if _is_retained_day(day):
+            days.append(day)
+    return sorted(days)
 
 
 CACHE_DIR = ROOT / "cache" / "zhb"
@@ -75,9 +85,9 @@ ZHB_PURE_STRATEGIES = {
     "12_divergence_warning": "量价信号（按 mcap_yi 排序）",
     "13_dividend_yield": "高股息（mcap_yi>=50 + dividend_yield）",
     "19_52w_position": "52周低位（high_52w/low_52w）",
-    "20_main_fund_ratio": "主力资金（main_net_buy_amount）",
+    "20_open_auction_ratio": "开盘竞价额占当日成交额比例",
     "21_volume_acceleration": "量能三连击（vol_ratio_5d + turnover_5d）",
-    "22_capital_momentum": "资金动量（main_net_buy_amount）",
+    "22_open_auction_momentum": "连续两日开盘竞价额",
 }
 NETWORK_STRATEGIES = {
     "02_weekly_ma": "周线多头（需 TDX 周K线）",
@@ -94,6 +104,8 @@ NETWORK_STRATEGIES = {
 
 def load_zhb_snapshot(day: str) -> Dict[str, Dict[str, Any]]:
     """加载 ZHB zip 包，返回 {code: {字段}} 快照（合并 tdxstat + tdxstat2）。"""
+    if not _is_retained_day(day):
+        raise ValueError(f"ZHB 回测日期必须为 {MIN_SAMPLE_DAY} 或之后的有效 YYYYMMDD: {day}")
     zip_path = CACHE_DIR / f"zhb_{day}.zip"
     if not zip_path.exists():
         raise FileNotFoundError(f"ZHB 包不存在: {zip_path}")
@@ -131,8 +143,11 @@ def enrich_stock(stock: Dict[str, Any]) -> Dict[str, Any]:
     s = dict(stock)
     s["mcap_yi"] = calc_mcap_proxy(stock) / 10000  # 转换为亿
     s["amount_yi"] = (stock.get("amount", 0) or 0) / 10000
-    # 主力净流入（万元）
-    s["main_net_buy_amount"] = stock.get("main_net_buy_amount", 0) or 0
+    # ZHB parser 保留了历史键名；来源语义实际是开盘集合竞价额/量。
+    s["open_auction_amount_wan"] = stock.get("main_net_buy_amount", 0) or 0
+    s["previous_open_auction_amount_wan"] = stock.get("main_net_buy_amount_1d", 0) or 0
+    s["open_auction_volume_hand"] = stock.get("main_net_buy_hands", 0) or 0
+    s["previous_open_auction_volume_hand"] = stock.get("main_net_buy_hands_1d", 0) or 0
     return s
 
 
@@ -204,18 +219,18 @@ def sim_strategy_19(stocks: List[Dict], top_n: int) -> List[str]:
 
 
 def sim_strategy_20(stocks: List[Dict], top_n: int) -> List[str]:
-    """策略 20: 主力资金（main_net_buy_amount 占比）。
+    """策略 20: 开盘竞价额占当日成交额比例。
 
-    V14.3.2: 实际 val 中传 all_stocks，回测在 top_n 范围内找主力净流入占比 >= 3%
+    选择竞价额占当日成交额至少 3% 的股票；不解释为主力资金流向。
     """
     result = []
     for s in stocks:
-        main_net = _safe_float(s.get("main_net_buy_amount", 0))
+        auction_amount = _safe_float(s.get("open_auction_amount_wan", 0))
         amount = _safe_float(s.get("amount", 0))
-        if main_net is None or amount is None or main_net <= 0 or amount <= 0:
+        if auction_amount is None or amount is None or auction_amount <= 0 or amount <= 0:
             continue
-        ratio = main_net / amount
-        if ratio >= 0.03:  # 主力净流入占比 >= 3%
+        ratio = auction_amount / amount
+        if ratio >= 0.03:
             result.append((s["code"], ratio))
     result.sort(key=lambda x: x[1], reverse=True)
     return [r[0] for r in result[:10]]
@@ -239,13 +254,18 @@ def sim_strategy_21(stocks: List[Dict], top_n: int) -> List[str]:
 
 
 def sim_strategy_22(stocks: List[Dict], top_n: int) -> List[str]:
-    """策略 22: 资金动量（main_net_buy_amount 连续 2 天）。"""
+    """策略 22: 连续两日开盘竞价额动量。"""
     result = []
     for s in stocks:
-        main_net = _safe_float(s.get("main_net_buy_amount", 0))
-        main_net_1d = _safe_float(s.get("main_net_buy_amount_1d", 0))
-        if main_net is not None and main_net_1d is not None and main_net > 0 and main_net_1d > 0:
-            momentum = main_net + main_net_1d
+        auction_amount = _safe_float(s.get("open_auction_amount_wan", 0))
+        auction_amount_1d = _safe_float(s.get("previous_open_auction_amount_wan", 0))
+        if (
+            auction_amount is not None
+            and auction_amount_1d is not None
+            and auction_amount > 0
+            and auction_amount_1d > 0
+        ):
+            momentum = auction_amount + auction_amount_1d
             result.append((s["code"], momentum))
     result.sort(key=lambda x: x[1], reverse=True)
     return [r[0] for r in result[:10]]
@@ -303,9 +323,9 @@ SIM_STRATEGIES: Dict[str, Callable[[List[Dict], int], List[str]]] = {
     "12_divergence_warning": sim_strategy_12,
     "13_dividend_yield": sim_strategy_13,
     "19_52w_position": sim_strategy_19,
-    "20_main_fund_ratio": sim_strategy_20,
+    "20_open_auction_ratio": sim_strategy_20,
     "21_volume_acceleration": sim_strategy_21,
-    "22_capital_momentum": sim_strategy_22,
+    "22_open_auction_momentum": sim_strategy_22,
     "02_weekly_ma": sim_strategy_02,
     "05_double_bottom": sim_strategy_05,
     "06_three_soldiers": sim_strategy_06,
@@ -324,16 +344,19 @@ SIM_STRATEGIES: Dict[str, Callable[[List[Dict], int], List[str]]] = {
 
 
 def main():
+    days = discover_days()
+    if not days:
+        raise FileNotFoundError(f"{CACHE_DIR} 中没有 {MIN_SAMPLE_DAY} 或之后的有效 ZHB 日期包")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     print(
-        f"📊 V14.3.2 Top-N 回测验证（{len(DAYS)} 天 × {len(TOP_N_CANDIDATES)} 个 top_n × {len(SIM_STRATEGIES)} 个策略）"
+        f"📊 V14.3.2 Top-N 回测验证（{len(days)} 天 × {len(TOP_N_CANDIDATES)} 个 top_n × {len(SIM_STRATEGIES)} 个策略）"
     )
     print(f"  输出目录: {OUTPUT_DIR.relative_to(ROOT)}")
     print()
 
     # 1. 加载 ZHB 数据（M15：从实际存在的包发现可用日期）
     snapshots: Dict[str, List[Dict]] = {}
-    for day in discover_days():
+    for day in days:
         raw = load_zhb_snapshot(day)
         # 补全字段
         stocks = [enrich_stock(s) for s in raw.values()]
@@ -352,9 +375,9 @@ def main():
     #     selected_count / 全市场非停牌股数 = 真实"策略覆盖度"（在全市场中的命中占比）。
     # 核心目标：找出"能稳定选到 5+ 个结果的最小 top_n"
     results: List[Dict[str, Any]] = []
-    # 跨天结果缓存：{(strategy, top_n): [day1_results, day2_results, day3_results, day4_results]}
+    # 跨天结果缓存：{(strategy, top_n): [每个样本日期的策略结果]}
     cross_day_results: Dict[Tuple[str, int], List[Set[str]]] = {}
-    for day in discover_days():
+    for day in days:
         all_stocks = snapshots[day]
         total_universe = len(all_stocks)
         # 按 amount 排序的全市场 top_n 集合

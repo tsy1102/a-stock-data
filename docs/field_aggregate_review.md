@@ -199,13 +199,13 @@
 
 ### `[0]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[0]` | [0] | 市场代码 | — | `verified` |
 | ZHB-tdxstat2 · `[0]` | [0] | 市场代码 | 0`=深, `1`=沪, `2`=京 | `verified` |
-| ZHB-tipinfo · `[0]` | [0] | 市场代码 | — | `unverified` |
+| ZHB-tipinfo · `[0]` | [0] | 市场代码 | 0`=深, `1`=沪, `2`=京 | `verified` |
 | 新浪(hq.sinajs) · `[0]` | [0] | 股票名称 | - | `verified` |
 | 腾讯(qt.gtimg) · `[0]` | — | 市场标识（交易所） | - | `verified` |
 

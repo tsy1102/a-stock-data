@@ -28,6 +28,7 @@
 - [`adjudications/20261107_historical_large_recrack_second_pass.md`](adjudications/20261107_historical_large_recrack_second_pass.md)：后续大规模历史再破解；补正 Ulist `f13/f27` 已验证语义回归，以 80 组保留期样本确认市场标志与同源别名，复核全部 48 条正式 L4 候选并重跑最终正式报告（29 条拒绝、19 条待外证）。
 - [`adjudications/20261107_axdata_shortline_semantic_adjudication.md`](adjudications/20261107_axdata_shortline_semantic_adjudication.md)：以 AxData 实际调用的 TDX 短线接口契约和保留历史样本，登记 34 条来源内字段语义；8 条高价值候选中 3 条接受语义关系、5 条按口径或量纲反证拒绝。公开接口字段快照见 [`public_web/20261107_axdata_shortline_interface.md`](adjudications/public_web/20261107_axdata_shortline_interface.md)。
 - [`adjudications/20261107_historical_recrack_third_pass.md`](adjudications/20261107_historical_recrack_third_pass.md)：在前几轮基础上再次全历史碰撞，以东财公开页面与腾讯接口核实五档买量，更新精确注册表语义并完成人工 L4 收敛；记录未同步样本日期、未决候选和运行时单位边界。
+- [`adjudications/20261108_zhb_tipinfo_market_code.md`](adjudications/20261108_zhb_tipinfo_market_code.md)：以 2026-10-15 起保留的 15 个日期化 ZHB 压缩包和通达信官方市场枚举核实 `ZHB-tipinfo::[0]` 为市场代码（0=深、1=沪、2=京）；`[17]/[18]` 在保留样本中仍全空但用途未定。
 
 ## 归档格式
 

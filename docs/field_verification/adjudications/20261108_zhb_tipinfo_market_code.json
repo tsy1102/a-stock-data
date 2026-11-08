@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-08",
+  "decisions": [
+    {
+      "id": "20261108-zhb-tipinfo-market-code-col0",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "[0]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "[0]",
+        "meaning": "市场代码",
+        "unit": ""
+      },
+      "canonical": "[0]",
+      "meaning": "市场代码",
+      "unit": "0`=深, `1`=沪, `2`=京",
+      "rationale": "依据 docs/field_verification/adjudications/20261108_zhb_tipinfo_market_code.md 的复核：仅读取保留起点 2026-10-15 及之后的 15 个日期化 ZHB 压缩包；tipinfo.dat 共 84,815 条记录，列[0]仅出现 0/1/2，分别与 SZ/SH/BJ 股票代码族及 TDX 官方市场枚举一致。最新包 5,656 条记录的[0]均非空，且与同包 tdxstat.cfg[0] 的 5,579 个重叠代码逐条相同。该决定只确认 ZHB-tipinfo 的来源内字段语义，不增加跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台（财富趋势科技）",
+        "revision": "官方 Dict.html 网页，于 2026-11-08 核验",
+        "path": "TDX Quant Dict.html / 市场类型",
+        "locator": "市场类型表：.SZ=0、.SH=1、.BJ=2",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/Dict.html"
+      }
+    }
+  ]
+}

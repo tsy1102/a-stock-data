@@ -1,13 +1,13 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-07",
+    "updated": "2026-11-08",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 455,
+      "aggregate_status_scope_unresolved": 454,
       "candidate": 2,
       "conflict": 74,
       "disproved": 2,
@@ -27,11 +27,11 @@
       "status_conflict": 56,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1467,
-      "verified": 1058,
+      "unverified": 1466,
+      "verified": 1059,
       "verified_by_empirical_addendum": 70,
       "verified_by_manual_public_data_semantic_adjudication": 6,
-      "verified_by_source_contract": 74
+      "verified_by_source_contract": 75
     },
     "updated_at": "2026-11-07"
   },
@@ -5803,7 +5803,7 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
-        "ZHB-tipinfo": "unverified",
+        "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
@@ -5811,7 +5811,6 @@
       "aggregation_issues": [
         "canonical_incomplete",
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -103808,13 +103807,14 @@
       "path": "[0]",
       "canonical": "[0]",
       "meaning": "市场代码",
-      "unit": "",
+      "unit": "0`=深, `1`=沪, `2`=京",
       "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
       "sections": [
-        "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)"
+        "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
+        "source contract: 通达信量化平台（财富趋势科技） · TDX Quant Dict.html / 市场类型#市场类型表：.SZ=0、.SH=1、.BJ=2 @ 官方 Dict.html 网页，于 2026-11-08 核验"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103828,6 +103828,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261108-zhb-tipinfo-market-code-col0"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261108-zhb-tipinfo-market-code-col0"
         ]
       },
       "reference_evidence": [
@@ -103838,6 +103844,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 通达信量化平台（财富趋势科技） · TDX Quant Dict.html / 市场类型#市场类型表：.SZ=0、.SH=1、.BJ=2 @ 官方 Dict.html 网页，于 2026-11-08 核验",
+          "canonical": "[0]",
+          "meaning": "市场代码",
+          "unit": "0`=深, `1`=沪, `2`=京",
+          "status_raw": "人工核验上游契约 2026-11-08：20261108-zhb-tipinfo-market-code-col0",
+          "status": "verified",
+          "adjudication_id": "20261108-zhb-tipinfo-market-code-col0",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台（财富趋势科技）",
+            "revision": "官方 Dict.html 网页，于 2026-11-08 核验",
+            "path": "TDX Quant Dict.html / 市场类型",
+            "locator": "市场类型表：.SZ=0、.SH=1、.BJ=2",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/Dict.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[0]",
+              "meaning": "市场代码",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[0]",
+              "meaning": "市场代码",
+              "unit": "0`=深, `1`=沪, `2`=京"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -103856,7 +103891,43 @@
         "meaning": "市场代码",
         "unit": "0`=深, `1`=沪, `2`=京",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261108-zhb-tipinfo-market-code-col0",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-08",
+          "decision_file": "adjudications/20261108_zhb_tipinfo_market_code.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[0]",
+              "meaning": "市场代码",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[0]",
+              "meaning": "市场代码",
+              "unit": "0`=深, `1`=沪, `2`=京"
+            }
+          },
+          "rationale": "依据 docs/field_verification/adjudications/20261108_zhb_tipinfo_market_code.md 的复核：仅读取保留起点 2026-10-15 及之后的 15 个日期化 ZHB 压缩包；tipinfo.dat 共 84,815 条记录，列[0]仅出现 0/1/2，分别与 SZ/SH/BJ 股票代码族及 TDX 官方市场枚举一致。最新包 5,656 条记录的[0]均非空，且与同包 tdxstat.cfg[0] 的 5,579 个重叠代码逐条相同。该决定只确认 ZHB-tipinfo 的来源内字段语义，不增加跨源映射。",
+          "source_contract": {
+            "authority": "通达信量化平台（财富趋势科技）",
+            "revision": "官方 Dict.html 网页，于 2026-11-08 核验",
+            "path": "TDX Quant Dict.html / 市场类型",
+            "locator": "市场类型表：.SZ=0、.SH=1、.BJ=2",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/Dict.html"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tipinfo",

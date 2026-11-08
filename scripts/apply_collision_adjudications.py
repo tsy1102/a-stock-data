@@ -581,9 +581,11 @@ def apply_source_contract_adjudications(
         if decision_id in seen_ids:
             raise ValueError(f"duplicate decision id: {decision_id}")
         seen_ids.add(decision_id)
-        if decision.get("action") != "verify_source_contract":
+        action = decision.get("action")
+        if action not in {"verify_source_contract", "correct_verified_metadata"}:
             raise ValueError(
-                "source-contract workflow only accepts action='verify_source_contract'"
+                "source-contract workflow only accepts 'verify_source_contract' or "
+                "'correct_verified_metadata'"
             )
 
         target_obj = _require_object(decision.get("target"), "decision.target")
@@ -601,14 +603,20 @@ def apply_source_contract_adjudications(
         previous_status = _non_empty_string(
             decision.get("previous_status"), "decision.previous_status"
         )
-        if previous_status not in {"unverified", "candidate", "conflict"}:
-            raise ValueError(
-                "source-contract verification only accepts unverified, candidate, "
-                "or resolvable status-conflict fields"
-            )
         previous_resolution = _non_empty_string(
             decision.get("previous_status_resolution"), "decision.previous_status_resolution"
         )
+        if action == "verify_source_contract":
+            if previous_status not in {"unverified", "candidate", "conflict"}:
+                raise ValueError(
+                    "source-contract verification only accepts unverified, candidate, "
+                    "or resolvable status-conflict fields"
+                )
+        elif previous_status != "verified" or previous_resolution != "matched":
+            raise ValueError(
+                "correct_verified_metadata requires a verified target with "
+                "status_resolution='matched'"
+            )
         previous_metadata = _metadata_snapshot(decision.get("previous"), "decision.previous")
         canonical = _non_empty_string(decision.get("canonical"), "decision.canonical")
         meaning = _non_empty_string(decision.get("meaning"), "decision.meaning")
@@ -627,13 +635,28 @@ def apply_source_contract_adjudications(
         metadata_correction = _validate_source_contract_metadata_correction(
             decision.get("metadata_correction"), previous_metadata, after_metadata
         )
+        if action == "correct_verified_metadata":
+            if metadata_correction is None:
+                raise ValueError(
+                    "correct_verified_metadata requires an explicit metadata_correction"
+                )
+            if same_source_alias is not None:
+                raise ValueError(
+                    "correct_verified_metadata cannot include same_source_alias; "
+                    "apply aliases as a separate decision"
+                )
+            attribute_conflicts = target_record.get("attribute_conflicts")
+            if attribute_conflicts:
+                raise ValueError(
+                    "correct_verified_metadata cannot update a field with attribute conflicts"
+                )
         section = (
             f"source contract: {source_contract['authority']} · {source_contract['path']}"
             f"#{source_contract['locator']} @ {source_contract['revision']}"
         )
         adjudication = {
             "id": decision_id,
-            "action": "verify_source_contract",
+            "action": action,
             "status": "verified",
             "reviewer": reviewer,
             "reviewed_on": reviewed_on,

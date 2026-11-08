@@ -646,7 +646,8 @@ def test_registry_verified_identity_keeps_full_nested_code_path():
     assert not collide.is_verified("tdx.amount_wan", verified)
     assert ("zhb", "stat.board_count") in verified
     assert collide.is_verified("zhb.stat.board_count", verified)
-    assert not collide.is_verified("zhb.board_count", verified)
+    assert ("zhb", "board_count") in verified
+    assert collide.is_verified("zhb.board_count", verified)
 
 
 def test_code_of_preserves_full_nested_identity():

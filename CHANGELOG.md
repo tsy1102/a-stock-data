@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 新增受限的 `correct_verified_metadata` 来源契约裁决，只允许纠正无属性冲突、状态为 `verified/matched` 的逐源字段，并要求保留精确修正快照；据此纠正 ZHB `tdxstat` 七项旧释义/单位，确认八项 `tdxstat`/`tdxstat2` 同源别名。证据显示旧汇总表的宽泛或错误释义与解析器位置契约不符；不新增跨源映射。
 - 以 2026-10-15 起保留的 11 个 ZHB 数据日期、220 组去重股票日样本，确认 `tdxstat` 与 `tdxstat2` 的代码、日期、市场路径别名，以及 `tdxstat2.change_mtd` 与已验证同源锚的精确一致；不新增跨源映射，也不推断市场数字编码或涨幅公式。
 - 来源契约裁决新增严格的同源别名冲突收敛：只允许候选标记与已验证同源锚字段冲突、含义/单位一致且保留期证据零差异的情况；保留别名证据，不创建跨源映射。同步定案 ZHB `tdxstat` `[31]/[32]`，并清理 `[2]/[26]` 运行时别名的过期候选描述。修复裁决 CLI 漏重建 `field_aggregate_review.md` 的生成视图缺口。
 - 基于 2026-10-16 至 2026-11-06 的 11 个保留期数据日，定案 ZHB `tdxstat` 的 `dividend_yield`、`employee_count` 两条路径与已验证同源路径精确别名（各 220/220）；不新增跨源映射，不推断股息率公式或员工人数报告期。

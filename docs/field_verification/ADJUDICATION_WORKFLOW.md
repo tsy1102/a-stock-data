@@ -46,7 +46,7 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 - 必须核实项目中的运行字段如何映射到上游接口响应字段。仓库 README、相似字段名、变量名或通用注释本身不足以证明映射；客户端/聚合框架的文档也不能直接代表底层数据提供方契约。
 - 决策文件需记录权威提供方与接口/协议、固定提交/版本或有日期的文档版本、上游路径、精确定位、HTTPS 链接、核验理由，以及目标当前的 `status`、`status_resolution` 和元数据快照。
 - 常规核验接受 `unverified` / `candidate`。`conflict` 只有在以下条件全部成立时才可由上游契约解除：`status_resolution` 为 `status_conflict`；逐源参考状态只有 `verified`；`registry_aggregate_status` 为 `unverified`；状态证据值只有 `verified` 与 `unverified`；`attribute_conflicts` 为空；非空 `reference_evidence.status` 全为 `verified`。这只修复聚合视图导致的状态差异，不覆盖真实含义冲突；`disproved` 仍不能走此路径。
-- 已有有效元数据默认不能覆盖。确需纠正时，决策必须附 `metadata_correction`，精确重复 `previous` / `updated` 三项快照并写明理由；快照须与决策的字段值完全一致。核验通过后，逐源记录改为 `verified`，`status_resolution` 记为 `verified_by_source_contract`，完整保留契约与修正证据；这仍不创建跨源 `mappings`，来源锚资格由 `source_lineage.json` 独立决定。
+- 已有有效元数据默认不能覆盖。`action: correct_verified_metadata` 专用于已经 `verified` 且 `status_resolution: matched` 的字段，必须附 `metadata_correction`，精确记录 `previous` / `updated` 三项快照并写明理由；快照须与决策的字段值完全一致，目标不得有 `attribute_conflicts`，也不能在同一决定内附带别名。常规 `verify_source_contract` 仍只接受未验证、候选或满足前述条件的可收敛状态冲突字段。核验通过后，逐源记录保持 `verified`，`status_resolution` 记为 `verified_by_source_contract`，完整保留契约与修正证据；该流程不创建跨源 `mappings`，来源锚资格由 `source_lineage.json` 独立决定。
 - 工具只检查证据记录结构、版本定位和状态快照，不会替复核人访问链接或判断链接内容是否权威。必须先实际打开并核对契约，再填写决定。
 
 复制 [`source_contract_template.json`](adjudications/source_contract_template.json) 到同目录，完成逐字段核验后先预览：

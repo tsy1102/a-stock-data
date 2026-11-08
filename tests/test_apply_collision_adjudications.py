@@ -727,6 +727,108 @@ def test_source_contract_resolves_legacy_conflict_through_verified_same_source_a
     assert repeat_stats["already_applied"] == 1
 
 
+def _verified_metadata_correction_inputs():
+    registry, document = _source_contract_inputs()
+    target = registry["source_fields"][0]
+    previous = {"canonical": "legacy.metric", "meaning": "旧释义", "unit": "分钟"}
+    updated = {"canonical": "market.metric", "meaning": "校正后的字段释义", "unit": "%"}
+    target.update(
+        {
+            **previous,
+            "status": "verified",
+            "status_resolution": "matched",
+            "status_evidence": {
+                "reference_statuses": ["verified"],
+                "registry_aggregate_status": "verified",
+                "values": ["verified"],
+            },
+            "reference_evidence": [{"status": "verified"}],
+            "attribute_conflicts": {},
+        }
+    )
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "id": "20261018-correct-verified-metadata",
+            "action": "correct_verified_metadata",
+            "previous_status": "verified",
+            "previous_status_resolution": "matched",
+            "previous": previous,
+            **updated,
+            "metadata_correction": {
+                "previous": previous,
+                "updated": updated,
+                "rationale": "已核对固定来源契约，纠正旧的路径释义和单位。",
+            },
+        }
+    )
+    return registry, document
+
+
+def test_source_contract_corrects_verified_metadata_with_explicit_evidence():
+    registry, document = _verified_metadata_correction_inputs()
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/verified_metadata_correction.json"
+    )
+
+    target = updated["source_fields"][0]
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["meaning"] == "校正后的字段释义"
+    assert target["unit"] == "%"
+    assert target["adjudications"][0]["action"] == "correct_verified_metadata"
+    assert target["adjudications"][0]["metadata_correction"]["previous"]["meaning"] == "旧释义"
+    assert stats["metadata_corrected"] == 1
+    assert stats["mappings_added"] == 0
+    assert updated["mappings"] == []
+
+
+def test_source_contract_verified_metadata_correction_is_idempotent():
+    registry, document = _verified_metadata_correction_inputs()
+
+    once, _ = apply_source_contract_adjudications(
+        registry, document, "adjudications/verified_metadata_correction.json"
+    )
+    twice, repeat_stats = apply_source_contract_adjudications(
+        once, document, "adjudications/verified_metadata_correction.json"
+    )
+
+    assert twice == once
+    assert repeat_stats["already_applied"] == 1
+    assert repeat_stats["metadata_corrected"] == 0
+
+
+def test_source_contract_verified_metadata_correction_requires_matched_resolution():
+    registry, document = _verified_metadata_correction_inputs()
+    document["decisions"][0]["previous_status_resolution"] = "status_conflict"
+
+    with pytest.raises(ValueError, match="status_resolution='matched'"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/verified_metadata_correction.json"
+        )
+
+
+def test_source_contract_rejects_verified_metadata_correction_without_diff_record():
+    registry, document = _verified_metadata_correction_inputs()
+    document["decisions"][0].pop("metadata_correction")
+
+    with pytest.raises(ValueError, match="requires an explicit metadata_correction"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/verified_metadata_correction.json"
+        )
+
+
+def test_source_contract_rejects_verified_metadata_correction_with_attribute_conflict():
+    registry, document = _verified_metadata_correction_inputs()
+    registry["source_fields"][0]["attribute_conflicts"] = {"unit": ["分钟", "%"]}
+
+    with pytest.raises(ValueError, match="attribute conflicts"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/verified_metadata_correction.json"
+        )
+
+
 @pytest.mark.parametrize(
     "change,match",
     [

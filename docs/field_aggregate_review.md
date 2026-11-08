@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 108 个 code；聚合定义不完整 240 个 code；疑似合并文本 300 条逐源记录。
+> 聚合歧义 108 个 code；聚合定义不完整 242 个 code；疑似合并文本 302 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -744,6 +744,24 @@
 | 东财-push2ex · `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | % | `verified` |
 | 市场源(market_sources) · `change_pct` | change_pct | 涨跌幅 | — | `verified` |
 | 开盘啦(kpl) · `change_pct` | change_pct | 涨跌幅% | % | `unverified` |
+
+### `change_pct_1d` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX(双命名源) · `change_pct_1d` | — | — | — | `unverified` |
+| ZHB-tdxstat · `change_pct_1d` | change_pct_1d | T-1 日涨跌幅 | % | `verified` |
+
+### `change_pct_2d` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX(双命名源) · `change_pct_2d` | — | — | — | `unverified` |
+| ZHB-tdxstat · `change_pct_2d` | change_pct_2d | T-2 日涨跌幅 | % | `verified` |
 
 ### `change_rate` — ambiguous
 
@@ -3603,7 +3621,9 @@
 | ZHB-tdxstat | `change_ytd` | change_ytd | 年初至今涨跌幅（YTD，%）；历史对照支持该字段类别，但复权基准未证实与其他来源相同。 | `verified` |
 | ZHB-tdxstat | `pe_lyr` | pe_lyr | 静态市盈率（LYR/上一完整年度业绩口径）；180 组、9 个来源日期与已验证静态 PE 参照相符，最大差 0.006 倍；精度差异不证明跨源逐值相同。 | `verified` |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
+| ZHB-tdxstat | `stat.streak_days` | stat.streak_days | 连涨/连跌天数（正值为连涨，负值为连跌） | `verified` |
 | ZHB-tdxstat | `stat.zt_type_code` | stat.zt_type_code | 行情状态/涨跌强度分档码 | `verified` |
+| ZHB-tdxstat | `streak_days` | streak_days | 连涨/连跌天数（正值为连涨，负值为连跌） | `verified` |
 | ZHB-tdxstat2 | `[13]` | [13] | 通达信板块归属(881=行业板块稳定 / 880=概念·风格板块动态) | `verified` |
 | ZHB-tdxstat2 | `change_250k_bar` | change_250d_return | 近250根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |
 | ZHB-tdxstat2 | `change_30k_bar` | change_30d_return | 近30根日K线滚动涨跌幅；复权方式、窗口端点和细部基准未确认跨源一致。 | `verified` |

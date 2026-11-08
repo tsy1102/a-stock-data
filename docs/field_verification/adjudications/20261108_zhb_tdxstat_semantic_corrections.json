@@ -1,0 +1,553 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-08",
+  "decisions": [
+    {
+      "id": "20261108-zhb-tdxstat-anchor-streak-days-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.streak_days"
+      },
+      "canonical": "stat.streak_days",
+      "meaning": "连涨/连跌天数（正值为连涨，负值为连跌）",
+      "unit": "天",
+      "previous": {
+        "canonical": "stat.streak_days",
+        "meaning": "连板天数",
+        "unit": "天"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [5] 的字段定义为连涨/连跌天数；保留期 220 组样本中 218 组连续值与当日涨跌方向均相符，另 2 组当日涨跌幅为零。旧标准表的‘连板天数’与数值契约不符。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.streak_days",
+          "meaning": "连板天数",
+          "unit": "天"
+        },
+        "updated": {
+          "canonical": "stat.streak_days",
+          "meaning": "连涨/连跌天数（正值为连涨，负值为连跌）",
+          "unit": "天"
+        },
+        "rationale": "原始列 [5] 的字段定义为连涨/连跌天数；保留期 220 组样本中 218 组连续值与当日涨跌方向均相符，另 2 组当日涨跌幅为零。旧标准表的‘连板天数’与数值契约不符。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [5] streak_days",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-streak-days",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "streak_days"
+      },
+      "canonical": "streak_days",
+      "meaning": "连涨/连跌天数（正值为连涨，负值为连跌）",
+      "unit": "天",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，streak_days 与已更正的同源 stat.streak_days 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.streak_days",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::streak_days 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [5] streak_days",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-change-pct-1d-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_pct_1d"
+      },
+      "canonical": "stat.change_pct_1d",
+      "meaning": "T-1 日涨跌幅",
+      "unit": "%",
+      "previous": {
+        "canonical": "stat.change_pct_1d",
+        "meaning": "涨跌幅",
+        "unit": "%"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [7] 明确对应昨日涨跌幅；保留期样本中的完整路径别名另以 220 组精确值确认。将旧的宽泛释义补足为 T-1 日，不改变数值口径或运行逻辑。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.change_pct_1d",
+          "meaning": "涨跌幅",
+          "unit": "%"
+        },
+        "updated": {
+          "canonical": "stat.change_pct_1d",
+          "meaning": "T-1 日涨跌幅",
+          "unit": "%"
+        },
+        "rationale": "原始列 [7] 明确对应昨日涨跌幅；保留期样本中的完整路径别名另以 220 组精确值确认。将旧的宽泛释义补足为 T-1 日，不改变数值口径或运行逻辑。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [7] change_pct_1d",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-change-pct-1d",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_pct_1d"
+      },
+      "canonical": "change_pct_1d",
+      "meaning": "T-1 日涨跌幅",
+      "unit": "%",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "rationale": "在 220 组去重保留期股票日样本中，change_pct_1d 与已更正的同源 stat.change_pct_1d 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_pct_1d",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::change_pct_1d 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [7] change_pct_1d",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-change-pct-2d-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_pct_2d"
+      },
+      "canonical": "stat.change_pct_2d",
+      "meaning": "T-2 日涨跌幅",
+      "unit": "%",
+      "previous": {
+        "canonical": "stat.change_pct_2d",
+        "meaning": "涨跌幅",
+        "unit": "%"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [8] 明确对应前日涨跌幅（T-2）；保留期样本中的完整路径别名另以 220 组精确值确认。将旧的宽泛释义补足为 T-2 日，不改变数值口径或运行逻辑。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.change_pct_2d",
+          "meaning": "涨跌幅",
+          "unit": "%"
+        },
+        "updated": {
+          "canonical": "stat.change_pct_2d",
+          "meaning": "T-2 日涨跌幅",
+          "unit": "%"
+        },
+        "rationale": "原始列 [8] 明确对应前日涨跌幅（T-2）；保留期样本中的完整路径别名另以 220 组精确值确认。将旧的宽泛释义补足为 T-2 日，不改变数值口径或运行逻辑。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [8] change_pct_2d",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-change-pct-2d",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_pct_2d"
+      },
+      "canonical": "change_pct_2d",
+      "meaning": "T-2 日涨跌幅",
+      "unit": "%",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "rationale": "在 220 组去重保留期股票日样本中，change_pct_2d 与已更正的同源 stat.change_pct_2d 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_pct_2d",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::change_pct_2d 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [8] change_pct_2d",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-unseal-date-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.unseal_date"
+      },
+      "canonical": "stat.unseal_date",
+      "meaning": "新股上市后首次开板日期（上市后首次不再涨停）",
+      "unit": "YYYYMMDD",
+      "previous": {
+        "canonical": "stat.unseal_date",
+        "meaning": "解禁日期",
+        "unit": "YYYYMMDD"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [12] 是新股开板日期，不是限售股解禁日期。留存样本中的 300788 记录为 20190715，深交所月报列上市日 2019-07-05，公开报道记载其 2019-07-15 首次打开一字涨停；其限售股实际解禁日期为 2022-07-05。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.unseal_date",
+          "meaning": "解禁日期",
+          "unit": "YYYYMMDD"
+        },
+        "updated": {
+          "canonical": "stat.unseal_date",
+          "meaning": "新股上市后首次开板日期（上市后首次不再涨停）",
+          "unit": "YYYYMMDD"
+        },
+        "rationale": "原始列 [12] 是新股开板日期，不是限售股解禁日期。留存样本中的 300788 记录为 20190715，深交所月报列上市日 2019-07-05，公开报道记载其 2019-07-15 首次打开一字涨停；其限售股实际解禁日期为 2022-07-05。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [12] unseal_date",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-unseal-date",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "unseal_date"
+      },
+      "canonical": "unseal_date",
+      "meaning": "新股上市后首次开板日期（上市后首次不再涨停）",
+      "unit": "YYYYMMDD",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，unseal_date 与已更正的同源 stat.unseal_date 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.unseal_date",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::unseal_date 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [12] unseal_date",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-board-count-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.board_count"
+      },
+      "canonical": "stat.board_count",
+      "meaning": "新股上市至首次开板前的连续涨停交易日数（首日开板为 0）",
+      "unit": "交易日",
+      "previous": {
+        "canonical": "stat.board_count",
+        "meaning": "所属板块数",
+        "unit": "-"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [13] 表示新股上市至首次开板的连板交易日数，不是所属板块数。保留期样本中 300788 为 6，与 2019-07-05 上市、2019-07-15 首次打开连续涨停相符。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.board_count",
+          "meaning": "所属板块数",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "stat.board_count",
+          "meaning": "新股上市至首次开板前的连续涨停交易日数（首日开板为 0）",
+          "unit": "交易日"
+        },
+        "rationale": "原始列 [13] 表示新股上市至首次开板的连板交易日数，不是所属板块数。保留期样本中 300788 为 6，与 2019-07-05 上市、2019-07-15 首次打开连续涨停相符。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [13] board_count",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-board-count",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "board_count"
+      },
+      "canonical": "board_count",
+      "meaning": "新股上市至首次开板前的连续涨停交易日数（首日开板为 0）",
+      "unit": "交易日",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，board_count 与已更正的同源 stat.board_count 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.board_count",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::board_count 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [13] board_count",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-change-5k-bar-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_5k_bar"
+      },
+      "canonical": "stat.change_5k_bar",
+      "meaning": "近 5 根 K 线涨跌幅（交易日口径）",
+      "unit": "%",
+      "previous": {
+        "canonical": "stat.change_5k_bar",
+        "meaning": "5分钟K线涨跌",
+        "unit": "-"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [27] 定义为近 5 根 K 线涨跌幅，按交易日 K 线根数统计，单位为百分比；旧‘5分钟 K 线’释义和空单位均与原始列契约不符。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.change_5k_bar",
+          "meaning": "5分钟K线涨跌",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "stat.change_5k_bar",
+          "meaning": "近 5 根 K 线涨跌幅（交易日口径）",
+          "unit": "%"
+        },
+        "rationale": "原始列 [27] 定义为近 5 根 K 线涨跌幅，按交易日 K 线根数统计，单位为百分比；旧‘5分钟 K 线’释义和空单位均与原始列契约不符。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [27] change_5k_bar",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-change-5k-bar",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_5k_bar"
+      },
+      "canonical": "change_5k_bar",
+      "meaning": "近 5 根 K 线涨跌幅（交易日口径）",
+      "unit": "%",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，change_5k_bar 与已更正的同源 stat.change_5k_bar 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_5k_bar",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::change_5k_bar 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [27] change_5k_bar",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-anchor-change-10k-bar-metadata-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_10k_bar"
+      },
+      "canonical": "stat.change_10k_bar",
+      "meaning": "近 10 根 K 线涨跌幅（交易日口径）",
+      "unit": "%",
+      "previous": {
+        "canonical": "stat.change_10k_bar",
+        "meaning": "10分钟K线涨跌",
+        "unit": "-"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "原始列 [29] 定义为近 10 根 K 线涨跌幅，按交易日 K 线根数统计，单位为百分比；旧‘10分钟 K 线’释义和空单位均与原始列契约不符。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.change_10k_bar",
+          "meaning": "10分钟K线涨跌",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "stat.change_10k_bar",
+          "meaning": "近 10 根 K 线涨跌幅（交易日口径）",
+          "unit": "%"
+        },
+        "rationale": "原始列 [29] 定义为近 10 根 K 线涨跌幅，按交易日 K 线根数统计，单位为百分比；旧‘10分钟 K 线’释义和空单位均与原始列契约不符。"
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [29] change_10k_bar",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat-alias-change-10k-bar",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_10k_bar"
+      },
+      "canonical": "change_10k_bar",
+      "meaning": "近 10 根 K 线涨跌幅（交易日口径）",
+      "unit": "%",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，change_10k_bar 与已更正的同源 stat.change_10k_bar 完全一致。语义和单位沿用经过原始列契约修正的锚字段；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_10k_bar",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat::change_10k_bar 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "本项目 ZHB tdxstat 原始列解析契约",
+        "path": "core/zhb_client.py::_parse_tdxstat",
+        "locator": "_parse_tdxstat [29] change_10k_bar",
+        "revision": "git commit 1349365; reviewed 2026-11-08",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/1349365/core/zhb_client.py"
+      }
+    },
+    {
+      "id": "20261108-zhb-tdxstat2-alias-ipo-price",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tdxstat2",
+        "code": "ipo_price"
+      },
+      "canonical": "ipo_price",
+      "meaning": "发行价",
+      "unit": "元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "在 220 组去重保留期股票日样本中，ipo_price 与已验证同源 stat2.ipo_price 完全一致。通达信官方扩展字段列表将 IPO_Price 定义为发行价；只确认同源路径别名，不增加跨源映射。",
+      "same_source_alias": {
+        "source": "ZHB-tdxstat2",
+        "code": "stat2.ipo_price",
+        "evidence_path": "docs/field_verification/research/20261108_zhb_tdxstat_semantic_corrections.md",
+        "locator": "§3 表格 ZHB-tdxstat2::ipo_price 行",
+        "observed_pairs": 220,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信 TdxQuant 官方扩展接口文档",
+        "path": "get_more_info_batch IPO_Price",
+        "locator": "IPO_Price：发行价",
+        "revision": "2026-11-08 官方文档核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

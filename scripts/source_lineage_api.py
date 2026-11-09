@@ -207,15 +207,23 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
     ZHB ``full`` is a merged view of ``stat`` and ``stat2``. Its field names
     correspond to the underlying endpoint code, so ``zhb.full.amount`` maps to
     registry code ``amount``. The dedicated ``stat``, ``stat2`` and ``tipinfo``
-    paths remain intact. TDX finance and quote snapshots wrap protocol field
-    names in ``finance_info`` and ``quote_raw``; the registry records those
-    protocol names directly. KPL capture preserves selected raw columns
+    paths remain intact. TDX finance and raw quote snapshots wrap protocol
+    field names in ``finance_info`` and ``quote_raw``; the registry records
+    those protocol names directly. Only the unregistered
+    ``quote_full.bid1_vol`` and ``quote_full.ask1_vol`` aliases are collapsed
+    to their already-verified protocol identities. Other ``quote_full`` paths
+    remain intact because the registry contains independent paths and derived
+    values there. KPL capture preserves selected raw columns
     alongside named adapter fields, so those paths resolve to the same
     registered field identity.
     """
     if alias == "zhb" and code.startswith("full."):
         return code[len("full.") :]
     if alias == "tdx":
+        if code == "quote_full.bid1_vol":
+            return "bid1_vol"
+        if code == "quote_full.ask1_vol":
+            return "ask1_vol"
         for prefix in ("finance_info.", "quote_raw."):
             if code.startswith(prefix):
                 return code[len(prefix) :]

@@ -650,6 +650,23 @@ def test_registry_verified_identity_keeps_full_nested_code_path():
     assert collide.is_verified("zhb.board_count", verified)
 
 
+def test_tdx_quote_full_bid_ask_volume_aliases_exit_verified_targets():
+    verified = collide.load_registry_context()["verified"]
+
+    for alias_path, registered_code in (
+        ("quote_full.bid1_vol", "bid1_vol"),
+        ("quote_full.ask1_vol", "ask1_vol"),
+    ):
+        field_id = f"tdx.{alias_path}"
+        assert collide.code_of(field_id) == registered_code
+        assert ("tdx", registered_code) in verified
+        assert collide.is_verified(field_id, verified)
+
+    # Registered and derived quote_full paths retain their full identities.
+    assert collide.code_of("tdx.quote_full.price") == "quote_full.price"
+    assert collide.code_of("tdx.quote_full.change_pct") == "quote_full.change_pct"
+
+
 def test_code_of_preserves_full_nested_identity():
     assert collide.code_of("tdx.quote_full.amount_wan") == "quote_full.amount_wan"
     assert collide.code_of("zhb.stat.board_count") == "stat.board_count"

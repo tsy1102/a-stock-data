@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-chang-qi-fu-zhai-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "chang_qi_fu_zhai_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "chang_qi_fu_zhai_raw_float",
+      "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 FinanceRecord 文档将此字段标为“长期负债原始值”，但同一记录结构把它放在流动负债之后、资本公积之前；通达信官方 FINANCE(15)、(16)、(17) 的相邻定义分别为流动负债、少数股东权益、资本公积金，TQ get_stock_info 亦将 J_cqfz 定义为少数股东权益（万元）。项目 core/eltdx_adapter.py 将此 ELTDX 原始字段映射到 changqifuzhai 并按 qy2jiao 转换。保留样本中，2026-10-15 的三个值与三家公司 2026-06-30 半年报少数股东权益相差 -79.80 至 +759.75 元；2026-11-02/06 的三个值与 2026-09-30 三季报少数股东权益相差 -481.22 至 +678.14 元，均小于一个原始千元单位。样本值乘 1000 后对上公开报表；这些偏差作为源精度/浮点量化处理，不声称逐元精确。结论按官方 TDX 字段定义、FinanceRecord 顺序与发行人报表交叉确认，并记录 ELTDX 文档语义误标；仅核验此完整 ELTDX 路径，不建立跨源映射。详见 docs/field_verification/adjudications/20261109_eltdx_chang_qi_fu_zhai.md。",
+      "source_contract": {
+        "authority": "通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位",
+        "revision": "通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+        "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float",
+        "locator": "通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档",
+        "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+      }
+    }
+  ]
+}

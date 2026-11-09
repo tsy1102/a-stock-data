@@ -22,17 +22,17 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 17,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 724,
+      "registry_status_only_single_source": 723,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "status_conflict": 51,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1292,
-      "verified": 1240,
+      "unverified": 1291,
+      "verified": 1241,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 8,
-      "verified_by_source_contract": 202
+      "verified_by_source_contract": 203
     },
     "updated_at": "2026-11-07"
   },
@@ -10104,20 +10104,17 @@
       "sources": [
         "TDX-eltdx(适配层)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float#通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档 @ 通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "canonical": "chang_qi_fu_zhai_raw_float",
+      "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+      "unit": "千元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change",
@@ -45326,6 +45323,9 @@
       "TDX-eltdx(适配层)"
     ],
     "industry_raw": [
+      "TDX-eltdx(适配层)"
+    ],
+    "chang_qi_fu_zhai_raw_float": [
       "TDX-eltdx(适配层)"
     ]
   },
@@ -90677,13 +90677,15 @@
       "code": "chang_qi_fu_zhai_raw_float",
       "identity": "TDX-eltdx(适配层)::chang_qi_fu_zhai_raw_float",
       "path": "chang_qi_fu_zhai_raw_float",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "chang_qi_fu_zhai_raw_float",
+      "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+      "unit": "千元",
+      "section": "source contract: 通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float#通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档 @ 通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: 通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float#通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档 @ 通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -90693,9 +90695,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-chang-qi-fu-zhai-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-chang-qi-fu-zhai-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float#通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档 @ 通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "chang_qi_fu_zhai_raw_float",
+          "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-chang-qi-fu-zhai-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-chang-qi-fu-zhai-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位",
+            "revision": "通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float",
+            "locator": "通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档",
+            "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "chang_qi_fu_zhai_raw_float",
+              "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "chang_qi_fu_zhai_raw_float",
@@ -90708,7 +90746,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-chang-qi-fu-zhai-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_chang_qi_fu_zhai.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "chang_qi_fu_zhai_raw_float",
+              "meaning": "少数股东权益原始值（合并资产负债表口径；最近一期财务数据）",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 FinanceRecord 文档将此字段标为“长期负债原始值”，但同一记录结构把它放在流动负债之后、资本公积之前；通达信官方 FINANCE(15)、(16)、(17) 的相邻定义分别为流动负债、少数股东权益、资本公积金，TQ get_stock_info 亦将 J_cqfz 定义为少数股东权益（万元）。项目 core/eltdx_adapter.py 将此 ELTDX 原始字段映射到 changqifuzhai 并按 qy2jiao 转换。保留样本中，2026-10-15 的三个值与三家公司 2026-06-30 半年报少数股东权益相差 -79.80 至 +759.75 元；2026-11-02/06 的三个值与 2026-09-30 三季报少数股东权益相差 -481.22 至 +678.14 元，均小于一个原始千元单位。样本值乘 1000 后对上公开报表；这些偏差作为源精度/浮点量化处理，不声称逐元精确。结论按官方 TDX 字段定义、FinanceRecord 顺序与发行人报表交叉确认，并记录 ELTDX 文档语义误标；仅核验此完整 ELTDX 路径，不建立跨源映射。详见 docs/field_verification/adjudications/20261109_eltdx_chang_qi_fu_zhai.md。",
+          "source_contract": {
+            "authority": "通达信官方公式 FINANCE 字段定义与 TQ get_stock_info 字段表；ELTDX FinanceRecord 只用于定位返回路径和原始单位",
+            "revision": "通达信官方文档当前版本；ELTDX v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010，FinanceRecord.chang_qi_fu_zhai_raw_float",
+            "locator": "通达信公式系统 FINANCE(15-17)；get_stock_info.J_cqfz；ELTDX FinanceRecord 字段顺序及 7709 财务基础信息文档",
+            "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

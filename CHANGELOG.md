@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - 基于 ELTDX 3.3.2 `FinanceRecord` 契约与 2026-11-05/06 各 20 条留存记录，定案 `updated_date`、`ipo_date`、`province_raw`、`industry_raw`、`record_hex` 五条适配层财务路径；明确更新日不等于公告日或报告期，不反推原始编号表，不建立跨源映射。
 - 基于 ELTDX 3.3.2 `finance_batch` 官方契约、2026-11-05/06 样本与三份 2026Q3 公告，确认 `eps_raw`、流通/总股本、总资产及归母净利润五条适配层路径的来源内含义与单位；未新增跨源映射。
+- 根据通达信 FINANCE(16) 官方定义和三只股票 H1/Q3 报表，定案 ELTDX `chang_qi_fu_zhai_raw_float` 为千元口径少数股东权益；记录 ELTDX v3.3.2 文档误标及亚千元差值，不更改仍有元数据冲突的原生 TDX 注册项。
 - 依据通达信官方内外盘定义、项目适配器路径和 278 组留存行情，确认 TDX `b_vol` / `s_vol` 的来源内语义与证券类型单位；仅归并其已验证的 `quote_full` 包装别名，不建立 Tencent / 东财单侧映射。
 - 基于 2026-11-02 至 2026-11-06 保留的东财 Ulist / clist 同日响应及官方板块页标签，补齐 clist `f128/f140/f136` 与 Ulist `f101/f146` 的来源内语义；按完整来源路径收敛状态，保留 Ulist `f145` 未决。
 - Add an audited official-page observation path for source-only field semantics, with retained-sample checks, provider-host validation, exact evidence snapshots, and no cross-source mappings.

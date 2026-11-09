@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 119 个 code；聚合定义不完整 230 个 code；疑似合并文本 325 条逐源记录。
+> 聚合歧义 119 个 code；聚合定义不完整 230 个 code；疑似合并文本 326 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3604,6 +3604,7 @@
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
 | TDX(双命名源) | `total_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
+| TDX-eltdx(适配层) | `chang_qi_fu_zhai_raw_float` | chang_qi_fu_zhai_raw_float | 少数股东权益原始值（合并资产负债表口径；最近一期财务数据） | `verified` |
 | TDX-eltdx(适配层) | `close` | time / open / high / low / close | 时间 / OHLC | `unverified` |
 | TDX-eltdx(适配层) | `down_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
 | TDX-eltdx(适配层) | `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | `verified` |

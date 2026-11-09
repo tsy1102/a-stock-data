@@ -259,6 +259,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "liu_tong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},
         "zong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},
         "zong_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "chang_qi_fu_zhai_raw_float": {"TDX-eltdx(适配层)"},
         "bid2": {"TDX(双命名源)"},
         "bid3": {"TDX(双命名源)"},
         "bid4": {"TDX(双命名源)"},

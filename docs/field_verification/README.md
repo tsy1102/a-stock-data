@@ -46,6 +46,8 @@
 - [`adjudications/20261109_zhb_accounting_metadata_corrections.md`](adjudications/20261109_zhb_accounting_metadata_corrections.md)：以 2026-11-06 保留 ZHB 文件和两家发行人的官方三季报，纠正 `ZHB-tdxstat::[25]`、`[34]` 的字段名与单位；解析值和兼容键不变。
 - [`adjudications/20261109_tdx_order_book_price_levels.md`](adjudications/20261109_tdx_order_book_price_levels.md)：依据通达信官方五档盘口契约和项目适配路径，定案 TDX `bid2..bid5` / `ask2..ask5` 的来源内含义；300 条保留期 TDX 原始记录均无深档样本，故不登记跨源映射，并保留官方未注明的单位边界。
 
+- [`adjudications/20261109_eltdx_chang_qi_fu_zhai.md`](adjudications/20261109_eltdx_chang_qi_fu_zhai.md)：基于 TDX 官方 FINANCE(16) 定义、ELTDX v3.3.2 FinanceRecord 路径和三只股票 H1/Q3 报表，定案该适配层路径为千元口径少数股东权益；记录上游文档误标、浮点/来源精度差及原生 TDX 注册冲突边界。
+
 ## 归档格式
 
 ```text

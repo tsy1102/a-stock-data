@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-tdx-bid2-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "bid2"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "bid2",
+      "meaning": "买二价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid2 表示买盘第二档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-bid3-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "bid3"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "bid3",
+      "meaning": "买三价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid3 表示买盘第三档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-bid4-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "bid4"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "bid4",
+      "meaning": "买四价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid4 表示买盘第四档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-bid5-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "bid5"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "bid5",
+      "meaning": "买五价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid5 表示买盘第五档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-ask2-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "ask2"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "ask2",
+      "meaning": "卖二价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask2 表示卖盘第二档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-ask3-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "ask3"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "ask3",
+      "meaning": "卖三价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask3 表示卖盘第三档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-ask4-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "ask4"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "ask4",
+      "meaning": "卖四价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask4 表示卖盘第四档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-ask5-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "ask5"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "ask5",
+      "meaning": "卖五价",
+      "unit": "官方文档未注明",
+      "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask5 表示卖盘第五档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+      "source_contract": {
+        "authority": "通达信量化平台官方实时行情接口",
+        "revision": "官方在线接口文档，2026-11-09 检索",
+        "path": "批量获取实时行情快照 get_market_snapshot_batch",
+        "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

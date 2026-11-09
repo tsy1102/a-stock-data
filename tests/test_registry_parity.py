@@ -1,3 +1,4 @@
+import copy
 import json
 from datetime import date
 from pathlib import Path
@@ -210,11 +211,68 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1861/2478/347)" in output
-    assert "parity[unverified-candidates]: PASS 129" in output
+    assert "registry-core(1869/2486/347)" in output
+    assert "parity[unverified-candidates]: PASS 121" in output
+    assert "parity[source-contract-adjudications]: PASS 8" in output
     assert "parity[adjudication-addenda]: PASS 8" in output
     assert "parity[capture-path-addenda]: PASS 2" in output
     assert "parity[field_matrix]: PASS" in output
+
+
+def test_source_contract_adjudications_are_validated_and_counted_separately():
+    registry = registry_parity.fra.load_registry()
+    records = registry_parity.fra.source_field_records(registry)
+    base = registry_parity.afc.registered_field_sets()
+    base_pairs = {(source, code) for source, codes in base.items() for code in codes}
+    e3_pairs, _, _ = registry_parity._validated_addenda(registry, records, base_pairs)
+    contract_pairs, _, _ = registry_parity._validated_contract_addenda(
+        registry, records, base_pairs
+    )
+    observation_pairs, _, _ = registry_parity._validated_observation_addenda(
+        registry, records, base_pairs
+    )
+    declared_pairs = e3_pairs | contract_pairs | observation_pairs
+
+    pairs, matrix, problems = registry_parity._validated_source_contract_adjudications(
+        registry, records, base_pairs, declared_pairs
+    )
+
+    assert problems == []
+    assert pairs == {
+        ("TDX(双命名源)", "bid2"),
+        ("TDX(双命名源)", "bid3"),
+        ("TDX(双命名源)", "bid4"),
+        ("TDX(双命名源)", "bid5"),
+        ("TDX(双命名源)", "ask2"),
+        ("TDX(双命名源)", "ask3"),
+        ("TDX(双命名源)", "ask4"),
+        ("TDX(双命名源)", "ask5"),
+    }
+    assert matrix == {
+        "bid2": {"TDX(双命名源)"},
+        "bid3": {"TDX(双命名源)"},
+        "bid4": {"TDX(双命名源)"},
+        "bid5": {"TDX(双命名源)"},
+        "ask2": {"TDX(双命名源)"},
+        "ask3": {"TDX(双命名源)"},
+        "ask4": {"TDX(双命名源)"},
+        "ask5": {"TDX(双命名源)"},
+    }
+
+
+def test_source_contract_parity_rejects_registry_adjudication_tampering():
+    registry = copy.deepcopy(registry_parity.fra.load_registry())
+    records = registry_parity.fra.source_field_records(registry)
+    target = next(
+        row for row in records if row["source"] == "TDX(双命名源)" and row["code"] == "bid2"
+    )
+    target["adjudications"][0]["rationale"] = "tampered"
+
+    _, _, problems = registry_parity._validated_source_contract_adjudications(
+        registry, registry_parity.fra.source_field_records(registry), set(), set()
+    )
+
+    assert any("注册表定案记录与决策文件不一致" in problem for problem in problems)
 
 
 def test_adjudication_plan_validates_target_source_and_allows_runtime_alias_paths():

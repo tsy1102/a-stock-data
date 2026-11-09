@@ -81,7 +81,7 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | 脚本 | 用途与写入行为 |
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
-| `registry_parity.py` | 校验历史来源基线、字段登记表、主字典投影和字段矩阵；已裁决补录需与裁决文件及目标来源身份一致，根路径补录需有保留期内样本，未验证候选必须仍在 `unknown_fields.md` 中。`registry_parity_scope.json` 只保留不纳入破解队列的 Fuyao 上下文标签；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
+| `registry_parity.py` | 校验历史来源基线、字段登记表、主字典投影和字段矩阵；源契约定案独立重放并核对决策、注册表证据和矩阵补录，碰撞定案与采集根路径补录也须可追溯；未验证候选必须仍在 `unknown_fields.md` 中。`registry_parity_scope.json` 只保留不纳入破解队列的 Fuyao 上下文标签；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
 | `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、固定版本的单源上游契约，以及有来源独立性检查和 CSV 复算的公式关系定案。校验与内存变换委托给相邻模块；公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
 | `derived_relation_evidence.py` | 定案器调用的公式证据校验模块；限制算术语法与本地样本范围，核验来源族、已验证输入、有效日期和样本误差。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |

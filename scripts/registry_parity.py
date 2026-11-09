@@ -16,6 +16,7 @@ audit_field_completeness.registered_field_sets() 抽取。字段注册表还包�
 
 from __future__ import annotations
 
+import copy
 import io
 import json
 import os
@@ -47,6 +48,7 @@ import audit_field_completeness as afc
 import gen_field_matrix as gm
 import field_registry_api as fra
 import public_web_adjudications as pwa
+import apply_collision_adjudications as aca
 import capture_retention
 
 
@@ -96,6 +98,10 @@ def main(argv=None):
         reg, source_records, base_pairs
     )
     declared_pairs = e3_pairs | contract_pairs | observation_pairs
+    source_contract_pairs, source_contract_matrix, source_contract_problems = (
+        _validated_source_contract_adjudications(reg, source_records, base_pairs, declared_pairs)
+    )
+    declared_pairs |= source_contract_pairs
     adjudication_pairs, adjudication_matrix, adjudication_problems = (
         _validated_adjudication_addenda(reg, source_records, base_pairs | declared_pairs)
     )
@@ -110,11 +116,14 @@ def main(argv=None):
     for additional_matrix in (
         contract_matrix,
         observation_matrix,
+        source_contract_matrix,
         adjudication_matrix,
     ):
         for key, value in additional_matrix.items():
             matrix_addenda.setdefault(key, set()).update(value)
-    addenda_problems = e3_problems + contract_problems + observation_problems
+    addenda_problems = (
+        e3_problems + contract_problems + observation_problems + source_contract_problems
+    )
     actual_pairs = {(record["source"], record["code"]) for record in source_records}
     scope_entries, scope_problems = _load_scope_manifest(args.scope_manifest)
     if scope_entries is None:
@@ -176,7 +185,7 @@ def main(argv=None):
 
     expected_label = (
         "baseline-scope-adjusted+E3+official-contract+observation+public-web+"
-        "adjudication+capture-path-addenda"
+        "source-contract-adjudications+adjudication+capture-path-addenda"
     )
     if accepted_missing_pairs is not None:
         expected_label += "-accepted-debt-adjusted"
@@ -190,6 +199,10 @@ def main(argv=None):
     print(
         f"parity[unverified-candidates]: {'PASS' if not candidate_problems else 'FAIL'} "
         f"{len(candidate_pairs)} 条未验证候选已列入 unknown_fields ({candidate_counts})"
+    )
+    print(
+        f"parity[source-contract-adjudications]: "
+        f"{'PASS' if not source_contract_problems else 'FAIL'} {len(source_contract_pairs)} 条"
     )
     print(
         f"parity[adjudication-addenda]: "
@@ -726,6 +739,317 @@ def _validated_adjudication_addenda(
                 matrix_addenda.setdefault(canonical, set()).add(pair[0])
 
     return declared, matrix_addenda, problems
+
+
+def _validated_source_contract_adjudications(
+    reg: dict,
+    source_records: list[dict],
+    base_pairs: set[tuple[str, str]],
+    declared_pairs: set[tuple[str, str]],
+) -> tuple[set[tuple[str, str]], dict[str, set[str]], list[str]]:
+    """Validate verified paths admitted by source-contract adjudication files."""
+    source_actions = {"verify_source_contract", "correct_verified_metadata"}
+    verification_root = Path(REPO_ROOT, "docs", "field_verification").resolve()
+    rows = {(row["source"], row["code"]): row for row in source_records}
+    declared: set[tuple[str, str]] = set()
+    matrix_addenda: dict[str, set[str]] = {}
+    problems: list[str] = []
+    seen_ids: set[str] = set()
+    decision_cache: dict[str, dict[str, Any] | None] = {}
+    persisted_ids_by_file: dict[str, set[str]] = {}
+    decision_rows_by_file: dict[str, dict[str, tuple[tuple[str, str], dict, dict, dict, str]]] = {}
+    invalid_pairs: set[tuple[str, str]] = set()
+
+    for pair, row in rows.items():
+        history = row.get("adjudications", [])
+        is_source_contract_status = row.get("status_resolution") == "verified_by_source_contract"
+        if not isinstance(history, list):
+            if is_source_contract_status:
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案历史必须为数组")
+            continue
+        source_entries = [
+            item
+            for item in history
+            if isinstance(item, dict)
+            and (
+                item.get("action") in source_actions
+                or item.get("evidence_basis") == "authoritative_source_contract"
+            )
+        ]
+        if is_source_contract_status and not source_entries:
+            problems.append(f"{pair[0]}::{pair[1]} 缺少源契约定案记录")
+            continue
+        if not source_entries:
+            continue
+
+        row_valid = True
+        for adjudication in source_entries:
+            if adjudication.get("action") not in source_actions:
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案 action 无效")
+                row_valid = False
+                continue
+            if adjudication.get("evidence_basis") != "authoritative_source_contract":
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案 evidence_basis 无效")
+                row_valid = False
+                continue
+            decision_id = adjudication.get("id")
+            if not isinstance(decision_id, str) or not decision_id:
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案缺少 id")
+                row_valid = False
+                continue
+            if decision_id in seen_ids:
+                problems.append(f"源契约定案 id 重复: {decision_id}")
+                row_valid = False
+                continue
+            seen_ids.add(decision_id)
+
+            decision_file = adjudication.get("decision_file")
+            if not isinstance(decision_file, str) or not decision_file:
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案缺少决策文件")
+                row_valid = False
+                continue
+            decision_path = _safe_repo_path(verification_root, decision_file)
+            if decision_path is None or not decision_path.is_file():
+                problems.append(f"{pair[0]}::{pair[1]} 源契约决策文件不存在或越界: {decision_file}")
+                row_valid = False
+                continue
+            cache_key = str(decision_path)
+            if cache_key not in decision_cache:
+                try:
+                    with io.open(decision_path, encoding="utf-8") as handle:
+                        decision_cache[cache_key] = json.load(handle)
+                except (OSError, ValueError, TypeError) as exc:
+                    problems.append(f"源契约决策文件无法读取 {decision_file}: {exc}")
+                    decision_cache[cache_key] = None
+            document = decision_cache[cache_key]
+            if not isinstance(document, dict):
+                row_valid = False
+                continue
+            file_ids = _source_contract_document_ids(document, decision_file, problems)
+            if file_ids is None:
+                row_valid = False
+                continue
+
+            decisions = document.get("decisions", [])
+            matches = [
+                item
+                for item in decisions
+                if isinstance(item, dict) and item.get("id") == decision_id
+            ]
+            if len(matches) != 1:
+                problems.append(
+                    f"{pair[0]}::{pair[1]} 决策文件中的定案 id 不唯一或缺失: {decision_id}"
+                )
+                row_valid = False
+                continue
+            decision = matches[0]
+            target = decision.get("target")
+            if not isinstance(target, dict) or (target.get("source"), target.get("code")) != pair:
+                problems.append(f"{pair[0]}::{pair[1]} 定案目标与注册表身份不一致: {decision_id}")
+                row_valid = False
+                continue
+
+            file_rows = decision_rows_by_file.setdefault(cache_key, {})
+            if decision_id in file_rows:
+                problems.append(f"源契约决策 id 在注册表中重复: {decision_id}")
+                row_valid = False
+                continue
+            file_rows[decision_id] = (pair, row, adjudication, decision, decision_file)
+            persisted_ids_by_file.setdefault(cache_key, set()).add(decision_id)
+
+        if is_source_contract_status:
+            if row.get("status") != "verified":
+                problems.append(f"{pair[0]}::{pair[1]} 源契约定案字段必须为 verified")
+                row_valid = False
+            latest = source_entries[-1]
+            metadata_change = latest.get("metadata_change")
+            after = metadata_change.get("after") if isinstance(metadata_change, dict) else None
+            current_metadata = {key: row.get(key, "") for key in ("canonical", "meaning", "unit")}
+            if after != current_metadata:
+                problems.append(f"{pair[0]}::{pair[1]} 最新源契约元数据与注册表不一致")
+                row_valid = False
+            status_evidence = row.get("status_evidence")
+            if not isinstance(status_evidence, dict):
+                problems.append(f"{pair[0]}::{pair[1]} 缺少源契约 status_evidence")
+                row_valid = False
+            else:
+                for key in ("adjudication_ids", "source_contract_adjudication_ids"):
+                    values = status_evidence.get(key)
+                    if not isinstance(values, list) or any(
+                        item.get("id") not in values
+                        for item in source_entries
+                        if isinstance(item.get("id"), str)
+                    ):
+                        problems.append(f"{pair[0]}::{pair[1]} status_evidence.{key} 不完整")
+                        row_valid = False
+        if not row_valid:
+            invalid_pairs.add(pair)
+
+        if row_valid and is_source_contract_status and pair not in (base_pairs | declared_pairs):
+            declared.add(pair)
+            canonical = row.get("canonical")
+            if isinstance(canonical, str) and canonical:
+                matrix_addenda.setdefault(canonical, set()).add(pair[0])
+
+    for cache_key, document in decision_cache.items():
+        if not isinstance(document, dict):
+            continue
+        relative_path = str(Path(cache_key).relative_to(verification_root)).replace(os.sep, "/")
+        expected_ids = _source_contract_document_ids(document, relative_path, problems)
+        persisted_ids = persisted_ids_by_file.get(cache_key, set())
+        if expected_ids is not None and expected_ids != persisted_ids:
+            missing = sorted(expected_ids - persisted_ids)
+            extra = sorted(persisted_ids - expected_ids)
+            problems.append(
+                f"源契约决策文件与注册表历史覆盖不一致 {relative_path}: "
+                f"缺少 {missing[:5]}，多出 {extra[:5]}"
+            )
+            invalid_pairs.update(
+                entry[0] for entry in decision_rows_by_file.get(cache_key, {}).values()
+            )
+            continue
+
+        file_rows = decision_rows_by_file.get(cache_key, {})
+        if expected_ids is None or set(file_rows) != expected_ids:
+            invalid_pairs.update(entry[0] for entry in file_rows.values())
+            continue
+        replay_registry = copy.deepcopy(reg)
+        replay_rows = {
+            (item["source"], item["code"]): item
+            for item in fra.source_field_records(replay_registry)
+        }
+        reset_failed = False
+        for decision_id, (pair, _, _, decision, _) in file_rows.items():
+            replay_row = replay_rows.get(pair)
+            previous = decision.get("previous")
+            if replay_row is None or not isinstance(previous, dict):
+                problems.append(f"{pair[0]}::{pair[1]} 无法重建源契约定案的前置字段状态")
+                invalid_pairs.add(pair)
+                reset_failed = True
+                continue
+            replay_row.update(
+                {
+                    "status": decision.get("previous_status"),
+                    "status_resolution": decision.get("previous_status_resolution"),
+                    "canonical": previous.get("canonical", ""),
+                    "meaning": previous.get("meaning", ""),
+                    "unit": previous.get("unit", ""),
+                }
+            )
+            replay_row["adjudications"] = [
+                item
+                for item in replay_row.get("adjudications", [])
+                if not isinstance(item, dict) or item.get("id") != decision_id
+            ]
+            replay_row["reference_evidence"] = [
+                item
+                for item in replay_row.get("reference_evidence", [])
+                if not isinstance(item, dict) or item.get("adjudication_id") != decision_id
+            ]
+            status_evidence = replay_row.get("status_evidence")
+            if isinstance(status_evidence, dict):
+                for key in ("adjudication_ids", "source_contract_adjudication_ids"):
+                    values = status_evidence.get(key)
+                    if isinstance(values, list):
+                        status_evidence[key] = [value for value in values if value != decision_id]
+        if reset_failed:
+            continue
+
+        decision_file = next(iter(file_rows.values()))[4]
+        try:
+            replayed_registry, _ = aca.apply_source_contract_adjudications(
+                replay_registry, document, decision_file
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            problems.append(f"源契约定案批次重放失败 {relative_path}: {exc}")
+            invalid_pairs.update(entry[0] for entry in file_rows.values())
+            continue
+
+        replayed_rows = {
+            (item["source"], item["code"]): item
+            for item in fra.source_field_records(replayed_registry)
+        }
+        for decision_id, (pair, row, adjudication, _, _) in file_rows.items():
+            replayed_row = replayed_rows.get(pair, {})
+            expected_adjudications = [
+                item
+                for item in replayed_row.get("adjudications", [])
+                if isinstance(item, dict) and item.get("id") == decision_id
+            ]
+            persisted_adjudications = [
+                item
+                for item in row.get("adjudications", [])
+                if isinstance(item, dict) and item.get("id") == decision_id
+            ]
+            if (
+                len(expected_adjudications) != 1
+                or persisted_adjudications != expected_adjudications
+            ):
+                problems.append(
+                    f"{pair[0]}::{pair[1]} 注册表定案记录与决策文件不一致: {decision_id}"
+                )
+                invalid_pairs.add(pair)
+            replayed_refs = [
+                item
+                for item in replayed_row.get("reference_evidence", [])
+                if isinstance(item, dict) and item.get("adjudication_id") == decision_id
+            ]
+            persisted_refs = [
+                item
+                for item in row.get("reference_evidence", [])
+                if isinstance(item, dict) and item.get("adjudication_id") == decision_id
+            ]
+            if len(replayed_refs) != 1 or persisted_refs != replayed_refs:
+                problems.append(f"{pair[0]}::{pair[1]} 注册表源契约引用证据不一致: {decision_id}")
+                invalid_pairs.add(pair)
+
+    declared.difference_update(invalid_pairs)
+    matrix_addenda.clear()
+    for pair in declared:
+        canonical = rows[pair].get("canonical")
+        if isinstance(canonical, str) and canonical:
+            matrix_addenda.setdefault(canonical, set()).add(pair[0])
+
+    return declared, matrix_addenda, problems
+
+
+def _source_contract_document_ids(
+    document: dict, decision_file: str, problems: list[str]
+) -> set[str] | None:
+    if document.get("schema_version") != 1 or document.get("evidence_basis") != "source_contract":
+        problems.append(f"源契约决策文件 schema/evidence_basis 无效: {decision_file}")
+        return None
+    decisions = document.get("decisions")
+    if not isinstance(decisions, list) or not decisions:
+        problems.append(f"源契约决策文件 decisions 必须为非空数组: {decision_file}")
+        return None
+    ids: set[str] = set()
+    targets: set[tuple[str, str]] = set()
+    for item in decisions:
+        if not isinstance(item, dict):
+            problems.append(f"源契约决策文件包含非对象定案: {decision_file}")
+            return None
+        decision_id = item.get("id")
+        target = item.get("target")
+        if not isinstance(decision_id, str) or not decision_id or decision_id in ids:
+            problems.append(f"源契约决策文件 id 缺失或重复: {decision_file}")
+            return None
+        if (
+            not isinstance(target, dict)
+            or not isinstance(target.get("source"), str)
+            or not target.get("source")
+            or not isinstance(target.get("code"), str)
+            or not target.get("code")
+        ):
+            problems.append(f"源契约决策文件目标身份无效: {decision_file}#{decision_id}")
+            return None
+        identity = (target["source"], target["code"])
+        if identity in targets:
+            problems.append(f"源契约决策文件重复目标: {decision_file} {identity}")
+            return None
+        ids.add(decision_id)
+        targets.add(identity)
+    return ids
 
 
 def _validate_adjudicated_row(

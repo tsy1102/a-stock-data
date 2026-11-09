@@ -30,6 +30,7 @@ VERIFY_DIR = REPO_ROOT / "docs" / "field_verification"
 REGISTRY_PATH = VERIFY_DIR / "field_registry.json"
 LINEAGE_PATH = VERIFY_DIR / "source_lineage.json"
 FIELD_DICT_PATH = REPO_ROOT / "docs" / "field_dict.md"
+FIELD_MATRIX_PATH = REPO_ROOT / "docs" / "field_matrix.md"
 UNKNOWN_FIELDS_PATH = REPO_ROOT / "docs" / "unknown_fields.md"
 SOURCE_MAP_PATH = REPO_ROOT / "docs" / "source_repository_map.md"
 METADATA_GAPS_PATH = REPO_ROOT / "docs" / "field_metadata_gaps.md"
@@ -44,6 +45,7 @@ import public_web_adjudications as pwa
 import collision_candidate_reviews as ccr
 import derived_relation_evidence as dre
 import gen_field_dict as gfd
+import gen_field_matrix as gfm
 import source_lineage_api as sla
 
 from scripts.collision_adjudication_validation import (
@@ -694,6 +696,8 @@ def apply_source_contract_adjudications(
                 raise ValueError(
                     f"decision id already exists with different content: {decision_id}"
                 )
+            if action == "verify_source_contract":
+                _add_source_contract_matrix_source(updated, target[0], canonical)
             stats["already_applied"] += 1
             continue
 
@@ -740,6 +744,8 @@ def apply_source_contract_adjudications(
         target_record["status"] = "verified"
         target_record["status_resolution"] = "verified_by_source_contract"
         target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
+        if action == "verify_source_contract":
+            _add_source_contract_matrix_source(updated, target[0], canonical)
 
         reference_evidence = target_record.setdefault("reference_evidence", [])
         if not isinstance(reference_evidence, list):
@@ -792,6 +798,24 @@ def apply_source_contract_adjudications(
     if affected_codes:
         _refresh_aggregate_projection(updated, affected_codes)
     return updated, stats
+
+
+def _add_source_contract_matrix_source(
+    registry: dict[str, Any], source: str, canonical: str
+) -> None:
+    """Keep the registry field-matrix projection in sync with newly verified fields."""
+    field_matrix = registry.get("field_matrix")
+    if field_matrix is None:
+        field_matrix = {}
+        registry["field_matrix"] = field_matrix
+    if not isinstance(field_matrix, dict):
+        raise TypeError("registry.field_matrix must be an object")
+    sources = field_matrix.setdefault(canonical, [])
+    if not isinstance(sources, list) or any(not isinstance(item, str) for item in sources):
+        raise TypeError(f"registry.field_matrix[{canonical!r}] must be a list of source names")
+    if source not in sources:
+        sources.append(source)
+        sources.sort()
 
 
 def _prepare_derived_relation_decision(
@@ -1039,19 +1063,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.apply:
             print("Preview only. Re-run with --apply after reviewing the proposed decisions.")
             return 0
-        if not any(
-            stats.get(key, 0)
-            for key in (
-                "verified",
-                "source_contract_verified",
-                "public_web_observation_verified",
-                "derived_relation_verified",
-                "metadata_enriched",
-                "linked",
-                "anchor_metadata_corrected",
-                "mappings_added",
-            )
-        ):
+        if updated == registry:
             print("All decisions were already applied; no files changed.")
             return 0
 
@@ -1065,11 +1077,23 @@ def main(argv: list[str] | None = None) -> int:
             METADATA_GAPS_PATH: gfd.render_field_metadata_gaps(updated),
             AGGREGATE_REVIEW_PATH: gfd.render_field_aggregate_review(updated),
         }
+        if updated.get("field_matrix") != registry.get("field_matrix"):
+            matrix_view = fra.field_matrix_map(updated)
+            matrix_sets = {key: set(value) for key, value in matrix_view.items()}
+            outputs[FIELD_MATRIX_PATH] = gfm.render_document(
+                matrix_sets, sum(len(value) for value in matrix_sets.values())
+            )
         _atomic_write_batch(outputs)
-        print(
-            "Updated field_registry.json and regenerated field_dict.md, unknown_fields.md, "
-            "source_repository_map.md, field_metadata_gaps.md, field_aggregate_review.md"
-        )
+        generated_views = [
+            "field_dict.md",
+            "unknown_fields.md",
+            "source_repository_map.md",
+            "field_metadata_gaps.md",
+            "field_aggregate_review.md",
+        ]
+        if FIELD_MATRIX_PATH in outputs:
+            generated_views.insert(1, "field_matrix.md")
+        print("Updated field_registry.json and regenerated " + ", ".join(generated_views))
         return 0
     except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

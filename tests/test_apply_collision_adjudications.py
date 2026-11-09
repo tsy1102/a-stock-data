@@ -611,6 +611,7 @@ def test_source_contract_verifies_one_field_without_creating_cross_source_mappin
     assert target["reference_evidence"][-1]["source_contract"]["revision"] == (
         "接口文档 2026-10-10"
     )
+    assert updated["field_matrix"]["market.metric"] == ["target-source"]
     assert updated["mappings"] == []
     assert stats == {
         "source_contract_verified": 1,
@@ -1051,6 +1052,63 @@ def test_cli_applies_source_contract_and_loads_lineage_for_generated_view(tmp_pa
     assert target["status"] == "verified"
     assert captured_outputs[adjudication_module.SOURCE_MAP_PATH] == "source map\n"
     assert captured_outputs[adjudication_module.AGGREGATE_REVIEW_PATH] == "aggregate review\n"
+
+
+def test_cli_idempotent_source_contract_repairs_missing_matrix_projection(
+    tmp_path, monkeypatch, capsys
+):
+    registry, document = _source_contract_inputs()
+    registry, _ = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract.json"
+    )
+    registry["field_matrix"].pop("market.metric")
+    verify_dir = tmp_path / "docs" / "field_verification"
+    decisions_dir = verify_dir / "adjudications"
+    decisions_dir.mkdir(parents=True)
+    registry_path = verify_dir / "field_registry.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    decision_path = decisions_dir / "source_contract.json"
+    decision_path.write_text(json.dumps(document), encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    monkeypatch.setattr(adjudication_module, "REGISTRY_PATH", registry_path)
+    monkeypatch.setattr(
+        adjudication_module, "FIELD_MATRIX_PATH", tmp_path / "docs" / "field_matrix.md"
+    )
+    monkeypatch.setattr(adjudication_module, "LINEAGE_PATH", verify_dir / "source_lineage.json")
+    monkeypatch.setattr(
+        adjudication_module.sla, "load_source_lineage", lambda *a, **k: {"sources": {}}
+    )
+    monkeypatch.setattr(adjudication_module.gfd, "render_field_dict", lambda _registry: "dict\n")
+    monkeypatch.setattr(
+        adjudication_module.gfd, "render_unknown_fields", lambda _registry: "unknown\n"
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfd,
+        "render_source_repository_map",
+        lambda _registry, _lineage: "source map\n",
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfd, "render_field_metadata_gaps", lambda _registry: "metadata gaps\n"
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfd,
+        "render_field_aggregate_review",
+        lambda _registry: "aggregate review\n",
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfm, "render_document", lambda _sources, _records: "field matrix\n"
+    )
+    captured_outputs = {}
+    monkeypatch.setattr(adjudication_module, "_atomic_write_batch", captured_outputs.update)
+
+    result = adjudication_module.main(["--decisions", str(decision_path), "--apply"])
+
+    assert result == 0
+    assert '"already_applied": 1' in capsys.readouterr().out
+    updated = json.loads(captured_outputs[registry_path])
+    assert updated["field_matrix"]["market.metric"] == ["target-source"]
+    assert captured_outputs[adjudication_module.FIELD_MATRIX_PATH] == "field matrix\n"
 
 
 @pytest.mark.parametrize(

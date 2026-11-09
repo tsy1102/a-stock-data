@@ -22,17 +22,17 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 17,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 735,
+      "registry_status_only_single_source": 727,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "status_conflict": 51,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1310,
-      "verified": 1222,
+      "unverified": 1302,
+      "verified": 1230,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 8,
-      "verified_by_source_contract": 184
+      "verified_by_source_contract": 192
     },
     "updated_at": "2026-11-07"
   },
@@ -8309,20 +8309,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "ask2",
+      "meaning": "卖二价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ask3",
@@ -8330,20 +8327,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "ask3",
+      "meaning": "卖三价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ask4",
@@ -8351,20 +8345,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "ask4",
+      "meaning": "卖四价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ask5",
@@ -8372,20 +8363,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "ask5",
+      "meaning": "卖五价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ask_time",
@@ -9299,20 +9287,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "bid2",
+      "meaning": "买二价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "bid3",
@@ -9320,20 +9305,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "bid3",
+      "meaning": "买三价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "bid4",
@@ -9341,20 +9323,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "bid4",
+      "meaning": "买四价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "bid5",
@@ -9362,20 +9341,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "canonical": "bid5",
+      "meaning": "买五价",
+      "unit": "官方文档未注明",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "bid_ask_ratio",
@@ -45327,6 +45303,30 @@
     ],
     "StaffNum": [
       "TDX(双命名源)"
+    ],
+    "bid2": [
+      "TDX(双命名源)"
+    ],
+    "bid3": [
+      "TDX(双命名源)"
+    ],
+    "bid4": [
+      "TDX(双命名源)"
+    ],
+    "bid5": [
+      "TDX(双命名源)"
+    ],
+    "ask2": [
+      "TDX(双命名源)"
+    ],
+    "ask3": [
+      "TDX(双命名源)"
+    ],
+    "ask4": [
+      "TDX(双命名源)"
+    ],
+    "ask5": [
+      "TDX(双命名源)"
     ]
   },
   "mappings": [
@@ -78795,13 +78795,15 @@
       "code": "ask2",
       "identity": "TDX(双命名源)::ask2",
       "path": "ask2",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "ask2",
+      "meaning": "卖二价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -78811,9 +78813,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-ask2-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-ask2-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "ask2",
+          "meaning": "卖二价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-ask2-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-ask2-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask2",
+              "meaning": "卖二价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ask2",
@@ -78826,20 +78864,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-ask2-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask2",
+              "meaning": "卖二价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask2 表示卖盘第二档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "ask3",
       "identity": "TDX(双命名源)::ask3",
       "path": "ask3",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "ask3",
+      "meaning": "卖三价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -78849,9 +78925,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-ask3-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-ask3-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "ask3",
+          "meaning": "卖三价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-ask3-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-ask3-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask3",
+              "meaning": "卖三价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ask3",
@@ -78864,20 +78976,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-ask3-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask3",
+              "meaning": "卖三价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask3 表示卖盘第三档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "ask4",
       "identity": "TDX(双命名源)::ask4",
       "path": "ask4",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "ask4",
+      "meaning": "卖四价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -78887,9 +79037,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-ask4-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-ask4-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "ask4",
+          "meaning": "卖四价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-ask4-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-ask4-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask4",
+              "meaning": "卖四价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ask4",
@@ -78902,20 +79088,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-ask4-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask4",
+              "meaning": "卖四价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask4 表示卖盘第四档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "ask5",
       "identity": "TDX(双命名源)::ask5",
       "path": "ask5",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "ask5",
+      "meaning": "卖五价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -78925,9 +79149,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-ask5-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-ask5-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "ask5",
+          "meaning": "卖五价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-ask5-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-ask5-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask5",
+              "meaning": "卖五价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ask5",
@@ -78940,7 +79200,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-ask5-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ask5",
+              "meaning": "卖五价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Sellp 定义为五档卖价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 sell_levels 的顺序把第 1 至第 5 档写为 ask1 至 ask5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 ask5 表示卖盘第五档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Sellp：五档卖价（5 个元素）；样例中的 Sellp 数组按卖盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -79478,13 +79774,15 @@
       "code": "bid2",
       "identity": "TDX(双命名源)::bid2",
       "path": "bid2",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "bid2",
+      "meaning": "买二价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -79494,9 +79792,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-bid2-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-bid2-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "bid2",
+          "meaning": "买二价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-bid2-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-bid2-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid2",
+              "meaning": "买二价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "bid2",
@@ -79509,20 +79843,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-bid2-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid2",
+              "meaning": "买二价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid2 表示买盘第二档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "bid3",
       "identity": "TDX(双命名源)::bid3",
       "path": "bid3",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "bid3",
+      "meaning": "买三价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -79532,9 +79904,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-bid3-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-bid3-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "bid3",
+          "meaning": "买三价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-bid3-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-bid3-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid3",
+              "meaning": "买三价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "bid3",
@@ -79547,20 +79955,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-bid3-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid3",
+              "meaning": "买三价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid3 表示买盘第三档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "bid4",
       "identity": "TDX(双命名源)::bid4",
       "path": "bid4",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "bid4",
+      "meaning": "买四价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -79570,9 +80016,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-bid4-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-bid4-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "bid4",
+          "meaning": "买四价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-bid4-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-bid4-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid4",
+              "meaning": "买四价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "bid4",
@@ -79585,20 +80067,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-bid4-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid4",
+              "meaning": "买四价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid4 表示买盘第四档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "bid5",
       "identity": "TDX(双命名源)::bid5",
       "path": "bid5",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "bid5",
+      "meaning": "买五价",
+      "unit": "官方文档未注明",
+      "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+      "sections": [
+        "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -79608,9 +80128,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-bid5-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-bid5-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台官方实时行情接口 · 批量获取实时行情快照 get_market_snapshot_batch#返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值 @ 官方在线接口文档，2026-11-09 检索",
+          "canonical": "bid5",
+          "meaning": "买五价",
+          "unit": "官方文档未注明",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-bid5-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-bid5-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid5",
+              "meaning": "买五价",
+              "unit": "官方文档未注明"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "bid5",
@@ -79623,7 +80179,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-bid5-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_order_book_price_levels.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bid5",
+              "meaning": "买五价",
+              "unit": "官方文档未注明"
+            }
+          },
+          "rationale": "通达信官方快照契约将 Buyp 定义为五档买价数组。项目 TDX 原始报价经 tdx_get_quote_raw 保留适配器行；ELTDX 适配器按 buy_levels 的顺序把第 1 至第 5 档写为 bid1 至 bid5，EasyTdx 适配器则原样返回 get_security_quotes 行。因此 bid5 表示买盘第五档价格。本结论只确认来源内语义。保留期 300 条 TDX 原始股票记录没有 bid2/ask2 及更深档样本，故不宣称有历史数值碰撞支持，不创建跨源映射。官方页面没有注明该数组的单位，按未注明保留。",
+          "source_contract": {
+            "authority": "通达信量化平台官方实时行情接口",
+            "revision": "官方在线接口文档，2026-11-09 检索",
+            "path": "批量获取实时行情快照 get_market_snapshot_batch",
+            "locator": "返回字段表 Buyp：五档买价（5 个元素）；样例中的 Buyp 数组按买盘档位顺序列值",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",

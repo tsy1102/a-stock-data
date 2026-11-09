@@ -44,6 +44,7 @@
 - [`adjudications/20261109_tdx_more_info_fields.md`](adjudications/20261109_tdx_more_info_fields.md)：依据通达信官方 `get_more_info_batch` 字段表定案 77 个已登记的来源内语义；逐项保留单位、编码、算法和口径边界，不把未登记的四个期货/期权字段补入项目，也不声称项目实际采集。
 - [`adjudications/public_web/20261109_tdx_more_info_fields.md`](adjudications/public_web/20261109_tdx_more_info_fields.md)：记录 TDX 官方接口分节及万科、平安银行 2026 三季报对 ZHB `[25]`、`[34]` 账务字段名称与万元单位的交叉核验。
 - [`adjudications/20261109_zhb_accounting_metadata_corrections.md`](adjudications/20261109_zhb_accounting_metadata_corrections.md)：以 2026-11-06 保留 ZHB 文件和两家发行人的官方三季报，纠正 `ZHB-tdxstat::[25]`、`[34]` 的字段名与单位；解析值和兼容键不变。
+- [`adjudications/20261109_tdx_order_book_price_levels.md`](adjudications/20261109_tdx_order_book_price_levels.md)：依据通达信官方五档盘口契约和项目适配路径，定案 TDX `bid2..bid5` / `ask2..ask5` 的来源内含义；300 条保留期 TDX 原始记录均无深档样本，故不登记跨源映射，并保留官方未注明的单位边界。
 
 ## 归档格式
 

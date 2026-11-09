@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 基于 2026-11-02 至 2026-11-06 保留的东财 Ulist / clist 同日响应及官方板块页标签，补齐 clist `f128/f140/f136` 与 Ulist `f101/f146` 的来源内语义；按完整来源路径收敛状态，保留 Ulist `f145` 未决。
 - Add an audited official-page observation path for source-only field semantics, with retained-sample checks, provider-host validation, exact evidence snapshots, and no cross-source mappings.
 - 基于东财个股页面与三只股票 2026-11-06 同日采集值，定案 Push2 `f137–f141` 的主力净流入、超大单流入/流出/净额及大单流入；154/154 个历史样本验证 `f137 = f140 + f143`。允许来源聚合造成、且无属性冲突的 status-conflict 在证据满足时安全收敛；未新增跨源映射。
 
@@ -28,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正东财行业板块适配器把 clist `f140` 股票代码当成 `leader_name` 的错误，改读 f128 名称；`tdx_get_board_list` 使用新缓存分类隔离旧缓存值，返回结构和 TTL 不变。
 - 以 15 个保留期 ZHB 包、84,815 条逐行对应及三家发行人的半年报/三季报定案 `tipinfo.dat` `[2]/report_period`、`[3]/eps`、`[4]/disclose_date`；将 EPS 单位补为元/股并限定为报告期累计值，将原“财报披露日”纠正为预约披露日。修正解析器注释，不改运行值、缓存键或字段路由；不推断 EPS 基本/稀释子口径。
 - 以 15 个保留期 ZHB 包、84,815 条逐行对应定案 `tipinfo.dat` `code`、`zt_date_recent`、`hg_date`、`hg_amount_yi` 与原始列别名；补齐代码、日期及金额单位，按通达信官方字段说明修正涨停/回购日期标签和解析器注释。金额上限仍只依据既有 TdxW 二进制提示，不声称公开字段码映射；不改解析器运行逻辑或缓存口径。
 - 以 15 个保留期 ZHB 包、84,815 条逐行样本和三类公开权益变动公告，将 `ZHB-tipinfo::[8]/[9]` 从旧解释遗留的 `disproved` 状态恢复为已验证当前定义；保留旧业绩预告参考记录，废弃的 `div_*` 输出键仍证伪。

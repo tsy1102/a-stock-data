@@ -3183,7 +3183,10 @@ def tdx_get_belong_boards(code: str):
 
 
 @cached(
-    category="board_list", ttl_seconds=TTL["board_list"], trading_day=True, valid_if=make_valid_if()
+    category="board_list_v2",
+    ttl_seconds=TTL["board_list_v2"],
+    trading_day=True,
+    valid_if=make_valid_if(),
 )
 def tdx_get_board_list(board_type: int = 0):
     """获取板块列表（行业/概念/地域等）。

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 115 个 code；聚合定义不完整 236 个 code；疑似合并文本 322 条逐源记录。
+> 聚合歧义 116 个 code；聚合定义不完整 235 个 code；疑似合并文本 320 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1173,11 +1173,11 @@
 
 ### `f128` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f128` | — | — | — | `unverified` |
+| 东财-clist · `f128` | f128 | 板块领涨股名称 | - | `verified` |
 | 东财-push2(stock/get) · `f128` | f128 | 地域板块名称 | - | `verified` |
 | 东财-slist · `f128` | f128 | 板块龙头股名 | — | `verified` |
 | 东财-ulist239(np/get) · `f128` | f128 | — | — | `unverified` |
@@ -1258,11 +1258,11 @@
 
 ### `f136` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f136` | f140 / f136 | 领涨股名称 / 领涨涨跌幅 | — | `conflict` |
+| 东财-clist · `f136` | f136 | 板块领涨股涨跌幅 | % | `verified` |
 | 东财-push2(stock/get) · `f136` | f136 | — | 元 | `conflict` |
 | 东财-ulist239(np/get) · `f136` | — | — | — | `unverified` |
 | 东财-资金流(em_fund_flow) · `f136` | f136 | — | 元 | `conflict` |
@@ -1309,11 +1309,11 @@
 
 ### `f140` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f140` | f140 / f136 | 领涨股名称 / 领涨涨跌幅 | — | `verified` |
+| 东财-clist · `f140` | f140 | 板块领涨股代码 | - | `verified` |
 | 东财-push2(stock/get) · `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | 元 | `verified` |
 | 东财-slist · `f140` | f140 | 板块龙头股代码 | — | `verified` |
 | 东财-ulist239(np/get) · `f140` | — | — | — | `conflict` |
@@ -1370,14 +1370,14 @@
 | 东财-ulist239(np/get) · `f145` | — | — | — | `conflict` |
 | 东财-资金流(em_fund_flow) · `f145` | f145 | — | 元 | `verified` |
 
-### `f146` — incomplete
+### `f146` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_incomplete；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f146` | f146 | — | 元 | `verified` |
-| 东财-ulist239(np/get) · `f146` | — | — | — | `conflict` |
+| 东财-ulist239(np/get) · `f146` | f146 | 所属行业领涨股代码 | - | `verified` |
 | 东财-资金流(em_fund_flow) · `f146` | f146 | — | 元 | `verified` |
 
 ### `f147` — ambiguous
@@ -3701,8 +3701,6 @@
 | 东财-clist | `f104` | f104 / f105 | 上涨 / 下跌家数 | `verified` |
 | 东财-clist | `f105` | f104 / f105 | 上涨 / 下跌家数 | `verified` |
 | 东财-clist | `f109` | f109 / f160 | 涨跌幅 | `verified` |
-| 东财-clist | `f136` | f140 / f136 | 领涨股名称 / 领涨涨跌幅 | `conflict` |
-| 东财-clist | `f140` | f140 / f136 | 领涨股名称 / 领涨涨跌幅 | `verified` |
 | 东财-clist | `f160` | f109 / f160 | 涨跌幅 | `verified` |
 | 东财-clist | `f164` | f164 / f165 | 主力净额 | `verified` |
 | 东财-clist | `f165` | f164 / f165 | 主力净额 | `verified` |

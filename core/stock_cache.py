@@ -294,6 +294,7 @@ TTL: Dict[str, int] = {
     "board_type": 7 * 86400,  # 沪市/深市/北交所
     "board_list": 7
     * 86400,  # 板块列表（行业排名参照系——T-1 可接受，V16.3 O25 新增，trading_day 覆盖）
+    "board_list_v2": 7 * 86400,  # f128 领涨股名称映射修正后隔离旧 board_list 缓存值
     "board_members": 15 * 60,  # V17.0.26 DEBT-012: 板块成分股（push2 主域降频；消费方只作
     # 「行业内相对排序参照系」(med rank / sc peers / val 日历效应)，
     # 15min 陈旧对相对排序无影响；trading_day=True 保证跨交易日必失效）

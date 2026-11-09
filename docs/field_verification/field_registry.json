@@ -14494,17 +14494,15 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f101",
-      "meaning": "",
+      "meaning": "所属行业领涨股名称",
       "unit": "",
       "status_raw": "✅ 所属行业领涨股名称",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f102",
@@ -15196,20 +15194,19 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "f128",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
-        "东财-clist": "unverified",
+        "东财-clist": "verified",
         "东财-push2(stock/get)": "verified",
         "东财-slist": "verified",
         "东财-ulist239(np/get)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
@@ -15429,18 +15426,18 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
-        "东财-clist": "conflict",
+        "东财-clist": "verified",
         "东财-push2(stock/get)": "conflict",
         "东财-ulist239(np/get)": "unverified",
         "东财-资金流(em_fund_flow)": "conflict"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_differs",
         "canonical_incomplete",
         "meaning_incomplete",
         "source_status_conflict",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -15587,6 +15584,7 @@
         "meaning_incomplete",
         "source_status_conflict",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -15730,23 +15728,20 @@
         "东财-资金流(em_fund_flow)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "f146",
       "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "conflict",
+        "东财-ulist239(np/get)": "verified",
         "东财-资金流(em_fund_flow)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_incomplete",
-        "source_status_conflict",
-        "source_statuses_differ",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -126649,16 +126644,22 @@
       "code": "f128",
       "identity": "东财-clist::f128",
       "path": "f128",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "f128",
+      "meaning": "板块领涨股名称",
+      "unit": "-",
+      "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
+      "sections": [
+        "12.8.6 东财 clist（板块排名/板块资金流）✅"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
         "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
           "东财-clist",
@@ -126668,9 +126669,35 @@
         ],
         "values": [
           "verified"
+        ],
+        "manual_adjudication_ids": [
+          "20261109-eastmoney-东财-clist-f128-leader-semantics"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "canonical": "f128",
+          "meaning": "板块领涨股名称",
+          "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
+          "status": "verified",
+          "status_raw": "✅",
+          "unit": "-"
+        },
+        {
+          "adjudication_id": "20261109-eastmoney-东财-clist-f128-leader-semantics",
+          "canonical": "f128",
+          "evidence_file": "adjudications/20261109_eastmoney_clist_ulist_leader_fields.md",
+          "evidence_sha256": "07a82c5d4c57822218695e36dec01ee7855fdd622b83c66a274fccdc1e7c544f",
+          "external_evidence": [
+            "https://data.eastmoney.com/bkzj/BK0475.html"
+          ],
+          "meaning": "板块领涨股名称",
+          "section": "2026-11-09 retained-sample public-data semantic adjudication",
+          "status": "verified",
+          "status_raw": "人工核对官方板块页标签及 2026-11-02 至 2026-11-06 同日原始响应",
+          "unit": "-"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f128",
@@ -126735,15 +126762,15 @@
       "code": "f136",
       "identity": "东财-clist::f136",
       "path": "f136",
-      "canonical": "f140 / f136",
-      "meaning": "领涨股名称 / 领涨涨跌幅",
-      "unit": "",
+      "canonical": "f136",
+      "meaning": "板块领涨股涨跌幅",
+      "unit": "%",
       "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
       "sections": [
         "12.8.6 东财 clist（板块排名/板块资金流）✅"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "reference_scope_reconciled",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -126761,16 +126788,34 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "scope_resolution": "exact clist path retained; unrelated Ulist f136 aggregate status is not inherited",
+        "manual_adjudication_ids": [
+          "20261109-eastmoney-东财-clist-f136-leader-semantics"
         ]
       },
       "reference_evidence": [
         {
+          "canonical": "f136",
+          "meaning": "板块领涨股涨跌幅",
           "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
-          "canonical": "f140 / f136",
-          "meaning": "领涨股名称 / 领涨涨跌幅",
-          "unit": "",
+          "status": "verified",
           "status_raw": "✅",
-          "status": "verified"
+          "unit": "%"
+        },
+        {
+          "adjudication_id": "20261109-eastmoney-东财-clist-f136-leader-semantics",
+          "canonical": "f136",
+          "evidence_file": "adjudications/20261109_eastmoney_clist_ulist_leader_fields.md",
+          "evidence_sha256": "07a82c5d4c57822218695e36dec01ee7855fdd622b83c66a274fccdc1e7c544f",
+          "external_evidence": [
+            "https://data.eastmoney.com/bkzj/BK0475.html"
+          ],
+          "meaning": "板块领涨股涨跌幅",
+          "section": "2026-11-09 retained-sample public-data semantic adjudication",
+          "status": "verified",
+          "status_raw": "人工核对官方板块页标签及 2026-11-02 至 2026-11-06 同日原始响应",
+          "unit": "%"
         }
       ],
       "attribute_conflicts": {},
@@ -126852,15 +126897,15 @@
       "code": "f140",
       "identity": "东财-clist::f140",
       "path": "f140",
-      "canonical": "f140 / f136",
-      "meaning": "领涨股名称 / 领涨涨跌幅",
-      "unit": "",
+      "canonical": "f140",
+      "meaning": "板块领涨股代码",
+      "unit": "-",
       "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
       "sections": [
         "12.8.6 东财 clist（板块排名/板块资金流）✅"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -126878,16 +126923,33 @@
         ],
         "values": [
           "verified"
+        ],
+        "manual_adjudication_ids": [
+          "20261109-eastmoney-东财-clist-f140-leader-semantics"
         ]
       },
       "reference_evidence": [
         {
+          "canonical": "f140",
+          "meaning": "板块领涨股代码",
           "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
-          "canonical": "f140 / f136",
-          "meaning": "领涨股名称 / 领涨涨跌幅",
-          "unit": "",
+          "status": "verified",
           "status_raw": "✅",
-          "status": "verified"
+          "unit": "-"
+        },
+        {
+          "adjudication_id": "20261109-eastmoney-东财-clist-f140-leader-semantics",
+          "canonical": "f140",
+          "evidence_file": "adjudications/20261109_eastmoney_clist_ulist_leader_fields.md",
+          "evidence_sha256": "07a82c5d4c57822218695e36dec01ee7855fdd622b83c66a274fccdc1e7c544f",
+          "external_evidence": [
+            "https://data.eastmoney.com/bkzj/BK0475.html"
+          ],
+          "meaning": "板块领涨股代码",
+          "section": "2026-11-09 retained-sample public-data semantic adjudication",
+          "status": "verified",
+          "status_raw": "人工核对官方板块页标签及 2026-11-02 至 2026-11-06 同日原始响应",
+          "unit": "-"
         }
       ],
       "attribute_conflicts": {},
@@ -146006,7 +146068,7 @@
       "identity": "东财-ulist239(np/get)::f101",
       "path": "f101",
       "canonical": "f101",
-      "meaning": "",
+      "meaning": "所属行业领涨股名称",
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
@@ -146027,16 +146089,33 @@
         ],
         "values": [
           "verified"
+        ],
+        "manual_adjudication_ids": [
+          "20261109-eastmoney-东财-ulist239-np-get-f101-leader-semantics"
         ]
       },
       "reference_evidence": [
         {
-          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
           "canonical": "f101",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 所属行业领涨股名称",
-          "status": "verified"
+          "meaning": "所属行业领涨股名称",
+          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+          "status": "verified",
+          "status_raw": "✅",
+          "unit": ""
+        },
+        {
+          "adjudication_id": "20261109-eastmoney-东财-ulist239(np/get)-f101-leader-semantics",
+          "canonical": "f101",
+          "evidence_file": "adjudications/20261109_eastmoney_clist_ulist_leader_fields.md",
+          "evidence_sha256": "07a82c5d4c57822218695e36dec01ee7855fdd622b83c66a274fccdc1e7c544f",
+          "external_evidence": [
+            "https://data.eastmoney.com/bkzj/BK0475.html"
+          ],
+          "meaning": "所属行业领涨股名称",
+          "section": "2026-11-09 retained-sample public-data semantic adjudication",
+          "status": "verified",
+          "status_raw": "人工核对官方板块页标签及 2026-11-02 至 2026-11-06 同日原始响应",
+          "unit": ""
         }
       ],
       "attribute_conflicts": {},
@@ -149385,24 +149464,22 @@
       "code": "f146",
       "identity": "东财-ulist239(np/get)::f146",
       "path": "f146",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "f146",
+      "meaning": "所属行业领涨股代码",
+      "unit": "-",
+      "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
         "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "reference_scope_reconciled",
       "status_evidence": {
         "reference_statuses": [
-          "unverified",
           "verified"
         ],
         "reference_status_raw": [
-          "✅",
-          "❌ 不同"
+          "✅"
         ],
         "registry_aggregate_status": "verified",
         "registry_aggregate_sources": [
@@ -149411,34 +149488,38 @@
           "东财-资金流(em_fund_flow)"
         ],
         "values": [
-          "unverified",
           "verified"
+        ],
+        "scope_resolution": "exact Ulist f146 row supersedes the broad cross-index warning; identity is source plus full path",
+        "manual_adjudication_ids": [
+          "20261109-eastmoney-东财-ulist239-np-get-f146-leader-semantics"
         ]
       },
       "reference_evidence": [
         {
-          "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
-          "canonical": "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "❌ 不同",
-          "status": "unverified"
+          "canonical": "f146",
+          "meaning": "所属行业领涨股代码",
+          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+          "status": "verified",
+          "status_raw": "✅",
+          "unit": "-"
         },
         {
-          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+          "adjudication_id": "20261109-eastmoney-东财-ulist239(np/get)-f146-leader-semantics",
           "canonical": "f146",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅",
-          "status": "verified"
+          "evidence_file": "adjudications/20261109_eastmoney_clist_ulist_leader_fields.md",
+          "evidence_sha256": "07a82c5d4c57822218695e36dec01ee7855fdd622b83c66a274fccdc1e7c544f",
+          "external_evidence": [
+            "https://data.eastmoney.com/bkzj/BK0475.html"
+          ],
+          "meaning": "所属行业领涨股代码",
+          "section": "2026-11-09 retained-sample public-data semantic adjudication",
+          "status": "verified",
+          "status_raw": "人工核对官方板块页标签及 2026-11-02 至 2026-11-06 同日原始响应",
+          "unit": "-"
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
-          "f146"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f146",
         "sources": [

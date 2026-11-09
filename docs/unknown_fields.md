@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2607；日常来源路径 2463：unverified 1193、candidate 1、conflict 70、disproved 6；历史来源路径 144。
-> 另有 173 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2607；日常来源路径 2463：unverified 1192、candidate 1、conflict 68、disproved 6；历史来源路径 144。
+> 另有 172 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1010 |
+| 含义栏为空/占位 | 1009 |
 | 含义栏有文本（仍未验证） | 183 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 394 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 393 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
@@ -30,7 +30,7 @@
 | `registry_status_only_single_source` | 656 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（70）
+## 一、状态冲突（禁止作为锚点，优先复核）（68）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -48,7 +48,6 @@
 | reports | `predictNextYearPe` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `predictThisYearPe` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `researcher` | — | 研究员姓名 | — | 含义栏有文本（仍未验证） | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| 东财-clist | `f136` | f140 / f136 | 领涨股名称 / 领涨涨跌幅 | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.6 东财 clist（板块排名/板块资金流）✅ |
 | 东财-datacenter(英文键) | `margin_trading.balance_gr` | margin_trading.balance_gr | 融资余额单日环比增长率(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `margin_trading.chg_10d` | margin_trading.chg_10d | 标的证券近 10 日区间累计涨跌幅(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `margin_trading.chg_5d` | margin_trading.chg_5d | 标的证券近 5 日区间累计涨跌幅(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
@@ -73,7 +72,6 @@
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f141` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f145` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f146` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_conflict | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-资金流(em_fund_flow) | `f135` | f135 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
 | 东财-资金流(em_fund_flow) | `f136` | f136 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
@@ -111,7 +109,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1193）
+## 三、待破解字段（1192）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -523,7 +521,6 @@
 | reports | `subjects` | subjects / subject_name | 主题分类 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `topic` | topic | 话题 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `white` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-clist | `f128` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-clist | `f13` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-clist | `f141` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-clist | `f2` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |

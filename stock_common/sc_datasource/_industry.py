@@ -661,7 +661,8 @@ def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
                     "change_pct": item.get("f3", 0),
                     "up_count": item.get("f104", 0),
                     "down_count": item.get("f105", 0),
-                    "leader": item.get("f140", ""),
+                    # clist: f128 is the leader name; f140 is its stock code.
+                    "leader": item.get("f128", ""),
                     "leader_change": item.get("f136", 0),
                 }
             )
@@ -897,7 +898,8 @@ def get_em_board_list(board_type: int = 0) -> List[Dict[str, Any]]:
                     "name": str(item.get("f14", "")),
                     "price": _safe_float(item.get("f2", 0)),
                     "change_pct": _safe_float(item.get("f3", 0)),
-                    "leader_name": str(item.get("f140", "")),
+                    # clist: f128 is the leader name; f140 is its stock code.
+                    "leader_name": str(item.get("f128", "")),
                     "leader_change": _safe_float(item.get("f136", 0)),
                     "up_count": int(item.get("f104", 0) or 0),
                     "down_count": int(item.get("f105", 0) or 0),

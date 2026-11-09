@@ -83,8 +83,8 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 - 必须逐字段核实精确 `(source, 完整 code path)`；页面须属于已确认的实际提供方，记录至少两个不同股票代码、同一个数据日的原始字段值、页面标签、显示值、单位和显示精度。应用器同时核验 `source_lineage.json` 中的提供方身份及代码维护的官方主机名白名单；目前 Eastmoney 白名单仅含 `data.eastmoney.com`。数值应在页面显示精度的半个最小刻度内；跨单位换算要写明换算值和刻度。
 - 原始值为 `"-"` 时，只有同日官方页面明确显示零，才能在该观测中按零比较。原始采集值仍保留 `"-"`，不得据此把解析器的缺失值通用转成零。
-- 若语义依赖公式，附带保留期原始文件列表并重算；至少 10 个数值样本、3 个数据日、3 只股票，且数值样本和明确标注的缺失值哨兵样本均无反例。公式只佐证该字段组，不代替页面标签到原始路径的逐值对应。
-- 仅允许填写空白或占位元数据；已有含义/单位冲突不得由此路径覆盖。`conflict` 仅可在状态冲突确为 registry 聚合范围导致、含义与单位无冲突、冲突只在 canonical 时收敛，并完整保存原快照。
+- 若语义依赖公式，附带保留期原始文件列表并重算；至少 10 个数值样本、3 个数据日、3 只股票，且数值样本和明确标注的缺失值哨兵样本均无反例。每个目标字段可登记一条公式；同一决策文件可用 `formula_validations` 数组验证多个目标，目标码不得重复且各自必须对应唯一决定。旧版单项 `formula_validation` 继续兼容。公式只佐证字段语义，不代替页面标签到原始路径的逐值对应。
+- 仅允许填写空白或占位元数据；已有含义/单位冲突不得由此路径覆盖。`conflict` 仅可在状态冲突确为 registry 聚合范围导致、含义与单位无冲突、`attribute_conflicts` 为空或仅含合法的 canonical 冲突，并完整保存原快照。
 - 决策使用 [`public_web_observation_template.json`](adjudications/public_web_observation_template.json)，顶层为 `evidence_basis: "public_web_observation"`。证据备忘录须逐行保存决策中每条观测的规范化 `[observation]` JSON 记录；工具核验原始样本、日期、值、舍入刻度、提供方主机、决定快照和证据路径，parity 再逐项比较裁决快照与原决定。网页内容由复核人先实际访问核实。定案记录标记 `verified_by_public_web_observation`，不新增 `mappings`，也不把网页计为独立来源。
 
 先预览，再检查每只股票、页面标签和显示刻度后显式应用：

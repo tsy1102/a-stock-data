@@ -175,6 +175,19 @@ def _inputs(root):
         "distinct_dates": len(source_files),
         "distinct_stocks": 5,
     }
+    reverse_formula = {
+        "target_code": "f148",
+        "left_code": "f147",
+        "right_code": "f149",
+        "operator": "-",
+        "source_files": source_files,
+        "numeric_samples": numeric_samples,
+        "numeric_matches": numeric_matches,
+        "dash_samples": dash_samples,
+        "dash_matches": dash_matches,
+        "distinct_dates": len(source_files),
+        "distinct_stocks": 5,
+    }
     document = {
         "schema_version": 1,
         "evidence_basis": "public_web_observation",
@@ -182,6 +195,7 @@ def _inputs(root):
         "reviewed_on": "2026-11-09",
         "evidence_file": memo_path,
         "formula_validation": formula,
+        "formula_validations": [reverse_formula],
         "decisions": list(observations.values()),
     }
     decision_path = "adjudications/public_web/20261109_push2_fund_flow.json"
@@ -223,6 +237,10 @@ def test_public_page_observation_is_idempotent_and_parity_validates_it(tmp_path)
     assert twice == once
     assert stats["already_applied"] == 3
     assert adjudications.validate_registry_adjudications(once, tmp_path) == []
+    f148 = next(item for item in once["source_fields"] if item["code"] == "f148")
+    f149 = next(item for item in once["source_fields"] if item["code"] == "f149")
+    assert f148["adjudications"][-1]["formula_validation"]["target_code"] == "f148"
+    assert f149["adjudications"][-1]["formula_validation"]["target_code"] == "f149"
 
 
 def test_public_page_observation_rejects_raw_sample_mismatch(tmp_path):
@@ -310,6 +328,65 @@ def test_public_page_observation_cannot_change_known_unit_or_hide_bad_conflict_s
     with pytest.raises(ValueError, match="cannot resolve this status conflict"):
         adjudications.apply_public_web_observation_adjudications(
             registry, document, decision_path, tmp_path / "status"
+        )
+
+
+def test_public_page_observation_can_resolve_aggregate_status_conflict_without_attribute_conflict(
+    tmp_path,
+):
+    registry, document, decision_path, _ = _inputs(tmp_path)
+    row = next(item for item in registry["source_fields"] if item["code"] == "f149")
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f149")
+    row["attribute_conflicts"] = {}
+    decision["previous_attribute_conflicts"] = {}
+    _write_json(
+        tmp_path / "docs" / "field_verification" / decision_path,
+        document,
+    )
+
+    updated, stats = adjudications.apply_public_web_observation_adjudications(
+        registry, document, decision_path, tmp_path
+    )
+    resolved = next(item for item in updated["source_fields"] if item["code"] == "f149")
+    assert resolved["status"] == "verified"
+    assert resolved["attribute_conflicts"] == {}
+    assert stats["status_conflicts_resolved"] == 1
+    assert adjudications.validate_registry_adjudications(updated, tmp_path) == []
+
+
+def test_formula_validations_must_match_one_decision_target(tmp_path):
+    registry, document, decision_path, _ = _inputs(tmp_path)
+    document["formula_validations"].append(document["formula_validations"][0].copy())
+    with pytest.raises(ValueError, match="duplicate formula validation target"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, document, decision_path, tmp_path
+        )
+
+    registry, document, decision_path, _ = _inputs(tmp_path / "unmatched")
+    formula = document["formula_validations"][0]
+    formula.update(
+        {
+            "target_code": "f999",
+            "left_code": "f148",
+            "right_code": "f149",
+            "operator": "+",
+            "numeric_samples": 15,
+            "numeric_matches": 15,
+            "dash_samples": 0,
+            "dash_matches": 0,
+        }
+    )
+    for source_file in formula["source_files"]:
+        sample_path = tmp_path / "unmatched" / "docs" / "field_verification" / source_file
+        payload = json.loads(sample_path.read_text(encoding="utf-8"))
+        for stock in payload["stocks"].values():
+            stock["data"]["f999"] = stock["data"]["f148"] + stock["data"]["f149"]
+        _write_json(sample_path, payload)
+    with pytest.raises(
+        ValueError, match="formula validation target must match exactly one decision"
+    ):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, document, decision_path, tmp_path / "unmatched"
         )
 
 

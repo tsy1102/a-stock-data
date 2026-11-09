@@ -5,6 +5,7 @@
   "reviewed_on": "YYYY-MM-DD",
   "evidence_file": "adjudications/public_web/YYYYMMDD_public_web_research.md",
   "formula_validation": null,
+  "formula_validations": [],
   "decisions": [
     {
       "id": "YYYYMMDD-source-field",

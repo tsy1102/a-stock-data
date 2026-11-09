@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Add an audited official-page observation path for source-only field semantics, with retained-sample checks, provider-host validation, exact evidence snapshots, and no cross-source mappings.
+- 基于东财个股页面与三只股票 2026-11-06 同日采集值，定案 Push2 `f137–f141` 的主力净流入、超大单流入/流出/净额及大单流入；154/154 个历史样本验证 `f137 = f140 + f143`。允许来源聚合造成、且无属性冲突的 status-conflict 在证据满足时安全收敛；未新增跨源映射。
 
 - 按通达信官方 `get_market_snapshot_batch` 字段表，定案 21 个基础行情字段的源内语义；单位未由文档说明的字段继续标为未注明，不推断项目采集路径或跨源映射。
 - 按通达信官方 `get_more_info_batch` 字段表定案 77 个已登记扩展字段的来源内语义，并更正 11 个既有日期字段的接口归属；核实 ZHB `[25]` 为合同负债（万元）、`[34]` 为其他权益工具（万元），只更正解释元数据，不改变解析值或缓存行为。

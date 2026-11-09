@@ -382,6 +382,44 @@ def _validate_formula_evidence(value: Any, repo_root: Path) -> dict[str, Any] | 
     }
 
 
+def _validate_document_formula_summaries(
+    document: dict[str, Any], decisions: list[Any], repo_root: Path
+) -> dict[str, dict[str, Any]]:
+    """Validate legacy and multi-formula evidence, keyed by target code."""
+    formula_entries: list[Any] = []
+    legacy = document.get("formula_validation")
+    if legacy is not None:
+        formula_entries.append(legacy)
+    plural = document.get("formula_validations", [])
+    if not isinstance(plural, list):
+        raise ValueError("formula_validations must be an array")
+    formula_entries.extend(plural)
+
+    summaries: dict[str, dict[str, Any]] = {}
+    for entry in formula_entries:
+        summary = _validate_formula_evidence(entry, repo_root)
+        if summary is None:
+            continue
+        target_code = summary["target_code"]
+        if target_code in summaries:
+            raise ValueError(f"duplicate formula validation target: {target_code}")
+        summaries[target_code] = summary
+
+    for target_code in summaries:
+        matching_decisions = []
+        for raw_decision in decisions:
+            if not isinstance(raw_decision, dict):
+                continue
+            target = raw_decision.get("target")
+            if isinstance(target, dict) and target.get("code") == target_code:
+                matching_decisions.append(raw_decision)
+        if len(matching_decisions) != 1:
+            raise ValueError(
+                f"formula validation target must match exactly one decision: {target_code}"
+            )
+    return summaries
+
+
 def _metadata(row: dict[str, Any]) -> dict[str, str]:
     return {key: str(row.get(key) or "").strip() for key in ("canonical", "meaning", "unit")}
 
@@ -419,7 +457,16 @@ def _safe_resolvable_conflict(row: dict[str, Any]) -> bool:
     if not non_empty_statuses or any(status != "verified" for status in non_empty_statuses):
         return False
     conflicts = row.get("attribute_conflicts")
-    return isinstance(conflicts, dict) and bool(conflicts) and set(conflicts) == {"canonical"}
+    if not isinstance(conflicts, dict):
+        return False
+    if not conflicts:
+        return True
+    canonical_conflict = conflicts.get("canonical")
+    return (
+        set(conflicts) == {"canonical"}
+        and isinstance(canonical_conflict, list)
+        and bool(canonical_conflict)
+    )
 
 
 def _validate_prior_state(row: dict[str, Any], decision: dict[str, Any]) -> None:
@@ -488,12 +535,12 @@ def apply_public_web_observation_adjudications(
     _, evidence_file, evidence_text = _evidence_text(
         repo_root, decision_document.get("evidence_file")
     )
-    formula_summary = _validate_formula_evidence(
-        decision_document.get("formula_validation"), repo_root
-    )
     decisions = decision_document.get("decisions")
     if not isinstance(decisions, list) or not decisions:
         raise ValueError("decisions must be a non-empty list")
+    formula_summaries = _validate_document_formula_summaries(
+        decision_document, decisions, repo_root
+    )
 
     updated = copy.deepcopy(registry)
     source_fields = updated.get("source_fields")
@@ -569,7 +616,8 @@ def apply_public_web_observation_adjudications(
             ),
             "page_observations": observations,
         }
-        if formula_summary is not None and formula_summary["target_code"] == target[1]:
+        formula_summary = formula_summaries.get(target[1])
+        if formula_summary is not None:
             adjudication["formula_validation"] = formula_summary
 
         history = row.get("adjudications", [])
@@ -655,7 +703,12 @@ def validate_registry_adjudications(
     for row in rows:
         if not isinstance(row, dict):
             continue
-        identity = (row.get("source"), row.get("code"))
+        source = row.get("source")
+        code = row.get("code")
+        if not isinstance(source, str) or not isinstance(code, str):
+            problems.append("registry source_fields identity must contain string source and code")
+            continue
+        identity = (source, code)
         history = row.get("adjudications", [])
         if not isinstance(history, list):
             if row.get("status_resolution") == RESOLUTION:
@@ -710,6 +763,11 @@ def validate_registry_adjudications(
                 )
                 if len(matching) != 1:
                     raise ValueError(f"decision file does not uniquely list {decision_id}")
+                if not isinstance(decisions, list):
+                    raise ValueError("public-page decision document requires a decisions array")
+                formula_summaries = _validate_document_formula_summaries(
+                    document, decisions, repo_root
+                )
                 decision = matching[0]
                 target = decision.get("target", {})
                 if target != {"source": identity[0], "code": identity[1]}:
@@ -749,14 +807,7 @@ def validate_registry_adjudications(
                     raise ValueError(
                         "registry public-page observations differ from decision evidence"
                     )
-                formula_summary = _validate_formula_evidence(
-                    document.get("formula_validation"), repo_root
-                )
-                expected_formula = (
-                    formula_summary
-                    if formula_summary is not None and formula_summary["target_code"] == identity[1]
-                    else None
-                )
+                expected_formula = formula_summaries.get(identity[1])
                 if record.get("formula_validation") != expected_formula:
                     raise ValueError("registry formula evidence differs from its decision")
                 if (

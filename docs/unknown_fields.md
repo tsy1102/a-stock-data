@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2607；日常来源路径 2463：unverified 1182、candidate 1、conflict 68、disproved 6；历史来源路径 144。
+> 注册字段路径 2607；日常来源路径 2463：unverified 1177、candidate 1、conflict 68、disproved 6；历史来源路径 144。
 > 另有 172 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 999 |
+| 含义栏为空/占位 | 994 |
 | 含义栏有文本（仍未验证） | 183 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 393 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 388 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
@@ -109,7 +109,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1182）
+## 三、待破解字段（1177）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -269,7 +269,6 @@
 | TDX-eltdx(适配层) | `eltdx_seal_amount` | eltdx_seal_amount | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical） |
 | TDX-eltdx(适配层) | `eltdx_seal_to_float_ratio` | eltdx_seal_to_float_ratio | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical） |
 | TDX-eltdx(适配层) | `entry` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `eps_raw` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX-eltdx(适配层) | `error_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `event_kind` | event_kind | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `exchange` | exchange | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
@@ -301,7 +300,6 @@
 | TDX-eltdx(适配层) | `ipo_date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX-eltdx(适配层) | `ipo_date_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `issue_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `jing_li_run_raw_float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX-eltdx(适配层) | `jing_ying_xian_jin_liu_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `jing_zi_chan_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `key` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -324,7 +322,6 @@
 | TDX-eltdx(适配层) | `limit_up_streak_days` | limit_up_streak_days | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `liu_dong_fu_zhai_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `liu_dong_zi_chan_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `liu_tong_gu_ben_raw_float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX-eltdx(适配层) | `locked_amount` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.6 行情列表（quotes.list_by_category，0x054b）文档确认 |
 | TDX-eltdx(适配层) | `low` | time / open / high / low / close | 时间 / OHLC | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.5 K线（bars.get，0x052d）文档确认 |
 | TDX-eltdx(适配层) | `low_delta_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -441,9 +438,7 @@
 | TDX-eltdx(适配层) | `zhu_ying_li_run_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `zhu_ying_shou_ru_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `zi_ben_gong_ji_jin_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `zong_gu_ben_raw_float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX-eltdx(适配层) | `zong_xian_jin_liu_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `zong_zi_chan_raw_float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `change_60d_alt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |

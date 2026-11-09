@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 432,
+      "aggregate_status_scope_unresolved": 427,
       "candidate": 1,
       "conflict": 68,
       "disproved": 6,
@@ -27,12 +27,12 @@
       "status_conflict": 51,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1302,
-      "verified": 1230,
+      "unverified": 1297,
+      "verified": 1235,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 8,
-      "verified_by_source_contract": 192
+      "verified_by_source_contract": 197
     },
     "updated_at": "2026-11-07"
   },
@@ -14182,20 +14182,20 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "eps_raw",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "meaning_differs",
+        "source_statuses_differ",
+        "unit_differs"
       ]
     },
     {
@@ -23224,20 +23224,19 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "jing_li_run_raw_float",
       "meaning": "",
-      "unit": "",
+      "unit": "千元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "meaning_differs",
+        "source_statuses_differ"
       ]
     },
     {
@@ -24943,20 +24942,18 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "canonical": "liu_tong_gu_ben_raw_float",
+      "meaning": "流通股本原始值",
+      "unit": "万股",
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "consistent",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "source_statuses_differ"
       ]
     },
     {
@@ -39885,20 +39882,18 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "canonical": "zong_gu_ben_raw_float",
+      "meaning": "总股本原始值",
+      "unit": "万股",
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "consistent",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "source_statuses_differ"
       ]
     },
     {
@@ -39972,20 +39967,19 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "zong_zi_chan_raw_float",
       "meaning": "",
-      "unit": "",
+      "unit": "千元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "meaning_differs",
+        "source_statuses_differ"
       ]
     },
     {
@@ -41517,7 +41511,8 @@
       "同花顺-fuyao"
     ],
     "eps_raw": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "event_kind": [
       "TDX-eltdx"
@@ -41862,7 +41857,8 @@
       "新浪"
     ],
     "jing_li_run_raw_float": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "jinglirun": [
       "TDX-0x0010/F10"
@@ -42028,7 +42024,8 @@
       "同花顺-fuyao"
     ],
     "liu_tong_gu_ben_raw_float": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "liudongfuzhai": [
       "TDX(双命名源)",
@@ -43791,10 +43788,12 @@
       "TDX-0x0010/F10"
     ],
     "zong_gu_ben_raw_float": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "zong_zi_chan_raw_float": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "zongguben": [
       "TDX-0x0010/F10"
@@ -91857,13 +91856,15 @@
       "code": "eps_raw",
       "identity": "TDX-eltdx(适配层)::eps_raw",
       "path": "eps_raw",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "eps_raw",
+      "meaning": "每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径",
+      "unit": "元/股",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -91874,9 +91875,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-eps-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-eps-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "eps_raw",
+          "meaning": "每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-eps-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-eps-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eps_raw",
+              "meaning": "每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "eps_raw",
@@ -91890,7 +91927,43 @@
         "meaning": "每股收益原始值",
         "unit": "-",
         "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-eps-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eps_raw",
+              "meaning": "每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 将 eps_raw 列为 0x0010 FinanceRecord 字段。2026-11-05 与 2026-11-06 保留样本中，该字段与同日 ZHB tipinfo.eps 的绝对差在 20/20 股票中不超过 0.01、最大 0.005；600309、000568、600519 的原始值分别对应官方 2026Q3 报告所列 5.00、3.85、51.53 元/股。ZHB 两位小数与 TDX 浮点表示差异按近似佐证处理。本决策只核验 ELTDX 精确路径，不创建跨源映射。详见 docs/field_verification/adjudications/20261109_eltdx_finance_source_contract.md。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -93229,13 +93302,15 @@
       "code": "jing_li_run_raw_float",
       "identity": "TDX-eltdx(适配层)::jing_li_run_raw_float",
       "path": "jing_li_run_raw_float",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "jing_li_run_raw_float",
+      "meaning": "归属于上市公司股东的净利润原始值；样本对应报告期累计值",
+      "unit": "千元",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -93246,9 +93321,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-jing-li-run-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-jing-li-run-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "jing_li_run_raw_float",
+          "meaning": "归属于上市公司股东的净利润原始值；样本对应报告期累计值",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-jing-li-run-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-jing-li-run-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "jing_li_run_raw_float",
+              "meaning": "归属于上市公司股东的净利润原始值；样本对应报告期累计值",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "jing_li_run_raw_float",
@@ -93262,7 +93373,43 @@
         "meaning": "净利润原始值",
         "unit": "千元",
         "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-jing-li-run-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "jing_li_run_raw_float",
+              "meaning": "归属于上市公司股东的净利润原始值；样本对应报告期累计值",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 将 jing_li_run_raw_float 定义为净利润原始千元口径。2026-11-05 与 2026-11-06 保留样本中，原始值乘 1000 后与 600309、000568、600519 的 2026Q3 官方归母净利润相差 +647.00、+258.47、−1,981.95 元，均为万分之一级别以下的浮点量化误差；000568 和 600519 的值显著对应归母净利润，而非合并净利润总额。详见 docs/field_verification/adjudications/20261109_eltdx_finance_source_contract.md。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -94484,13 +94631,15 @@
       "code": "liu_tong_gu_ben_raw_float",
       "identity": "TDX-eltdx(适配层)::liu_tong_gu_ben_raw_float",
       "path": "liu_tong_gu_ben_raw_float",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "liu_tong_gu_ben_raw_float",
+      "meaning": "流通股本原始值",
+      "unit": "万股",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -94501,9 +94650,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-liu-tong-share-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-liu-tong-share-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "liu_tong_gu_ben_raw_float",
+          "meaning": "流通股本原始值",
+          "unit": "万股",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-liu-tong-share-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-liu-tong-share-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "liu_tong_gu_ben_raw_float",
+              "meaning": "流通股本原始值",
+              "unit": "万股"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "liu_tong_gu_ben_raw_float",
@@ -94517,7 +94702,43 @@
         "meaning": "流通股本原始值",
         "unit": "万股",
         "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-liu-tong-share-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "liu_tong_gu_ben_raw_float",
+              "meaning": "流通股本原始值",
+              "unit": "万股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确将 liu_tong_gu_ben_raw_float 定义为流通股本原始万股口径。2026-11-05 与 2026-11-06 样本中，原始值乘 10000 后与同日东财 f85 在 20/20 股票中相对误差不超过 1e-6，最大 7.56e-7；000568、600519 的差值仅约 57 股和 39 股，与 float32 精度相符。官方报告金额与 f85/TDX 样本用于验证上下文，本决策不新建跨源映射。详见 docs/field_verification/adjudications/20261109_eltdx_finance_source_contract.md。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -103215,13 +103436,15 @@
       "code": "zong_gu_ben_raw_float",
       "identity": "TDX-eltdx(适配层)::zong_gu_ben_raw_float",
       "path": "zong_gu_ben_raw_float",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "zong_gu_ben_raw_float",
+      "meaning": "总股本原始值",
+      "unit": "万股",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103232,9 +103455,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-zong-gu-ben-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-zong-gu-ben-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "zong_gu_ben_raw_float",
+          "meaning": "总股本原始值",
+          "unit": "万股",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-zong-gu-ben-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-zong-gu-ben-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zong_gu_ben_raw_float",
+              "meaning": "总股本原始值",
+              "unit": "万股"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zong_gu_ben_raw_float",
@@ -103248,7 +103507,43 @@
         "meaning": "总股本原始值",
         "unit": "万股",
         "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-zong-gu-ben-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zong_gu_ben_raw_float",
+              "meaning": "总股本原始值",
+              "unit": "万股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确将 zong_gu_ben_raw_float 定义为总股本原始万股口径。2026-11-05 与 2026-11-06 样本中，原始值乘 10000 后与东财 f84 在 20/20 股票中相对误差不超过 1e-6，最大 1.51e-7。600309、000568、600519 对应的换算值分别与三季报股本相差 63.5、56.75、38.5 股，属于 float32 量化误差。详见 docs/field_verification/adjudications/20261109_eltdx_finance_source_contract.md。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -103293,13 +103588,15 @@
       "code": "zong_zi_chan_raw_float",
       "identity": "TDX-eltdx(适配层)::zong_zi_chan_raw_float",
       "path": "zong_zi_chan_raw_float",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "zong_zi_chan_raw_float",
+      "meaning": "总资产原始值；样本对应季报资产总计",
+      "unit": "千元",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -103310,9 +103607,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-zong-zi-chan-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-zong-zi-chan-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010#METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "zong_zi_chan_raw_float",
+          "meaning": "总资产原始值；样本对应季报资产总计",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-zong-zi-chan-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-zong-zi-chan-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zong_zi_chan_raw_float",
+              "meaning": "总资产原始值；样本对应季报资产总计",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zong_zi_chan_raw_float",
@@ -103326,7 +103659,43 @@
         "meaning": "总资产原始值",
         "unit": "千元",
         "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-zong-zi-chan-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zong_zi_chan_raw_float",
+              "meaning": "总资产原始值；样本对应季报资产总计",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确将 zong_zi_chan_raw_float 定义为总资产原始千元口径。2026-11-05 与 2026-11-06 保留样本中的值乘 1000 后，对照 600309、000568、600519 的 2026Q3 官方资产总计，差值仅为 +12,937.90、+1,995.26、+4,117.28 元，相对报告金额均低于 4e-8，符合 float32 精度损失。详见 docs/field_verification/adjudications/20261109_eltdx_finance_source_contract.md。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",

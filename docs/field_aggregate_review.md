@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 116 个 code；聚合定义不完整 235 个 code；疑似合并文本 322 条逐源记录。
+> 聚合歧义 119 个 code；聚合定义不完整 230 个 code；疑似合并文本 325 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -878,14 +878,14 @@
 | TDX(双命名源) · `eps` | — | — | — | `unverified` |
 | ZHB-tipinfo · `eps` | eps | 报告期累计每股收益（基本/稀释/扣非口径未区分） | 元/股 | `verified` |
 
-### `eps_raw` — incomplete
+### `eps_raw` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `eps_raw` | eps_raw | 每股收益原始值 | - | `unverified` |
-| TDX-eltdx(适配层) · `eps_raw` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | 元/股 | `verified` |
 
 ### `exchange` — incomplete
 
@@ -2543,14 +2543,14 @@
 |:--|:--|:--|:--|:--|
 | 新浪(扩展API) · `item_value` | item_value | 科目值（字符串） | — | `conflict` |
 
-### `jing_li_run_raw_float` — incomplete
+### `jing_li_run_raw_float` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `jing_li_run_raw_float` | jing_li_run_raw_float | 净利润原始值 | 千元 | `unverified` |
-| TDX-eltdx(适配层) · `jing_li_run_raw_float` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | 千元 | `verified` |
 
 ### `lastEmRatingName` — incomplete
 
@@ -2664,14 +2664,14 @@
 | 开盘啦(kpl) · `list` | — | — | — | `unverified` |
 | 财联社(cls) · `list` | — | — | — | `unverified` |
 
-### `liu_tong_gu_ben_raw_float` — incomplete
+### `liu_tong_gu_ben_raw_float` — consistent
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `liu_tong_gu_ben_raw_float` | liu_tong_gu_ben_raw_float | 流通股本原始值 | 万股 | `unverified` |
-| TDX-eltdx(适配层) · `liu_tong_gu_ben_raw_float` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `liu_tong_gu_ben_raw_float` | liu_tong_gu_ben_raw_float | 流通股本原始值 | 万股 | `verified` |
 
 ### `locked_amount` — incomplete
 
@@ -3521,23 +3521,23 @@
 | TDX-eltdx(适配层) · `volume` | volume | — | — | `unverified` |
 | 同花顺-fuyao · `volume` | — | — | — | `unverified` |
 
-### `zong_gu_ben_raw_float` — incomplete
+### `zong_gu_ben_raw_float` — consistent
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `zong_gu_ben_raw_float` | zong_gu_ben_raw_float | 总股本原始值 | 万股 | `unverified` |
-| TDX-eltdx(适配层) · `zong_gu_ben_raw_float` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `zong_gu_ben_raw_float` | zong_gu_ben_raw_float | 总股本原始值 | 万股 | `verified` |
 
-### `zong_zi_chan_raw_float` — incomplete
+### `zong_zi_chan_raw_float` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值 | 千元 | `unverified` |
-| TDX-eltdx(适配层) · `zong_zi_chan_raw_float` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值；样本对应季报资产总计 | 千元 | `verified` |
 
 ### `zt_seal_amount_1d` — incomplete
 
@@ -3606,7 +3606,9 @@
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
 | TDX-eltdx(适配层) | `close` | time / open / high / low / close | 时间 / OHLC | `unverified` |
 | TDX-eltdx(适配层) | `down_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
+| TDX-eltdx(适配层) | `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | `verified` |
 | TDX-eltdx(适配层) | `high` | time / open / high / low / close | 时间 / OHLC | `unverified` |
+| TDX-eltdx(适配层) | `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | `verified` |
 | TDX-eltdx(适配层) | `limit_down_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | `unverified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_market_value` | limit_ladder.float_market_value | 普通流通市值；普通流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_shares` | limit_ladder.float_shares | 普通流通股本；财务快照口径 | `verified` |
@@ -3630,6 +3632,7 @@
 | TDX-eltdx(适配层) | `time` | time / open / high / low / close | 时间 / OHLC | `unverified` |
 | TDX-eltdx(适配层) | `up_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
 | TDX-eltdx(适配层) | `vol_rise_speed` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | `unverified` |
+| TDX-eltdx(适配层) | `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值；样本对应季报资产总计 | `verified` |
 | ZHB-tdxstat | `[22]` | [22] | 形态/板块代码 ShapeValue | `verified` |
 | ZHB-tdxstat | `[31]` | [31] | “几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开） | `verified` |
 | ZHB-tdxstat | `[32]` | [32] | “几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开） | `verified` |

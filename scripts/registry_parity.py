@@ -751,6 +751,7 @@ def _validated_source_contract_adjudications(
     source_actions = {"verify_source_contract", "correct_verified_metadata"}
     verification_root = Path(REPO_ROOT, "docs", "field_verification").resolve()
     rows = {(row["source"], row["code"]): row for row in source_records}
+    baseline_matrix, _ = gm.build_matrix_from_md()
     declared: set[tuple[str, str]] = set()
     matrix_addenda: dict[str, set[str]] = {}
     problems: list[str] = []
@@ -885,11 +886,9 @@ def _validated_source_contract_adjudications(
         if not row_valid:
             invalid_pairs.add(pair)
 
-        if row_valid and is_source_contract_status and pair not in (base_pairs | declared_pairs):
-            declared.add(pair)
-            canonical = row.get("canonical")
-            if isinstance(canonical, str) and canonical:
-                matrix_addenda.setdefault(canonical, set()).add(pair[0])
+        if row_valid and is_source_contract_status:
+            if pair not in (base_pairs | declared_pairs):
+                declared.add(pair)
 
     for cache_key, document in decision_cache.items():
         if not isinstance(document, dict):
@@ -1005,9 +1004,27 @@ def _validated_source_contract_adjudications(
 
     declared.difference_update(invalid_pairs)
     matrix_addenda.clear()
-    for pair in declared:
-        canonical = rows[pair].get("canonical")
-        if isinstance(canonical, str) and canonical:
+    # Native source paths already in the historical baseline can still introduce
+    # a verified adapter label that the legacy matrix does not contain.
+    registry_matrix = reg.get("field_matrix", {})
+    for pair, row in rows.items():
+        if (
+            pair in invalid_pairs
+            or pair in declared_pairs
+            or row.get("status_resolution") != "verified_by_source_contract"
+        ):
+            continue
+        canonical = row.get("canonical")
+        registry_sources = (
+            registry_matrix.get(canonical, []) if isinstance(registry_matrix, dict) else []
+        )
+        if (
+            isinstance(canonical, str)
+            and canonical
+            and isinstance(registry_sources, list)
+            and pair[0] in registry_sources
+            and pair[0] not in baseline_matrix.get(canonical, set())
+        ):
             matrix_addenda.setdefault(canonical, set()).add(pair[0])
 
     return declared, matrix_addenda, problems

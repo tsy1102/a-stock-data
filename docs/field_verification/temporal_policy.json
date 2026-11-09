@@ -561,7 +561,7 @@
       "witness_code": "[10]",
       "witness_runtime_path": "[10]",
       "evidence_file": "adjudications/20261107_tdx_cross_source_date_witness.json",
-      "evidence_sha256": "4931665e6c81711f3ad825723a99e4fe7b7f4793fd8dccbc311ee015d48b2a95",
+      "evidence_sha256": "9f488224d9a95673bf751451c47a3fd1ae05090b51cf090dc014d66818252d69",
       "reason": "只为此精确 TDX 盘口数量路径推断日期。Tencent 锚字段已验证且每条样本有来源日期；必须至少8个交易日、200组且200组非零样本、每日至少10组且10组非零、至少100个不同非零值，并要求总体/非零/逐日精确率均为100%。证据文件同时记录同一 Tencent 行 [30] 时间戳及原始文件哈希；不向其他 TDX 字段推广。买一量：13日258组，256组非零，全部精确一致。",
       "thresholds": {
         "min_distinct_days": 8,
@@ -586,7 +586,7 @@
       "witness_code": "[20]",
       "witness_runtime_path": "[20]",
       "evidence_file": "adjudications/20261107_tdx_cross_source_date_witness.json",
-      "evidence_sha256": "4931665e6c81711f3ad825723a99e4fe7b7f4793fd8dccbc311ee015d48b2a95",
+      "evidence_sha256": "9f488224d9a95673bf751451c47a3fd1ae05090b51cf090dc014d66818252d69",
       "reason": "只为此精确 TDX 盘口数量路径推断日期。Tencent 锚字段已验证且每条样本有来源日期；必须至少8个交易日、200组且200组非零样本、每日至少10组且10组非零、至少100个不同非零值，并要求总体/非零/逐日精确率均为100%。证据文件同时记录同一 Tencent 行 [30] 时间戳及原始文件哈希；不向其他 TDX 字段推广。卖一量：13日258组，246组非零，全部精确一致。",
       "thresholds": {
         "min_distinct_days": 8,

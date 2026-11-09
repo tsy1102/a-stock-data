@@ -650,12 +650,14 @@ def test_registry_verified_identity_keeps_full_nested_code_path():
     assert collide.is_verified("zhb.board_count", verified)
 
 
-def test_tdx_quote_full_bid_ask_volume_aliases_exit_verified_targets():
+def test_tdx_quote_full_volume_aliases_exit_verified_targets():
     verified = collide.load_registry_context()["verified"]
 
     for alias_path, registered_code in (
         ("quote_full.bid1_vol", "bid1_vol"),
         ("quote_full.ask1_vol", "ask1_vol"),
+        ("quote_full.b_vol", "b_vol"),
+        ("quote_full.s_vol", "s_vol"),
     ):
         field_id = f"tdx.{alias_path}"
         assert collide.code_of(field_id) == registered_code

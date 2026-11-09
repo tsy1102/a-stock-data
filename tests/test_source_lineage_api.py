@@ -140,6 +140,8 @@ def test_runtime_alias_resolution_includes_non_anchor_sources():
         ("tdx", "quote_raw.amount", "amount"),
         ("tdx", "quote_full.bid1_vol", "bid1_vol"),
         ("tdx", "quote_full.ask1_vol", "ask1_vol"),
+        ("tdx", "quote_full.b_vol", "b_vol"),
+        ("tdx", "quote_full.s_vol", "s_vol"),
         ("tdx", "quote_full.price", "quote_full.price"),
         ("tdx", "quote_full.amount_wan", "quote_full.amount_wan"),
         ("tdx", "quote_full.change_pct", "quote_full.change_pct"),

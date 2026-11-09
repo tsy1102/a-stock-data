@@ -7,32 +7,32 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 433,
+      "aggregate_status_scope_unresolved": 432,
       "candidate": 1,
-      "conflict": 70,
+      "conflict": 68,
       "disproved": 6,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
       "live_observed_not_documented": 1,
       "manual_collision_adjudication": 29,
-      "manual_public_data_semantic_adjudication": 102,
+      "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
-      "matched": 825,
+      "matched": 824,
       "official_contract": 31,
-      "reference_scope_reconciled": 1,
-      "reference_status_conflict": 18,
+      "reference_scope_reconciled": 3,
+      "reference_status_conflict": 17,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 737,
+      "registry_status_only_single_source": 735,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "status_conflict": 52,
+      "status_conflict": 51,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1313,
-      "verified": 1217,
+      "unverified": 1310,
+      "verified": 1222,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 8,
-      "verified_by_source_contract": 182
+      "verified_by_source_contract": 184
     },
     "updated_at": "2026-11-07"
   },
@@ -9058,20 +9058,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)#快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。 @ 2026-11-09 在线文档核对",
+      "canonical": "b_vol",
+      "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+      "unit": "股票为手；板块指数为家数",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "bal",
@@ -32297,20 +32294,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)#快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。 @ 2026-11-09 在线文档核对",
+      "canonical": "s_vol",
+      "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+      "unit": "股票为手；板块指数为家数",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "s_zrcs",
@@ -79029,13 +79023,15 @@
       "code": "b_vol",
       "identity": "TDX(双命名源)::b_vol",
       "path": "b_vol",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "b_vol",
+      "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+      "unit": "股票为手；板块指数为家数",
+      "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)#快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。 @ 2026-11-09 在线文档核对",
+      "sections": [
+        "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)#快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。 @ 2026-11-09 在线文档核对"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -79045,9 +79041,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-b_vol"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-b_vol"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)#快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。 @ 2026-11-09 在线文档核对",
+          "canonical": "b_vol",
+          "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+          "unit": "股票为手；板块指数为家数",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-b_vol",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-b_vol",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台与通达信公式系统官方文档",
+            "revision": "2026-11-09 在线文档核对",
+            "path": "get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)",
+            "locator": "快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "b_vol",
+              "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+              "unit": "股票为手；板块指数为家数"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "b_vol",
@@ -79060,7 +79092,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-b_vol",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_trade_volume_sides.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "b_vol",
+              "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+              "unit": "股票为手；板块指数为家数"
+            }
+          },
+          "rationale": "项目 ELTDX 适配器将 QuoteSnapshot.outer_disc 原样映射到 b_vol；EasyTDX 回退保留 TDX SecurityQuote 的 b_vol。官方 get_market_snapshot_batch 将 Outside 定义为外盘并标明板块指数例外，官方公式表将 BUYVOL 对应到 DYNAINFO(23)/外盘。2026-10-16 至 2026-11-06 的留存样本中，278 组 TDX 与 Tencent 同日股票记录的两侧合计符合总成交量关系；其中 688 代码的 Tencent 总量以股表示，TDX 以手表示。该证据支持来源内语义与证券类型单位，但不证明 TDX 与 Tencent 单侧数值逐值等价；不新增 mappings。",
+          "source_contract": {
+            "authority": "通达信量化平台与通达信公式系统官方文档",
+            "revision": "2026-11-09 在线文档核对",
+            "path": "get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)",
+            "locator": "快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -86027,13 +86095,15 @@
       "code": "s_vol",
       "identity": "TDX(双命名源)::s_vol",
       "path": "s_vol",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "s_vol",
+      "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+      "unit": "股票为手；板块指数为家数",
+      "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)#快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。 @ 2026-11-09 在线文档核对",
+      "sections": [
+        "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)#快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。 @ 2026-11-09 在线文档核对"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -86043,9 +86113,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-tdx-s_vol"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-tdx-s_vol"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 通达信量化平台与通达信公式系统官方文档 · get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)#快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。 @ 2026-11-09 在线文档核对",
+          "canonical": "s_vol",
+          "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+          "unit": "股票为手；板块指数为家数",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-tdx-s_vol",
+          "status": "verified",
+          "adjudication_id": "20261109-tdx-s_vol",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "通达信量化平台与通达信公式系统官方文档",
+            "revision": "2026-11-09 在线文档核对",
+            "path": "get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)",
+            "locator": "快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "s_vol",
+              "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+              "unit": "股票为手；板块指数为家数"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "s_vol",
@@ -86058,7 +86164,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-tdx-s_vol",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_tdx_trade_volume_sides.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "s_vol",
+              "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+              "unit": "股票为手；板块指数为家数"
+            }
+          },
+          "rationale": "项目 ELTDX 适配器将 QuoteSnapshot.inside_dish 原样映射到 s_vol；EasyTDX 回退保留 TDX SecurityQuote 的 s_vol。官方 get_market_snapshot_batch 将 Inside 定义为内盘并标明板块指数例外，官方公式表将 SELLVOL 对应到 DYNAINFO(22)/内盘。2026-10-16 至 2026-11-06 的留存样本中，278 组 TDX 与 Tencent 同日股票记录的两侧合计符合总成交量关系；其中 688 代码的 Tencent 总量以股表示，TDX 以手表示。该证据支持来源内语义与证券类型单位，但不证明 TDX 与 Tencent 单侧数值逐值等价；不新增 mappings。",
+          "source_contract": {
+            "authority": "通达信量化平台与通达信公式系统官方文档",
+            "revision": "2026-11-09 在线文档核对",
+            "path": "get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)",
+            "locator": "快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。",
+            "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",

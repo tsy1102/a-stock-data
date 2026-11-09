@@ -209,21 +209,25 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
     registry code ``amount``. The dedicated ``stat``, ``stat2`` and ``tipinfo``
     paths remain intact. TDX finance and raw quote snapshots wrap protocol
     field names in ``finance_info`` and ``quote_raw``; the registry records
-    those protocol names directly. Only the unregistered
-    ``quote_full.bid1_vol`` and ``quote_full.ask1_vol`` aliases are collapsed
-    to their already-verified protocol identities. Other ``quote_full`` paths
-    remain intact because the registry contains independent paths and derived
-    values there. KPL capture preserves selected raw columns
-    alongside named adapter fields, so those paths resolve to the same
-    registered field identity.
+    those protocol names directly. The known ``quote_full.bid1_vol``,
+    ``quote_full.ask1_vol``, ``quote_full.b_vol`` and ``quote_full.s_vol``
+    aliases are collapsed to their verified protocol identities. Other
+    ``quote_full`` paths remain intact because the registry contains
+    independent paths and derived values there. KPL capture preserves
+    selected raw columns alongside named adapter fields, so those paths
+    resolve to the same registered field identity.
     """
     if alias == "zhb" and code.startswith("full."):
         return code[len("full.") :]
     if alias == "tdx":
-        if code == "quote_full.bid1_vol":
-            return "bid1_vol"
-        if code == "quote_full.ask1_vol":
-            return "ask1_vol"
+        quote_full_aliases = {
+            "quote_full.bid1_vol": "bid1_vol",
+            "quote_full.ask1_vol": "ask1_vol",
+            "quote_full.b_vol": "b_vol",
+            "quote_full.s_vol": "s_vol",
+        }
+        if code in quote_full_aliases:
+            return quote_full_aliases[code]
         for prefix in ("finance_info.", "quote_raw."):
             if code.startswith(prefix):
                 return code[len(prefix) :]

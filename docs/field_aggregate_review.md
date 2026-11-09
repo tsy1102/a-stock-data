@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 116 个 code；聚合定义不完整 235 个 code；疑似合并文本 320 条逐源记录。
+> 聚合歧义 116 个 code；聚合定义不完整 235 个 code；疑似合并文本 322 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3594,11 +3594,13 @@
 | TDX(双命名源) | `Outside` | Outside | 外盘；板块指数时表示涨停家数 | `verified` |
 | TDX(双命名源) | `ShapeValue` | ShapeValue | 短期形态+中期形态+长期形态编号 | `verified` |
 | TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
+| TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
 | TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | `unverified` |
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
 | TDX(双命名源) | `net_profit_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
+| TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
 | TDX(双命名源) | `total_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |

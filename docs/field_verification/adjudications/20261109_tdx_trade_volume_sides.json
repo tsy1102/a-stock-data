@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-tdx-b_vol",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "b_vol"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "b_vol",
+      "meaning": "外盘成交量（主动买入侧）；板块指数时表示涨停家数。",
+      "unit": "股票为手；板块指数为家数",
+      "rationale": "项目 ELTDX 适配器将 QuoteSnapshot.outer_disc 原样映射到 b_vol；EasyTDX 回退保留 TDX SecurityQuote 的 b_vol。官方 get_market_snapshot_batch 将 Outside 定义为外盘并标明板块指数例外，官方公式表将 BUYVOL 对应到 DYNAINFO(23)/外盘。2026-10-16 至 2026-11-06 的留存样本中，278 组 TDX 与 Tencent 同日股票记录的两侧合计符合总成交量关系；其中 688 代码的 Tencent 总量以股表示，TDX 以手表示。该证据支持来源内语义与证券类型单位，但不证明 TDX 与 Tencent 单侧数值逐值等价；不新增 mappings。",
+      "source_contract": {
+        "authority": "通达信量化平台与通达信公式系统官方文档",
+        "revision": "2026-11-09 在线文档核对",
+        "path": "get_market_snapshot_batch: Outside / Volume; BUYVOL / DYNAINFO(23)",
+        "locator": "快照字段表：Outside=外盘、Volume=总手；板块指数时 Outside=涨停家数。公式函数表：BUYVOL=外盘，即 DYNAINFO(23)。",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261109-tdx-s_vol",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "s_vol"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "s_vol",
+      "meaning": "内盘成交量（主动卖出侧）；板块指数时表示跌停家数。",
+      "unit": "股票为手；板块指数为家数",
+      "rationale": "项目 ELTDX 适配器将 QuoteSnapshot.inside_dish 原样映射到 s_vol；EasyTDX 回退保留 TDX SecurityQuote 的 s_vol。官方 get_market_snapshot_batch 将 Inside 定义为内盘并标明板块指数例外，官方公式表将 SELLVOL 对应到 DYNAINFO(22)/内盘。2026-10-16 至 2026-11-06 的留存样本中，278 组 TDX 与 Tencent 同日股票记录的两侧合计符合总成交量关系；其中 688 代码的 Tencent 总量以股表示，TDX 以手表示。该证据支持来源内语义与证券类型单位，但不证明 TDX 与 Tencent 单侧数值逐值等价；不新增 mappings。",
+      "source_contract": {
+        "authority": "通达信量化平台与通达信公式系统官方文档",
+        "revision": "2026-11-09 在线文档核对",
+        "path": "get_market_snapshot_batch: Inside / Volume; SELLVOL / DYNAINFO(22)",
+        "locator": "快照字段表：Inside=内盘、Volume=总手；板块指数时 Inside=跌停家数。公式函数表：SELLVOL=内盘，即 DYNAINFO(22)。",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

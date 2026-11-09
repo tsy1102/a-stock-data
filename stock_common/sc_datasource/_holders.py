@@ -80,6 +80,22 @@ def _holder_fetch_em(code: str, page_size: int) -> List[Dict[str, Any]]:
     return records
 
 
+def _normalize_tdx_finance_update_date(value: Any) -> Optional[str]:
+    """将 TDX 财务数据更新日规范为 ISO 日期；拒绝无法确认的格式。"""
+    raw = str(value).strip() if value is not None else ""
+    if re.fullmatch(r"\d{8}(?:\.0+)?", raw):
+        raw = raw[:8]
+        date_format = "%Y%m%d"
+    elif re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw):
+        date_format = "%Y-%m-%d"
+    else:
+        return None
+    try:
+        return datetime.strptime(raw, date_format).date().isoformat()
+    except ValueError:
+        return None
+
+
 def _holder_fetch_tdx_optimized(code: str, records: List[Dict[str, Any]], now: float) -> bool:
     """从 TDX 拿最新 1 期，去重后追加到 records（优化版：直接更新 SQLite）。"""
     from core.tdx_client import _get_tdx_client
@@ -95,10 +111,10 @@ def _holder_fetch_tdx_optimized(code: str, records: List[Dict[str, Any]], now: f
     # V15.1: 修正股东户数 key（参考 docs/field_dict.md 第 7 章）
     # 正确 key: gudongrenshu（无下划线）
     hnum = int(info.iloc[0].get('gudongrenshu', 0))
-    upd = str(int(info.iloc[0].get('updated_date', 0)))
-    if hnum <= 0:
+    # TDX 适配器输出财务数据更新日；保留样本既有 YYYYMMDD 与 ELTDX ISO 格式。
+    date_str = _normalize_tdx_finance_update_date(info.iloc[0].get("updated_date"))
+    if hnum <= 0 or date_str is None:
         return False
-    date_str = f"{upd[:4]}-{upd[4:6]}-{upd[6:8]}" if len(upd) == 8 else ""
     if not records or records[-1].get("holder_num") != hnum:
         records.append({"date": date_str, "holder_num": hnum})
         if len(records) > 10:

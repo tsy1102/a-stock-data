@@ -2510,12 +2510,12 @@
 
 ### `ipo_date` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `ipo_date` | — | — | — | `verified` |
-| TDX-eltdx(适配层) · `ipo_date` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `ipo_date` | ipo_date | 上市日期 | 日期字符串（样本格式 YYYY-MM-DD） | `verified` |
 
 ### `is_new` — ambiguous
 
@@ -3475,12 +3475,12 @@
 
 ### `updated_date` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `updated_date` | — | — | — | `verified` |
-| TDX-eltdx(适配层) · `updated_date` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `updated_date` | updated_date | 财务数据更新日期 | 日期字符串（样本格式 YYYY-MM-DD） | `verified` |
 
 ### `valuation.ps_ttm` — incomplete
 

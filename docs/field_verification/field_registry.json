@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 427,
+      "aggregate_status_scope_unresolved": 425,
       "candidate": 1,
       "conflict": 68,
       "disproved": 6,
@@ -22,17 +22,17 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 17,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 727,
+      "registry_status_only_single_source": 724,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "status_conflict": 51,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1297,
-      "verified": 1235,
+      "unverified": 1292,
+      "verified": 1240,
       "verified_by_empirical_addendum": 69,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 8,
-      "verified_by_source_contract": 197
+      "verified_by_source_contract": 202
     },
     "updated_at": "2026-11-07"
   },
@@ -22600,20 +22600,17 @@
       "sources": [
         "TDX-eltdx(适配层)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "canonical": "industry_raw",
+      "meaning": "行业原始编号",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "industry_zt",
@@ -22965,13 +22962,13 @@
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "verified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "unit_incomplete"
       ]
     },
     {
@@ -29952,20 +29949,17 @@
       "sources": [
         "TDX-eltdx(适配层)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "canonical": "province_raw",
+      "meaning": "地区（省份）原始编号",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ps_ttm",
@@ -31429,17 +31423,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "record_hex",
-      "meaning": "",
-      "unit": "",
+      "meaning": "单条 0x0010 财务记录的原始十六进制",
+      "unit": "十六进制字符串",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "redistime",
@@ -38498,13 +38490,13 @@
       "status": "unverified",
       "source_statuses": {
         "TDX(双命名源)": "verified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "unit_incomplete"
       ]
     },
     {
@@ -41835,7 +41827,8 @@
     ],
     "ipo_date": [
       "TDX-0x0010/F10",
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "is_again_limit": [
       "东财"
@@ -42758,7 +42751,8 @@
       "TDX-eltdx"
     ],
     "record_hex": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "reportType": [
       "东财"
@@ -43678,7 +43672,8 @@
     ],
     "updated_date": [
       "TDX-0x0010/F10",
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "url": [
       "东财"
@@ -45326,6 +45321,12 @@
     ],
     "ask5": [
       "TDX(双命名源)"
+    ],
+    "province_raw": [
+      "TDX-eltdx(适配层)"
+    ],
+    "industry_raw": [
+      "TDX-eltdx(适配层)"
     ]
   },
   "mappings": [
@@ -93068,13 +93069,15 @@
       "code": "industry_raw",
       "identity": "TDX-eltdx(适配层)::industry_raw",
       "path": "industry_raw",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "industry_raw",
+      "meaning": "行业原始编号",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -93084,9 +93087,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-industry-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-industry-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "industry_raw",
+          "meaning": "行业原始编号",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-industry-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-industry-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "industry_raw",
+              "meaning": "行业原始编号",
+              "unit": ""
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "industry_raw",
@@ -93099,7 +93138,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-industry-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_metadata.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "industry_raw",
+              "meaning": "行业原始编号",
+              "unit": ""
+            }
+          },
+          "rationale": "ELTDX v3.3.2 FinanceRecord 文档将 industry_raw 明确列为行业原始编号。项目 collect_eltdx 序列化完整 FinanceRecord；2026-11-05 与 2026-11-06 的 20/20 财务记录均含 industry_raw。本结论只确认该值是行业原始编号，不反推编号表、行业名称或编码版本。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.industry_raw",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -93186,13 +93261,15 @@
       "code": "ipo_date",
       "identity": "TDX-eltdx(适配层)::ipo_date",
       "path": "ipo_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "ipo_date",
+      "meaning": "上市日期",
+      "unit": "日期字符串（样本格式 YYYY-MM-DD）",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.ipo_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.ipo_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -93203,9 +93280,45 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-ipo-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-ipo-date-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.ipo_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "ipo_date",
+          "meaning": "上市日期",
+          "unit": "日期字符串（样本格式 YYYY-MM-DD）",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-ipo-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-ipo-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.ipo_date",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_date",
+              "meaning": "上市日期",
+              "unit": "日期字符串（样本格式 YYYY-MM-DD）"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ipo_date",
@@ -93219,7 +93332,43 @@
         "meaning": "上市日期",
         "unit": "YYYYMMDD",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-ipo-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_metadata.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_date",
+              "meaning": "上市日期",
+              "unit": "日期字符串（样本格式 YYYY-MM-DD）"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 FinanceRecord 文档明确将 ipo_date 定义为上市日期。项目 collect_eltdx 将 finance_batch 返回记录序列化到 raw_eltdx.json 的 stocks.<code>.finance_batch[0]；2026-11-05 与 2026-11-06 的 20/20 记录均包含该字段，样本值与 YYYY-MM-DD 日期格式一致。本决定只登记来源内语义，不建立跨源映射。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.ipo_date",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -96926,13 +97075,15 @@
       "code": "province_raw",
       "identity": "TDX-eltdx(适配层)::province_raw",
       "path": "province_raw",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "province_raw",
+      "meaning": "地区（省份）原始编号",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -96942,9 +97093,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-province-raw-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-province-raw-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw#FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "province_raw",
+          "meaning": "地区（省份）原始编号",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-province-raw-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-province-raw-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "province_raw",
+              "meaning": "地区（省份）原始编号",
+              "unit": ""
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "province_raw",
@@ -96957,7 +97144,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-province-raw-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_metadata.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "province_raw",
+              "meaning": "地区（省份）原始编号",
+              "unit": ""
+            }
+          },
+          "rationale": "ELTDX v3.3.2 FinanceRecord 文档将 province_raw 与 industry_raw 明确列为地区/行业原始编号。项目 collect_eltdx 序列化完整 FinanceRecord；2026-11-05 与 2026-11-06 的 20/20 财务记录均含 province_raw。本结论只确认该值是地区（省份）原始编号，不反推编号表、名称或编码版本。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.province_raw",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord：province_raw / industry_raw",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -98374,14 +98597,15 @@
       "identity": "TDX-eltdx(适配层)::record_hex",
       "path": "record_hex",
       "canonical": "record_hex",
-      "meaning": "",
-      "unit": "",
+      "meaning": "单条 0x0010 财务记录的原始十六进制",
+      "unit": "十六进制字符串",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.record_hex#METHOD_REFERENCE.md §财务基础信息：FinanceRecord 字段 record_hex @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -98391,6 +98615,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-record-hex-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-record-hex-source-contract"
         ]
       },
       "reference_evidence": [
@@ -98401,6 +98631,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.record_hex#METHOD_REFERENCE.md §财务基础信息：FinanceRecord 字段 record_hex @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "record_hex",
+          "meaning": "单条 0x0010 财务记录的原始十六进制",
+          "unit": "十六进制字符串",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-record-hex-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-record-hex-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.record_hex",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：FinanceRecord 字段 record_hex",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "record_hex",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "record_hex",
+              "meaning": "单条 0x0010 财务记录的原始十六进制",
+              "unit": "十六进制字符串"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -98415,7 +98674,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-record-hex-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_metadata.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "record_hex",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "record_hex",
+              "meaning": "单条 0x0010 财务记录的原始十六进制",
+              "unit": "十六进制字符串"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 finance_batch 方法文档将 FinanceRecord.record_hex 说明为单条记录的原始十六进制。项目 collect_eltdx 使用 include_raw=True 并序列化该模型属性；2026-11-05 与 2026-11-06 的 20/20 财务记录均包含 record_hex，每条样本为 286 个十六进制字符。该字段是协议审计材料，不赋予其业务指标含义，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.record_hex",
+            "locator": "METHOD_REFERENCE.md §财务基础信息：FinanceRecord 字段 record_hex",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -102723,13 +103018,15 @@
       "code": "updated_date",
       "identity": "TDX-eltdx(适配层)::updated_date",
       "path": "updated_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "updated_date",
+      "meaning": "财务数据更新日期",
+      "unit": "日期字符串（样本格式 YYYY-MM-DD）",
+      "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.updated_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+      "sections": [
+        "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.updated_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -102740,9 +103037,45 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261109-eltdx-updated-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261109-eltdx-updated-date-source-contract"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX 公开 FinanceRecord API 文档 · client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.updated_date#FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息 @ eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+          "canonical": "updated_date",
+          "meaning": "财务数据更新日期",
+          "unit": "日期字符串（样本格式 YYYY-MM-DD）",
+          "status_raw": "人工核验上游契约 2026-11-09：20261109-eltdx-updated-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261109-eltdx-updated-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.updated_date",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "updated_date",
+              "meaning": "财务数据更新日期",
+              "unit": "日期字符串（样本格式 YYYY-MM-DD）"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "updated_date",
@@ -102756,7 +103089,43 @@
         "meaning": "财报更新日期",
         "unit": "YYYYMMDD",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261109-eltdx-updated-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-09",
+          "decision_file": "adjudications/20261109_eltdx_finance_metadata.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "updated_date",
+              "meaning": "财务数据更新日期",
+              "unit": "日期字符串（样本格式 YYYY-MM-DD）"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 FinanceRecord 文档明确将该属性定义为财务数据更新日期。项目的 collect_eltdx 调用 finance_batch(codes, include_raw=True)，并将模型记录原样序列化到 raw_eltdx.json 的 stocks.<code>.finance_batch[0]；2026-11-05 与 2026-11-06 的 20/20 记录均包含该字段，样本值为 ISO 日期。通达信专业财务接口另列 announce_time（公告日期）和 tag_time（报告期），故不能把 updated_date 当作披露日或报告期。本决定仅确认适配层精确路径，不创建跨源映射。",
+          "source_contract": {
+            "authority": "ELTDX 公开 FinanceRecord API 文档",
+            "revision": "eltdx v3.3.2（requirements.txt 固定版本；2026-11-09 核验）",
+            "path": "client.corporate.finance_batch(codes, include_raw=True)，TDX 0x0010；FinanceRecord.updated_date",
+            "locator": "FIELD_REFERENCE.md §FinanceRecord；METHOD_REFERENCE.md §财务基础信息",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

@@ -2046,7 +2046,7 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
     """
     V13.0: 提取完整的 GetFinanceInfo (0x0010) 二进制解析结果，返回包含 37 个字段的核心财务数据字典。
     关键字段：
-    - updated_date (财报披露日，可用于事件驱动 TTL)
+    - updated_date (财务数据更新日期；不等同于财报公告日或报告期)
     - zongguben (总股本), liutongguben (流通股本)
     - jinglirun (净利润), zhuyingshouru (主营收入)
     - jingzichan (净资产), zongzichan (总资产)

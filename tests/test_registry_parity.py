@@ -250,6 +250,11 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     }
     assert matrix == {
         "eps_raw": {"TDX-eltdx(适配层)"},
+        "updated_date": {"TDX-eltdx(适配层)"},
+        "ipo_date": {"TDX-eltdx(适配层)"},
+        "province_raw": {"TDX-eltdx(适配层)"},
+        "industry_raw": {"TDX-eltdx(适配层)"},
+        "record_hex": {"TDX-eltdx(适配层)"},
         "jing_li_run_raw_float": {"TDX-eltdx(适配层)"},
         "liu_tong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},
         "zong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},

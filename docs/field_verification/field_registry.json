@@ -8,7 +8,7 @@
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 384,
-      "candidate": 1,
+      "candidate": 3,
       "conflict": 59,
       "disproved": 22,
       "empirical_duplicate_alias": 2,
@@ -17,9 +17,10 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
-      "matched": 822,
+      "matched": 820,
       "not_field_schema_token": 15,
       "official_contract": 31,
+      "reference_only_nonverified": 2,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 13,
       "reference_status_missing": 38,
@@ -30,11 +31,11 @@
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1129,
-      "verified": 1394,
+      "verified": 1398,
       "verified_by_empirical_addendum": 70,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 350
+      "verified_by_source_contract": 356
     },
     "updated_at": "2026-11-07"
   },
@@ -9792,7 +9793,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "canonical": "",
       "meaning": "",
       "unit": "",
@@ -20366,6 +20367,114 @@
       ]
     },
     {
+      "code": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "meaning": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
+      "unit": "文档标注万股（待核）",
+      "status_raw": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
+      "status": "candidate",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "candidate"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "finance_batch[].fa_ren_gu_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].fa_ren_gu_raw_float",
+      "meaning": "拼音及模型标签候选：法人股；样本值语义冲突待核",
+      "unit": "文档标注万股（待核）",
+      "status_raw": "拼音及模型标签候选：法人股；样本值语义冲突待核",
+      "status": "candidate",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "candidate"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "finance_batch[].gu_dong_ren_shu_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+      "meaning": "股东人数（按股东账户计）",
+      "unit": "户",
+      "status_raw": "✅",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "finance_batch[].ying_ye_li_run_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+      "meaning": "营业利润",
+      "unit": "千元",
+      "status_raw": "✅",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "finance_batch[].zhu_ying_shou_ru_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+      "meaning": "主营收入（与报告“营业收入”行对应）",
+      "unit": "千元",
+      "status_raw": "✅",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "finance_batch[].zong_xian_jin_liu_raw_float",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+      "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+      "unit": "千元",
+      "status_raw": "✅",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "finance_info_raw",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -22818,20 +22927,18 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "ipo_date",
+      "meaning": "上市日期",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -37757,7 +37864,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "canonical": "",
       "meaning": "",
       "unit": "",
@@ -38241,20 +38348,19 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "updated_date",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "unit_incomplete"
+        "meaning_differs",
+        "unit_differs"
       ]
     },
     {
@@ -45288,6 +45394,28 @@
     ],
     "f59": [
       "东财-em_kline_f61"
+    ],
+    "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float": [
+      "TDX-eltdx"
+    ],
+    "finance_batch[].fa_ren_gu_raw_float": [
+      "TDX-eltdx"
+    ],
+    "finance_batch[].gu_dong_ren_shu_raw_float": [
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
+    ],
+    "finance_batch[].zhu_ying_shou_ru_raw_float": [
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
+    ],
+    "finance_batch[].ying_ye_li_run_raw_float": [
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
+    ],
+    "finance_batch[].zong_xian_jin_liu_raw_float": [
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ]
   },
   "mappings": [
@@ -58697,6 +58825,1752 @@
     }
   ],
   "source_fields": [
+    {
+      "source": "AxData",
+      "code": "data.auction_prev_volume_ratio",
+      "identity": "AxData::data.auction_prev_volume_ratio",
+      "path": "data.auction_prev_volume_ratio",
+      "canonical": "data.auction_prev_volume_ratio",
+      "meaning": "今日开盘成交量 / 昨开盘成交量",
+      "unit": "倍",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          19,
+          20,
+          19,
+          20,
+          20,
+          18,
+          19,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.exchange",
+      "identity": "AxData::data.exchange",
+      "path": "data.exchange",
+      "canonical": "data.exchange",
+      "meaning": "AxData 交易所代码（SSE / SZSE / BSE）",
+      "unit": "-",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.float_market_value",
+      "identity": "AxData::data.float_market_value",
+      "path": "data.float_market_value",
+      "canonical": "data.float_market_value",
+      "meaning": "普通流通股 × 当前价",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.float_shares",
+      "identity": "AxData::data.float_shares",
+      "path": "data.float_shares",
+      "canonical": "data.float_shares",
+      "meaning": "普通财务口径流通股",
+      "unit": "股",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.free_float_market_value",
+      "identity": "AxData::data.free_float_market_value",
+      "path": "data.free_float_market_value",
+      "canonical": "data.free_float_market_value",
+      "meaning": "流通股本 Z × 当前价",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.free_float_shares",
+      "identity": "AxData::data.free_float_shares",
+      "path": "data.free_float_shares",
+      "canonical": "data.free_float_shares",
+      "meaning": "流通股本 Z / 自由流通股本口径",
+      "unit": "股",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.instrument_id",
+      "identity": "AxData::data.instrument_id",
+      "path": "data.instrument_id",
+      "canonical": "data.instrument_id",
+      "meaning": "AxData 统一证券代码",
+      "unit": "-",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_board_text",
+      "identity": "AxData::data.limit_board_text",
+      "path": "data.limit_board_text",
+      "canonical": "data.limit_board_text",
+      "meaning": "几天几板描述文本，例如 7天5板",
+      "unit": "-",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          2,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2,
+          4,
+          4,
+          4
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_stat_days",
+      "identity": "AxData::data.limit_stat_days",
+      "path": "data.limit_stat_days",
+      "canonical": "data.limit_stat_days",
+      "meaning": "几天几板统计窗口天数",
+      "unit": "天",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          3,
+          3,
+          3,
+          4,
+          5,
+          5,
+          1,
+          2,
+          3,
+          3,
+          6,
+          4,
+          4
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_up_count_in_stat_days",
+      "identity": "AxData::data.limit_up_count_in_stat_days",
+      "path": "data.limit_up_count_in_stat_days",
+      "canonical": "data.limit_up_count_in_stat_days",
+      "meaning": "统计窗口内涨停数",
+      "unit": "次",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          3,
+          3,
+          3,
+          4,
+          5,
+          5,
+          1,
+          2,
+          3,
+          3,
+          6,
+          4,
+          4
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.limit_up_streak_days",
+      "identity": "AxData::data.limit_up_streak_days",
+      "path": "data.limit_up_streak_days",
+      "canonical": "data.limit_up_streak_days",
+      "meaning": "连板天数",
+      "unit": "天",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          2,
+          3,
+          3,
+          3,
+          4,
+          4,
+          1,
+          2,
+          2,
+          2,
+          5,
+          1,
+          2
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_amount",
+      "identity": "AxData::data.open_amount",
+      "path": "data.open_amount",
+      "canonical": "data.open_amount",
+      "meaning": "开盘金额",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_change_pct",
+      "identity": "AxData::data.open_change_pct",
+      "path": "data.open_change_pct",
+      "canonical": "data.open_change_pct",
+      "meaning": "开盘涨幅，百分比数值",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_prev_amount_ratio",
+      "identity": "AxData::data.open_prev_amount_ratio",
+      "path": "data.open_prev_amount_ratio",
+      "canonical": "data.open_prev_amount_ratio",
+      "meaning": "开盘金额 / 昨成交额 × 100",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_prev_seal_ratio",
+      "identity": "AxData::data.open_prev_seal_ratio",
+      "path": "data.open_prev_seal_ratio",
+      "canonical": "data.open_prev_seal_ratio",
+      "meaning": "开盘金额 / 昨封单额 × 100",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_price",
+      "identity": "AxData::data.open_price",
+      "path": "data.open_price",
+      "canonical": "data.open_price",
+      "meaning": "开盘价",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_turnover_z",
+      "identity": "AxData::data.open_turnover_z",
+      "path": "data.open_turnover_z",
+      "canonical": "data.open_turnover_z",
+      "meaning": "开盘成交量 / 流通股本 Z 口径",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          19,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_volume_hand",
+      "identity": "AxData::data.open_volume_hand",
+      "path": "data.open_volume_hand",
+      "canonical": "data.open_volume_hand",
+      "meaning": "按开盘金额 / 开盘价 / 100 估算的开盘成交量",
+      "unit": "手",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          19,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.open_volume_ratio",
+      "identity": "AxData::data.open_volume_ratio",
+      "path": "data.open_volume_ratio",
+      "canonical": "data.open_volume_ratio",
+      "meaning": "开盘成交量 / 近 5 个完整交易日平均每分钟成交量",
+      "unit": "倍",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          19,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.opening_rush",
+      "identity": "AxData::data.opening_rush",
+      "path": "data.opening_rush",
+      "canonical": "data.opening_rush",
+      "meaning": "TDX 实时快照携带的开盘抢筹百分比",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.pre_close",
+      "identity": "AxData::data.pre_close",
+      "path": "data.pre_close",
+      "canonical": "data.pre_close",
+      "meaning": "昨收价",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev2_seal_amount",
+      "identity": "AxData::data.prev2_seal_amount",
+      "path": "data.prev2_seal_amount",
+      "canonical": "data.prev2_seal_amount",
+      "meaning": "前封单额",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-03",
+          "2026-11-04"
+        ],
+        "nonnull_observation_counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          3
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_amount",
+      "identity": "AxData::data.prev_amount",
+      "path": "data.prev_amount",
+      "canonical": "data.prev_amount",
+      "meaning": "昨成交额",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_open_amount",
+      "identity": "AxData::data.prev_open_amount",
+      "path": "data.prev_open_amount",
+      "canonical": "data.prev_open_amount",
+      "meaning": "昨开盘金额",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          19,
+          20,
+          20,
+          18,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_open_volume_hand",
+      "identity": "AxData::data.prev_open_volume_hand",
+      "path": "data.prev_open_volume_hand",
+      "canonical": "data.prev_open_volume_hand",
+      "meaning": "昨开盘成交量",
+      "unit": "手",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          19,
+          20,
+          20,
+          18,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.prev_seal_amount",
+      "identity": "AxData::data.prev_seal_amount",
+      "path": "data.prev_seal_amount",
+      "canonical": "data.prev_seal_amount",
+      "meaning": "昨封单额；负值通常表示昨日收盘跌停封单",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_amount",
+      "identity": "AxData::data.seal_amount",
+      "path": "data.seal_amount",
+      "canonical": "data.seal_amount",
+      "meaning": "封单额",
+      "unit": "元",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_prev_ratio",
+      "identity": "AxData::data.seal_prev_ratio",
+      "path": "data.seal_prev_ratio",
+      "canonical": "data.seal_prev_ratio",
+      "meaning": "当前封单额 / 昨封单额",
+      "unit": "比率",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          1,
+          1,
+          1,
+          3,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_to_amount_ratio",
+      "identity": "AxData::data.seal_to_amount_ratio",
+      "path": "data.seal_to_amount_ratio",
+      "canonical": "data.seal_to_amount_ratio",
+      "meaning": "封单额 / 当前成交额",
+      "unit": "比率",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          19,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.seal_to_float_ratio",
+      "identity": "AxData::data.seal_to_float_ratio",
+      "path": "data.seal_to_float_ratio",
+      "canonical": "data.seal_to_float_ratio",
+      "meaning": "封单额 / 流通市值 Z × 100",
+      "unit": "%",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.stats_date",
+      "identity": "AxData::data.stats_date",
+      "path": "data.stats_date",
+      "canonical": "data.stats_date",
+      "meaning": "历史统计分母日期，来自 tdxstat / tdxstat2",
+      "unit": "日期",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.symbol",
+      "identity": "AxData::data.symbol",
+      "path": "data.symbol",
+      "canonical": "data.symbol",
+      "meaning": "交易所原始六位证券代码",
+      "unit": "-",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.tdx_code",
+      "identity": "AxData::data.tdx_code",
+      "path": "data.tdx_code",
+      "canonical": "data.tdx_code",
+      "meaning": "TDX 带市场前缀证券代码",
+      "unit": "-",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "AxData",
+      "code": "data.year_limit_up_days",
+      "identity": "AxData::data.year_limit_up_days",
+      "path": "data.year_limit_up_days",
+      "canonical": "data.year_limit_up_days",
+      "meaning": "年内涨停天数",
+      "unit": "天",
+      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
+      "sections": [
+        "2026-11-07 AxData TDX 短线接口字段语义定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
+        "sample_capture_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05"
+        ],
+        "nonnull_observation_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          19,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
+        ],
+        "capture_row_slots_in_retained_window": 280
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
     {
       "source": "FTShare",
       "code": "comment_desire",
@@ -75766,9 +77640,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "sections": [
-        "2026-11-10 TDX 注册表类型/格式占位符裁决"
+        "2026-11-10 TDX 类型/格式 token 路径裁决"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -80280,9 +82154,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "sections": [
-        "2026-11-10 TDX 注册表类型/格式占位符裁决"
+        "2026-11-10 TDX 类型/格式 token 路径裁决"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -81856,9 +83730,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "sections": [
-        "2026-11-10 TDX 注册表类型/格式占位符裁决"
+        "2026-11-10 TDX 类型/格式 token 路径裁决"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -82864,17 +84738,18 @@
       "code": "ipo_date",
       "identity": "TDX(双命名源)::ipo_date",
       "path": "ipo_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "ipo_date",
+      "meaning": "上市日期",
+      "unit": "YYYYMMDD",
+      "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.ipo_date @ v3.3.2",
       "sections": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
         "2.1 协议完整 36 字段表（权威定义）",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.6 与 Gemini 核实 18 字段的对比",
+        "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.ipo_date @ v3.3.2"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -82890,6 +84765,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "tdx-finance-ipo-date-metadata-20261111"
+        ],
+        "source_contract_adjudication_ids": [
+          "tdx-finance-ipo-date-metadata-20261111"
         ]
       },
       "reference_evidence": [
@@ -82916,23 +84797,38 @@
           "unit": "-",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.ipo_date @ v3.3.2",
+          "canonical": "ipo_date",
+          "meaning": "上市日期",
+          "unit": "YYYYMMDD",
+          "status_raw": "人工核验上游契约 2026-11-11：tdx-finance-ipo-date-metadata-20261111",
+          "status": "verified",
+          "adjudication_id": "tdx-finance-ipo-date-metadata-20261111",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "electkismet/eltdx",
+            "revision": "v3.3.2",
+            "path": "docs/FIELD_REFERENCE.md",
+            "locator": "FinanceRecord.ipo_date",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_date",
+              "meaning": "上市日期",
+              "unit": "YYYYMMDD"
+            }
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
-          "ipo_date",
-          "updated_date / ipo_date"
-        ],
-        "meaning": [
-          "上市日期",
-          "财务更新日期 / 上市日期"
-        ],
-        "unit": [
-          "-",
-          "YYYYMMDD"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ipo_date",
         "sources": [
@@ -82945,7 +84841,71 @@
         "meaning": "上市日期",
         "unit": "YYYYMMDD",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "tdx-finance-ipo-date-metadata-20261111",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex workspace review",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_tdx_finance_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_date",
+              "meaning": "上市日期",
+              "unit": "YYYYMMDD"
+            }
+          },
+          "rationale": "TDX 0x0010 字段表 §2.1 将 ipo_date 单列为上市日期，类型为 uint、值格式为 YYYYMMDD，并明确该表为权威定义。弱摘要章节的聚合代码列表和并列描述不改变该逐字段定义。上游 v3.3.2 也将 FinanceRecord.ipo_date 定义为上市日期。该日期是股票业务属性，不是采集或来源 as_of 日期。",
+          "source_contract": {
+            "authority": "electkismet/eltdx",
+            "revision": "v3.3.2",
+            "path": "docs/FIELD_REFERENCE.md",
+            "locator": "FinanceRecord.ipo_date",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "updated": {
+              "canonical": "ipo_date",
+              "meaning": "上市日期",
+              "unit": "YYYYMMDD"
+            },
+            "rationale": "按 TDX 0x0010 权威逐字段表补回字段名、含义和日期编码；显式记录并清除当前属性冲突。"
+          },
+          "resolved_attribute_conflicts": {
+            "canonical": [
+              "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+              "ipo_date",
+              "updated_date / ipo_date"
+            ],
+            "meaning": [
+              "上市日期",
+              "财务更新日期 / 上市日期"
+            ],
+            "unit": [
+              "-",
+              "YYYYMMDD"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -87942,9 +89902,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "sections": [
-        "2026-11-10 TDX 注册表类型/格式占位符裁决"
+        "2026-11-10 TDX 类型/格式 token 路径裁决"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -88475,9 +90435,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 TDX 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 TDX 类型/格式 token 路径裁决",
       "sections": [
-        "2026-11-10 TDX 注册表类型/格式占位符裁决"
+        "2026-11-10 TDX 类型/格式 token 路径裁决"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -88560,17 +90520,18 @@
       "code": "updated_date",
       "identity": "TDX(双命名源)::updated_date",
       "path": "updated_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "updated_date",
+      "meaning": "财报更新日期",
+      "unit": "YYYYMMDD",
+      "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.updated_date @ v3.3.2",
       "sections": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
         "2.1 协议完整 36 字段表（权威定义）",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.6 与 Gemini 核实 18 字段的对比",
+        "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.updated_date @ v3.3.2"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -88586,6 +90547,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "tdx-finance-updated-date-metadata-20261111"
+        ],
+        "source_contract_adjudication_ids": [
+          "tdx-finance-updated-date-metadata-20261111"
         ]
       },
       "reference_evidence": [
@@ -88612,23 +90579,38 @@
           "unit": "-",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.updated_date @ v3.3.2",
+          "canonical": "updated_date",
+          "meaning": "财报更新日期",
+          "unit": "YYYYMMDD",
+          "status_raw": "人工核验上游契约 2026-11-11：tdx-finance-updated-date-metadata-20261111",
+          "status": "verified",
+          "adjudication_id": "tdx-finance-updated-date-metadata-20261111",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "electkismet/eltdx",
+            "revision": "v3.3.2",
+            "path": "docs/FIELD_REFERENCE.md",
+            "locator": "FinanceRecord.updated_date",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "updated_date",
+              "meaning": "财报更新日期",
+              "unit": "YYYYMMDD"
+            }
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
-          "updated_date",
-          "updated_date / ipo_date"
-        ],
-        "meaning": [
-          "财务更新日期 / 上市日期",
-          "财报更新日期"
-        ],
-        "unit": [
-          "-",
-          "YYYYMMDD"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "updated_date",
         "sources": [
@@ -88641,7 +90623,71 @@
         "meaning": "财报更新日期",
         "unit": "YYYYMMDD",
         "section": "2.1 协议完整 36 字段表（权威定义）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "tdx-finance-updated-date-metadata-20261111",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex workspace review",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_tdx_finance_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "updated_date",
+              "meaning": "财报更新日期",
+              "unit": "YYYYMMDD"
+            }
+          },
+          "rationale": "TDX 0x0010 字段表 §2.1 将 updated_date 单列为财报更新日期，类型为 uint、值格式为 YYYYMMDD，并明确该表为权威定义。弱摘要章节的聚合代码列表和并列描述不改变该逐字段定义。上游 v3.3.2 也将 FinanceRecord.updated_date 定义为财务数据更新日期。该日期是记录业务日期，不是采集或来源 as_of 日期。",
+          "source_contract": {
+            "authority": "electkismet/eltdx",
+            "revision": "v3.3.2",
+            "path": "docs/FIELD_REFERENCE.md",
+            "locator": "FinanceRecord.updated_date",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "updated": {
+              "canonical": "updated_date",
+              "meaning": "财报更新日期",
+              "unit": "YYYYMMDD"
+            },
+            "rationale": "按 TDX 0x0010 权威逐字段表补回字段名、含义和日期编码；显式记录并清除当前属性冲突。"
+          },
+          "resolved_attribute_conflicts": {
+            "canonical": [
+              "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+              "updated_date",
+              "updated_date / ipo_date"
+            ],
+            "meaning": [
+              "财务更新日期 / 上市日期",
+              "财报更新日期"
+            ],
+            "unit": [
+              "-",
+              "YYYYMMDD"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -96235,6 +98281,540 @@
         "unit": "",
         "section": ""
       }
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "path": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "canonical": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+      "meaning": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
+      "unit": "文档标注万股（待核）",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
+      ],
+      "status": "candidate",
+      "status_resolution": "reference_only_nonverified",
+      "status_evidence": {
+        "reference_statuses": [
+          "candidate"
+        ],
+        "reference_status_raw": [
+          "拼音及模型标签候选：发起人法人股；样本值语义冲突待核"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "candidate"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+          "meaning": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
+          "unit": "文档标注万股（待核）",
+          "status_raw": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
+          "status": "candidate"
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].fa_ren_gu_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].fa_ren_gu_raw_float",
+      "path": "finance_batch[].fa_ren_gu_raw_float",
+      "canonical": "finance_batch[].fa_ren_gu_raw_float",
+      "meaning": "拼音及模型标签候选：法人股；样本值语义冲突待核",
+      "unit": "文档标注万股（待核）",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
+      ],
+      "status": "candidate",
+      "status_resolution": "reference_only_nonverified",
+      "status_evidence": {
+        "reference_statuses": [
+          "candidate"
+        ],
+        "reference_status_raw": [
+          "拼音及模型标签候选：法人股；样本值语义冲突待核"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "candidate"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].fa_ren_gu_raw_float",
+          "meaning": "拼音及模型标签候选：法人股；样本值语义冲突待核",
+          "unit": "文档标注万股（待核）",
+          "status_raw": "拼音及模型标签候选：法人股；样本值语义冲突待核",
+          "status": "candidate"
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].gu_dong_ren_shu_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].gu_dong_ren_shu_raw_float",
+      "path": "finance_batch[].gu_dong_ren_shu_raw_float",
+      "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+      "meaning": "股东人数（按股东账户计）",
+      "unit": "户",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+        "source contract: ELTDX v3.3.2 FinanceRecord 及 finance_batch 输出模型；通达信官方量化文档仅佐证股东人数单位 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].gu_dong_ren_shu_raw_float#ELTDX METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: gu_dong_ren_shu_raw_float；通达信 get_financial_data FN242 股东人数（户） @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261111-eltdx-finance-batch-gu-dong-ren-shu"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261111-eltdx-finance-batch-gu-dong-ren-shu"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+          "meaning": "股东人数（按股东账户计）",
+          "unit": "户",
+          "status_raw": "✅",
+          "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 FinanceRecord 及 finance_batch 输出模型；通达信官方量化文档仅佐证股东人数单位 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].gu_dong_ren_shu_raw_float#ELTDX METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: gu_dong_ren_shu_raw_float；通达信 get_financial_data FN242 股东人数（户） @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+          "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+          "meaning": "股东人数（按股东账户计）",
+          "unit": "户",
+          "status_raw": "人工核验上游契约 2026-11-11：20261111-eltdx-finance-batch-gu-dong-ren-shu",
+          "status": "verified",
+          "adjudication_id": "20261111-eltdx-finance-batch-gu-dong-ren-shu",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord 及 finance_batch 输出模型；通达信官方量化文档仅佐证股东人数单位",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].gu_dong_ren_shu_raw_float",
+            "locator": "ELTDX METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: gu_dong_ren_shu_raw_float；通达信 get_financial_data FN242 股东人数（户）",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+              "meaning": "股东人数（按股东账户计）",
+              "unit": "户"
+            },
+            "after": {
+              "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+              "meaning": "股东人数（按股东账户计）",
+              "unit": "户"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261111-eltdx-finance-batch-gu-dong-ren-shu",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_eltdx_finance_capture_paths.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "reference_only_unconfirmed",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+              "meaning": "股东人数（按股东账户计）",
+              "unit": "户"
+            },
+            "after": {
+              "canonical": "finance_batch[].gu_dong_ren_shu_raw_float",
+              "meaning": "股东人数（按股东账户计）",
+              "unit": "户"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 的 FinanceRecord 字段表将该路径定义为股东人数。保留的 2026-11-10 样本中，601288 raw 值为 567189；农业银行 2026 年第三季度报告明确记载截至 2026-09-30 普通股股东总数为 567189 户，数值精确一致。通达信官方 get_financial_data 的 FN242 标注股东人数（户），仅作为单位术语佐证；该接口不同于 0x0010，本裁决不建立接口或跨源映射。17 个保留采集日中有 339 组 TDX/ELTDX 同更新日记录逐值相等、43 个唯一股票/更新日组合；两者同属 TDX 来源族，因此只用于解析一致性核对，不计为独立来源。详细证据见 docs/field_verification/20261111_finance_candidate_crosscheck.md。本次将决定绑定到实际采集完整路径 `finance_batch[].gu_dong_ren_shu_raw_float`，而不是只登记对象字段名 `gu_dong_ren_shu_raw_float`。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord 及 finance_batch 输出模型；通达信官方量化文档仅佐证股东人数单位",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].gu_dong_ren_shu_raw_float",
+            "locator": "ELTDX METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: gu_dong_ren_shu_raw_float；通达信 get_financial_data FN242 股东人数（户）",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].ying_ye_li_run_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].ying_ye_li_run_raw_float",
+      "path": "finance_batch[].ying_ye_li_run_raw_float",
+      "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+      "meaning": "营业利润",
+      "unit": "千元",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+        "source contract: ELTDX v3.3.2 FinanceRecord API 文档 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].ying_ye_li_run_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: ying_ye_li_run_raw_float；营业利润，单位千元 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261111-eltdx-finance-batch-ying-ye-li-run"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261111-eltdx-finance-batch-ying-ye-li-run"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+          "meaning": "营业利润",
+          "unit": "千元",
+          "status_raw": "✅",
+          "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 FinanceRecord API 文档 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].ying_ye_li_run_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: ying_ye_li_run_raw_float；营业利润，单位千元 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+          "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+          "meaning": "营业利润",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-11：20261111-eltdx-finance-batch-ying-ye-li-run",
+          "status": "verified",
+          "adjudication_id": "20261111-eltdx-finance-batch-ying-ye-li-run",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].ying_ye_li_run_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: ying_ye_li_run_raw_float；营业利润，单位千元",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+              "meaning": "营业利润",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+              "meaning": "营业利润",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261111-eltdx-finance-batch-ying-ye-li-run",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_eltdx_finance_capture_paths.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "reference_only_unconfirmed",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+              "meaning": "营业利润",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].ying_ye_li_run_raw_float",
+              "meaning": "营业利润",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 字段文档将该路径定义为营业利润，单位千元。2026-11-10 raw 样本与三家公司官方三季报的报告期营业利润行相符：600519 raw 88979848 千元，对应 88979846257.79 元；601288 raw 288094016 千元，对应报告表中 288094 百万元；920508 raw -922.6000366 千元，对应 -922643.10 元。差异分别为 +1742.21 元、+16000 元、+43.06 元，保留为原始浮点精度/来源舍入差异，不将近似值写成精确值。通达信官方 FN86 定义营业利润，但属于另一接口，仅作语义参照，不建立字段映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。本次将决定绑定到实际采集完整路径 `finance_batch[].ying_ye_li_run_raw_float`，而不是只登记对象字段名 `ying_ye_li_run_raw_float`。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].ying_ye_li_run_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: ying_ye_li_run_raw_float；营业利润，单位千元",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].zhu_ying_shou_ru_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].zhu_ying_shou_ru_raw_float",
+      "path": "finance_batch[].zhu_ying_shou_ru_raw_float",
+      "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+      "meaning": "主营收入（与报告“营业收入”行对应）",
+      "unit": "千元",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+        "source contract: ELTDX v3.3.2 FinanceRecord API 文档 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zhu_ying_shou_ru_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zhu_ying_shou_ru_raw_float；主营收入/营业收入，单位千元 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261111-eltdx-finance-batch-zhu-ying-shou-ru"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261111-eltdx-finance-batch-zhu-ying-shou-ru"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+          "meaning": "主营收入（与报告“营业收入”行对应）",
+          "unit": "千元",
+          "status_raw": "✅",
+          "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 FinanceRecord API 文档 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zhu_ying_shou_ru_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zhu_ying_shou_ru_raw_float；主营收入/营业收入，单位千元 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+          "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+          "meaning": "主营收入（与报告“营业收入”行对应）",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-11：20261111-eltdx-finance-batch-zhu-ying-shou-ru",
+          "status": "verified",
+          "adjudication_id": "20261111-eltdx-finance-batch-zhu-ying-shou-ru",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zhu_ying_shou_ru_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zhu_ying_shou_ru_raw_float；主营收入/营业收入，单位千元",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+              "meaning": "主营收入（与报告“营业收入”行对应）",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+              "meaning": "主营收入（与报告“营业收入”行对应）",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261111-eltdx-finance-batch-zhu-ying-shou-ru",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_eltdx_finance_capture_paths.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "reference_only_unconfirmed",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+              "meaning": "主营收入（与报告“营业收入”行对应）",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].zhu_ying_shou_ru_raw_float",
+              "meaning": "主营收入（与报告“营业收入”行对应）",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 字段文档将该路径定义为主营收入/营业收入，单位千元。保留的 2026-11-10 数据与三份官方 2026 年三季报的 2026 年 1-9 月营业收入相符：600519 raw 130970736 千元，对应报告 130970743649.04 元；601288 raw 618812032 千元，对应报告表中 618812 百万元；920508 raw 37942 千元，对应报告 37942033.18 元。差异分别为 -7649.04 元、+32000 元、-33.18 元，作为浮点原始字段的精度/来源舍入差异记录，不伪称完全相等。通达信官方 FN74 定义营业收入，但它属于另一接口，仅作语义参照，不建立字段映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。本次将决定绑定到实际采集完整路径 `finance_batch[].zhu_ying_shou_ru_raw_float`，而不是只登记对象字段名 `zhu_ying_shou_ru_raw_float`。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zhu_ying_shou_ru_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zhu_ying_shou_ru_raw_float；主营收入/营业收入，单位千元",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].zong_xian_jin_liu_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].zong_xian_jin_liu_raw_float",
+      "path": "finance_batch[].zong_xian_jin_liu_raw_float",
+      "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+      "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+      "unit": "千元",
+      "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+      "sections": [
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+        "source contract: ELTDX v3.3.2 FinanceRecord API 文档及公开公司现金流量表交叉核验 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zong_xian_jin_liu_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zong_xian_jin_liu_raw_float；字段单位千元。通达信 get_financial_data FN107/FN119/FN128/FN131 仅作公式结构参照 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261111-eltdx-finance-batch-zong-xian-jin-liu"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261111-eltdx-finance-batch-zong-xian-jin-liu"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+          "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+          "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+          "unit": "千元",
+          "status_raw": "✅",
+          "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 FinanceRecord API 文档及公开公司现金流量表交叉核验 · scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zong_xian_jin_liu_raw_float#METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zong_xian_jin_liu_raw_float；字段单位千元。通达信 get_financial_data FN107/FN119/FN128/FN131 仅作公式结构参照 @ eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+          "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+          "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+          "unit": "千元",
+          "status_raw": "人工核验上游契约 2026-11-11：20261111-eltdx-finance-batch-zong-xian-jin-liu",
+          "status": "verified",
+          "adjudication_id": "20261111-eltdx-finance-batch-zong-xian-jin-liu",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档及公开公司现金流量表交叉核验",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zong_xian_jin_liu_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zong_xian_jin_liu_raw_float；字段单位千元。通达信 get_financial_data FN107/FN119/FN128/FN131 仅作公式结构参照",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+              "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+              "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+              "unit": "千元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261111-eltdx-finance-batch-zong-xian-jin-liu",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_eltdx_finance_capture_paths.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "reference_only_unconfirmed",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+              "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+              "unit": "千元"
+            },
+            "after": {
+              "canonical": "finance_batch[].zong_xian_jin_liu_raw_float",
+              "meaning": "总现金流（经营、投资、筹资活动净额之和，不含汇率影响）",
+              "unit": "千元"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确将该路径定义为总现金流，单位千元；本次用官方现金流量表将公式边界细化。600519 三类净额之和为 69567977156.41 元，raw 为 69567976000 元；最终现金及现金等价物净增加额另受 -2482575.87 元汇率影响。601288 三类活动净额之和按报告百万元表为 -231015 百万元，raw 为 -231014.88 百万元；报表最终现金变动 -263488 百万元与汇率影响 -32473 百万元相减后得到该三类之和。920508 三类净额合计 -27930829.71 元，raw 为 -27930800.78 元，报表汇率影响为空。以上差异保留为报表展示单位与原始浮点精度差异。通达信官方 FN107/FN119/FN128 分别列经营、投资、筹资净额，FN131 则列现金及现金等价物净增加额；这是另一接口的字段表，仅作为公式结构参照，不建立接口映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。本次将决定绑定到实际采集完整路径 `finance_batch[].zong_xian_jin_liu_raw_float`，而不是只登记对象字段名 `zong_xian_jin_liu_raw_float`。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 FinanceRecord API 文档及公开公司现金流量表交叉核验",
+            "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+            "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zong_xian_jin_liu_raw_float",
+            "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zong_xian_jin_liu_raw_float；字段单位千元。通达信 get_financial_data FN107/FN119/FN128/FN131 仅作公式结构参照",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -114856,9 +117436,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -119386,9 +121966,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -119498,9 +122078,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -122993,9 +125573,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -126042,9 +128622,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -129290,9 +131870,9 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "2026-11-10 ZHB 注册表类型/格式占位符裁决",
+      "section": "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系",
       "sections": [
-        "2026-11-10 ZHB 注册表类型/格式占位符裁决"
+        "2026-11-10 ZHB 格式/类型 token 与实际字段对应关系"
       ],
       "status": "disproved",
       "status_resolution": "not_field_schema_token",
@@ -132876,6 +135456,180 @@
     },
     {
       "source": "ZHB-tipinfo",
+      "code": "shareholder_change_date",
+      "identity": "ZHB-tipinfo::shareholder_change_date",
+      "path": "shareholder_change_date",
+      "canonical": "shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "shareholder_change_date",
+          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+          "unit": "YYYYMMDD",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "shareholder_change_date",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "shareholder_change_shares_wan",
+      "identity": "ZHB-tipinfo::shareholder_change_shares_wan",
+      "path": "shareholder_change_shares_wan",
+      "canonical": "shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "shareholder_change_shares_wan",
+          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+          "unit": "万股",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "shareholder_change_shares_wan",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
       "code": "suspend_major_event_date",
       "identity": "ZHB-tipinfo::suspend_major_event_date",
       "path": "suspend_major_event_date",
@@ -133660,6 +136414,180 @@
         "unit": "YYYYMMDD/季",
         "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
       }
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_date",
+      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_date",
+      "path": "tipinfo.shareholder_change_date",
+      "canonical": "tipinfo.shareholder_change_date",
+      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+      "unit": "YYYYMMDD",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "tipinfo.shareholder_change_date",
+          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
+          "unit": "YYYYMMDD",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "tipinfo.shareholder_change_date",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "ZHB-tipinfo",
+      "code": "tipinfo.shareholder_change_shares_wan",
+      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_shares_wan",
+      "path": "tipinfo.shareholder_change_shares_wan",
+      "canonical": "tipinfo.shareholder_change_shares_wan",
+      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+      "unit": "万股",
+      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+      "sections": [
+        "2026-11-08 ZHB tipinfo shareholder change adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "ZHB-tipinfo"
+        ],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
+          "canonical": "tipinfo.shareholder_change_shares_wan",
+          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
+          "unit": "万股",
+          "status_raw": "2026-11-08 public notice cross-check",
+          "status": "verified",
+          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "tipinfo.shareholder_change_shares_wan",
+        "sources": [
+          "ZHB-tipinfo"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
+          "decision": "verified",
+          "decision_date": "2026-11-08",
+          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
+          "sample_as_of_dates": [
+            "20261106"
+          ],
+          "evidence_files": [
+            "cache/zhb/zhb_20261106.zip"
+          ],
+          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
+          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
+          "external_evidence": [
+            "https://data.eastmoney.com/stockcalendar/002475.html",
+            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
+            "https://www.fangda.com/investor/index_p16.html",
+            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
+            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
+          ]
+        }
+      ]
     },
     {
       "source": "ZHB-tipinfo",
@@ -208723,6 +211651,195 @@
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "raw_columns.col_13",
+      "identity": "开盘啦(kpl_limit_up_detail)::raw_columns.col_13",
+      "path": "raw_columns.col_13",
+      "canonical": "actual_float_mv",
+      "meaning": "实际流通市值",
+      "unit": "元",
+      "section": "2026-11-10 KPL 原始列来源内语义经验裁决",
+      "sections": [
+        "2026-11-10 KPL 原始列来源内语义经验裁决"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261110_kpl_col13_actual_float_mv.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09"
+        ],
+        "report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
+        "adjudication_ids": [
+          "20261110-kpl-col13-actual-float-mv"
+        ],
+        "audit_file": "docs/field_verification/adjudications/20261110_kpl_col13_audit.csv",
+        "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c",
+        "audit_sample_count": 966,
+        "share_base_stability": {
+          "stocks_with_at_least_3_dates": 75,
+          "stocks_with_mad_at_most_1pct": 74,
+          "stocks_with_mad_at_most_3pct": 75,
+          "median_mad": 5.2948080501062445e-11,
+          "maximum_mad": 0.01193719993957411,
+          "maximum_mad_stock": "002565"
+        },
+        "amount_turnover_comparison": {
+          "within_5pct_count": 758,
+          "median_relative_difference": 0.029640581031973784,
+          "p90_relative_difference": 0.06649789022378076,
+          "maximum_relative_difference": 0.12570122600211722,
+          "formula_is_exact": false
+        },
+        "push2ex_circulating_value_comparison": {
+          "median_ratio": 0.6572999998476923,
+          "p10_ratio": 0.3656999999062305,
+          "p90_ratio": 0.874999999648375,
+          "minimum_ratio": 0.16379999999950276,
+          "maximum_ratio": 1.0000000001006601,
+          "mapping_created": false,
+          "same_capture_directory_pair_count": 54,
+          "push2ex_as_of_date_recorded": false,
+          "source_capture_date": "20261109",
+          "source_capture_started_at": "2026-11-09 19:58:59",
+          "pairing_basis": "project_capture_directory_only",
+          "used_as_dispositive_evidence": false,
+          "within_1pct_of_equal": 1,
+          "within_5pct_of_equal": 3
+        },
+        "raw_capture_file": "docs/field_verification/20261109/raw_kpl.json",
+        "raw_capture_sha256": "3cfdf33514703f1fc90262367702439a7c0314675d5321c7b98e0022469984c6",
+        "unit_basis": "yuan_amount_scale_cross_checked_against_amount_and_actual_turnover",
+        "share_base_definition": "not_published_or_established"
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-10 KPL 原始列来源内语义经验裁决",
+          "canonical": "actual_float_mv",
+          "meaning": "实际流通市值",
+          "unit": "元",
+          "status_raw": "E3：公开产品标签、第三方位置线索与保留期本地样本经验核验",
+          "status": "verified",
+          "adjudication_id": "20261110-kpl-col13-actual-float-mv",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261110_kpl_col13_actual_float_mv.md",
+          "web_evidence_file": "docs/field_verification/adjudications/public_web/20261110_kpl_col13_public_web.md",
+          "sample_trade_dates": [
+            "2026-10-16",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-23",
+            "2026-10-26",
+            "2026-10-28",
+            "2026-10-29",
+            "2026-10-30",
+            "2026-11-02",
+            "2026-11-03",
+            "2026-11-04",
+            "2026-11-05",
+            "2026-11-06",
+            "2026-11-09"
+          ],
+          "report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
+          "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261110-kpl-col13-actual-float-mv",
+          "action": "empirical_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-10",
+          "report": "adjudications/20261110_kpl_col13_actual_float_mv.md",
+          "target_identity": {
+            "source": "开盘啦(kpl_limit_up_detail)",
+            "code": "raw_columns.col_13"
+          },
+          "level": "E3",
+          "rationale": "开盘啦实际流通市值（元）；保留期内量纲、价格与实际换手率样本支持金额语义。具体股本基数未公开；不等同于东方财富普通流通市值，也不与其他 KPL 接口路径建立逐值映射。",
+          "evidence": {
+            "audit_sample_count": 966,
+            "sample_trade_dates": [
+              "2026-10-16",
+              "2026-10-19",
+              "2026-10-20",
+              "2026-10-21",
+              "2026-10-23",
+              "2026-10-26",
+              "2026-10-28",
+              "2026-10-29",
+              "2026-10-30",
+              "2026-11-02",
+              "2026-11-03",
+              "2026-11-04",
+              "2026-11-05",
+              "2026-11-06",
+              "2026-11-09"
+            ],
+            "share_base_stability": {
+              "stocks_with_at_least_3_dates": 75,
+              "stocks_with_mad_at_most_1pct": 74,
+              "stocks_with_mad_at_most_3pct": 75,
+              "median_mad": 5.2948080501062445e-11,
+              "maximum_mad": 0.01193719993957411,
+              "maximum_mad_stock": "002565"
+            },
+            "amount_turnover_comparison": {
+              "within_5pct_count": 758,
+              "median_relative_difference": 0.029640581031973784,
+              "p90_relative_difference": 0.06649789022378076,
+              "maximum_relative_difference": 0.12570122600211722,
+              "formula_is_exact": false
+            },
+            "push2ex_circulating_value_comparison": {
+              "median_ratio": 0.6572999998476923,
+              "p10_ratio": 0.3656999999062305,
+              "p90_ratio": 0.874999999648375,
+              "minimum_ratio": 0.16379999999950276,
+              "maximum_ratio": 1.0000000001006601,
+              "within_1pct_of_equal": 1,
+              "within_5pct_of_equal": 3,
+              "mapping_created": false,
+              "same_capture_directory_pair_count": 54,
+              "push2ex_as_of_date_recorded": false,
+              "source_capture_date": "20261109",
+              "source_capture_started_at": "2026-11-09 19:58:59",
+              "pairing_basis": "project_capture_directory_only",
+              "used_as_dispositive_evidence": false
+            },
+            "collision_report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
+            "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c",
+            "raw_capture_sha256": "3cfdf33514703f1fc90262367702439a7c0314675d5321c7b98e0022469984c6"
+          }
+        }
+      ],
+      "capture_evidence": [
+        {
+          "file": "docs/field_verification/20261109/raw_kpl.json",
+          "path": "stocks.[*].raw_columns.col_13"
+        }
+      ]
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
       "code": "raw_columns.col_15",
       "identity": "开盘啦(kpl_limit_up_detail)::raw_columns.col_15",
       "path": "raw_columns.col_15",
@@ -223182,2289 +226299,6 @@
         "unit": "",
         "section": ""
       }
-    },
-    {
-      "source": "AxData",
-      "code": "data.instrument_id",
-      "identity": "AxData::data.instrument_id",
-      "path": "data.instrument_id",
-      "canonical": "data.instrument_id",
-      "meaning": "AxData 统一证券代码",
-      "unit": "-",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.symbol",
-      "identity": "AxData::data.symbol",
-      "path": "data.symbol",
-      "canonical": "data.symbol",
-      "meaning": "交易所原始六位证券代码",
-      "unit": "-",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.tdx_code",
-      "identity": "AxData::data.tdx_code",
-      "path": "data.tdx_code",
-      "canonical": "data.tdx_code",
-      "meaning": "TDX 带市场前缀证券代码",
-      "unit": "-",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.exchange",
-      "identity": "AxData::data.exchange",
-      "path": "data.exchange",
-      "canonical": "data.exchange",
-      "meaning": "AxData 交易所代码（SSE / SZSE / BSE）",
-      "unit": "-",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.stats_date",
-      "identity": "AxData::data.stats_date",
-      "path": "data.stats_date",
-      "canonical": "data.stats_date",
-      "meaning": "历史统计分母日期，来自 tdxstat / tdxstat2",
-      "unit": "日期",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_price",
-      "identity": "AxData::data.open_price",
-      "path": "data.open_price",
-      "canonical": "data.open_price",
-      "meaning": "开盘价",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.pre_close",
-      "identity": "AxData::data.pre_close",
-      "path": "data.pre_close",
-      "canonical": "data.pre_close",
-      "meaning": "昨收价",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_change_pct",
-      "identity": "AxData::data.open_change_pct",
-      "path": "data.open_change_pct",
-      "canonical": "data.open_change_pct",
-      "meaning": "开盘涨幅，百分比数值",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_amount",
-      "identity": "AxData::data.open_amount",
-      "path": "data.open_amount",
-      "canonical": "data.open_amount",
-      "meaning": "开盘金额",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_volume_hand",
-      "identity": "AxData::data.open_volume_hand",
-      "path": "data.open_volume_hand",
-      "canonical": "data.open_volume_hand",
-      "meaning": "按开盘金额 / 开盘价 / 100 估算的开盘成交量",
-      "unit": "手",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          19,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_volume_ratio",
-      "identity": "AxData::data.open_volume_ratio",
-      "path": "data.open_volume_ratio",
-      "canonical": "data.open_volume_ratio",
-      "meaning": "开盘成交量 / 近 5 个完整交易日平均每分钟成交量",
-      "unit": "倍",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          19,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_turnover_z",
-      "identity": "AxData::data.open_turnover_z",
-      "path": "data.open_turnover_z",
-      "canonical": "data.open_turnover_z",
-      "meaning": "开盘成交量 / 流通股本 Z 口径",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          19,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_prev_amount_ratio",
-      "identity": "AxData::data.open_prev_amount_ratio",
-      "path": "data.open_prev_amount_ratio",
-      "canonical": "data.open_prev_amount_ratio",
-      "meaning": "开盘金额 / 昨成交额 × 100",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.auction_prev_volume_ratio",
-      "identity": "AxData::data.auction_prev_volume_ratio",
-      "path": "data.auction_prev_volume_ratio",
-      "canonical": "data.auction_prev_volume_ratio",
-      "meaning": "今日开盘成交量 / 昨开盘成交量",
-      "unit": "倍",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          19,
-          20,
-          19,
-          20,
-          20,
-          18,
-          19,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.opening_rush",
-      "identity": "AxData::data.opening_rush",
-      "path": "data.opening_rush",
-      "canonical": "data.opening_rush",
-      "meaning": "TDX 实时快照携带的开盘抢筹百分比",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.open_prev_seal_ratio",
-      "identity": "AxData::data.open_prev_seal_ratio",
-      "path": "data.open_prev_seal_ratio",
-      "canonical": "data.open_prev_seal_ratio",
-      "meaning": "开盘金额 / 昨封单额 × 100",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          1,
-          1,
-          1,
-          3,
-          1,
-          1,
-          1,
-          2,
-          3,
-          1
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.prev_amount",
-      "identity": "AxData::data.prev_amount",
-      "path": "data.prev_amount",
-      "canonical": "data.prev_amount",
-      "meaning": "昨成交额",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.prev_seal_amount",
-      "identity": "AxData::data.prev_seal_amount",
-      "path": "data.prev_seal_amount",
-      "canonical": "data.prev_seal_amount",
-      "meaning": "昨封单额；负值通常表示昨日收盘跌停封单",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          1,
-          1,
-          1,
-          3,
-          1,
-          1,
-          1,
-          2,
-          3,
-          1
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.prev2_seal_amount",
-      "identity": "AxData::data.prev2_seal_amount",
-      "path": "data.prev2_seal_amount",
-      "canonical": "data.prev2_seal_amount",
-      "meaning": "前封单额",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-03",
-          "2026-11-04"
-        ],
-        "nonnull_observation_counts": [
-          1,
-          1,
-          1,
-          1,
-          1,
-          2,
-          1,
-          1,
-          1,
-          2,
-          3
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.prev_open_volume_hand",
-      "identity": "AxData::data.prev_open_volume_hand",
-      "path": "data.prev_open_volume_hand",
-      "canonical": "data.prev_open_volume_hand",
-      "meaning": "昨开盘成交量",
-      "unit": "手",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          19,
-          20,
-          20,
-          18,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.prev_open_amount",
-      "identity": "AxData::data.prev_open_amount",
-      "path": "data.prev_open_amount",
-      "canonical": "data.prev_open_amount",
-      "meaning": "昨开盘金额",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          19,
-          20,
-          20,
-          18,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.float_shares",
-      "identity": "AxData::data.float_shares",
-      "path": "data.float_shares",
-      "canonical": "data.float_shares",
-      "meaning": "普通财务口径流通股",
-      "unit": "股",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.float_market_value",
-      "identity": "AxData::data.float_market_value",
-      "path": "data.float_market_value",
-      "canonical": "data.float_market_value",
-      "meaning": "普通流通股 × 当前价",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.free_float_shares",
-      "identity": "AxData::data.free_float_shares",
-      "path": "data.free_float_shares",
-      "canonical": "data.free_float_shares",
-      "meaning": "流通股本 Z / 自由流通股本口径",
-      "unit": "股",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.free_float_market_value",
-      "identity": "AxData::data.free_float_market_value",
-      "path": "data.free_float_market_value",
-      "canonical": "data.free_float_market_value",
-      "meaning": "流通股本 Z × 当前价",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.seal_amount",
-      "identity": "AxData::data.seal_amount",
-      "path": "data.seal_amount",
-      "canonical": "data.seal_amount",
-      "meaning": "封单额",
-      "unit": "元",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.seal_to_amount_ratio",
-      "identity": "AxData::data.seal_to_amount_ratio",
-      "path": "data.seal_to_amount_ratio",
-      "canonical": "data.seal_to_amount_ratio",
-      "meaning": "封单额 / 当前成交额",
-      "unit": "比率",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          19,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.seal_to_float_ratio",
-      "identity": "AxData::data.seal_to_float_ratio",
-      "path": "data.seal_to_float_ratio",
-      "canonical": "data.seal_to_float_ratio",
-      "meaning": "封单额 / 流通市值 Z × 100",
-      "unit": "%",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.seal_prev_ratio",
-      "identity": "AxData::data.seal_prev_ratio",
-      "path": "data.seal_prev_ratio",
-      "canonical": "data.seal_prev_ratio",
-      "meaning": "当前封单额 / 昨封单额",
-      "unit": "比率",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          1,
-          1,
-          1,
-          3,
-          1,
-          1,
-          1,
-          2,
-          3,
-          1
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.limit_stat_days",
-      "identity": "AxData::data.limit_stat_days",
-      "path": "data.limit_stat_days",
-      "canonical": "data.limit_stat_days",
-      "meaning": "几天几板统计窗口天数",
-      "unit": "天",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          3,
-          3,
-          3,
-          4,
-          5,
-          5,
-          1,
-          2,
-          3,
-          3,
-          6,
-          4,
-          4
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.limit_up_count_in_stat_days",
-      "identity": "AxData::data.limit_up_count_in_stat_days",
-      "path": "data.limit_up_count_in_stat_days",
-      "canonical": "data.limit_up_count_in_stat_days",
-      "meaning": "统计窗口内涨停数",
-      "unit": "次",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          3,
-          3,
-          3,
-          4,
-          5,
-          5,
-          1,
-          2,
-          3,
-          3,
-          6,
-          4,
-          4
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.limit_board_text",
-      "identity": "AxData::data.limit_board_text",
-      "path": "data.limit_board_text",
-      "canonical": "data.limit_board_text",
-      "meaning": "几天几板描述文本，例如 7天5板",
-      "unit": "-",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          2,
-          1,
-          1,
-          1,
-          2,
-          2,
-          1,
-          1,
-          2,
-          2,
-          4,
-          4,
-          4
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.limit_up_streak_days",
-      "identity": "AxData::data.limit_up_streak_days",
-      "path": "data.limit_up_streak_days",
-      "canonical": "data.limit_up_streak_days",
-      "meaning": "连板天数",
-      "unit": "天",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          2,
-          3,
-          3,
-          3,
-          4,
-          4,
-          1,
-          2,
-          2,
-          2,
-          5,
-          1,
-          2
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "AxData",
-      "code": "data.year_limit_up_days",
-      "identity": "AxData::data.year_limit_up_days",
-      "path": "data.year_limit_up_days",
-      "canonical": "data.year_limit_up_days",
-      "meaning": "年内涨停天数",
-      "unit": "天",
-      "section": "2026-11-07 AxData TDX 短线接口字段语义定案",
-      "sections": [
-        "2026-11-07 AxData TDX 短线接口字段语义定案"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261107_axdata_shortline_semantic_adjudication.md",
-        "sample_capture_dates": [
-          "2026-10-15",
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05"
-        ],
-        "nonnull_observation_counts": [
-          20,
-          20,
-          20,
-          20,
-          20,
-          19,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20,
-          20
-        ],
-        "capture_row_slots_in_retained_window": 280
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "shareholder_change_date",
-      "identity": "ZHB-tipinfo::shareholder_change_date",
-      "path": "shareholder_change_date",
-      "canonical": "shareholder_change_date",
-      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
-      "unit": "YYYYMMDD",
-      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-      "sections": [
-        "2026-11-08 ZHB tipinfo shareholder change adjudication"
-      ],
-      "status": "verified",
-      "status_resolution": "manual_public_data_semantic_adjudication",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "ZHB-tipinfo"
-        ],
-        "values": [
-          "unverified"
-        ],
-        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
-      },
-      "reference_evidence": [
-        {
-          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-          "canonical": "shareholder_change_date",
-          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
-          "unit": "YYYYMMDD",
-          "status_raw": "2026-11-08 public notice cross-check",
-          "status": "verified",
-          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ],
-      "attribute_conflicts": {},
-      "registry_aggregate": {
-        "code": "shareholder_change_date",
-        "sources": [
-          "ZHB-tipinfo"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
-      },
-      "adjudications": [
-        {
-          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_date",
-          "decision": "verified",
-          "decision_date": "2026-11-08",
-          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
-          "sample_as_of_dates": [
-            "20261106"
-          ],
-          "evidence_files": [
-            "cache/zhb/zhb_20261106.zip"
-          ],
-          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ]
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "tipinfo.shareholder_change_date",
-      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_date",
-      "path": "tipinfo.shareholder_change_date",
-      "canonical": "tipinfo.shareholder_change_date",
-      "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
-      "unit": "YYYYMMDD",
-      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-      "sections": [
-        "2026-11-08 ZHB tipinfo shareholder change adjudication"
-      ],
-      "status": "verified",
-      "status_resolution": "manual_public_data_semantic_adjudication",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "ZHB-tipinfo"
-        ],
-        "values": [
-          "unverified"
-        ],
-        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
-      },
-      "reference_evidence": [
-        {
-          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-          "canonical": "tipinfo.shareholder_change_date",
-          "meaning": "股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日",
-          "unit": "YYYYMMDD",
-          "status_raw": "2026-11-08 public notice cross-check",
-          "status": "verified",
-          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ],
-      "attribute_conflicts": {},
-      "registry_aggregate": {
-        "code": "tipinfo.shareholder_change_date",
-        "sources": [
-          "ZHB-tipinfo"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
-      },
-      "adjudications": [
-        {
-          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_date",
-          "decision": "verified",
-          "decision_date": "2026-11-08",
-          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
-          "sample_as_of_dates": [
-            "20261106"
-          ],
-          "evidence_files": [
-            "cache/zhb/zhb_20261106.zip"
-          ],
-          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ]
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "shareholder_change_shares_wan",
-      "identity": "ZHB-tipinfo::shareholder_change_shares_wan",
-      "path": "shareholder_change_shares_wan",
-      "canonical": "shareholder_change_shares_wan",
-      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
-      "unit": "万股",
-      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-      "sections": [
-        "2026-11-08 ZHB tipinfo shareholder change adjudication"
-      ],
-      "status": "verified",
-      "status_resolution": "manual_public_data_semantic_adjudication",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "ZHB-tipinfo"
-        ],
-        "values": [
-          "unverified"
-        ],
-        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
-      },
-      "reference_evidence": [
-        {
-          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-          "canonical": "shareholder_change_shares_wan",
-          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
-          "unit": "万股",
-          "status_raw": "2026-11-08 public notice cross-check",
-          "status": "verified",
-          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ],
-      "attribute_conflicts": {},
-      "registry_aggregate": {
-        "code": "shareholder_change_shares_wan",
-        "sources": [
-          "ZHB-tipinfo"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
-      },
-      "adjudications": [
-        {
-          "id": "zhb-tipinfo-shareholder-change-20261108:shareholder_change_shares_wan",
-          "decision": "verified",
-          "decision_date": "2026-11-08",
-          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
-          "sample_as_of_dates": [
-            "20261106"
-          ],
-          "evidence_files": [
-            "cache/zhb/zhb_20261106.zip"
-          ],
-          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ]
-    },
-    {
-      "source": "ZHB-tipinfo",
-      "code": "tipinfo.shareholder_change_shares_wan",
-      "identity": "ZHB-tipinfo::tipinfo.shareholder_change_shares_wan",
-      "path": "tipinfo.shareholder_change_shares_wan",
-      "canonical": "tipinfo.shareholder_change_shares_wan",
-      "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
-      "unit": "万股",
-      "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-      "sections": [
-        "2026-11-08 ZHB tipinfo shareholder change adjudication"
-      ],
-      "status": "verified",
-      "status_resolution": "manual_public_data_semantic_adjudication",
-      "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "ZHB-tipinfo"
-        ],
-        "values": [
-          "unverified"
-        ],
-        "adjudication_evidence_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-        "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297"
-      },
-      "reference_evidence": [
-        {
-          "section": "2026-11-08 ZHB tipinfo shareholder change adjudication",
-          "canonical": "tipinfo.shareholder_change_shares_wan",
-          "meaning": "股东持股变动数量；正值为增持/转入，负值为减持/转出",
-          "unit": "万股",
-          "status_raw": "2026-11-08 public notice cross-check",
-          "status": "verified",
-          "adjudication_id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ],
-      "attribute_conflicts": {},
-      "registry_aggregate": {
-        "code": "tipinfo.shareholder_change_shares_wan",
-        "sources": [
-          "ZHB-tipinfo"
-        ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
-      },
-      "adjudications": [
-        {
-          "id": "zhb-tipinfo-shareholder-change-20261108:tipinfo.shareholder_change_shares_wan",
-          "decision": "verified",
-          "decision_date": "2026-11-08",
-          "reason": "保留的 2026-11-06 ZHB tipinfo.dat 中，002475 的 20250909/+156.95、000055 的 20241114/-1356.22、600100 的 20250218/-100881.75 分别与公开增持/减持/无偿划转记录相符；金额均按万股换算，后两例差额符合保留两位小数的四舍五入。日期字段仅解释为记录关联日期。",
-          "sample_as_of_dates": [
-            "20261106"
-          ],
-          "evidence_files": [
-            "cache/zhb/zhb_20261106.zip"
-          ],
-          "decision_note": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
-          "evidence_sha256": "071bd85af3f26c26d6c0d44c3ef7579d359cd07de4417b9184d3ac80d5796297",
-          "external_evidence": [
-            "https://data.eastmoney.com/stockcalendar/002475.html",
-            "https://disc.static.szse.cn/disc/disk03/finalpage/2025-09-17/8238c1eb-2c19-4343-a1ff-f1c10d2b3de7.PDF",
-            "https://www.fangda.com/investor/index_p16.html",
-            "https://epaper.stcn.com/pic/202411/16/28a7f58ed920c5596ef93a9928e85e64.pdf",
-            "https://static.cninfo.com.cn/finalpage/2025-02-19/1222570324.PDF"
-          ]
-        }
-      ]
-    },
-    {
-      "source": "开盘啦(kpl_limit_up_detail)",
-      "code": "raw_columns.col_13",
-      "identity": "开盘啦(kpl_limit_up_detail)::raw_columns.col_13",
-      "path": "raw_columns.col_13",
-      "canonical": "actual_float_mv",
-      "meaning": "实际流通市值",
-      "unit": "元",
-      "section": "2026-11-10 KPL 原始列来源内语义经验裁决",
-      "sections": [
-        "2026-11-10 KPL 原始列来源内语义经验裁决"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261110_kpl_col13_actual_float_mv.md",
-        "sample_trade_dates": [
-          "2026-10-16",
-          "2026-10-19",
-          "2026-10-20",
-          "2026-10-21",
-          "2026-10-23",
-          "2026-10-26",
-          "2026-10-28",
-          "2026-10-29",
-          "2026-10-30",
-          "2026-11-02",
-          "2026-11-03",
-          "2026-11-04",
-          "2026-11-05",
-          "2026-11-06",
-          "2026-11-09"
-        ],
-        "report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
-        "adjudication_ids": [
-          "20261110-kpl-col13-actual-float-mv"
-        ],
-        "audit_file": "docs/field_verification/adjudications/20261110_kpl_col13_audit.csv",
-        "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c",
-        "audit_sample_count": 966,
-        "share_base_stability": {
-          "stocks_with_at_least_3_dates": 75,
-          "stocks_with_mad_at_most_1pct": 74,
-          "stocks_with_mad_at_most_3pct": 75,
-          "median_mad": 5.2948080501062445e-11,
-          "maximum_mad": 0.01193719993957411,
-          "maximum_mad_stock": "002565"
-        },
-        "amount_turnover_comparison": {
-          "within_5pct_count": 758,
-          "median_relative_difference": 0.029640581031973784,
-          "p90_relative_difference": 0.06649789022378076,
-          "maximum_relative_difference": 0.12570122600211722,
-          "formula_is_exact": false
-        },
-        "push2ex_circulating_value_comparison": {
-          "median_ratio": 0.6572999998476923,
-          "p10_ratio": 0.3656999999062305,
-          "p90_ratio": 0.874999999648375,
-          "minimum_ratio": 0.16379999999950276,
-          "maximum_ratio": 1.0000000001006601,
-          "mapping_created": false,
-          "same_capture_directory_pair_count": 54,
-          "push2ex_as_of_date_recorded": false,
-          "source_capture_date": "20261109",
-          "source_capture_started_at": "2026-11-09 19:58:59",
-          "pairing_basis": "project_capture_directory_only",
-          "used_as_dispositive_evidence": false,
-          "within_1pct_of_equal": 1,
-          "within_5pct_of_equal": 3
-        },
-        "raw_capture_file": "docs/field_verification/20261109/raw_kpl.json",
-        "raw_capture_sha256": "3cfdf33514703f1fc90262367702439a7c0314675d5321c7b98e0022469984c6",
-        "unit_basis": "yuan_amount_scale_cross_checked_against_amount_and_actual_turnover",
-        "share_base_definition": "not_published_or_established"
-      },
-      "reference_evidence": [
-        {
-          "section": "2026-11-10 KPL 原始列来源内语义经验裁决",
-          "canonical": "actual_float_mv",
-          "meaning": "实际流通市值",
-          "unit": "元",
-          "status_raw": "E3：公开产品标签、第三方位置线索与保留期本地样本经验核验",
-          "status": "verified",
-          "adjudication_id": "20261110-kpl-col13-actual-float-mv",
-          "evidence_basis": "empirical_source_field_semantics",
-          "evidence_level": "E3",
-          "evidence_file": "docs/field_verification/adjudications/20261110_kpl_col13_actual_float_mv.md",
-          "web_evidence_file": "docs/field_verification/adjudications/public_web/20261110_kpl_col13_public_web.md",
-          "sample_trade_dates": [
-            "2026-10-16",
-            "2026-10-19",
-            "2026-10-20",
-            "2026-10-21",
-            "2026-10-23",
-            "2026-10-26",
-            "2026-10-28",
-            "2026-10-29",
-            "2026-10-30",
-            "2026-11-02",
-            "2026-11-03",
-            "2026-11-04",
-            "2026-11-05",
-            "2026-11-06",
-            "2026-11-09"
-          ],
-          "report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
-          "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c"
-        }
-      ],
-      "attribute_conflicts": {},
-      "adjudications": [
-        {
-          "id": "20261110-kpl-col13-actual-float-mv",
-          "action": "empirical_semantic_adjudication",
-          "status": "verified",
-          "reviewer": "Codex",
-          "reviewed_on": "2026-11-10",
-          "report": "adjudications/20261110_kpl_col13_actual_float_mv.md",
-          "target_identity": {
-            "source": "开盘啦(kpl_limit_up_detail)",
-            "code": "raw_columns.col_13"
-          },
-          "level": "E3",
-          "rationale": "开盘啦实际流通市值（元）；保留期内量纲、价格与实际换手率样本支持金额语义。具体股本基数未公开；不等同于东方财富普通流通市值，也不与其他 KPL 接口路径建立逐值映射。",
-          "evidence": {
-            "audit_sample_count": 966,
-            "sample_trade_dates": [
-              "2026-10-16",
-              "2026-10-19",
-              "2026-10-20",
-              "2026-10-21",
-              "2026-10-23",
-              "2026-10-26",
-              "2026-10-28",
-              "2026-10-29",
-              "2026-10-30",
-              "2026-11-02",
-              "2026-11-03",
-              "2026-11-04",
-              "2026-11-05",
-              "2026-11-06",
-              "2026-11-09"
-            ],
-            "share_base_stability": {
-              "stocks_with_at_least_3_dates": 75,
-              "stocks_with_mad_at_most_1pct": 74,
-              "stocks_with_mad_at_most_3pct": 75,
-              "median_mad": 5.2948080501062445e-11,
-              "maximum_mad": 0.01193719993957411,
-              "maximum_mad_stock": "002565"
-            },
-            "amount_turnover_comparison": {
-              "within_5pct_count": 758,
-              "median_relative_difference": 0.029640581031973784,
-              "p90_relative_difference": 0.06649789022378076,
-              "maximum_relative_difference": 0.12570122600211722,
-              "formula_is_exact": false
-            },
-            "push2ex_circulating_value_comparison": {
-              "median_ratio": 0.6572999998476923,
-              "p10_ratio": 0.3656999999062305,
-              "p90_ratio": 0.874999999648375,
-              "minimum_ratio": 0.16379999999950276,
-              "maximum_ratio": 1.0000000001006601,
-              "within_1pct_of_equal": 1,
-              "within_5pct_of_equal": 3,
-              "mapping_created": false,
-              "same_capture_directory_pair_count": 54,
-              "push2ex_as_of_date_recorded": false,
-              "source_capture_date": "20261109",
-              "source_capture_started_at": "2026-11-09 19:58:59",
-              "pairing_basis": "project_capture_directory_only",
-              "used_as_dispositive_evidence": false
-            },
-            "collision_report_sha256": "5ff77da95e8b57ae6ab78de016acfbf85b53877b04680fbebad731cabb8f3d61",
-            "audit_sha256": "948f9adcb4f28bbfc950dbbbae8b351a2984bb85718fedcc6040c6bb469c2b9c",
-            "raw_capture_sha256": "3cfdf33514703f1fc90262367702439a7c0314675d5321c7b98e0022469984c6"
-          }
-        }
-      ],
-      "capture_evidence": [
-        {
-          "file": "docs/field_verification/20261109/raw_kpl.json",
-          "path": "stocks.[*].raw_columns.col_13"
-        }
-      ]
     }
   ],
   "source_field_addenda": [

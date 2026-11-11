@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 明确区分 `YYYYMMDD` 日期格式标记与实际返回字段：按 TDX 0x0010 权威表定案 `updated_date` 为财报更新日期、`ipo_date` 为上市日期，关闭两个字段由弱聚合描述造成的元数据冲突；ZHB 裁决补充格式标记到实际日期字段的逐源对应关系。来源契约元数据更正现可在决策文件精确提供属性冲突快照时解除冲突，并把快照保留到定案历史。
+- ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突，其中四项来源内确认、两项继续待核。报告和注册表不再把这些财务字段当作无路径叶名。
 - 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。`fa_qi_ren_fa_ren_gu`、`fa_ren_gu` 与 `zhu_ying_li_run` 仍保留冲突，详见 [`20261111_finance_extended_candidate_crosscheck.md`](docs/field_verification/20261111_finance_extended_candidate_crosscheck.md)。
 - 更正 `ZHB-tipinfo::[6]`：通达信官方 `TopDate_Recent` 指近 2 年最近龙虎榜日期；三只股票的留存 ZHB 原始值与东方财富官方页面日期一致。保留路径身份、verified 状态和空单位。
 - 为 ZHB 采集增加北京时间 08:00 闸门：默认早间采集跳过 ZHB，过早的显式 `--only zhb` 在请求前拒绝；文档说明使用同一数据日单源补采，碰撞仍按 ZHB 实际 `zhb_date` 归位。
@@ -17,8 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 依据新浪官方净流入定义及 278 组留存样本，确认 `新浪(扩展API)::netamount` 原始单位为元并区分官网万元展示刻度；保留两组明显成交额差异，不建立跨源逐值映射。
 - 补出 ZHB `forecast_type`、`suspend_major_event_date` 两个 tipinfo 运行别名，并以 15 个保留压缩包的 84,815 组逐行审计验证原值；只确认业绩预告类型码字段角色，完整码表继续未知。
 - 将 `ZHB-tdxstat::change_60d_alt` 标为已退役的历史解析路径：当前解析器和测试只输出同列键 `change_60d`；15 个保留文件按来源日期去重为 11 个交易日后均未见旧键，未重审当前字段语义或使用保留边界前样本。
-- 将 `ZHB-tdxstat::YYYYMMDD/float/int`、`ZHB-tdxstat2::YYYYMMDD/float` 与 `ZHB-tipinfo::YYYYMMDD` 六个精确身份从未知队列退出：它们是类型/格式占位符而非输出键；以 15 个保留期 raw、11 个经交易日历核实的来源数据日及逐目录审计清单为证，不扩展到其他来源的同名 token，也不改动真实未知列 `[17]`、`[18]`。
-- 将 `TDX(双命名源)::YYYYMMDD/float/str/byte/uint` 五个精确身份从未知队列退出：0x0010 来源表将它们用于日期格式或字段类型，解析器/测试未将其作为返回键；TDX 采集的逐源 `as_of_date` 未确认，因此本次未把 raw 样本用于裁决，也未扩展到其他来源的同名 token。
+- 将 `ZHB-tdxstat::YYYYMMDD/float/int`、`ZHB-tdxstat2::YYYYMMDD/float` 与 `ZHB-tipinfo::YYYYMMDD` 六个精确身份从独立返回路径队列退出：其中 `YYYYMMDD` 是有明确含义的日期值格式，映射到 `stat.date`、`stat2.date` 和 tipinfo 日期字段；类型名不是返回键。结论依据 15 个保留期 raw、11 个按交易日历核实的来源数据日及逐目录审计清单，不扩展到其他来源同名 token，也不改动真实未知列 `[17]`、`[18]`。
+- 将 `TDX(双命名源)::YYYYMMDD/float/str/byte/uint` 五个精确身份从独立返回路径队列退出：`YYYYMMDD` 是 `updated_date` / `ipo_date` 的日期值格式，其他 token 是类型标签，不是返回键；更新与上市日期的业务含义现已按 0x0010 权威逐字段表登记。TDX 来源级 `as_of_date` 未确认，因此本次不把它们误作采集日期或来源数据日。
 - 将 `TDX-eltdx(适配层)::bool/float/int/str` 四个精确身份从未知队列退出：ELTDX 3.3.2 的具名返回模型和 dataclass 序列化契约不输出这些类型名作为字段键；静态扫描 135 个包/采集器 Python 文件未找到同名属性或字典键，未使用采集 raw，也未影响其他来源。
 - 定案 `TDX-eltdx(适配层)::updated_date_raw` 与 `::ipo_date_raw`：确认其为财务数据更新日期、上市日期的原始 YYYYMMDD 整数编码；它们不是来源 `as_of_date` 或采集目录数据日，不使用 raw 样本或创建跨源映射。
 - 依据 ELTDX v3.3.2 `SpecialLimitRecord` 和 0x0452 接口契约，分别确认 `limit_up_price`、`limit_down_price` 为涨停价和跌停价；拆分旧混合含义，单位仍留空，不使用无来源数据日样本或建立跨源映射。

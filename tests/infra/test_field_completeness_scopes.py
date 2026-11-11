@@ -59,6 +59,13 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert {"limit_up_price", "locked_amount"} <= eltdx_tokens
     assert not {"adjust", "period"} & eltdx_tokens
 
+    finance_path = "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float"
+    monkeypatch.setitem(afc.RAW_FIELD_KEYS, "TDX-eltdx(适配层)", set())
+    finance_table = f"| field | meaning |\n|:--|:--|\n| {finance_path} | 发起人法人股 |\n"
+    assert finance_path in afc.reg_tokens_for_section("TDX-eltdx(适配层)", finance_table)
+    extractor = importlib.import_module("extract_registry")
+    assert extractor.cell_token(finance_path, "TDX-eltdx(适配层)") == finance_path
+
 
 def test_eastmoney_kline_registry_uses_its_own_fields2_table(monkeypatch):
     monkeypatch.syspath_prepend("scripts")
@@ -95,6 +102,28 @@ def test_tdx_quote_raw_capture_container_is_not_a_registry_field(monkeypatch):
     tokens = afc.reg_tokens_for_section("TDX(双命名源)", "")
 
     assert tokens == {"price"}
+
+
+def test_adjudication_level_labels_are_not_registered_as_fields(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    table = "| field | meaning |\n|:--|:--|\n| L1 | 定案层级 |\n| L4 | 定案层级 |\n"
+
+    assert afc._table_codes(table) == set()
+
+
+def test_full_paths_in_mapping_columns_are_not_source_field_identities(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    table = (
+        "| field | meaning | project mapping |\n"
+        "|:--|:--|:--|\n"
+        "| finance_batch[].amount | 成交额 | tdx.quote_full.change_pct |\n"
+        "| c | 股票代码 | code |\n"
+        "| pe | PE | — |\n"
+    )
+
+    assert afc._table_codes(table) == {"finance_batch[].amount", "pe"}
 
 
 def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_only_tokens(

@@ -116,7 +116,10 @@ def cell_token(cell: str, src: str):
     # 必须排在 _INDEX_SRC 的 [N] 分支之前——ZHB 同源既走 positional [N] 又走 stat.* 带点，
     # 否则带点 token 被 _INDEX_SRC 误判 None，导致 Layer2 无法回挂 meaning + 标 ✅ verified。
     if "." in cell and (src in _CAMEL_SRC or src in _INDEX_SRC):
-        m = re.search(r"[A-Za-z_][A-Za-z0-9_.]*", cell)
+        m = re.search(
+            r"[A-Za-z_][A-Za-z0-9_]*(?:\[\])?(?:\.[A-Za-z_][A-Za-z0-9_]*(?:\[\])?)*",
+            cell,
+        )
         return m.group(0) if m else None
     if src in _FCODE_SRC:
         m = re.search(r"f(\d+)", cell, re.IGNORECASE)

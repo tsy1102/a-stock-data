@@ -15,6 +15,7 @@
 ## 当前调查计划
 
 - [`20261111_finance_candidate_crosscheck.md`](20261111_finance_candidate_crosscheck.md) 与 [`20261111_finance_extended_candidate_crosscheck.md`](20261111_finance_extended_candidate_crosscheck.md)：按拼音/英文先生成候选，再用 ELTDX v3.3.2 来源契约、2026Q3 公开报告、单位和报告期独立核对；确认来源内财务语义，不建立跨源映射。发起人法人股、法人股和主营利润路径的冲突仍保留。
+- [`adjudications/20261111_eltdx_finance_capture_paths.md`](adjudications/20261111_eltdx_finance_capture_paths.md)：补齐六条 `finance_batch[]` 完整采集路径；四项来源内定案、两项股本字段保留为未定案候选，并明确日期格式标记 `YYYYMMDD` 对应实际日期字段。
 - [`20261111_eltdx_share_raw_crosscheck.md`](20261111_eltdx_share_raw_crosscheck.md)：先由名称提出 B 股、H 股和原始财务主体候选，再以 ELTDX v3.3.2 0x0010 契约、136/143 字节结构、保留样本及发行人股份数据核验；只确认 ELTDX 来源内定义，不新增跨源映射。
 - `ZHB-tipinfo::[17]/[18]`：16 个保留期归档、90,471 行的全市场检查均为空，但没有 `tipinfo.dat` 的官方位置映射；保留未验证状态。细节见 [`20261110/zhb_tipinfo_17_18_followup.md`](20261110/zhb_tipinfo_17_18_followup.md) 及逐包哈希审计表。
 - 东财 push2 多主机字段差异：仅在用户明确安排真实联网核验后，以低频逐主机小样本比字段、数值和来源日期。先核验备用域；首次出现 403、429、封禁或熔断迹象即停止该风险组，不运行 `--all`。历史健康探测只代表当时可达，不证明字段等价或当前健康。
@@ -66,10 +67,11 @@
 - [`adjudications/20261110_eltdx_volume_rush_locked_fields.md`](adjudications/20261110_eltdx_volume_rush_locked_fields.md)：依据 ELTDX v3.3.2 字段/7709 契约及 2026-11-09 的 80 条榜单样本，定案 `volume_hand`、`opening_rush`、`locked_amount` 的来源内语义和已公开单位；拆分 `min2_amount`、`opening_rush` 与 `vol_rise_speed` 的旧混合解释，不新增跨源映射，保留 `opening_rush` 算法和信号方向未知。
 - [`adjudications/20261110_eltdx_open_and_seal_amount.md`](adjudications/20261110_eltdx_open_and_seal_amount.md)：按 ELTDX v3.3.2 7709/ShortlineIndicator 契约和 2026-11-09 的 80 条榜单样本，定案 `open_amount`、`seal_amount` 均为元口径；明确买一金额与涨停总封单不同，不新增别名或跨源映射。
 
-- [`adjudications/20261110_zhb_schema_tokens_not_fields.md`](adjudications/20261110_zhb_schema_tokens_not_fields.md) 与其逐目录审计 CSV：排除 ZHB 的 6 个精确类型/格式占位符身份；仅检查 2026-10-15 起、来源日期经交易日历确认且有同名归档的 15 个 raw，保留真实未知列 `[17]`、`[18]` 不变。
-- [`adjudications/20261110_tdx_type_tokens_not_fields.md`](adjudications/20261110_tdx_type_tokens_not_fields.md)：仅按 TDX 自身字段类型/日期格式文档和解析器键路径排除 5 个完整类型 token 身份（`YYYYMMDD`、`float`、`str`、`byte`、`uint`）；未使用来源 `as_of_date` 未确认的采集 raw，不扩展到 ELTDX 或其他同名来源。
+- [`adjudications/20261110_zhb_schema_tokens_not_fields.md`](adjudications/20261110_zhb_schema_tokens_not_fields.md) 与其逐目录审计 CSV：明确 ZHB 的 `YYYYMMDD` 是实际日期字段的值格式，并逐源列出快照日、报告期、披露日、涨跌停日期及业务日期对应路径；只把格式/类型 token 本身排除为返回路径。样本审计限于 2026-10-15 起、来源日期经交易日历确认且有同名归档的 15 个 raw，真实未知列 `[17]`、`[18]` 保持不变。
+- [`adjudications/20261110_tdx_type_tokens_not_fields.md`](adjudications/20261110_tdx_type_tokens_not_fields.md)：仅按 TDX 自身字段类型/日期格式文档和解析器键路径排除 5 个完整类型 token 身份（`YYYYMMDD`、`float`、`str`、`byte`、`uint`）；其中日期格式对应的真实字段已于 [`20261111_tdx_finance_date_fields.md`](adjudications/20261111_tdx_finance_date_fields.md) 定案为 `updated_date`（财报更新日期）和 `ipo_date`（上市日期）。
 - [`adjudications/20261110_eltdx_type_tokens_not_fields.md`](adjudications/20261110_eltdx_type_tokens_not_fields.md)：按项目固定的 ELTDX 3.3.2 返回模型与 dataclass 序列化路径，排除 4 个精确 Python 类型 token 身份（`bool`、`float`、`int`、`str`）；未读取采集 raw，不扩展到其他来源的同名路径。
 - [`adjudications/20261110_eltdx_finance_raw_dates.md`](adjudications/20261110_eltdx_finance_raw_dates.md)：依据 ELTDX 3.3.2 `FinanceRecord` 模型和 0x0010 日期编码契约，确认 `updated_date_raw`、`ipo_date_raw` 为 YYYYMMDD 整数；明确它们是财务记录业务日期，不是采集数据日或来源 `as_of_date`，未读取 raw 样本。
+- [`adjudications/20261111_tdx_finance_date_fields.md`](adjudications/20261111_tdx_finance_date_fields.md)：按 TDX 0x0010 权威逐字段表和 ELTDX v3.3.2 来源契约补全 `updated_date`、`ipo_date` 的规范名、含义及 YYYYMMDD 编码，并以精确冲突快照清除弱摘要章节造成的注册表属性冲突；不新增跨源映射。
 - [`adjudications/20261110_eltdx_special_limit_prices.md`](adjudications/20261110_eltdx_special_limit_prices.md)：按 ELTDX 3.3.2 `SpecialLimitRecord` 和 0x0452 契约拆分并确认 `limit_up_price`、`limit_down_price`；单位未公开，留空；不使用未确认来源数据日的样本或建立跨源映射。
 - [`adjudications/20261110_eltdx_trade_tick_contract.md`](adjudications/20261110_eltdx_trade_tick_contract.md)：按 ELTDX 3.3.2 `TradeTick` 契约确认七个上游模型字段；两个竞价量字段固定为 `None`，真实竞价数据来自 `auctions.series`。当前项目采集器未调用成交接口；不读取未核日期样本、不恢复路由或建立碰撞锚。
 

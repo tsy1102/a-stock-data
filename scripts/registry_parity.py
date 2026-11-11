@@ -151,7 +151,8 @@ def main(argv=None):
     candidate_pairs, candidate_problems = _validated_unverified_candidates(
         expected_pairs, actual_pairs, source_records, UNKNOWN_FIELDS
     )
-    parity_pairs = actual_pairs - candidate_pairs
+    non_field_pairs, non_field_problems = _validated_non_field_schema_pairs(source_records)
+    parity_pairs = actual_pairs - candidate_pairs - non_field_pairs
     parity_field_sources = _pairs_to_field_sources(parity_pairs)
     reg_fields = len(parity_field_sources)
     reg_records = len(parity_pairs)
@@ -167,6 +168,7 @@ def main(argv=None):
         + public_web_problems
         + scope_problems
         + candidate_problems
+        + non_field_problems
         + debt_problems
         + pair_problems
     )
@@ -199,6 +201,11 @@ def main(argv=None):
     print(
         f"parity[unverified-candidates]: {'PASS' if not candidate_problems else 'FAIL'} "
         f"{len(candidate_pairs)} 条未验证候选已列入 unknown_fields ({candidate_counts})"
+    )
+    print(
+        f"parity[adjudicated-non-fields]: {'PASS' if not non_field_problems else 'FAIL'} "
+        f"{len(non_field_pairs)} 条类型/格式说明不是独立返回路径；"
+        "YYYYMMDD 保留为日期值格式元数据，对应字段见裁决文档"
     )
     print(
         f"parity[source-contract-adjudications]: "
@@ -270,6 +277,26 @@ def _pairs_to_field_sources(pairs: set[tuple[str, str]]) -> dict[str, set[str]]:
     for source, code in pairs:
         out.setdefault(code, set()).add(source)
     return out
+
+
+def _validated_non_field_schema_pairs(
+    source_records: list[dict],
+) -> tuple[set[tuple[str, str]], list[str]]:
+    """Exclude adjudicated schema/type tokens as paths while preserving their evidence."""
+    pairs: set[tuple[str, str]] = set()
+    problems: list[str] = []
+    for row in source_records:
+        if row.get("status_resolution") != "not_field_schema_token":
+            continue
+        source, code = row.get("source"), row.get("code")
+        if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
+            problems.append("not_field_schema_token 记录缺少 source/code")
+            continue
+        if row.get("status") != "disproved":
+            problems.append(f"{source}::{code} 类型/格式 token 路径必须保持 disproved")
+            continue
+        pairs.add((source, code))
+    return pairs, problems
 
 
 def _pairs_for_count_check(
@@ -935,6 +962,12 @@ def _validated_source_contract_adjudications(
                     "unit": previous.get("unit", ""),
                 }
             )
+            previous_attribute_conflicts = decision.get("previous_attribute_conflicts")
+            if previous_attribute_conflicts is not None:
+                # Rebuild the exact pre-decision state. Metadata corrections may
+                # clear active conflicts after preserving them in adjudication
+                # history, so replay must restore the recorded snapshot first.
+                replay_row["attribute_conflicts"] = copy.deepcopy(previous_attribute_conflicts)
             replay_row["adjudications"] = [
                 item
                 for item in replay_row.get("adjudications", [])

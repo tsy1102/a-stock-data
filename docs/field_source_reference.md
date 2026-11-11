@@ -5528,6 +5528,17 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 > **标准契约表（V17.3 2026-09-18）**：将 eltdx 适配层 `quote_snapshot.*` / `shortline.*` 带点 token 以规范 4 列契约登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified。命名形态与 fuyao `snapshot.*` 同构（前缀 `quote_snapshot.`/`shortline.` 不入 `_DENY_TOKENS`）。**净新增字段**（⭐）含义见 §12.13.10 黄金锚对撞；统一层 `cdata.eltdx_*` 投影见 §12.13.11。
 
+**财务批量（finance_batch[]，FinanceRecord）**
+
+| 字段路径 | 拼音候选 / 定案含义 | 单位 | 状态 |
+|---|---|---|---|
+| finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 拼音及模型标签候选：发起人法人股；样本值语义冲突待核 | 文档标注万股（待核） | ⏳ |
+| finance_batch[].fa_ren_gu_raw_float | 拼音及模型标签候选：法人股；样本值语义冲突待核 | 文档标注万股（待核） | ⏳ |
+| finance_batch[].gu_dong_ren_shu_raw_float | 股东人数（按股东账户计） | 户 | ✅ |
+| finance_batch[].zhu_ying_shou_ru_raw_float | 主营收入（与报告“营业收入”行对应） | 千元 | ✅ |
+| finance_batch[].ying_ye_li_run_raw_float | 营业利润 | 千元 | ✅ |
+| finance_batch[].zong_xian_jin_liu_raw_float | 总现金流（经营、投资、筹资活动净额之和，不含汇率影响） | 千元 | ✅ |
+
 **A. quote_snapshot（行情快照，23 字段）**
 
 | 字段 | 含义 | 单位 | 状态 |

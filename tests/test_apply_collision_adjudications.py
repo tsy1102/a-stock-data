@@ -881,10 +881,79 @@ def test_source_contract_rejects_verified_metadata_correction_with_attribute_con
     registry, document = _verified_metadata_correction_inputs()
     registry["source_fields"][0]["attribute_conflicts"] = {"unit": ["分钟", "%"]}
 
-    with pytest.raises(ValueError, match="attribute conflicts"):
+    with pytest.raises(ValueError, match="exact previous_attribute_conflicts snapshot"):
         apply_source_contract_adjudications(
             registry, document, "adjudications/verified_metadata_correction.json"
         )
+
+
+def test_source_contract_metadata_correction_resolves_exact_attribute_conflict_snapshot():
+    registry, document = _verified_metadata_correction_inputs()
+    conflicts = {"meaning": ["旧释义", "冲突释义"], "unit": ["分钟", "%"]}
+    registry["source_fields"][0]["attribute_conflicts"] = conflicts
+    document["decisions"][0]["previous_attribute_conflicts"] = conflicts
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/verified_metadata_correction.json"
+    )
+
+    target = updated["source_fields"][0]
+    assert target["attribute_conflicts"] == {}
+    assert target["adjudications"][0]["resolved_attribute_conflicts"] == conflicts
+    assert stats["metadata_corrected"] == 1
+
+    repeated, repeat_stats = apply_source_contract_adjudications(
+        updated, document, "adjudications/verified_metadata_correction.json"
+    )
+    assert repeated == updated
+    assert repeat_stats["already_applied"] == 1
+    assert repeat_stats["metadata_corrected"] == 0
+
+
+def test_source_contract_metadata_correction_rejects_mismatched_conflict_snapshot():
+    registry, document = _verified_metadata_correction_inputs()
+    registry["source_fields"][0]["attribute_conflicts"] = {"unit": ["分钟", "%"]}
+    document["decisions"][0]["previous_attribute_conflicts"] = {"unit": ["分钟", "秒"]}
+
+    with pytest.raises(ValueError, match="exact previous_attribute_conflicts snapshot"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/verified_metadata_correction.json"
+        )
+
+
+def test_source_contract_conflict_resolution_can_fill_blank_metadata():
+    registry, document = _verified_metadata_correction_inputs()
+    target = registry["source_fields"][0]
+    target.update(canonical="", meaning="", unit="")
+    conflicts = {"canonical": ["old_name", "new_name"], "unit": ["", "YYYYMMDD"]}
+    target["attribute_conflicts"] = conflicts
+    decision = document["decisions"][0]
+    previous = {"canonical": "", "meaning": "", "unit": ""}
+    updated = {"canonical": "new_name", "meaning": "日期含义", "unit": "YYYYMMDD"}
+    decision.update(
+        {
+            "previous": previous,
+            "previous_attribute_conflicts": conflicts,
+            **updated,
+            "metadata_correction": {
+                "previous": previous,
+                "updated": updated,
+                "rationale": "精确冲突快照证明旧属性为空且候选冲突，来源契约确认目标值。",
+            },
+        }
+    )
+
+    result, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/verified_metadata_correction.json"
+    )
+
+    resolved = result["source_fields"][0]
+    assert resolved["canonical"] == "new_name"
+    assert resolved["meaning"] == "日期含义"
+    assert resolved["unit"] == "YYYYMMDD"
+    assert resolved["attribute_conflicts"] == {}
+    assert resolved["adjudications"][0]["resolved_attribute_conflicts"] == conflicts
+    assert stats["metadata_corrected"] == 1
 
 
 @pytest.mark.parametrize(

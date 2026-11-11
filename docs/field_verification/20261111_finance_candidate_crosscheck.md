@@ -6,12 +6,12 @@
 
 | 字段路径 | 拼音/英文候选 |
 |---|---|
-| `fa_qi_ren_fa_ren_gu_raw_float` | 发起人法人股 / promoter legal-person shares |
-| `fa_ren_gu_raw_float` | 法人股 / legal-person shares |
-| `gu_dong_ren_shu_raw_float` | 股东人数 / number of shareholders |
-| `zhu_ying_shou_ru_raw_float` | 主营收入 / main-business revenue |
-| `ying_ye_li_run_raw_float` | 营业利润 / operating profit |
-| `zong_xian_jin_liu_raw_float` | 总现金流 / total cash flow |
+| `finance_batch[].fa_qi_ren_fa_ren_gu_raw_float` | 发起人法人股 / promoter legal-person shares |
+| `finance_batch[].fa_ren_gu_raw_float` | 法人股 / legal-person shares |
+| `finance_batch[].gu_dong_ren_shu_raw_float` | 股东人数 / number of shareholders |
+| `finance_batch[].zhu_ying_shou_ru_raw_float` | 主营收入 / main-business revenue |
+| `finance_batch[].ying_ye_li_run_raw_float` | 营业利润 / operating profit |
+| `finance_batch[].zong_xian_jin_liu_raw_float` | 总现金流 / total cash flow |
 
 `raw_float` 表示浮点数值表示，不提供业务含义。字段名候选、上游输出标签和实际数值语义分别记录。
 

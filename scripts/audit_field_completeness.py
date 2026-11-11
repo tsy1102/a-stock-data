@@ -47,6 +47,8 @@ read_capture_json = _capture_store_module.read_capture_json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
+_FIELD_PATH_TOKEN = r"[A-Za-z][A-Za-z0-9_]*(?:\[\])?(?:\.[A-Za-z][A-Za-z0-9_]*(?:\[\])?)*"
+_FIELD_PATH_RE = re.compile(rf"{_FIELD_PATH_TOKEN}\Z")
 SOURCE_IDENTITY_RECLASSIFICATIONS = os.path.join(
     ROOT, "docs", "field_verification", "source_identity_reclassifications.json"
 )
@@ -499,6 +501,8 @@ def raw_field_sets():
     raw["TDX(双命名源)"] = tdx
     d = loadjson("raw_tdx_f10.json")
     raw["TDX-F10(双命名源)"] = set(_all_stock_dotted_leaves(d))
+    d = loadjson("raw_eltdx.json")
+    raw["TDX-eltdx(适配层)"] = _eltdx_capture_paths(d)
 
     # ------------------------------------------------------------------
     # V17.1.x (2026-09-06): 以下三源此前被硬编码为 set()（"无 raw 捕获"假象），
@@ -598,6 +602,54 @@ def _leaf_keys(o):
     return out
 
 
+def _dotted_field_paths(value, prefix=""):
+    """Return nested response field paths, adding [] for record-list elements."""
+    out = set()
+    if isinstance(value, dict):
+        for key, child in value.items():
+            if key in _RAW_METADATA_CONTAINERS:
+                continue
+            path = f"{prefix}.{key}" if prefix else key
+            if isinstance(child, dict):
+                out |= _dotted_field_paths(child, path)
+            elif isinstance(child, list):
+                if not child:
+                    continue
+                if any(isinstance(item, (dict, list)) for item in child):
+                    for item in child:
+                        out |= _dotted_field_paths(item, f"{path}[]")
+                else:
+                    out.add(path)
+            else:
+                out.add(path)
+    elif isinstance(value, list):
+        if any(isinstance(item, (dict, list)) for item in value):
+            for item in value:
+                out |= _dotted_field_paths(item, f"{prefix}[]")
+        elif prefix:
+            out.add(prefix)
+    return out
+
+
+def _eltdx_capture_paths(document):
+    """Return ELTDX response paths without the capture's stock/helper envelope."""
+    if not isinstance(document, dict):
+        return set()
+    fields = set()
+    for record in _stock_records(document):
+        for endpoint, payload in record.items():
+            if endpoint in _RAW_METADATA_CONTAINERS:
+                continue
+            fields |= _dotted_field_paths(payload, endpoint)
+    helpers = document.get("global_helpers")
+    if isinstance(helpers, dict):
+        for helper, payload in helpers.items():
+            if helper in _RAW_METADATA_CONTAINERS:
+                continue
+            fields |= _dotted_field_paths(payload, helper)
+    return fields
+
+
 def _registry_capture_leaf_keys(document):
     """Return capture fields intended for registry extraction.
 
@@ -631,7 +683,8 @@ def _registry_capture_leaf_keys(document):
 # 当成「本源字段」登记 → 污染 field_registry.json 核心资产(如 fuyao 原 699 令牌仅约 200 真)。
 #
 # 改为「真值三源并集」(已用 scripts/_diag_extract.py 验证 DROPPED 集合为纯污染):
-#   RAW_FIELD_KEYS[src] = 各源 raw_*.json 叶键(跨 docs/field_verification/2026* 全部 dated 目录聚合)
+#   RAW_FIELD_KEYS[src] = 已纳入登记基线的 raw_*.json 字段令牌(跨保留 dated 目录聚合)
+#     ELTDX 原始响应路径只进入 raw_field_sets 做完整性发现，不自动升级为登记字段。
 #   _table_codes(stext) = 章节表格首列 / 全列英文代码单元 / 反引号令牌(无中文单元)
 #   CANON_ALIASES[src]  = §12.8.12e 规范注册表「各源字段对照」列中本源前缀的别名(仅本源, 严禁跨源串味)
 # 三者并集后剔除 f\d+ (f 编号属 push2/ulist/AxData, 永不属这些 snake 源)。
@@ -649,8 +702,8 @@ _RAW_FILE_FOR_SRC = {
     "TDX(双命名源)": ["raw_tdx.json", "raw_tdxquant.json"],
     "TDX-F10(双命名源)": ["raw_tdx_f10.json"],
     # V17.3 (2026-09-18): eltdx 适配层源 raw 捕获（raw_eltdx.json, 自 20260915 起常态化采集）。
-    # 聚合 leaf keys 供 snake 路径补全；带点 token(quote_snapshot.*/shortline.*) 另经 §12.13.10/§12.13.11
-    # 标准契约表由 _table_codes 抽取，与 fuyao snapshot.* 同机制。
+    # 原始响应路径仅用于 raw_field_sets 的完整性发现，不自动升级为登记基线；
+    # 只有标准契约表或明确补录才定义当前字段身份。
     "TDX-eltdx(适配层)": ["raw_eltdx.json"],
     # 新浪三表与个股资金流原始载荷；期权合约路径仍不采集。
     "新浪(扩展API)": ["raw_sina_extended.json"],
@@ -719,13 +772,25 @@ _CAPTURE_CONTAINER_TOKENS = {
     "百度(baidu)": {"newMarketData", "marketData", "keys", "rows"},
 }
 
+# Explicit type/format tokens adjudicated as non-field paths for these source identities.
+# YYYYMMDD is meaningful date-format metadata; its actual date fields remain registered and
+# are documented in the source-specific adjudications. Keep exclusions source-scoped.
+_SCHEMA_NON_FIELD_TOKENS_BY_SOURCE = {
+    "TDX(双命名源)": {"YYYYMMDD", "float", "str", "byte", "uint"},
+    "TDX-eltdx(适配层)": {"bool", "float", "int", "str"},
+    "ZHB-tdxstat": {"YYYYMMDD", "float", "int"},
+    "ZHB-tdxstat2": {"YYYYMMDD", "float"},
+    "ZHB-tipinfo": {"YYYYMMDD"},
+}
+
 
 def _agg_raw_leaf_keys(filenames):
-    """聚合 dated raw 文件中声明可登记的叶键；无声明时沿用历史全叶键规则。
+    """聚合 dated raw 文件中声明可登记的字段令牌；ELTDX 保留嵌套路径。
 
     ``raw_field_sets`` 仍扫描完整原始响应。此处仅构造登记基线，故遵循捕获文件
     的 ``__source_meta__.captured_registry_codes`` 显式白名单，避免把归档路径或
-    采集上下文自动提升为主字典字段。剔除 _RAW_DENY 后返回。
+    采集上下文自动提升为主字典字段。ELTDX 路径仅作观测完整性输入，由契约表或
+    显式补录登记；其他源沿用历史叶键规则。剔除 _RAW_DENY 后返回。
     """
     ks = set()
     for fn in filenames:
@@ -733,6 +798,12 @@ def _agg_raw_leaf_keys(filenames):
             try:
                 d = json.load(io.open(f, encoding="utf-8"))
             except Exception:
+                continue
+            if fn == "raw_eltdx.json":
+                # ELTDX captures contain many endpoint and model paths that are not
+                # yet documented as field identities. Preserve them in raw_field_sets
+                # for completeness review, but do not promote observations into the
+                # registry baseline. Contract tables and explicit addenda own that step.
                 continue
             ks |= _registry_capture_leaf_keys(d)
     return {k for k in ks if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", k) and k not in _RAW_DENY}
@@ -807,6 +878,11 @@ _DENY_TOKENS = {
     "gen_field_dict",
     "scheme",
     "scheme_grounded",
+    # 定案等级标签，不是字段代码
+    "l1",
+    "l2",
+    "l3",
+    "l4",
     # 项目模块 / 目录名, 仅经「项目代码正确使用/Bug」表、架构附录串入, 非字段
     "stock_common",
     "field_verification",
@@ -827,7 +903,7 @@ _DENY_TOKENS = {
 # 前缀黑名单(源字段命名空间 / Python 函数名 / 代码命名空间, 经对比矩阵串入他源时拦截)
 _DENY_PREFIXES = ("zhb_", "get_", "sc_", "tdx_", "wenda_", "f10_")
 # raw 捕获里的采集元数据键(非市场字段), 仅在聚合 raw 叶键时剔除
-_RAW_DENY = {"scheme"}
+_RAW_DENY = {"scheme", "L1"}
 
 
 def _is_denied(tok):
@@ -863,14 +939,64 @@ def _table_codes(stext):
     凡命中 _is_denied(源名/端点名/代码标识符/生成产物/采集元数据)的 token 一律丢弃, 杜绝跨源串味。
     """
     codes = set()
+    field_headers = {
+        "field",
+        "field code",
+        "field name",
+        "field path",
+        "source field",
+        "字段",
+        "字段名",
+        "字段代码",
+        "字段路径",
+        "完整路径",
+        "源字段",
+        "原始字段",
+        "接口字段",
+    }
+    field_col = None
     for line in stext.split("\n"):
         s = line.strip()
         if not s.startswith("|"):
+            field_col = None
             continue
         if re.match(r"^\|[\s:|-]+\|?\s*$", s):  # 分隔行
             continue
-        cells = [c.strip() for c in s.strip("|").split("|")]
+        cells = [c.strip().strip("`* ") for c in s.strip("|").split("|")]
         if not cells:
+            continue
+        normalized_headers = [re.sub(r"\s+", " ", cell).casefold() for cell in cells]
+        detected_field_col = next(
+            (
+                index
+                for index, header in enumerate(normalized_headers)
+                if header in field_headers
+                or header.startswith("字段名 ")
+                or header.startswith("字段路径 ")
+                or header.startswith("field path ")
+            ),
+            None,
+        )
+        if detected_field_col is not None:
+            field_col = detected_field_col
+            continue
+        if field_col is not None:
+            if field_col >= len(cells):
+                continue
+            # 定案层级表中的 L1/L4 是审查标签，不是来源字段。
+            if any("定案层级" in cell for cell in cells):
+                continue
+            first = cells[field_col]
+            if re.search(r"[一-鿿]", first):
+                continue
+            for tok in re.split(r"[/,\s]+", first):
+                tok = tok.strip("`*")
+                if _is_denied(tok):
+                    continue
+                if _FIELD_PATH_RE.fullmatch(tok) and (
+                    "." in tok or "[]" in tok or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok)
+                ):
+                    codes.add(tok)
             continue
         # 首列(英文代码)
         first = cells[0]
@@ -879,22 +1005,23 @@ def _table_codes(stext):
                 tok = tok.strip("`*")
                 if _is_denied(tok):
                     continue
-                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok) or re.fullmatch(
-                    r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_]+", tok
+                if _FIELD_PATH_RE.fullmatch(tok) and (
+                    "." in tok or "[]" in tok or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok)
                 ):
                     codes.add(tok)
-        # 全列: 无中文的「字段清单」单元(端点全量响应字段列等), 逗号/空格分隔 + 反引号
+        # 其他列只接收反引号中的完整路径；未引用的完整路径经常是项目映射目标，
+        # 不一定是当前来源字段。裸 snake_case 清单沿用旧规则，避免误收 PE、c/n/p 等说明值。
         for cell in cells:
             if re.search(r"[一-鿿]", cell):
                 continue
-            for bt in re.findall(r"`([A-Za-z][A-Za-z0-9_./]{1,})`", cell):
+            for bt in re.findall(rf"`({_FIELD_PATH_TOKEN})`", cell):
                 if not _is_denied(bt):
                     codes.add(bt)
             for tok in re.split(r"[/,\s;]+", cell):
                 tok = tok.strip("`*()")
                 if _is_denied(tok):
                     continue
-                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{2,}", tok):
+                if re.fullmatch(r"[a-z][a-z0-9_]{2,}", tok):
                     codes.add(tok)
     return codes
 
@@ -1057,6 +1184,7 @@ def reg_tokens_for_section(src, text):
             # bars.get 的请求参数不是响应字段。
             toks -= {"adjust", "period"}
     toks -= _CAPTURE_CONTAINER_TOKENS.get(src, set())
+    toks -= _SCHEMA_NON_FIELD_TOKENS_BY_SOURCE.get(src, set())
     return toks
 
 

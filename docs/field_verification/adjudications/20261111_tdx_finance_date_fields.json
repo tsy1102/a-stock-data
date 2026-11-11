@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex workspace review",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "tdx-finance-updated-date-metadata-20261111",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "updated_date"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "updated_date",
+          "updated_date / ipo_date"
+        ],
+        "meaning": [
+          "财务更新日期 / 上市日期",
+          "财报更新日期"
+        ],
+        "unit": [
+          "-",
+          "YYYYMMDD"
+        ]
+      },
+      "canonical": "updated_date",
+      "meaning": "财报更新日期",
+      "unit": "YYYYMMDD",
+      "rationale": "TDX 0x0010 字段表 §2.1 将 updated_date 单列为财报更新日期，类型为 uint、值格式为 YYYYMMDD，并明确该表为权威定义。弱摘要章节的聚合代码列表和并列描述不改变该逐字段定义。上游 v3.3.2 也将 FinanceRecord.updated_date 定义为财务数据更新日期。该日期是记录业务日期，不是采集或来源 as_of 日期。",
+      "source_contract": {
+        "authority": "electkismet/eltdx",
+        "revision": "v3.3.2",
+        "path": "docs/FIELD_REFERENCE.md",
+        "locator": "FinanceRecord.updated_date",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "updated_date",
+          "meaning": "财报更新日期",
+          "unit": "YYYYMMDD"
+        },
+        "rationale": "按 TDX 0x0010 权威逐字段表补回字段名、含义和日期编码；显式记录并清除当前属性冲突。"
+      }
+    },
+    {
+      "id": "tdx-finance-ipo-date-metadata-20261111",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ipo_date"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "ipo_date",
+          "updated_date / ipo_date"
+        ],
+        "meaning": [
+          "上市日期",
+          "财务更新日期 / 上市日期"
+        ],
+        "unit": [
+          "-",
+          "YYYYMMDD"
+        ]
+      },
+      "canonical": "ipo_date",
+      "meaning": "上市日期",
+      "unit": "YYYYMMDD",
+      "rationale": "TDX 0x0010 字段表 §2.1 将 ipo_date 单列为上市日期，类型为 uint、值格式为 YYYYMMDD，并明确该表为权威定义。弱摘要章节的聚合代码列表和并列描述不改变该逐字段定义。上游 v3.3.2 也将 FinanceRecord.ipo_date 定义为上市日期。该日期是股票业务属性，不是采集或来源 as_of 日期。",
+      "source_contract": {
+        "authority": "electkismet/eltdx",
+        "revision": "v3.3.2",
+        "path": "docs/FIELD_REFERENCE.md",
+        "locator": "FinanceRecord.ipo_date",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md#financerecord"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "ipo_date",
+          "meaning": "上市日期",
+          "unit": "YYYYMMDD"
+        },
+        "rationale": "按 TDX 0x0010 权威逐字段表补回字段名、含义和日期编码；显式记录并清除当前属性冲突。"
+      }
+    }
+  ]
+}

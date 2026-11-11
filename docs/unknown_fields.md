@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2605；日常来源路径 2461：unverified 1009、candidate 1、conflict 59、disproved 22；历史来源路径 144。
-> 另有 171 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2611；日常来源路径 2467：unverified 1009、candidate 3、conflict 59、disproved 22；历史来源路径 144。
+> 另有 169 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -94,10 +94,12 @@
 | 新浪(扩展API) | `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 | 腾讯(qt.gtimg) | `[86]` | — | 收盘集合竞价净未匹配手数(带符号)（L2 机制确认） | 手 | 含义栏有文本（仍未验证） | reference_status_conflict | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 
-## 二、候选字段（1）
+## 二、候选字段（3）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
+| TDX-eltdx(适配层) | `finance_batch[].fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 拼音及模型标签候选：发起人法人股；样本值语义冲突待核 | 文档标注万股（待核） | 含义栏有文本（仍未验证） | reference_only_nonverified | 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕 |
+| TDX-eltdx(适配层) | `finance_batch[].fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 拼音及模型标签候选：法人股；样本值语义冲突待核 | 文档标注万股（待核） | 含义栏有文本（仍未验证） | reference_only_nonverified | 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕 |
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
 ## 三、待破解字段（1009）
@@ -1118,24 +1120,24 @@
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| TDX(双命名源) | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 注册表类型/格式占位符裁决 |
-| TDX(双命名源) | `byte` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 注册表类型/格式占位符裁决 |
-| TDX(双命名源) | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 注册表类型/格式占位符裁决 |
-| TDX(双命名源) | `str` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 注册表类型/格式占位符裁决 |
-| TDX(双命名源) | `uint` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 注册表类型/格式占位符裁决 |
+| TDX(双命名源) | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `byte` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `str` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `uint` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
 | TDX-eltdx(适配层) | `bool` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
 | TDX-eltdx(适配层) | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
 | TDX-eltdx(适配层) | `int` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
 | TDX-eltdx(适配层) | `str` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
-| ZHB-tdxstat | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
+| ZHB-tdxstat | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
 | ZHB-tdxstat | `change_60d_alt` | change_60d | 历史解析键；当前解析器将 tdxstat.cfg 第[20]列输出为 change_60d，change_60d_alt 不再是独立输出路径。 | % | 含义栏有文本（仍未验证） | retired_legacy_path | 2026-11-10 ZHB 历史解析路径退役审查 |
-| ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
-| ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
+| ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
-| ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
-| ZHB-tdxstat2 | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
-| ZHB-tipinfo | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 注册表类型/格式占位符裁决 |
+| ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat2 | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tipinfo | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
 | ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |

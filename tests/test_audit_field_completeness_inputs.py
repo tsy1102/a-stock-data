@@ -287,6 +287,54 @@ def test_registry_raw_leaf_keys_keep_legacy_behavior_without_allowlist():
     assert audit._registry_capture_leaf_keys(payload) == {"close", "volume"}
 
 
+def test_eltdx_capture_paths_keep_endpoint_and_array_scope():
+    payload = {
+        "stocks": {
+            "600519": {
+                "quote_snapshot": {
+                    "amount": 1,
+                    "buy_levels": [{"price": 2, "volume": 3}],
+                    "__source_meta__": {"source_data_date": "2026-11-10"},
+                },
+                "kline_day": [{"amount": 4}],
+                "finance_batch": [{"fa_qi_ren_fa_ren_gu_raw_float": 5}],
+            }
+        },
+        "global_helpers": {
+            "realtime_rank": {
+                "rows": [{"amount": 6, "raw": {"amount": 7}}],
+            }
+        },
+    }
+
+    assert audit._eltdx_capture_paths(payload) == {
+        "quote_snapshot.amount",
+        "quote_snapshot.buy_levels[].price",
+        "quote_snapshot.buy_levels[].volume",
+        "kline_day[].amount",
+        "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
+        "realtime_rank.rows[].amount",
+        "realtime_rank.rows[].raw.amount",
+    }
+
+
+def test_eltdx_raw_paths_are_not_promoted_to_registry_baseline(monkeypatch, tmp_path):
+    capture_dir = tmp_path / "docs" / "field_verification" / "20261110"
+    capture_dir.mkdir(parents=True)
+    capture = {
+        "stocks": {
+            "600519": {
+                "finance_batch": [{"fa_ren_gu_raw_float": 12.0}],
+                "quote_snapshot": {"amount": 100.0},
+            }
+        }
+    }
+    (capture_dir / "raw_eltdx.json").write_text(json.dumps(capture), encoding="utf-8")
+    monkeypatch.setattr(audit, "ROOT", str(tmp_path))
+
+    assert audit._agg_raw_leaf_keys(["raw_eltdx.json"]) == set()
+
+
 def test_compare_field_sets_reports_both_unregistered_and_unobserved_fields():
     result = audit.compare_field_sets(
         {"f1", "f3"},

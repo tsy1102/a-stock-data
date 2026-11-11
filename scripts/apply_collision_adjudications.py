@@ -638,6 +638,34 @@ def apply_source_contract_adjudications(
         metadata_correction = _validate_source_contract_metadata_correction(
             decision.get("metadata_correction"), previous_metadata, after_metadata
         )
+        previous_attribute_conflicts_raw = decision.get("previous_attribute_conflicts")
+        previous_attribute_conflicts: dict[str, Any] | None = None
+        if previous_attribute_conflicts_raw is not None:
+            previous_attribute_conflicts = _require_object(
+                previous_attribute_conflicts_raw, "decision.previous_attribute_conflicts"
+            )
+            if not previous_attribute_conflicts:
+                raise ValueError("decision.previous_attribute_conflicts must be non-empty")
+            for attribute, values in previous_attribute_conflicts.items():
+                if not isinstance(attribute, str) or not attribute:
+                    raise ValueError(
+                        "decision.previous_attribute_conflicts keys must be non-empty strings"
+                    )
+                if not isinstance(values, list) or any(
+                    not isinstance(value, str) for value in values
+                ):
+                    raise ValueError(
+                        "decision.previous_attribute_conflicts values must be string arrays"
+                    )
+                if len(set(values)) < 2:
+                    raise ValueError(
+                        "decision.previous_attribute_conflicts must preserve at least two "
+                        "distinct values per attribute"
+                    )
+        if previous_attribute_conflicts is not None and action != "correct_verified_metadata":
+            raise ValueError(
+                "previous_attribute_conflicts is only valid for correct_verified_metadata"
+            )
         if action == "correct_verified_metadata":
             if metadata_correction is None:
                 raise ValueError(
@@ -647,11 +675,6 @@ def apply_source_contract_adjudications(
                 raise ValueError(
                     "correct_verified_metadata cannot include same_source_alias; "
                     "apply aliases as a separate decision"
-                )
-            attribute_conflicts = target_record.get("attribute_conflicts")
-            if attribute_conflicts:
-                raise ValueError(
-                    "correct_verified_metadata cannot update a field with attribute conflicts"
                 )
         section = (
             f"source contract: {source_contract['authority']} · {source_contract['path']}"
@@ -678,6 +701,10 @@ def apply_source_contract_adjudications(
             adjudication["same_source_alias"] = copy.deepcopy(same_source_alias)
         if metadata_correction is not None:
             adjudication["metadata_correction"] = copy.deepcopy(metadata_correction)
+        if previous_attribute_conflicts is not None:
+            adjudication["resolved_attribute_conflicts"] = copy.deepcopy(
+                previous_attribute_conflicts
+            )
 
         history = target_record.get("adjudications", [])
         if not isinstance(history, list):
@@ -687,6 +714,18 @@ def apply_source_contract_adjudications(
             None,
         )
         if prior is not None:
+            persisted_conflicts = target_record.get("attribute_conflicts", {})
+            if previous_attribute_conflicts is not None:
+                if prior.get(
+                    "resolved_attribute_conflicts"
+                ) != previous_attribute_conflicts or persisted_conflicts not in (None, {}, []):
+                    raise ValueError(
+                        f"resolved attribute conflicts changed after decision: {decision_id}"
+                    )
+            elif prior.get("resolved_attribute_conflicts") is not None:
+                raise ValueError(
+                    f"decision is missing its resolved attribute conflict snapshot: {decision_id}"
+                )
             if (
                 prior != adjudication
                 or target_record.get("status") != "verified"
@@ -700,6 +739,19 @@ def apply_source_contract_adjudications(
                 _add_source_contract_matrix_source(updated, target[0], canonical)
             stats["already_applied"] += 1
             continue
+
+        attribute_conflicts = target_record.get("attribute_conflicts", {})
+        if action == "correct_verified_metadata":
+            if attribute_conflicts not in (None, {}, []):
+                if previous_attribute_conflicts != attribute_conflicts:
+                    raise ValueError(
+                        "correct_verified_metadata requires an exact "
+                        "previous_attribute_conflicts snapshot"
+                    )
+            elif previous_attribute_conflicts is not None:
+                raise ValueError(
+                    "previous_attribute_conflicts does not match the current target field"
+                )
 
         current_status = target_record.get("status", "unverified")
         current_resolution = target_record.get("status_resolution") or "status_missing"
@@ -735,12 +787,19 @@ def apply_source_contract_adjudications(
                 "source-contract verification cannot overwrite established "
                 f"{', '.join(changed_keys)} without an explicit metadata_correction"
             )
-        if not requires_correction and metadata_correction is not None:
+        if (
+            not requires_correction
+            and metadata_correction is not None
+            and previous_attribute_conflicts is None
+        ):
             raise ValueError(
-                "metadata_correction is only valid when correcting established metadata"
+                "metadata_correction is only valid for established metadata or "
+                "an explicit attribute-conflict resolution"
             )
 
         target_record.update(after_metadata)
+        if previous_attribute_conflicts is not None:
+            target_record["attribute_conflicts"] = {}
         target_record["status"] = "verified"
         target_record["status_resolution"] = "verified_by_source_contract"
         target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))

@@ -20374,12 +20374,12 @@
       ],
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "canonical": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
-      "meaning": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
-      "unit": "文档标注万股（待核）",
+      "meaning": "上年同期归属于上市公司股东的净利润（来源内经验定案）",
+      "unit": "千元",
       "status_raw": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
-      "status": "candidate",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "candidate"
+        "TDX-eltdx(适配层)": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -20392,12 +20392,12 @@
       ],
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "canonical": "finance_batch[].fa_ren_gu_raw_float",
-      "meaning": "拼音及模型标签候选：法人股；样本值语义冲突待核",
-      "unit": "文档标注万股（待核）",
+      "meaning": "上年同期营业收入（来源内经验定案）",
+      "unit": "千元",
       "status_raw": "拼音及模型标签候选：法人股；样本值语义冲突待核",
-      "status": "candidate",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "candidate"
+        "TDX-eltdx(适配层)": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -98287,26 +98287,41 @@
       "identity": "TDX-eltdx(适配层)::finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
       "path": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
       "canonical": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
-      "meaning": "拼音及模型标签候选：发起人法人股；样本值语义冲突待核",
-      "unit": "文档标注万股（待核）",
+      "meaning": "上年同期归属于上市公司股东的净利润（来源内经验定案）",
+      "unit": "千元",
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "sections": [
         "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
       ],
-      "status": "candidate",
-      "status_resolution": "reference_only_nonverified",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
-        "reference_statuses": [
-          "candidate"
+        "adjudication_ids": [
+          "20261111-eltdx-fa-qi-ren-fa-ren-gu-prior-year-parent-net-profit"
         ],
+        "capture_directory_count": 17,
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_file": "docs/field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md",
+        "evidence_level": "E3",
+        "max_absolute_difference_cny": 8000.0,
+        "official_report_stock_count": 5,
+        "pair_value_update_count": 21,
         "reference_status_raw": [
           "拼音及模型标签候选：发起人法人股；样本值语义冲突待核"
         ],
-        "registry_aggregate_status": null,
-        "registry_aggregate_sources": [],
-        "values": [
+        "reference_statuses": [
           "candidate"
-        ]
+        ],
+        "report_sha256": "f9d8d1385913a3eea21fbf4ab65b4d43bcc1a121b152b1714675d4be724dda8d",
+        "sample_floor": "20261015",
+        "stock_count": 20,
+        "supporting_candidate_report_sha256": "6532be3875d95f3fb42741e6a91df2ccafb140c7624bfbb08c9f0b8a80437b99",
+        "supporting_transition_audit_sha256": "42860fdcd5c74533f56df4d25ee96fcc5046b34596f38ccae9915ccfe1abfb8e",
+        "values": [
+          "verified"
+        ],
+        "within_representation_tolerance_count": 5,
+        "report_period_comparison_count": 5
       },
       "reference_evidence": [
         {
@@ -98328,26 +98343,41 @@
       "identity": "TDX-eltdx(适配层)::finance_batch[].fa_ren_gu_raw_float",
       "path": "finance_batch[].fa_ren_gu_raw_float",
       "canonical": "finance_batch[].fa_ren_gu_raw_float",
-      "meaning": "拼音及模型标签候选：法人股；样本值语义冲突待核",
-      "unit": "文档标注万股（待核）",
+      "meaning": "上年同期营业收入（来源内经验定案）",
+      "unit": "千元",
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "sections": [
         "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
       ],
-      "status": "candidate",
-      "status_resolution": "reference_only_nonverified",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
-        "reference_statuses": [
-          "candidate"
+        "adjudication_ids": [
+          "20261111-eltdx-fa-ren-gu-prior-year-operating-revenue"
         ],
+        "capture_directory_count": 17,
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_file": "docs/field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md",
+        "evidence_level": "E3",
+        "max_absolute_difference_cny": 32000.0,
+        "official_report_stock_count": 5,
+        "pair_value_update_count": 21,
         "reference_status_raw": [
           "拼音及模型标签候选：法人股；样本值语义冲突待核"
         ],
-        "registry_aggregate_status": null,
-        "registry_aggregate_sources": [],
-        "values": [
+        "reference_statuses": [
           "candidate"
-        ]
+        ],
+        "report_sha256": "f9d8d1385913a3eea21fbf4ab65b4d43bcc1a121b152b1714675d4be724dda8d",
+        "sample_floor": "20261015",
+        "stock_count": 20,
+        "supporting_candidate_report_sha256": "6532be3875d95f3fb42741e6a91df2ccafb140c7624bfbb08c9f0b8a80437b99",
+        "supporting_transition_audit_sha256": "42860fdcd5c74533f56df4d25ee96fcc5046b34596f38ccae9915ccfe1abfb8e",
+        "values": [
+          "verified"
+        ],
+        "within_representation_tolerance_count": 5,
+        "report_period_comparison_count": 5
       },
       "reference_evidence": [
         {

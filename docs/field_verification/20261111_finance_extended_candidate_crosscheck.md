@@ -1,5 +1,7 @@
 # ELTDX 相邻财务字段候选复核（2026-11-11）
 
+> 后续定案：本文第 26 行列出的 `fa_qi_ren_fa_ren_gu_raw_float` 与 `fa_ren_gu_raw_float` 已于同日按 E3 来源内实证定案；当前含义和边界见[裁决记录](adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。`zhu_ying_li_run_raw_float` 仍待独立核验。
+
 ## 方法与范围
 
 本记录继续按“名称先给候选、证据再检验”的顺序处理 `TDX-eltdx(适配层)` 的财务路径。拼音候选不由数值倒推；`raw_float` 只说明数值表示方式。项目固定 `eltdx==3.3.2`，采集路径为 `scripts/capture_tcp_collectors.py::collect_eltdx` → `client.corporate.finance_batch(..., include_raw=True)` → `raw_eltdx.json` 中 `stocks.<code>.finance_batch[0]`。

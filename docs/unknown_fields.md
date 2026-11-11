@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2611；日常来源路径 2467：unverified 1008、candidate 3、conflict 58、disproved 22；历史来源路径 144。
+> 注册字段路径 2611；日常来源路径 2467：unverified 1008、candidate 1、conflict 58、disproved 22；历史来源路径 144。
 > 另有 169 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -93,12 +93,10 @@
 | 新浪(扩展API) | `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 | 腾讯(qt.gtimg) | `[86]` | — | 收盘集合竞价净未匹配手数(带符号)（L2 机制确认） | 手 | 含义栏有文本（仍未验证） | reference_status_conflict | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 
-## 二、候选字段（3）
+## 二、候选字段（1）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) | `finance_batch[].fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 拼音及模型标签候选：发起人法人股；样本值语义冲突待核 | 文档标注万股（待核） | 含义栏有文本（仍未验证） | reference_only_nonverified | 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕 |
-| TDX-eltdx(适配层) | `finance_batch[].fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 拼音及模型标签候选：法人股；样本值语义冲突待核 | 文档标注万股（待核） | 含义栏有文本（仍未验证） | reference_only_nonverified | 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕 |
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
 ## 三、待破解字段（1008）

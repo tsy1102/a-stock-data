@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 125 个 code；聚合定义不完整 222 个 code；疑似合并文本 349 条逐源记录。
+> 聚合歧义 125 个 code；聚合定义不完整 222 个 code；疑似合并文本 347 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3556,8 +3556,6 @@
 | TDX-eltdx(适配层) | `eltdx_seal_to_float_ratio` | eltdx_seal_to_float_ratio | 当前买一金额占自由流通市值Z比；仅已封板时解释为封板强度 | `verified` |
 | TDX-eltdx(适配层) | `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | `verified` |
 | TDX-eltdx(适配层) | `event_kind` | event_kind | 成交记录事件分类标签：trade、auction_snapshot 或 opening_match | `verified` |
-| TDX-eltdx(适配层) | `finance_batch[].fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 拼音及模型标签候选：发起人法人股；样本值语义冲突待核 | `candidate` |
-| TDX-eltdx(适配层) | `finance_batch[].fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 拼音及模型标签候选：法人股；样本值语义冲突待核 | `candidate` |
 | TDX-eltdx(适配层) | `finance_batch[].zong_xian_jin_liu_raw_float` | finance_batch[].zong_xian_jin_liu_raw_float | 总现金流（经营、投资、筹资活动净额之和，不含汇率影响） | `verified` |
 | TDX-eltdx(适配层) | `finance_info_raw` | finance_info_raw | 0x0010 财务基础信息记录的原始主体；解码后为 136 字节，JSON 中以十六进制字符串保存 | `verified` |
 | TDX-eltdx(适配层) | `gu_dong_ren_shu_raw_float` | gu_dong_ren_shu_raw_float | 股东人数（按股东账户计；具体有效报告期以来源记录为准） | `verified` |

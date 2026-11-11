@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 按项目映射 `RPT_MUTUAL_HOLDSTOCKNORTH_STA.TRADE_DATE → northbound_hold.date` 和东财官方个股持股页，明确该日期表示港交所中央结算系统参与者日终持仓快照日期，不是采集运行日；补记 `YYYY-MM-DD` 格式并解除聚合状态造成的单源冲突。
 - ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突，其中四项来源内确认、两项继续待核。报告和注册表不再把这些财务字段当作无路径叶名。
 - 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。`fa_qi_ren_fa_ren_gu`、`fa_ren_gu` 与 `zhu_ying_li_run` 仍保留冲突，详见 [`20261111_finance_extended_candidate_crosscheck.md`](docs/field_verification/20261111_finance_extended_candidate_crosscheck.md)。
+- 随后依据 17 个保留采集目录、20 只股票、21 次成对更新及 2026Q3 发行人比较报表，将 ELTDX 两条完整财务路径来源内经验定案为上年同期归母净利润和上年同期营业收入，单位千元；旧“发起人法人股/法人股”标签仍保留为冲突证据，不建立跨源映射。`zhu_ying_li_run_raw_float` 继续待核，详见 [`20261111_eltdx_share_slots_empirical_semantics.md`](docs/field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
 - 更正 `ZHB-tipinfo::[6]`：通达信官方 `TopDate_Recent` 指近 2 年最近龙虎榜日期；三只股票的留存 ZHB 原始值与东方财富官方页面日期一致。保留路径身份、verified 状态和空单位。
 - 为 ZHB 采集增加北京时间 08:00 闸门：默认早间采集跳过 ZHB，过早的显式 `--only zhb` 在请求前拒绝；文档说明使用同一数据日单源补采，碰撞仍按 ZHB 实际 `zhb_date` 归位。
 - 基于同花顺金融数据 API 估值契约，确认 Fuyao `valuation.ps_ttm` 为 TTM 市销率（倍）；保留来源数据日期未确认和 Ulist `f130` 数值映射未复核状态。

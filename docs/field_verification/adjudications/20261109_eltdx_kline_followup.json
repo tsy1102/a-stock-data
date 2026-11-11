@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-kline-time-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "time / open / high / low / close",
+        "meaning": "时间 / OHLC",
+        "unit": ""
+      },
+      "canonical": "time",
+      "meaning": "日K时间戳；按上海时区记录，本批样本时间为15:00",
+      "unit": "ISO 8601 日期时间（Asia/Shanghai）",
+      "rationale": "400/400条保留日K时间均为带+08:00偏移的上海时区15:00时间戳；今日指数辅助 KlineBar 也为该格式。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.time; captured as stocks.<code>.kline_day[].time and global_helpers.market_stat_880005.bars[].time",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "time / open / high / low / close",
+          "meaning": "时间 / OHLC",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "time",
+          "meaning": "日K时间戳；按上海时区记录，本批样本时间为15:00",
+          "unit": "ISO 8601 日期时间（Asia/Shanghai）"
+        },
+        "rationale": "将历史合并/占位释义拆分到精确 KlineBar 路径；旧快照和本次纠正均完整保留。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-open-price-milli-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_price_milli",
+      "meaning": "日K开盘价的千分之一元值（open × 1000）",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本 KlineBar 文档区分展示价与毫厘价；400/400条样本满足 open_price_milli = open × 1000。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.open_price_milli; captured as stocks.<code>.kline_day[].open_price_milli and global_helpers.market_stat_880005.bars[].open_price_milli",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-high-price-milli-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "high_price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "high_price_milli",
+      "meaning": "日K最高价的千分之一元值（high × 1000）",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本 KlineBar 文档区分展示价与毫厘价；400/400条样本满足 high_price_milli = high × 1000。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.high_price_milli; captured as stocks.<code>.kline_day[].high_price_milli and global_helpers.market_stat_880005.bars[].high_price_milli",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-low-price-milli-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "low_price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "low_price_milli",
+      "meaning": "日K最低价的千分之一元值（low × 1000）",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本 KlineBar 文档区分展示价与毫厘价；400/400条样本满足 low_price_milli = low × 1000。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.low_price_milli; captured as stocks.<code>.kline_day[].low_price_milli and global_helpers.market_stat_880005.bars[].low_price_milli",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-close-price-milli-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "close_price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "close_price_milli",
+      "meaning": "日K收盘价的千分之一元值（close × 1000）",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本 KlineBar 文档区分展示价与毫厘价；400/400条样本满足 close_price_milli = close × 1000。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.close_price_milli; captured as stocks.<code>.kline_day[].close_price_milli and global_helpers.market_stat_880005.bars[].close_price_milli",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-last-close-price-milli-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "last_close_price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "last_close_price_milli",
+      "meaning": "前一根K线收盘价的千分之一元值；返回序列首条无前收盘字段",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本字段表将该字段定义为上一根收盘毫厘价；320/320条存在前一根K线的样本与其 close_price_milli 完全一致，80条序列首条为空。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.last_close_price_milli; captured as stocks.<code>.kline_day[].last_close_price_milli and global_helpers.market_stat_880005.bars[].last_close_price_milli",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-volume-lots-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "volume_lots"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "volume_lots",
+        "meaning": "成交量（手）",
+        "unit": ""
+      },
+      "canonical": "volume_lots",
+      "meaning": "成交量（手）",
+      "unit": "手",
+      "rationale": "固定版本 KlineBar 文档明确 volume_lots 单位为手；400/400条普通 A 股样本满足 volume_lots × 100 = volume_wire_value，浮点比较容差小于 1e-6。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.volume_lots; captured as stocks.<code>.kline_day[].volume_lots and global_helpers.market_stat_880005.bars[].volume_lots",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-volume-wire-value-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "volume_wire_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "volume_wire_value",
+      "meaning": "协议解码后的成交量值；普通A股单位为股，已验证的可转债品种单位为手",
+      "unit": "普通A股：股；已验证可转债：手",
+      "rationale": "固定版本 KlineBar 解码说明区分普通A股股数与指定沪深可转债手数；400/400条本项目A股样本与手数转换关系一致。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.volume_wire_value; captured as stocks.<code>.kline_day[].volume_wire_value and global_helpers.market_stat_880005.bars[].volume_wire_value",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-up-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "up_count"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "up_count / down_count",
+        "meaning": "指数类上涨/下跌家数",
+        "unit": ""
+      },
+      "canonical": "up_count",
+      "meaning": "指数K线本周期上涨家数",
+      "unit": "家",
+      "rationale": "固定版本接口文档将 up_count 定义为指数类上涨家数；个股 KlineBar 的 400 条样本为空，2026-11-09 的 880005 指数辅助 KlineBar 实际返回 1768。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.up_count; captured as stocks.<code>.kline_day[].up_count and global_helpers.market_stat_880005.bars[].up_count",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "up_count / down_count",
+          "meaning": "指数类上涨/下跌家数",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "up_count",
+          "meaning": "指数K线本周期上涨家数",
+          "unit": "家"
+        },
+        "rationale": "将历史合并/占位释义拆分到精确 KlineBar 路径；旧快照和本次纠正均完整保留。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-down-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "down_count"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "up_count / down_count",
+        "meaning": "指数类上涨/下跌家数",
+        "unit": ""
+      },
+      "canonical": "down_count",
+      "meaning": "指数K线本周期下跌家数",
+      "unit": "家",
+      "rationale": "固定版本接口文档将 down_count 定义为指数类下跌家数；个股 KlineBar 的 400 条样本为空，2026-11-09 的 880005 指数辅助 KlineBar 实际返回 2966。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.down_count; captured as stocks.<code>.kline_day[].down_count and global_helpers.market_stat_880005.bars[].down_count",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "up_count / down_count",
+          "meaning": "指数类上涨/下跌家数",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "down_count",
+          "meaning": "指数K线本周期下跌家数",
+          "unit": "家"
+        },
+        "rationale": "将历史合并/占位释义拆分到精确 KlineBar 路径；旧快照和本次纠正均完整保留。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-open-delta-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_delta_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_delta_raw",
+      "meaning": "日K开盘价相对前一根收盘价的协议差分值；返回序列首条无前收盘基准时以开盘价为基值",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本文档说明价格采用差分编码；320条有前收盘的样本满足 open_delta_raw = open_price_milli - 前一根close_price_milli，80条序列首条满足 open_delta_raw = open_price_milli。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.open_delta_raw; captured as stocks.<code>.kline_day[].open_delta_raw and global_helpers.market_stat_880005.bars[].open_delta_raw",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-high-delta-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "high_delta_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "high_delta_raw",
+      "meaning": "日K最高价相对本根开盘价的协议差分值",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本文档说明价格采用差分编码；400/400条样本满足 high_delta_raw = high_price_milli - open_price_milli。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.high_delta_raw; captured as stocks.<code>.kline_day[].high_delta_raw and global_helpers.market_stat_880005.bars[].high_delta_raw",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-low-delta-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "low_delta_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "low_delta_raw",
+      "meaning": "日K最低价相对本根开盘价的协议差分值",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本文档说明价格采用差分编码；400/400条样本满足 low_delta_raw = low_price_milli - open_price_milli。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.low_delta_raw; captured as stocks.<code>.kline_day[].low_delta_raw and global_helpers.market_stat_880005.bars[].low_delta_raw",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-close-delta-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "close_delta_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "close_delta_raw",
+      "meaning": "日K收盘价相对本根开盘价的协议差分值",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "固定版本文档说明价格采用差分编码；400/400条样本满足 close_delta_raw = close_price_milli - open_price_milli。仅确认此 ELTDX 完整路径的来源内定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "通达信 7709 0x052d K线周期接口；ELTDX v3.3.2 固定文档用于定位返回模型及解码字段，通达信官方公式/行情文档用于核对公开 OHLC 语义和已公开单位",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.close_delta_raw; captured as stocks.<code>.kline_day[].close_delta_raw and global_helpers.market_stat_880005.bars[].close_delta_raw",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；固定版本字段手册 KlineSeries/KlineBar；通达信官方函数/行情字段表；保留期逐条样本关系复核",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    }
+  ]
+}

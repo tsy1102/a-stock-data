@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "id": "20261110-sina-extended-trade-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "新浪(扩展API)",
+        "code": "trade"
+      },
+      "canonical": "trade",
+      "meaning": "个股资金流记录中 opendate 对应行的行情价格快照（元/股）；不能默认视为官方收盘价",
+      "unit": "元",
+      "previous": {
+        "canonical": "trade",
+        "meaning": "收盘价",
+        "unit": ""
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "trade",
+          "meaning": "收盘价",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "trade",
+          "meaning": "个股资金流记录中 opendate 对应行的行情价格快照（元/股）；不能默认视为官方收盘价",
+          "unit": "元"
+        },
+        "rationale": "保留原有字段释义快照；新浪官方资金流帮助页与保留样本的对照不支持“收盘价”，将其修正为来源内行情价格快照并补充元单位。"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "rationale": "项目通过 stock_common/sc_datasource/_eastmoney.py 的 get_sina_stock_fund_flow_raw 调用新浪 MoneyFlow.ssl_qsfx_zjlrqs，返回资金流记录中的 trade 字段。新浪官方资金流向帮助页说明个股排行支持最新价，页面每 5 分钟更新，实时数据通常延迟 5-10 分钟，并指出服务商会因计算方法与统计时间不同而产生数值差异。对项目保留的 14 个交易日、20 只股票做逐日检查：278 组 trade 与 TDX quote_raw.price 样本的 Pearson/Spearman 均为 1.0、R² 为 0.999998、逐股相关系数中位数为 0.9999；但 50/278 组差异超过 0.01 元、29/278 组超过 0.05 元，因此只确认其为行情价格快照，不建立与 TDX quote_raw.price 的严格逐值映射。另有 278/278 组 changeratio 与 trade / TDX quote_full.last_close - 1 在 1e-6 内一致。与东财同日 K 线收盘价对照的 120 组样本仅 94 组在 0.01 元内一致；因此旧释义“收盘价”不成立。官方帮助页未逐项公布该 JSON 接口字段表，确切刷新时刻仍未知，采集目录日期不应当作 trade 的精确行情时间。",
+      "source_contract": {
+        "authority": "新浪财经资金流向官方帮助文档",
+        "locator": "个股排行中的最新价；数据刷新频率、实时延迟和统计时间差异说明",
+        "path": "GET /quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjlrqs; response row field trade (project request/capture path)",
+        "revision": "官方帮助页于 2026-11-10 在线核验；网页未标注版本号",
+        "url": "https://finance.sina.com.cn/temp/guest4377.shtml"
+      }
+    }
+  ]
+}

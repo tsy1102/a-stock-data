@@ -26,7 +26,7 @@
 
 1. 从完整碰撞报告或未知队列中抄录 candidate_id（若有）、来源、完整字段路径、数据日期、候选解释、替代解释、原始采样值和来源日期。通过 source_lineage 确认实际提供方与官方站点；先写出能区分候选解释的观察条件，避免只寻找支持当前猜测的页面。
 2. 优先使用该提供方的官方接口文档和官方查询页。通常用至少 3 只不同股票核对标签和候选值；行情/其他随时间变化字段至少覆盖 2 个有效交易日或报告期；已完成历史事件至少覆盖 3 只股票的不同事件实例，并加入能区分相近事件或数量口径的案例；静态分类字段至少比较 3 个有区分力的案例。单只股票或单一事件的吻合只记为线索。
-3. 每条比较记录页面明确显示的名称、值、单位、字段有效日期/报告期/事件日期、事件状态、页面更新时间及原始样本截止日；按字段时间语义与 raw 逐项对齐。必要的单位换算、复权或精度容差写明公式和依据，不得为迎合候选临时放宽。近似筛查命中还须记录双方原值、误差公式、各自展示精度与来源口径，并保留全部不匹配样本；不能仅凭近似命中进入定案。
+3. 每条比较记录页面明确显示的名称、值、单位、字段有效日期/报告期/事件日期、事件状态、页面更新时间及原始样本截止日；按字段时间语义与 raw 逐项对齐。必要的单位换算、复权或精度容差写明公式和依据，不得为迎合候选临时放宽。走官方页面精确观测裁决时，原始单位与页面单位不同须在每条结构化观测中填写 `raw_to_display_factor`，由应用器按“原始值 × 换算因子”复核页面舍入刻度；不得只改写原始值来制造数值相等。近似筛查命中还须记录双方原值、误差公式、各自展示精度与来源口径，并保留全部不匹配样本；不能仅凭近似命中进入定案。
 4. 页面只显示标签而无值时，结论只能是 `label_only`；日快照/财报期/事件身份无法按其各自时间语义对齐时为 `inconclusive`。若同一事件或同口径样本仍稳定不符，记录 `contradicted` 并检查替代解释；这不自动表示目标字段已被证伪。
 
 ## 留证与裁决
@@ -45,3 +45,13 @@
 公开页面若确认了候选解释，但仍不能把项目字段路径映射到页面指标，候选保持 `needs_external_evidence`，不更新注册表。研究备忘录本身不是定案：用于跨源映射且已有 `candidate_id` 的对象，须按 ADJUDICATION_WORKFLOW 完成人工候选审阅，并引用本地备忘录和相关网页；来源内语义若通过精确同日逐值门槛，可另用 `public_web_observation` 路径定案，不创建跨源映射。已验证字段的补充佐证只记入研究证据，不重复创建映射或注册表变更。网页数据不成为独立碰撞锚，除非来源谱系另有证据确认独立。
 
 每日结果汇报核验了多少个新路径、各状态数量、已形成的证据、未决路径数和下次继续位置；采集失败或网页受限要单独列出，不算作候选已排除。
+
+## Eastmoney 研报记录级观测
+
+`reports::author`、`reports::researcher`、`reports::lastEmRatingName` 与 `reports::emRatingCode` 是不同的原始路径。仅当注册表存在这些路径的参考状态冲突时，才可用裁决模式 `resolve_report_record_conflict`：每个目标至少三只不同股票、同一采集日期，并将官网行与保留的 `raw_reports.json` 记录按 `infoCode`、标题、发布日期逐项精确绑定。采集目录日、网页访问日和研报发布日期分开记载。
+
+证据记录须包含每只股票的准确官方个股研报 URL、带时区的实际访问时间、页面记录行、报告日期、标题链接的 `infoCode`，以及 `[observation]` JSON 行。`reports::author` 核对原始 `ID.姓名` 数组与页面作者链接，并以 `authorID` 数组交叉校验；`reports::researcher` 核对同一顺序的姓名与原始逗号分隔字符串。`reports::lastEmRatingName` 只核对评级未变的记录：页面“东财评级”必须与原始 `emRatingName`、`lastEmRatingName` 相同，页面“评级变动”必须显示“维持”，原始 `ratingChange` 必须为已验证的 `3`。不得用这条规则解释已上调、下调或首次覆盖记录。`reports::emRatingCode` 的代码本身不在网页显示；需将官网当前东财评级名称与同记录的 `emRatingName` 绑定，并扫描完整同日归档验证每个已观测代码是否只对应一个名称。结论仅确认代码字段角色及样本中已见值的关系，不提供完整代码表。空单位必须保留。此证据不证明未公开 API 的完整契约、不生成跨源映射，也不把网页作为独立碰撞锚。
+
+`reports::sRatingCode` 使用独立模式 `verify_report_source_rating_code`，仅针对当前无元数据冲突的未验证字段。核验至少三只不同股票的官方研报详情页，以详情 URL 中的 `infoCode`、标题和日期绑定原始归档行；正文中的机构原始评级文字至少须有两条与同记录 `sRatingName` 精确匹配。文字近似必须独立标记，当前仅允许“买入”与“买入(Buy)”这一明示关系。还须扫描完整同日归档：每个机构+代码只对应一个原始评级名称，同时相同代码跨机构对应多种名称。结果只确认机构原始评级类别代码的字段角色，不建立跨机构码表或跨源映射，不覆盖完整 API 契约。
+
+决策模板：作者/研究员使用 [`public_web_report_record_template.json`](adjudications/public_web_report_record_template.json)；前次评级使用 [`public_web_report_last_rating_template.json`](adjudications/public_web_report_last_rating_template.json)；东财评级码使用 [`public_web_report_em_rating_code_template.json`](adjudications/public_web_report_em_rating_code_template.json)；机构原始评级码使用 [`public_web_report_s_rating_code_template.json`](adjudications/public_web_report_s_rating_code_template.json)。已核验记录示例：[`20261110_reports_authors.json`](adjudications/public_web/20261110_reports_authors.json)、[`20261110_reports_last_rating.json`](adjudications/public_web/20261110_reports_last_rating.json)、[`20261110_reports_em_rating_code.json`](adjudications/public_web/20261110_reports_em_rating_code.json) 与 [`20261110_reports_s_rating_code.json`](adjudications/public_web/20261110_reports_s_rating_code.json)，各自证据文件记录实际网页观测及证据边界。

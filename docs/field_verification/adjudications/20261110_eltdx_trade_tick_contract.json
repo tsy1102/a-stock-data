@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-eltdx-trade-tick-absolute-index-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "absolute_index"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "absolute_index", "meaning": "", "unit": ""},
+      "canonical": "absolute_index",
+      "meaning": "成交记录跨页合并时的全局原始序号",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "absolute_index", "meaning": "", "unit": ""},
+        "after": {"canonical": "absolute_index", "meaning": "成交记录跨页合并时的全局原始序号", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 的 TradeTick 字段表将 index / absolute_index 分别定义为页内序号和全局序号；分页说明指出 absolute_index 保留服务器原始分页位置，不是合并后列表的下标。本决定只确认该字段的顺序角色。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick and trade pagination documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.trades.all_today(...) / all_history(...) -> TradePage.ticks[] -> TradeTick.absolute_index",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields and pagination order",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-event-kind-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "event_kind"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "event_kind", "meaning": "", "unit": ""},
+      "canonical": "event_kind",
+      "meaning": "成交记录事件分类标签：trade、auction_snapshot 或 opening_match",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "event_kind", "meaning": "", "unit": ""},
+        "after": {"canonical": "event_kind", "meaning": "成交记录事件分类标签：trade、auction_snapshot 或 opening_match", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 的 TradeTick 契约列出 event_kind 的三个取值，并按 status 与时间规则区分普通成交、集合竞价快照和 09:25 正式撮合。本字段是客户端事件分类标签，不是服务器原始字段。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick event classification documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.trades.all_today(...) / all_history(...) -> TradePage.ticks[] -> TradeTick.event_kind",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields and classification rules",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-auction-matched-placeholder-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "auction_matched_volume"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "auction_matched_volume", "meaning": "", "unit": ""},
+      "canonical": "auction_matched_volume",
+      "meaning": "成交明细模型中的竞价匹配量占位字段，固定为 None；实际竞价匹配量由 auctions.series 的 AuctionPoint.matched_volume 提供",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "auction_matched_volume", "meaning": "", "unit": ""},
+        "after": {"canonical": "auction_matched_volume", "meaning": "成交明细模型中的竞价匹配量占位字段，固定为 None；实际竞价匹配量由 auctions.series 的 AuctionPoint.matched_volume 提供", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 明确说明成交明细不推断竞价数量，该字段固定为 None；实际竞价过程由 0x056a auctions.series 返回，AuctionPoint.matched_volume 才是虚拟匹配量。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick and AuctionPoint documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "TradeTick.auction_matched_volume; client.auctions.series(...) -> AuctionPoint.matched_volume",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields; §集合竞价: AuctionPoint fields",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-auction-unmatched-placeholder-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "auction_unmatched_signed_volume"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "auction_unmatched_signed_volume", "meaning": "", "unit": ""},
+      "canonical": "auction_unmatched_signed_volume",
+      "meaning": "成交明细模型中的带符号竞价未匹配量占位字段，固定为 None；实际未匹配量由 auctions.series 返回",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "auction_unmatched_signed_volume", "meaning": "", "unit": ""},
+        "after": {"canonical": "auction_unmatched_signed_volume", "meaning": "成交明细模型中的带符号竞价未匹配量占位字段，固定为 None；实际未匹配量由 auctions.series 返回", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 明确说明成交明细不推断竞价未匹配量，该字段固定为 None；竞价过程接口单独提供 unmatched_volume 与 unmatched_direction_raw。不能用 TradeTick.volume 或 order_count 代替竞价未匹配量。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick and AuctionPoint documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "TradeTick.auction_unmatched_signed_volume; client.auctions.series(...) -> AuctionPoint.unmatched_volume / unmatched_direction_raw",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields; §集合竞价: AuctionPoint fields",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-order-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "order_count"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "order_count", "meaning": "", "unit": ""},
+      "canonical": "order_count",
+      "meaning": "成交明细中的原始笔数字段；集合竞价快照不赋予其未匹配量含义",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "order_count", "meaning": "", "unit": ""},
+        "after": {"canonical": "order_count", "meaning": "成交明细中的原始笔数字段；集合竞价快照不赋予其未匹配量含义", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 将 order_count 定义为原始笔数字段，并明确集合竞价快照时不将它解释为未匹配量；竞价未匹配量须用 auctions.series。文档没有进一步给出计数口径或单位，因此不作扩展。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick field documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.trades.all_today(...) / all_history(...) -> TradePage.ticks[] -> TradeTick.order_count",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields and auction snapshot handling",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-side-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "side"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "side", "meaning": "", "unit": ""},
+      "canonical": "side",
+      "meaning": "成交方向或状态标签：buy、sell、neutral 或状态名；完整数值状态码映射未确认",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "side", "meaning": "", "unit": ""},
+        "after": {"canonical": "side", "meaning": "成交方向或状态标签：buy、sell、neutral 或状态名；完整数值状态码映射未确认", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 的 TradeTick 契约将 side 定义为方向或状态名，列出的方向标签为 buy、sell、neutral。此处只确认输出角色与已公开标签，不推导状态码到标签的完整映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick field documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.trades.all_today(...) / all_history(...) -> TradePage.ticks[] -> TradeTick.side",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-trade-tick-status-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "status_raw"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "status_raw", "meaning": "", "unit": ""},
+      "canonical": "status_raw",
+      "meaning": "成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {"before": "registry_status_only_single_source", "after": "verified_by_source_contract"},
+      "metadata_change": {
+        "before": {"canonical": "status_raw", "meaning": "", "unit": ""},
+        "after": {"canonical": "status_raw", "meaning": "成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展", "unit": ""}
+      },
+      "rationale": "ELTDX v3.3.2 的 TradeTick 字段表明确将 status_raw 标为方向/状态原始值。接口文档另说明 status=8 等特定规则，但完整代码表不在本裁决范围内。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 TradeTick field documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.trades.all_today(...) / all_history(...) -> TradePage.ticks[] -> TradeTick.status_raw",
+        "locator": "METHOD_REFERENCE.md §成交明细: TradeTick fields and classification rules",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    }
+  ]
+}

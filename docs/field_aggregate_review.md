@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 119 个 code；聚合定义不完整 230 个 code；疑似合并文本 326 条逐源记录。
+> 聚合歧义 123 个 code；聚合定义不完整 224 个 code；疑似合并文本 345 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -567,7 +567,7 @@
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[6]` | [6] | T 日涨跌幅 (%) | — | `verified` |
 | ZHB-tdxstat2 · `[6]` | [6] | 前一交易日涨跌停封单额（涨停为正，跌停为负） | 万元 | `verified` |
-| ZHB-tipinfo · `[6]` | [6] | 阶段新高日 = 官方 TopDate_Recent（"Top"=顶部/新高, 旧标"最近除息日"为音近误读, 已证伪） | — | `verified` |
+| ZHB-tipinfo · `[6]` | [6] | 近 2 年最近龙虎榜日期（通达信 TopDate_Recent） | — | `verified` |
 | 新浪(hq.sinajs) · `[6]` | [6] | 买一价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[6]` | [6] | 成交量 | 手 | `verified` |
 
@@ -662,14 +662,14 @@
 | 市场源(market_sources) · `amplitude` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `amplitude` | amplitude | 振幅% | % | `unverified` |
 
-### `ask1` — incomplete
+### `ask1` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `ask1` | ask1 | 卖一价 | 元 | `verified` |
-| TDX-eltdx(适配层) · `ask1` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `ask1` | ask1 | 卖一价格 | — | `verified` |
 
 ### `attachPages` — incomplete
 
@@ -687,14 +687,6 @@
 |:--|:--|:--|:--|:--|
 | reports · `attachSize` | — | — | — | `conflict` |
 
-### `author` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `author` | — | — | — | `conflict` |
-
 ### `bid` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -704,14 +696,14 @@
 | 开盘啦(kpl) · `bid` | — | — | — | `unverified` |
 | 新浪(扩展API) · `bid` | bid_vol/bid/last/ask/ask_vol | 五档价量 | — | `unverified` |
 
-### `bid1` — incomplete
+### `bid1` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `bid1` | bid1 | 买一价 | 元 | `verified` |
-| TDX-eltdx(适配层) · `bid1` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `bid1` | bid1 | 买一价格 | — | `verified` |
 
 ### `brief` — ambiguous
 
@@ -739,7 +731,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `change_pct` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `change_pct` | change_pct | — | — | `unverified` |
+| TDX-eltdx(适配层) · `change_pct` | change_pct | 涨跌幅 | % | `verified` |
 | ZHB-tdxstat · `change_pct` | change_pct | 当日涨跌幅 | % | `verified` |
 | 东财-push2ex · `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | % | `verified` |
 | 市场源(market_sources) · `change_pct` | change_pct | 涨跌幅 | — | `verified` |
@@ -774,12 +766,12 @@
 
 ### `close` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `close` | close | 收盘价/最新价 | 元/股 | `verified` |
-| TDX-eltdx(适配层) · `close` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
+| TDX-eltdx(适配层) · `close` | close | 日K收盘价 | 元 | `verified` |
 | 东财-datacenter(英文键) · `close` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `close` | close / zhangdie | 收盘价 / 涨跌额 | — | `verified` |
 | 新浪(扩展API) · `close` | — | — | — | `unverified` |
@@ -845,14 +837,6 @@
 | 开盘啦(kpl) · `date` | — | — | — | `unverified` |
 | 新浪(扩展API) · `date` | — | — | — | `unverified` |
 
-### `emRatingCode` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `emRatingCode` | — | — | — | `conflict` |
-
 ### `emRatingValue` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -880,11 +864,11 @@
 
 ### `eps_raw` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `eps_raw` | eps_raw | 每股收益原始值 | - | `unverified` |
+| TDX(双命名源) · `eps_raw` | eps_raw | 每股收益原始值 | 元/股 | `verified` |
 | TDX-eltdx(适配层) · `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | 元/股 | `verified` |
 
 ### `exchange` — incomplete
@@ -990,12 +974,12 @@
 
 ### `f109` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f109` | f109 / f160 | 涨跌幅 | % | `verified` |
-| 东财-push2(stock/get) · `f109` | net_profit_annual(f109) | 归母净利润 最新年报 | 元 | `unverified` |
+| 东财-push2(stock/get) · `f109` | net_profit_annual(f109) | 归母净利润 最新年报 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f109` | change_5d | 5日涨跌幅 | % | `verified` |
 
 ### `f110` — ambiguous
@@ -1529,7 +1513,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-em_kline_f61 · `f168` | f168 | — | — | `verified` |
 | 东财-push2(stock/get) · `f168` | f168 | 换手率% | % | `verified` |
 | 东财-ulist239(np/get) · `f168` | f168 | — | — | `verified` |
 
@@ -1992,11 +1975,10 @@
 
 ### `f43` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-em_kline_f61 · `f43` | — | — | — | `unverified` |
 | 东财-push2(stock/get) · `f43` | f43 | 现价 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f43` | f43 | — | — | `verified` |
 
@@ -2009,14 +1991,14 @@
 | 东财-push2(stock/get) · `f44` | f44 | 最高价 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f44` | lirunzonghe | 利润总额 | 元 | `verified` |
 
-### `f45` — incomplete
+### `f45` — ambiguous
 
-聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f45` | f45 | 最低价 | 元 | `verified` |
-| 东财-ulist239(np/get) · `f45` | f45 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f45` | latest_report_parent_net_profit_ytd | 最新已披露定期报告中归属于上市公司股东的净利润，按年初至报告期末累计。 | 元 | `verified` |
 
 ### `f46` — incomplete
 
@@ -2157,7 +2139,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-em_kline_f61 · `f59` | f59 | 涨跌幅 | % | `conflict` |
+| 东财-em_kline_f61 · `f59` | f59 | 涨跌幅 | % | `verified` |
 | 东财-push2(stock/get) · `f59` | f59 | — | — | `candidate` |
 | 东财-ulist239(np/get) · `f59` | f59 | — | — | `conflict` |
 
@@ -2393,11 +2375,10 @@
 
 ### `f85` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-em_kline_f61 · `f85` | — | — | — | `unverified` |
 | 东财-push2(stock/get) · `f85` | f85 | 流通股本 | 股→万股 | `verified` |
 | 东财-ulist239(np/get) · `f85` | f85 | — | — | `verified` |
 
@@ -2481,14 +2462,23 @@
 
 ### `high` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `high` | high | 最高价 | 元/股 | `verified` |
 | TDX(双命名源) · `high` | high | 最高价 | 元 | `verified` |
-| TDX-eltdx(适配层) · `high` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
+| TDX-eltdx(适配层) · `high` | high | 日K最高价 | 元 | `verified` |
 | 同花顺-fuyao · `high` | — | — | — | `unverified` |
+
+### `high_price` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX-eltdx(适配层) · `high_price` | high_price | 最高价 | — | `verified` |
+| 同花顺-fuyao · `high_price` | — | — | — | `unverified` |
 
 ### `hot_rank` — incomplete
 
@@ -2507,6 +2497,16 @@
 |:--|:--|:--|:--|:--|
 | 开盘红 · `industry_id` | industry_id | 行业分类 ID；与 KPL sector_code 在来源日期对齐的 420 组对照中 417 组相同、3 组不同；分类体系或层级未确认，保留各来源原码 | — | `verified` |
 | 开盘红(Levistock适配) · `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | `unverified` |
+
+### `int` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX-eltdx(适配层) · `int` | — | — | — | `disproved` |
+| ZHB-tdxstat · `int` | — | — | — | `disproved` |
+| 财联社(cls) · `int` | — | — | — | `unverified` |
 
 ### `ipo_date` — incomplete
 
@@ -2545,20 +2545,12 @@
 
 ### `jing_li_run_raw_float` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `jing_li_run_raw_float` | jing_li_run_raw_float | 净利润原始值 | 千元 | `unverified` |
+| TDX(双命名源) · `jing_li_run_raw_float` | jing_li_run_raw_float | 净利润原始值 | 千元 | `verified` |
 | TDX-eltdx(适配层) · `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | 千元 | `verified` |
-
-### `lastEmRatingName` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `lastEmRatingName` | lastEmRatingName | — | — | `conflict` |
 
 ### `last_limit_time` — incomplete
 
@@ -2576,7 +2568,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `last_price` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `last_price` | last_price | — | — | `unverified` |
+| TDX-eltdx(适配层) · `last_price` | last_price | 最新价 / 现价 | — | `verified` |
 | 同花顺-fuyao · `last_price` | 派生 `last_price ÷ f92(BPS) | — | — | `conflict` |
 
 ### `level` — ambiguous
@@ -2610,12 +2602,12 @@
 
 ### `limit_down_price` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `limit_down_price` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `limit_down_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | — | `unverified` |
+| TDX-eltdx(适配层) · `limit_down_price` | limit_down_price | 跌停价 | — | `verified` |
 
 ### `limit_tag` — ambiguous
 
@@ -2664,34 +2656,34 @@
 | 开盘啦(kpl) · `list` | — | — | — | `unverified` |
 | 财联社(cls) · `list` | — | — | — | `unverified` |
 
-### `liu_tong_gu_ben_raw_float` — consistent
-
-聚合问题：source_statuses_differ；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| TDX(双命名源) · `liu_tong_gu_ben_raw_float` | liu_tong_gu_ben_raw_float | 流通股本原始值 | 万股 | `unverified` |
-| TDX-eltdx(适配层) · `liu_tong_gu_ben_raw_float` | liu_tong_gu_ben_raw_float | 流通股本原始值 | 万股 | `verified` |
-
 ### `locked_amount` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `locked_amount` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `locked_amount` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | — | `unverified` |
+| TDX-eltdx(适配层) · `locked_amount` | locked_amount | 买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额 | 元 | `verified` |
 
 ### `low` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `low` | low | 最低价 | 元/股 | `verified` |
 | TDX(双命名源) · `low` | low | 最低价 | 元 | `verified` |
-| TDX-eltdx(适配层) · `low` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
+| TDX-eltdx(适配层) · `low` | low | 日K最低价 | 元 | `verified` |
 | 同花顺-fuyao · `low` | — | — | — | `unverified` |
+
+### `low_price` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX-eltdx(适配层) · `low_price` | low_price | 最低价 | — | `verified` |
+| 同花顺-fuyao · `low_price` | — | — | — | `unverified` |
 
 ### `main_buy` — incomplete
 
@@ -2868,14 +2860,6 @@
 | TDX(双命名源) · `net_profit` | — | — | — | `unverified` |
 | 同花顺-fuyao · `net_profit` | net_profit | 净利润 | JLY（净利润） | `conflict` |
 
-### `netamount` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `netamount` | netamount | 净流入额 | — | `conflict` |
-
 ### `newIssuePrice` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -2956,17 +2940,17 @@
 |:--|:--|:--|:--|:--|
 | FTShare REST · `open` | open | 开盘价 | 元/股 | `verified` |
 | TDX(双命名源) · `open` | open | 开盘价 | 元 | `verified` |
-| TDX-eltdx(适配层) · `open` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
+| TDX-eltdx(适配层) · `open` | open | 日K开盘价 | 元 | `verified` |
 | 同花顺-fuyao · `open` | — | — | — | `unverified` |
 | 新浪(扩展API) · `open` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | — | `unverified` |
 
 ### `open_price` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `open_price` | open_price | — | — | `unverified` |
+| TDX-eltdx(适配层) · `open_price` | open_price | 今开价 | — | `verified` |
 | 同花顺-fuyao · `open_price` | — | — | — | `unverified` |
 
 ### `open_time` — ambiguous
@@ -3038,7 +3022,7 @@
 |:--|:--|:--|:--|:--|
 | FTShare REST · `pe_ttm` | pe_ttm | 滚动市盈率（TTM） | — | `verified` |
 | TDX(双命名源) · `pe_ttm` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | — | — | `unverified` |
+| TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | 滚动市盈率 | 倍 | `verified` |
 | ZHB-tdxstat · `pe_ttm` | pe_ttm | 市盈率（TTM） | 倍 | `verified` |
 | 同花顺-fuyao · `pe_ttm` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pe_ttm` | pe_ttm | PE(TTM) | 倍 | `conflict` |
@@ -3088,13 +3072,13 @@
 | TDX(双命名源) · `pre_close` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `pre_close` | pre_close | — | — | `unverified` |
 
-### `pre_close_price` — incomplete
+### `pre_close_price` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `pre_close_price` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `pre_close_price` | pre_close_price | 昨收价 | — | `verified` |
 | 同花顺-fuyao · `pre_close_price` | pre_close_price | 集合竞价快照中的前收盘价。 | — | `verified` |
 
 ### `predictNextTwoYearPe` — incomplete
@@ -3253,30 +3237,22 @@
 |:--|:--|:--|:--|:--|
 | 新浪(扩展API) · `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | — | `conflict` |
 
-### `researcher` — incomplete
-
-聚合问题：canonical_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `researcher` | — | 研究员姓名 | — | `conflict` |
-
 ### `rise_speed` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `rise_speed` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `rise_speed` | rise_speed / short_turnover | 涨速 / 短换手 | — | `unverified` |
+| TDX-eltdx(适配层) · `rise_speed` | rise_speed | 涨速指标 | — | `verified` |
 
 ### `seal_amount` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `seal_amount` | seal_amount | — | — | `unverified` |
+| TDX-eltdx(适配层) · `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | 元 | `verified` |
 | 市场源(market_sources) · `seal_amount` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | — | `verified` |
 | 开盘红 · `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 370 组、8 个交易日逐值一致，计量单位未确认 | — | `verified` |
@@ -3374,11 +3350,11 @@
 
 ### `time` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `time` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
+| TDX-eltdx(适配层) · `time` | time | 日K时间戳；按上海时区记录，本批样本时间为15:00 | ISO 8601 日期时间（Asia/Shanghai） | `verified` |
 | 东财-热榜(em_hot) · `time` | time | 分钟时间点 | — | `verified` |
 | 市场源(market_sources) · `time` | time | 时间 | — | `verified` |
 | 开盘啦(kpl) · `time` | — | — | — | `unverified` |
@@ -3397,20 +3373,12 @@
 
 ### `total_shares` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `total_shares` | circulating_shares / total_shares | 待破解 | 股 | `unverified` |
+| TDX(双命名源) · `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | 股 | `verified` |
 | 开盘啦(kpl) · `total_shares` | — | — | — | `unverified` |
-
-### `trade` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `trade` | trade | 收盘价 | — | `conflict` |
 
 ### `trade_date` — incomplete
 
@@ -3433,7 +3401,7 @@
 
 ### `turnover` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -3442,7 +3410,7 @@
 | 开盘啦(kpl) · `turnover` | — | — | — | `unverified` |
 | 开盘红 · `turnover` | amount | 成交额；与 KPL amount 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | `unverified` |
-| 新浪(扩展API) · `turnover` | turnover | 换手率% | — | `conflict` |
+| 新浪(扩展API) · `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | 万分比 | `verified` |
 
 ### `turnover_pct` — incomplete
 
@@ -3482,14 +3450,6 @@
 | TDX(双命名源) · `updated_date` | — | — | — | `verified` |
 | TDX-eltdx(适配层) · `updated_date` | updated_date | 财务数据更新日期 | 日期字符串（样本格式 YYYY-MM-DD） | `verified` |
 
-### `valuation.ps_ttm` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `valuation.ps_ttm` | valuation.ps_ttm | — | — | `conflict` |
-
 ### `value` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -3521,22 +3481,13 @@
 | TDX-eltdx(适配层) · `volume` | volume | — | — | `unverified` |
 | 同花顺-fuyao · `volume` | — | — | — | `unverified` |
 
-### `zong_gu_ben_raw_float` — consistent
-
-聚合问题：source_statuses_differ；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| TDX(双命名源) · `zong_gu_ben_raw_float` | zong_gu_ben_raw_float | 总股本原始值 | 万股 | `unverified` |
-| TDX-eltdx(适配层) · `zong_gu_ben_raw_float` | zong_gu_ben_raw_float | 总股本原始值 | 万股 | `verified` |
-
 ### `zong_zi_chan_raw_float` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值 | 千元 | `unverified` |
+| TDX(双命名源) · `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值 | 千元 | `verified` |
 | TDX-eltdx(适配层) · `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值；样本对应季报资产总计 | 千元 | `verified` |
 
 ### `zt_seal_amount_1d` — incomplete
@@ -3596,43 +3547,55 @@
 | TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
 | TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
-| TDX(双命名源) | `circulating_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
+| TDX(双命名源) | `circulating_shares` | circulating_shares | 流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | `unverified` |
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
-| TDX(双命名源) | `net_profit_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
+| TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
-| TDX(双命名源) | `total_assets_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | `unverified` |
-| TDX(双命名源) | `total_shares` | circulating_shares / total_shares | 待破解 | `unverified` |
+| TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
+| TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
+| TDX-eltdx(适配层) | `auction_matched_volume` | auction_matched_volume | 成交明细模型中的竞价匹配量占位字段，固定为 None；实际竞价匹配量由 auctions.series 的 AuctionPoint.matched_volume 提供 | `verified` |
+| TDX-eltdx(适配层) | `auction_unmatched_signed_volume` | auction_unmatched_signed_volume | 成交明细模型中的带符号竞价未匹配量占位字段，固定为 None；实际未匹配量由 auctions.series 返回 | `verified` |
+| TDX-eltdx(适配层) | `bao_liu_2_raw_float` | bao_liu_2_raw_float | 上游保留字段 2；未公开业务语义 | `verified` |
 | TDX-eltdx(适配层) | `chang_qi_fu_zhai_raw_float` | chang_qi_fu_zhai_raw_float | 少数股东权益原始值（合并资产负债表口径；最近一期财务数据） | `verified` |
-| TDX-eltdx(适配层) | `close` | time / open / high / low / close | 时间 / OHLC | `unverified` |
-| TDX-eltdx(适配层) | `down_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
+| TDX-eltdx(适配层) | `depth` | depth | 盘口强弱 / 盘口深度口径指标 | `verified` |
+| TDX-eltdx(适配层) | `eltdx_seal_amount` | eltdx_seal_amount | 当前买一金额；仅已封板时解释为涨停封单额 | `verified` |
+| TDX-eltdx(适配层) | `eltdx_seal_to_float_ratio` | eltdx_seal_to_float_ratio | 当前买一金额占自由流通市值Z比；仅已封板时解释为封板强度 | `verified` |
 | TDX-eltdx(适配层) | `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | `verified` |
-| TDX-eltdx(适配层) | `high` | time / open / high / low / close | 时间 / OHLC | `unverified` |
+| TDX-eltdx(适配层) | `event_kind` | event_kind | 成交记录事件分类标签：trade、auction_snapshot 或 opening_match | `verified` |
+| TDX-eltdx(适配层) | `finance_info_raw` | finance_info_raw | 0x0010 财务基础信息记录的原始主体；解码后为 136 字节，JSON 中以十六进制字符串保存 | `verified` |
+| TDX-eltdx(适配层) | `gu_dong_ren_shu_raw_float` | gu_dong_ren_shu_raw_float | 股东人数（按股东账户计；具体有效报告期以来源记录为准） | `verified` |
+| TDX-eltdx(适配层) | `guo_jia_gu_raw_float` | guo_jia_gu_raw_float | 国家股原始值（与发起人法人股、法人股为不同股本分类） | `verified` |
+| TDX-eltdx(适配层) | `ipo_date_raw` | ipo_date_raw | 上市日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
 | TDX-eltdx(适配层) | `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | `verified` |
-| TDX-eltdx(适配层) | `limit_down_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | `unverified` |
+| TDX-eltdx(适配层) | `last_close_price_milli` | last_close_price_milli | 前一根K线收盘价的千分之一元值；返回序列首条无前收盘字段 | `verified` |
+| TDX-eltdx(适配层) | `last_price` | last_price | 最新价 / 现价 | `verified` |
+| TDX-eltdx(适配层) | `li_run_zong_he_raw_float` | li_run_zong_he_raw_float | 利润总额原始值；样本对应报告期累计值 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_market_value` | limit_ladder.float_market_value | 普通流通市值；普通流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_shares` | limit_ladder.float_shares | 普通流通股本；财务快照口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_market_value` | limit_ladder.free_float_market_value | 自由流通市值；自由流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_shares` | limit_ladder.free_float_shares | 自由流通股本；TDX 自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_amount` | limit_ladder.seal_amount | 当前买一金额；封板时解释为封单额 | `verified` |
-| TDX-eltdx(适配层) | `limit_up_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | `unverified` |
-| TDX-eltdx(适配层) | `locked_amount` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | `unverified` |
-| TDX-eltdx(适配层) | `low` | time / open / high / low / close | 时间 / OHLC | `unverified` |
-| TDX-eltdx(适配层) | `min2_amount` | min2_amount / opening_rush | 近2分钟金额 / 开盘抢筹 | `unverified` |
-| TDX-eltdx(适配层) | `open` | time / open / high / low / close | 时间 / OHLC | `unverified` |
-| TDX-eltdx(适配层) | `opening_rush` | — | 近2分钟金额 / 开盘抢筹 | `unverified` |
-| TDX-eltdx(适配层) | `rise_speed` | rise_speed / short_turnover | 涨速 / 短换手 | `unverified` |
-| TDX-eltdx(适配层) | `short_turnover` | rise_speed / short_turnover | 涨速 / 短换手 | `unverified` |
+| TDX-eltdx(适配层) | `locked_amount` | locked_amount | 买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额 | `verified` |
+| TDX-eltdx(适配层) | `open_delta_raw` | open_delta_raw | 日K开盘价相对前一根收盘价的协议差分值；返回序列首条无前收盘基准时以开盘价为基值 | `verified` |
+| TDX-eltdx(适配层) | `opening_rush` | opening_rush | 开盘抢筹指标；算法及正负方向口径未公开 | `verified` |
+| TDX-eltdx(适配层) | `order_count` | order_count | 成交明细中的原始笔数字段；集合竞价快照不赋予其未匹配量含义 | `verified` |
+| TDX-eltdx(适配层) | `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `shortline.auction_prev_volume_ratio` | shortline.auction_prev_volume_ratio | 竞价量/昨量比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_prev_amount_ratio` | shortline.open_prev_amount_ratio | 开盘额/昨额比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_prev_seal_ratio` | shortline.open_prev_seal_ratio | 开盘额/昨封单额比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_prev_ratio` | shortline.seal_prev_ratio | 封单/前封单比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_to_amount_ratio` | shortline.seal_to_amount_ratio | 封单/成交额比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_to_float_ratio` | shortline.seal_to_float_ratio | 封单/流通市值比 | `verified` |
-| TDX-eltdx(适配层) | `time` | time / open / high / low / close | 时间 / OHLC | `unverified` |
-| TDX-eltdx(适配层) | `up_count` | up_count / down_count | 指数类上涨/下跌家数 | `unverified` |
-| TDX-eltdx(适配层) | `vol_rise_speed` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | `unverified` |
+| TDX-eltdx(适配层) | `shui_hou_li_run_raw_float` | shui_hou_li_run_raw_float | 税后利润原始值；保留样本对应合并利润表的净利润行 | `verified` |
+| TDX-eltdx(适配层) | `side` | side | 成交方向或状态标签：buy、sell、neutral 或状态名；完整数值状态码映射未确认 | `verified` |
+| TDX-eltdx(适配层) | `status_raw` | status_raw | 成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展 | `verified` |
+| TDX-eltdx(适配层) | `time` | time | 日K时间戳；按上海时区记录，本批样本时间为15:00 | `verified` |
+| TDX-eltdx(适配层) | `tou_zi_shou_yu_raw_float` | tou_zi_shou_yu_raw_float | 投资收益；样本值对应报告期累计金额 | `verified` |
+| TDX-eltdx(适配层) | `updated_date_raw` | updated_date_raw | 财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
+| TDX-eltdx(适配层) | `volume_wire_value` | volume_wire_value | 协议解码后的成交量值；普通A股单位为股，已验证的可转债品种单位为手 | `verified` |
+| TDX-eltdx(适配层) | `zong_xian_jin_liu_raw_float` | zong_xian_jin_liu_raw_float | 总现金流；样本中对应经营、投资、筹资三类活动净现金流量之和，不含汇率变动影响 | `verified` |
 | TDX-eltdx(适配层) | `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值；样本对应季报资产总计 | `verified` |
 | ZHB-tdxstat | `[22]` | [22] | 形态/板块代码 ShapeValue | `verified` |
 | ZHB-tdxstat | `[31]` | [31] | “几天几板”统计中的天数（通达信 LastStartZT，官方接口说明为“几天”；精确窗口边界未公开） | `verified` |
@@ -3640,6 +3603,7 @@
 | ZHB-tdxstat | `[5]` | [5] | 连涨/连跌天数 | `verified` |
 | ZHB-tdxstat | `[9]` | [9] | 市盈率（静态/LYR） | `verified` |
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
+| ZHB-tdxstat | `change_60d_alt` | change_60d | 历史解析键；当前解析器将 tdxstat.cfg 第[20]列输出为 change_60d，change_60d_alt 不再是独立输出路径。 | `disproved` |
 | ZHB-tdxstat | `change_ytd` | change_ytd | 年初至今涨跌幅（YTD，%）；历史对照支持该字段类别，但复权基准未证实与其他来源相同。 | `verified` |
 | ZHB-tdxstat | `pe_lyr` | pe_lyr | 静态市盈率（LYR/上一完整年度业绩口径）；180 组、9 个来源日期与已验证静态 PE 参照相符，最大差 0.006 倍；精度差异不证明跨源逐值相同。 | `verified` |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
@@ -3673,12 +3637,12 @@
 | ZHB-tipinfo | `[13]` | [13] | 解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标"股权登记日/配股"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解） | `verified` |
 | ZHB-tipinfo | `[21]` | [21] | 股权激励预案/草案公告日 | `verified` |
 | ZHB-tipinfo | `[3]` | [3] | 报告期累计每股收益（基本/稀释/扣非口径未区分） | `verified` |
-| ZHB-tipinfo | `[6]` | [6] | 阶段新高日 = 官方 TopDate_Recent（"Top"=顶部/新高, 旧标"最近除息日"为音近误读, 已证伪） | `verified` |
 | ZHB-tipinfo | `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `verified` |
 | ZHB-tipinfo | `[9]` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `verified` |
 | ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `disproved` |
 | ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `disproved` |
 | ZHB-tipinfo | `eps` | eps | 报告期累计每股收益（基本/稀释/扣非口径未区分） | `verified` |
+| ZHB-tipinfo | `equity_incentive_date` | equity_incentive_date | 股权激励预案/草案公告日 | `verified` |
 | ZHB-tipinfo | `shareholder_change_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `verified` |
 | ZHB-tipinfo | `shareholder_change_shares_wan` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `verified` |
 | ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | `disproved` |
@@ -3698,8 +3662,11 @@
 | reports | `adjunctType` | adjunctSize / adjunctType | 附件大小/类型 | `unverified` |
 | reports | `analyse` | analyse / analyse_title | 待破解 | `unverified` |
 | reports | `analyse_title` | analyse / analyse_title | 待破解 | `unverified` |
+| reports | `author` | report_author_id_name_list | 研报作者列表；每项由作者 ID 和姓名组成，原始格式为“ID.姓名”。 | `verified` |
+| reports | `emRatingCode` | emRatingCode | 东财统一评级类别代码；与同记录 emRatingName 关联，完整代码表未知。 | `verified` |
 | reports | `orgId` | secName / orgId | 证券名 / 机构ID | `unverified` |
 | reports | `reading_num` | reading_num / share_num | 阅读数/分享数 | `unverified` |
+| reports | `sRatingCode` | sRatingCode | 机构原始评级类别代码；须结合机构和同记录 sRatingName 解释，未确立跨机构代码表。 | `verified` |
 | reports | `secName` | secName / orgId | 证券名 / 机构ID | `unverified` |
 | reports | `share_num` | reading_num / share_num | 阅读数/分享数 | `unverified` |
 | reports | `subject_name` | subjects / subject_name | 主题分类 | `unverified` |
@@ -3870,11 +3837,14 @@
 | 新浪(扩展API) | `last` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |
 | 新浪(扩展API) | `limit_down` | limit_up / limit_down | 涨跌停价 | `unverified` |
 | 新浪(扩展API) | `limit_up` | limit_up / limit_down | 涨跌停价 | `unverified` |
+| 新浪(扩展API) | `netamount` | netamount | 个股资金流记录中的净流入金额原始值（元；新浪帮助页展示单位为万元） | `verified` |
 | 新浪(扩展API) | `open` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
 | 新浪(扩展API) | `prev_close` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
 | 新浪(扩展API) | `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | `conflict` |
 | 新浪(扩展API) | `strike` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
 | 新浪(扩展API) | `theta` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
+| 新浪(扩展API) | `trade` | trade | 个股资金流记录中 opendate 对应行的行情价格快照（元/股）；不能默认视为官方收盘价 | `verified` |
+| 新浪(扩展API) | `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | `verified` |
 | 新浪(扩展API) | `vega` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 沪深交易所 | `zqdm` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 沪深交易所 | `zqjc` | zqdm / zqjc | 代码 / 简称 | `verified` |

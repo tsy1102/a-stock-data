@@ -2078,10 +2078,10 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
 
 
 @cached(
-    category="dividend_tdx_v2", ttl_seconds=86400, cross_verify=True
-)  # V17.6: 版本化缓存，避免旧 xdxr stub 的空列表遮蔽 0x000f 数据
+    category="dividend_tdx_v3", ttl_seconds=86400, cross_verify=True
+)  # V17.6: 每股金额/比例单位归一化；隔离旧版每10股缓存值
 def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
-    """解析 TDX 分红除权记录并规范日期字段。
+    """解析 TDX 分红除权记录并规范日期及每股金额/比例。
     V16.2.3: 连接失败返回 None（与"真无分红"[] 区分，报告不再误报"一毛不拔"）。
     日期解析兼容 `date` 与 `year/month/day` 两种历史适配器列结构。"""
     with _TDX_CALL_LOCK:

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "id": "20261110-sina-extended-netamount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "新浪(扩展API)",
+        "code": "netamount"
+      },
+      "canonical": "netamount",
+      "meaning": "个股资金流记录中的净流入金额原始值（元；新浪帮助页展示单位为万元）",
+      "unit": "元",
+      "previous": {
+        "canonical": "netamount",
+        "meaning": "净流入额",
+        "unit": ""
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "netamount",
+          "meaning": "净流入额",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "netamount",
+          "meaning": "个股资金流记录中的净流入金额原始值（元；新浪帮助页展示单位为万元）",
+          "unit": "元"
+        },
+        "rationale": "保留原释义快照；区分新浪页面展示刻度与项目响应原始值刻度，并补齐原始单位。"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "rationale": "项目从新浪 MoneyFlow.ssl_qsfx_zjlrqs 个股响应保存行字段 netamount。新浪官方资金流帮助页定义净流入为流入额减流出额，页面指标单位为万元，并给出净流入率公式；文档未公开该 JSON 键的原始序列化单位。以项目保留样本核验原始单位：14 个交易日、20 只股票中有 278 组 netamount / ratioamount 与 TDX quote_raw.amount 配对；按净流入额除以净流入率反推成交额后，中位相对差为 0.0001468%，218/278 组在 1% 内、276/278 组在 5% 内，支持 netamount 原始值为元且 ratioamount 为比例值。两组 920118 样本（2026-10-30、2026-11-02）与 TDX 成交额分别相差 30.36%、38.27%，保留为来源/时点差异，不按舍入处理。新浪官方帮助页自身说明服务商计算方法和统计时点不同会造成差异。因此只确认本来源字段的原始金额单位，不登记跨源逐值映射；新浪页面按万元展示，展示换算与采集原值不可混用。",
+      "source_contract": {
+        "authority": "新浪财经资金流向官方帮助文档（业务定义和页面展示单位）；项目保留采集的跨源单位校验",
+        "locator": "指标定义中的净流入（万元）及净流入率=净流入/成交额*100%；页面说明服务商计算方法和统计时间不同会造成差异",
+        "path": "GET /quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjlrqs; response row field netamount (project request/capture path)",
+        "revision": "官方帮助页于 2026-11-10 在线核验；网页未标注版本号",
+        "url": "https://finance.sina.com.cn/temp/guest4377.shtml"
+      }
+    }
+  ]
+}

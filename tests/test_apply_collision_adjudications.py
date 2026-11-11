@@ -672,6 +672,20 @@ def _set_status_only_conflict(registry, document):
     return target, decision
 
 
+def _set_cross_source_aggregate_conflict(registry, document):
+    target, decision = _set_status_only_conflict(registry, document)
+    sources = ["target-source", "other-source"]
+    target["status_evidence"].update(
+        {
+            "registry_aggregate_status": "conflict",
+            "registry_aggregate_sources": sources,
+            "values": ["verified", "candidate"],
+        }
+    )
+    target["registry_aggregate"] = {"status": "conflict", "sources": sources}
+    return target, decision
+
+
 def test_source_contract_resolves_only_registry_aggregate_status_conflict():
     registry, document = _source_contract_inputs()
     _set_status_only_conflict(registry, document)
@@ -691,6 +705,49 @@ def test_source_contract_resolves_only_registry_aggregate_status_conflict():
         "already_applied": 0,
         "mappings_added": 0,
     }
+
+
+def test_source_contract_resolves_cross_source_aggregate_conflict_source_locally():
+    registry, document = _source_contract_inputs()
+    _set_cross_source_aggregate_conflict(registry, document)
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["registry_aggregate"]["status"] == "conflict"
+    assert target["registry_aggregate"]["sources"] == ["target-source", "other-source"]
+    assert updated["mappings"] == []
+    assert stats["status_conflicts_resolved"] == 1
+    assert stats["mappings_added"] == 0
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda target: target["status_evidence"].update(
+            registry_aggregate_sources=["target-source"]
+        ),
+        lambda target: target["registry_aggregate"].update(
+            sources=["target-source", "different-source"]
+        ),
+        lambda target: target["status_evidence"].update(values=["verified", "disproved"]),
+        lambda target: target["reference_evidence"][0].update(status="candidate"),
+        lambda target: target.update(attribute_ambiguities={"meaning": ["ambiguous"]}),
+    ],
+)
+def test_source_contract_rejects_unsafe_cross_source_aggregate_conflict(mutate):
+    registry, document = _source_contract_inputs()
+    target, _ = _set_cross_source_aggregate_conflict(registry, document)
+    mutate(target)
+
+    with pytest.raises(ValueError, match="cannot resolve semantic or attribute conflicts"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
 
 
 def test_source_contract_resolves_legacy_conflict_through_verified_same_source_alias(

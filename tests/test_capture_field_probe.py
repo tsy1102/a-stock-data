@@ -979,6 +979,54 @@ def test_default_capture_date_uses_last_completed_session(monkeypatch):
     assert capture_probe._last_trading_day_str() == "20260929"
 
 
+def test_zhb_collection_policy_uses_beijing_0800_cutoff():
+    before_open = datetime(2026, 11, 10, 7, 59, 59)
+    at_open = datetime(2026, 11, 10, 8, 0, 0)
+
+    assert not capture_probe._zhb_collection_window_open(before_open)
+    assert capture_probe._zhb_collection_window_open(at_open)
+    assert capture_probe._zhb_collection_policy([], before_open) == "defer"
+    assert capture_probe._zhb_collection_policy(["zhb"], before_open) == "reject"
+    assert capture_probe._zhb_collection_policy(["zhb"], at_open) == "collect"
+
+
+def test_early_default_capture_defers_only_zhb():
+    collectors = {
+        "tdx": lambda _pool: {},
+        "zhb": lambda _pool: {},
+        "tencent": lambda _pool: {},
+    }
+
+    eligible, was_deferred = capture_probe._apply_zhb_collection_policy(collectors, "defer")
+
+    assert was_deferred
+    assert set(eligible) == {"tdx", "tencent"}
+    assert set(collectors) == {"tdx", "zhb", "tencent"}
+
+
+def test_main_rejects_explicit_zhb_before_window_before_creating_capture_folder(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(capture_probe, "_zhb_collection_policy", lambda *_args: "reject")
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(
+        capture_probe,
+        "_validate_capture_data_date",
+        lambda *_args: (date(2026, 11, 9), "trading"),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["capture_field_probe.py", "--date", "20261109", "--only", "zhb"],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        capture_probe.main()
+
+    assert exc_info.value.code == 2
+    assert not (tmp_path / "20261109").exists()
+
+
 def test_push2_failures_include_domain_and_use_single_attempt(monkeypatch):
     calls = []
 
@@ -1499,6 +1547,7 @@ def test_default_repeat_supplements_missing_source_without_recollecting_complete
         "build_collectors",
         lambda: {
             "push2": lambda _pool: calls.append("push2") or {},
+            "zhb": lambda _pool: calls.append("zhb") or {"stocks": {}},
             "future_source": lambda _pool: calls.append("future_source") or {"value": 1},
         },
     )
@@ -1509,6 +1558,7 @@ def test_default_repeat_supplements_missing_source_without_recollecting_complete
     monkeypatch.setattr(capture_probe, "_is_closed_phase_now", lambda *_args: True)
     monkeypatch.setattr(capture_probe, "_capture_market_phase", lambda *_args: "closed")
     monkeypatch.setattr(capture_probe, "_last_trading_day_str", lambda: "20260929")
+    monkeypatch.setattr(capture_probe, "_zhb_collection_policy", lambda *_args: "defer")
 
     axdata_validation = ModuleType("axdata_daily_validation")
     axdata_validation.run_axdata_daily_validation = lambda **_kwargs: {"status": "not_eligible"}

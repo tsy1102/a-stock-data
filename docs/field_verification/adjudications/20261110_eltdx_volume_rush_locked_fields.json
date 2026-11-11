@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "id": "20261110-eltdx-volume-hand-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "volume_hand"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "volume_hand",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "volume_hand",
+      "meaning": "成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md 在 StockProfileTable/StockProfile 模型中将 volume_hand 定义为成交量且单位为手；7709 分类行情模型另以 total_hand 表示总成交量。2026-11-09 保留样本的 realtime_rank 80/80 行中，项目输出 volume_hand 与 raw.total_hand 逐项相等。该裁决只确认本来源字段的含义和单位，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 客户端模型与 0x054b 分类行情字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本），核验于 2026-11-10",
+        "path": "StockProfileTable.rows[].volume_hand；0x054b CategoryQuoteRecord.total_hand -> client.helpers.realtime_rank().rows[].raw.total_hand",
+        "locator": "FIELD_REFERENCE.md §Helper 返回模型 > StockProfileTable/StockProfile 与 §CategoryQuoteRecord；7709-分类行情 §解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-opening-rush-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "opening_rush"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "近2分钟金额 / 开盘抢筹",
+        "unit": ""
+      },
+      "canonical": "opening_rush",
+      "meaning": "开盘抢筹指标；算法及正负方向口径未公开",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2 的 0x054b CategoryQuoteRecord 将 min2_amount 与 opening_rush 列为两个独立字段；ShortlineIndicator 文档将 opening_rush 定义为原生分类行情提供的开盘抢筹值，单位为百分比。2026-11-09 保留样本中该值 80/80 行非空，且与 raw.opening_rush_raw / 100 逐项一致；例如 sz301718 的 opening_rush=-0.39，而 min2_amount=672512，排除将二者合并为同一金额字段。算法细节和正负方向的业务解释仍未公开；不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "近2分钟金额 / 开盘抢筹",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "opening_rush",
+          "meaning": "开盘抢筹指标；算法及正负方向口径未公开",
+          "unit": "%"
+        },
+        "rationale": "ELTDX v3.3.2 明确区分 min2_amount 与 opening_rush，并明确 opening_rush 的百分比单位；本更正替换历史合并释义，保留算法和信号方向未知。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 0x054b 分类行情与 ShortlineIndicator Helper 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本），核验于 2026-11-10",
+        "path": "0x054b CategoryQuoteRecord.opening_rush -> ShortlineIndicator.opening_rush",
+        "locator": "FIELD_REFERENCE.md §CategoryQuoteRecord 与 §ShortlineIndicator；7709-分类行情 §常用排序字段与 §解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-locked-amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "locked_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "vol_rise_speed / locked_amount",
+        "meaning": "量涨速 / 封单额（=bid1×bid_vol1×100）",
+        "unit": ""
+      },
+      "canonical": "locked_amount",
+      "meaning": "买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md 将 CategoryQuoteRecord.locked_amount 定义为 bid1 × bid_vol1 × 100 的派生字段；7709 文档将“封单额”排序键映射到 locked_amount，并将“量涨速”单列为 vol_rise_speed，故旧的混合规范名应拆开。本项目 2026-11-09 样本没有名为 locked_amount 的原始键；作为公式一致性检查，realtime_rank.rows[].seal_amount 80/80 行与同记录 raw.bid1 × raw.bid_vol1 × 100 完全相等。该检查不把 seal_amount 改写为原始 locked_amount，也不新增来源映射。按一手 100 股换算，结果单位为元；“封单额”仅表示买一档金额，不能据此断言股票处于涨停封板状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "vol_rise_speed / locked_amount",
+          "meaning": "量涨速 / 封单额（=bid1×bid_vol1×100）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "locked_amount",
+          "meaning": "买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额",
+          "unit": "元"
+        },
+        "rationale": "ELTDX v3.3.2 将 locked_amount 及 vol_rise_speed 分别定义，且明确 locked_amount 的派生公式和买一档金额口径；本更正分离历史合并释义。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 0x054b 分类行情字段与派生字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本），核验于 2026-11-10",
+        "path": "0x054b CategoryQuoteRecord.locked_amount（derived from bid1 and bid_vol1）",
+        "locator": "FIELD_REFERENCE.md §CategoryQuoteRecord；7709-分类行情 §常用排序字段与 §派生字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

@@ -798,9 +798,9 @@ class CanonicalStockData:
     eltdx_ladder_level: int = 0  # 连板高度(档位, eltdx limit_ladder.ladder_level)
     eltdx_limit_up_streak_days: int = 0  # 连续涨停天数(ShortlineIndicator.limit_up_streak_days)
     eltdx_limit_board_text: str = ""  # 连板梯队文本(limit_board_text, e.g. "3天3板")
-    eltdx_seal_to_float_ratio: float = 0.0  # 封单额/流通市值(%)——封板坚决度(seal_to_float_ratio)
+    eltdx_seal_to_float_ratio: float = 0.0  # 当前买一金额/流通市值Z(%)；仅已封板时解释为封板强度
     eltdx_open_volume_ratio: float = 0.0  # 开盘成交量比(open_volume_ratio)
-    eltdx_seal_amount: float = 0.0  # 封单额(元, seal_amount)
+    eltdx_seal_amount: float = 0.0  # 当前买一金额(元)；仅已封板时才是涨停封单额
     eltdx_opening_rush: float = 0.0  # 开盘抢筹(opening_rush)
     eltdx_auction_prev_volume_ratio: float = 0.0  # 竞价量比(auction_prev_volume_ratio)
     eltdx_open_prev_amount_ratio: float = 0.0  # 开盘额/昨额比(open_prev_amount_ratio)

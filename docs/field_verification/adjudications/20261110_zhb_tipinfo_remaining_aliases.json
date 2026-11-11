@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-zhb-tipinfo-forecast-type-runtime-alias",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "forecast_type"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "forecast_type",
+      "meaning": "业绩预告类型代码",
+      "unit": "枚举",
+      "rationale": "This verifies only the ZHB runtime path as an exact same-source alias of the already verified `tipinfo.forecast_type` path. All 84,815 rows across 15 retained date-named archives match raw column [12] with no differences. The values are preserved as strings. No complete integer codebook or per-code semantic mapping is asserted.",
+      "same_source_alias": {
+        "source": "ZHB-tipinfo",
+        "code": "tipinfo.forecast_type",
+        "evidence_path": "docs/field_verification/adjudications/20261110_zhb_tipinfo_remaining_alias_audit.csv",
+        "locator": "Per-archive parser-to-raw equality counts for runtime `forecast_type` and raw column [12]",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "Project-maintained verified ZHB tipinfo source-field contract",
+        "revision": "Verified anchor at HEAD e1c2108; retained archive audit reviewed 2026-11-10",
+        "path": "docs/field_verification/field_registry.json",
+        "locator": "ZHB-tipinfo::tipinfo.forecast_type",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/e1c2108/docs/field_verification/field_registry.json"
+      }
+    },
+    {
+      "id": "20261110-zhb-tipinfo-suspend-date-runtime-alias",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "suspend_major_event_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "suspend_major_event_date",
+      "meaning": "重大事项停牌起始日",
+      "unit": "YYYYMMDD",
+      "rationale": "This verifies only the ZHB runtime path as an exact same-source alias of the already verified `tipinfo.suspend_major_event_date` path. All 84,815 rows across 15 retained date-named archives match raw column [7] with no differences; all 7,288 non-empty values are valid YYYYMMDD dates. Three retained-package examples match official exchange or issuer notices. The decision does not claim the field covers every suspension category.",
+      "same_source_alias": {
+        "source": "ZHB-tipinfo",
+        "code": "tipinfo.suspend_major_event_date",
+        "evidence_path": "docs/field_verification/adjudications/20261110_zhb_tipinfo_remaining_alias_audit.csv",
+        "locator": "Per-archive parser-to-raw equality counts for runtime `suspend_major_event_date` and raw column [7]",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "Project-maintained verified ZHB tipinfo source-field contract",
+        "revision": "Verified anchor at HEAD e1c2108; retained archive audit reviewed 2026-11-10",
+        "path": "docs/field_verification/field_registry.json",
+        "locator": "ZHB-tipinfo::tipinfo.suspend_major_event_date",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/e1c2108/docs/field_verification/field_registry.json"
+      }
+    }
+  ]
+}

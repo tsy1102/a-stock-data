@@ -1,0 +1,17 @@
+capture_folder,target_data_date_in_meta,folder_matches_meta_target_data_date,run_date,capture_date,zhb_as_of_date,zhb_as_of_is_a_share_trading_day,matched_archive_filename,raw_opened,raw_zhb_date_copy,YYYYMMDD_key_count,float_key_count,int_key_count,qualification
+20261015,20261015,true,20261015,20261015,20261014,,,false,,,,,source_date_before_retention_raw_not_opened
+20261016,20261016,true,20261018,20261018,20261016,true,zhb_20261016.zip,true,20261016,0,0,0,qualified_source_date_and_archive
+20261019,20261019,true,20261019,20261019,20261016,true,zhb_20261016.zip,true,20261016,0,0,0,qualified_source_date_and_archive
+20261020,20261020,true,20261020,20261020,20261019,true,zhb_20261019.zip,true,20261019,0,0,0,qualified_source_date_and_archive
+20261021,20261021,true,20261022,20261022,20261020,true,zhb_20261020.zip,true,20261020,0,0,0,qualified_source_date_and_archive
+20261023,20261023,true,20261024,20261024,20261023,true,zhb_20261023.zip,true,20261023,0,0,0,qualified_source_date_and_archive
+20261026,20261026,true,20261026,20261026,20261023,true,zhb_20261023.zip,true,20261023,0,0,0,qualified_source_date_and_archive
+20261028,20261028,true,20261028,20261028,20261027,true,zhb_20261027.zip,true,20261027,0,0,0,qualified_source_date_and_archive
+20261029,20261029,true,20261029,20261029,20261028,true,zhb_20261028.zip,true,20261028,0,0,0,qualified_source_date_and_archive
+20261030,20261030,true,20261101,20261101,20261030,true,zhb_20261030.zip,true,20261030,0,0,0,qualified_source_date_and_archive
+20261102,20261102,true,20261102,20261102,20261030,true,zhb_20261030.zip,true,20261030,0,0,0,qualified_source_date_and_archive
+20261103,20261103,true,20261103,20261103,20261102,true,zhb_20261102.zip,true,20261102,0,0,0,qualified_source_date_and_archive
+20261104,20261104,true,20261104,20261104,20261103,true,zhb_20261103.zip,true,20261103,0,0,0,qualified_source_date_and_archive
+20261105,20261105,true,20261105,20261105,20261104,true,zhb_20261104.zip,true,20261104,0,0,0,qualified_source_date_and_archive
+20261106,20261106,true,20261108,20261108,20261106,true,zhb_20261106.zip,true,20261106,0,0,0,qualified_source_date_and_archive
+20261109,20261109,true,20261110,20261110,20261106,true,zhb_20261106.zip,true,20261106,0,0,0,qualified_source_date_and_archive

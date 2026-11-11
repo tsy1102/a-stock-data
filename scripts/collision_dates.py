@@ -256,7 +256,7 @@ def _folder_event_capture_dates(folder: CaptureFolder) -> set[date]:
 def discover_capture_folders(
     data_dir: str, checker: Callable[[date], bool] | None = None
 ) -> tuple[list[CaptureFolder], list[str]]:
-    """List canonical date folders and reject mismatched or unsafe date inference."""
+    """List dated capture folders, ignoring date-named report and empty directories."""
     is_session = checker or is_trading_session
     folders: list[CaptureFolder] = []
     warnings: list[str] = []
@@ -284,6 +284,16 @@ def discover_capture_folders(
             continue
 
         meta_path = os.path.join(path, "meta.json")
+        raw_files = [
+            filename
+            for filename in os.listdir(path)
+            if filename.startswith("raw_")
+            and filename.endswith(".json")
+            and os.path.isfile(os.path.join(path, filename))
+        ]
+        if not os.path.isfile(meta_path) and not raw_files:
+            warnings.append(f"{name}: 日期目录没有 meta.json 或 raw_*.json，按报告/空目录跳过")
+            continue
         meta = _read_json(meta_path) if os.path.isfile(meta_path) else {}
         local_warnings: list[str] = []
         if os.path.isfile(meta_path) and meta is None:

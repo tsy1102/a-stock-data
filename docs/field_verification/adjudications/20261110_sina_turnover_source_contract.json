@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "id": "20261110-sina-extended-turnover-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "新浪(扩展API)",
+        "code": "turnover"
+      },
+      "canonical": "turnover",
+      "meaning": "换手率原始值（万分比；换算为百分数时原值除以100）",
+      "unit": "万分比",
+      "previous": {
+        "canonical": "turnover",
+        "meaning": "换手率%",
+        "unit": ""
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "turnover",
+          "meaning": "换手率%",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "turnover",
+          "meaning": "换手率原始值（万分比；换算为百分数时原值除以100）",
+          "unit": "万分比"
+        },
+        "rationale": "保留原释义快照，依据新浪资金流页面的换手率指标、同类接口适配器的单位换算和保留样本修正原始单位；不声明与其他来源逐值相等。"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "rationale": "项目通过新浪 MoneyFlow.ssl_qsfx_zjlrqs 接口保存响应行 turnover。新浪官方资金流向帮助页说明个股阶段统计提供换手率；该页没有公开此 JSON 键的单位。独立开源 ZVT 新浪 MoneyFlow 适配器将同类响应的 turnover 除以10000转换为比例值，支持原始值按万分比编码。项目保留样本中，14 个交易日、20 只股票、280 组 Sina turnover / 100 与 Tencent fields[38]（报价换手率百分数）对照，Pearson=0.9998、R²=0.999528、中位绝对差异为0.003313个百分点；252/280 组差异不超过0.05个百分点。仍有28组超过0.05个百分点，最大差异1.61983个百分点，故只确认来源字段语义及原始单位，不登记跨来源逐值映射。新浪官方帮助页说明资金数据会延迟并按时段统计，具体样本更新时间未记录；较大差异不能都归因于舍入。",
+      "source_contract": {
+        "authority": "新浪财经资金流向帮助文档；ZVT 开源新浪 MoneyFlow 适配器作为非官方单位佐证",
+        "locator": "新浪官方帮助页“个股阶段统计”列有换手率；ZVT 适配器将 item['turnover'] / 10000 映射为 turnover_rate",
+        "path": "GET /quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjlrqs; response row field turnover (project request/capture path)",
+        "revision": "新浪帮助页于2026-11-10在线核验；ZVT master 文件于2026-11-10核验，未固定提交版本",
+        "url": "https://finance.sina.com.cn/temp/guest4377.shtml"
+      }
+    }
+  ]
+}

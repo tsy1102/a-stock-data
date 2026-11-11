@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "<reviewer>",
+  "reviewed_on": "<YYYY-MM-DD>",
+  "evidence_file": "adjudications/public_web/<evidence-file>.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "<decision-id>",
+      "action": "verify_public_web_observation",
+      "verification_mode": "verify_report_source_rating_code",
+      "target": {
+        "source": "reports",
+        "code": "sRatingCode"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "sRatingCode",
+        "meaning": "待破解",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "sRatingCode",
+      "meaning": "机构原始评级类别代码；须结合机构和同记录 sRatingName 解释，未确立跨机构代码表。",
+      "unit": "",
+      "rationale": "至少三只股票的研报详情记录精确绑定；至少两条原始评级文字精确匹配，近似匹配单独标记；完整采集证明机构+代码名称唯一、跨机构代码名称不唯一。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/info/<infoCode-1>.html",
+        "https://data.eastmoney.com/report/info/<infoCode-2>.html",
+        "https://data.eastmoney.com/report/info/<infoCode-3>.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "<six-digit-stock-code-1>",
+          "data_date": "<YYYYMMDD>",
+          "source_file": "<YYYYMMDD>/raw_reports.json",
+          "record_identity": {
+            "infoCode": "<infoCode-1>",
+            "title": "<exact report title>",
+            "publishDate": "<exact publishDate>"
+          },
+          "raw_value": "<sRatingCode>",
+          "raw_organization": "<orgSName>",
+          "page_source_rating": "<rating text visible in official report body>",
+          "match_type": "exact",
+          "page_url": "https://data.eastmoney.com/report/info/<infoCode-1>.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "<short verbatim excerpt containing the rating text>"
+        },
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "<six-digit-stock-code-2>",
+          "data_date": "<YYYYMMDD>",
+          "source_file": "<YYYYMMDD>/raw_reports.json",
+          "record_identity": {
+            "infoCode": "<infoCode-2>",
+            "title": "<exact report title>",
+            "publishDate": "<exact publishDate>"
+          },
+          "raw_value": "<sRatingCode>",
+          "raw_organization": "<orgSName>",
+          "page_source_rating": "<rating text visible in official report body>",
+          "match_type": "exact",
+          "page_url": "https://data.eastmoney.com/report/info/<infoCode-2>.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "<short verbatim excerpt containing the rating text>"
+        },
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "<six-digit-stock-code-3>",
+          "data_date": "<YYYYMMDD>",
+          "source_file": "<YYYYMMDD>/raw_reports.json",
+          "record_identity": {
+            "infoCode": "<infoCode-3>",
+            "title": "<exact report title>",
+            "publishDate": "<exact publishDate>"
+          },
+          "raw_value": "<sRatingCode>",
+          "raw_organization": "<orgSName>",
+          "page_source_rating": "<rating text visible in official report body>",
+          "match_type": "exact",
+          "page_url": "https://data.eastmoney.com/report/info/<infoCode-3>.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "<short verbatim excerpt containing the rating text>"
+        }
+      ]
+    }
+  ]
+}

@@ -8,18 +8,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。`fa_qi_ren_fa_ren_gu`、`fa_ren_gu` 与 `zhu_ying_li_run` 仍保留冲突，详见 [`20261111_finance_extended_candidate_crosscheck.md`](docs/field_verification/20261111_finance_extended_candidate_crosscheck.md)。
+- 更正 `ZHB-tipinfo::[6]`：通达信官方 `TopDate_Recent` 指近 2 年最近龙虎榜日期；三只股票的留存 ZHB 原始值与东方财富官方页面日期一致。保留路径身份、verified 状态和空单位。
+- 为 ZHB 采集增加北京时间 08:00 闸门：默认早间采集跳过 ZHB，过早的显式 `--only zhb` 在请求前拒绝；文档说明使用同一数据日单源补采，碰撞仍按 ZHB 实际 `zhb_date` 归位。
+- 基于同花顺金融数据 API 估值契约，确认 Fuyao `valuation.ps_ttm` 为 TTM 市销率（倍）；保留来源数据日期未确认和 Ulist `f130` 数值映射未复核状态。
+- 依据新浪资金流官方更新时间说明及 14 日、20 股留存样本，纠正 `新浪(扩展API)::trade` 的“收盘价”旧释义为行情价格快照（元）；因刷新时点不同不建立与 TDX 报价的严格逐值映射。
+- 依据新浪资金流页面说明、独立 ZVT 接口适配器及 280 组留存样本，确认 `新浪(扩展API)::turnover` 为换手率万分比原值；保留28组较大差异，不建立与腾讯报价的严格逐值映射。
+- 依据新浪官方净流入定义及 278 组留存样本，确认 `新浪(扩展API)::netamount` 原始单位为元并区分官网万元展示刻度；保留两组明显成交额差异，不建立跨源逐值映射。
+- 补出 ZHB `forecast_type`、`suspend_major_event_date` 两个 tipinfo 运行别名，并以 15 个保留压缩包的 84,815 组逐行审计验证原值；只确认业绩预告类型码字段角色，完整码表继续未知。
+- 将 `ZHB-tdxstat::change_60d_alt` 标为已退役的历史解析路径：当前解析器和测试只输出同列键 `change_60d`；15 个保留文件按来源日期去重为 11 个交易日后均未见旧键，未重审当前字段语义或使用保留边界前样本。
+- 将 `ZHB-tdxstat::YYYYMMDD/float/int`、`ZHB-tdxstat2::YYYYMMDD/float` 与 `ZHB-tipinfo::YYYYMMDD` 六个精确身份从未知队列退出：它们是类型/格式占位符而非输出键；以 15 个保留期 raw、11 个经交易日历核实的来源数据日及逐目录审计清单为证，不扩展到其他来源的同名 token，也不改动真实未知列 `[17]`、`[18]`。
+- 将 `TDX(双命名源)::YYYYMMDD/float/str/byte/uint` 五个精确身份从未知队列退出：0x0010 来源表将它们用于日期格式或字段类型，解析器/测试未将其作为返回键；TDX 采集的逐源 `as_of_date` 未确认，因此本次未把 raw 样本用于裁决，也未扩展到其他来源的同名 token。
+- 将 `TDX-eltdx(适配层)::bool/float/int/str` 四个精确身份从未知队列退出：ELTDX 3.3.2 的具名返回模型和 dataclass 序列化契约不输出这些类型名作为字段键；静态扫描 135 个包/采集器 Python 文件未找到同名属性或字典键，未使用采集 raw，也未影响其他来源。
+- 定案 `TDX-eltdx(适配层)::updated_date_raw` 与 `::ipo_date_raw`：确认其为财务数据更新日期、上市日期的原始 YYYYMMDD 整数编码；它们不是来源 `as_of_date` 或采集目录数据日，不使用 raw 样本或创建跨源映射。
+- 依据 ELTDX v3.3.2 `SpecialLimitRecord` 和 0x0452 接口契约，分别确认 `limit_up_price`、`limit_down_price` 为涨停价和跌停价；拆分旧混合含义，单位仍留空，不使用无来源数据日样本或建立跨源映射。
+- 依据 ELTDX v3.3.2 `TradeTick` 契约确认七个上游模型字段；两个竞价量字段在成交明细中固定为 `None`，实际竞价量来自独立 `auctions.series`，`order_count` 不代表竞价未匹配量。当前项目采集器未调用 `trades` / `auctions`，本次不恢复路由或建立碰撞锚。
+- 扩展官方网页观测裁决，按 `infoCode`、标题、发布日期绑定 Eastmoney 研报记录；分别核验 `reports::author`、`reports::researcher`，仅对评级未变且官网显示“维持”的记录确认 `reports::lastEmRatingName`，并按整份采集样本的代码/名称一致性确认 `reports::emRatingCode` 是评级类别代码；不外推未见代码或完整 API 契约。
+- 为 `reports::sRatingCode` 增加机构内代码裁决：按官方研报详情页绑定原始评级文字，明确区分精确与近似匹配，并验证机构+代码口径；不创建跨机构代码表。
+- 增加官方页面观测裁决的 `confirm_existing` 模式：仅核实无属性冲突、尚未验证字段的既有定义，不改写规范名、含义或单位，并将确认操作纳入 parity。
+- 基于 ELTDX v3.3.2 7709/ShortlineIndicator 契约和 2026-11-09 的 80 条榜单样本，定案 `open_amount`、`seal_amount` 为元口径；限定 `seal_amount` 只表示当前买一金额，不等同涨停总封单。
+- 基于 ELTDX v3.3.2 字段/7709 契约和 2026-11-09 的 80 条榜单样本，定案 `volume_hand`（手）、`opening_rush`（%）与 `locked_amount`（元）来源内含义；拆分开盘抢筹与近 2 分钟金额、买一金额与量涨速的历史混淆，不新增跨源映射。
+- 按 ELTDX v3.3.2 KlineBar 契约及 400 条保留日 K 样本，来源内定案 14 条 ELTDX 路径的时间、毫厘价、成交量、指数宽度及差分含义；因注册表无法隔离对象路径，成交额与 raw 编码字段继续留在未知队列，未建立跨源映射。
+- 按 ELTDX v3.3.2 `0x054c/0x054b` 快照与分类行情契约，定案五个成交字段的来源内语义；明确单位为手/元的字段，`current_hand` 单位仍空缺，不登记跨源映射。
+- 按 ELTDX v3.3.2 `0x054b` 分类行情契约和 80 条当日记录，定案 10 个买卖一档及行情指标字段；验证涨跌幅公式逐条完全一致，未推断未公开单位或算法。
+- 按 ELTDX v3.3.2 短线指标契约和 320 个保留股票日样本，来源内定案 32 个竞价、统计、日期和状态字段；保留两项单日 ZHB 数值差异及 `open_volume_ratio` 的独立样本窗口限制，不新增跨源映射。
+- 核实并定案 11 个 CanonicalStockData ELTDX 短线投影字段及缓存映射，修正 `seal_amount` 注释为当前买一金额；保留 `opening_rush` 的方向与单位未知状态。
+- 依据 ELTDX v3.3.2 `0x052d` KlineBar 路径、通达信官方 OHLC 定义/元单位和三批 300 条保留日 K 样本，分别定案适配层 `open/high/low/close`；纠正旧合并释义和空单位，不建立跨源映射。
 - 基于 ELTDX 3.3.2 `FinanceRecord` 契约与 2026-11-05/06 各 20 条留存记录，定案 `updated_date`、`ipo_date`、`province_raw`、`industry_raw`、`record_hex` 五条适配层财务路径；明确更新日不等于公告日或报告期，不反推原始编号表，不建立跨源映射。
 - 基于 ELTDX 3.3.2 `finance_batch` 官方契约、2026-11-05/06 样本与三份 2026Q3 公告，确认 `eps_raw`、流通/总股本、总资产及归母净利润五条适配层路径的来源内含义与单位；未新增跨源映射。
+- 按 ELTDX v3.3.2 `0x0010 FinanceRecord` 契约，在 `TDX(双命名源)` 路径下定案 9 条财务原始/派生字段；五组原始数值交叉检查 320/320 完全一致，派生字段只按上游公式核验，不登记跨源映射。
 - 根据通达信 FINANCE(16) 官方定义和三只股票 H1/Q3 报表，定案 ELTDX `chang_qi_fu_zhai_raw_float` 为千元口径少数股东权益；记录 ELTDX v3.3.2 文档误标及亚千元差值，不更改仍有元数据冲突的原生 TDX 注册项。
 - 依据通达信官方内外盘定义、项目适配器路径和 278 组留存行情，确认 TDX `b_vol` / `s_vol` 的来源内语义与证券类型单位；仅归并其已验证的 `quote_full` 包装别名，不建立 Tencent / 东财单侧映射。
 - 基于 2026-11-02 至 2026-11-06 保留的东财 Ulist / clist 同日响应及官方板块页标签，补齐 clist `f128/f140/f136` 与 Ulist `f101/f146` 的来源内语义；按完整来源路径收敛状态，保留 Ulist `f145` 未决。
 - Add an audited official-page observation path for source-only field semantics, with retained-sample checks, provider-host validation, exact evidence snapshots, and no cross-source mappings.
+- 官方页面观测裁决新增显式原始单位到页面单位换算因子，允许按展示刻度核验合法的金额单位换算，并由证据行与 registry parity 完整留痕。
+- 根据 2026-11-02 至 11-09 保留样本修正 Ulist f97-f99 的旧“恒空/恒0”概述；f98 的 DDX 滚动计数关系保留为未定案线索。
 - 基于东财个股页面与三只股票 2026-11-06 同日采集值，定案 Push2 `f137–f141` 的主力净流入、超大单流入/流出/净额及大单流入；154/154 个历史样本验证 `f137 = f140 + f143`。允许来源聚合造成、且无属性冲突的 status-conflict 在证据满足时安全收敛；未新增跨源映射。
 
 - 按通达信官方 `get_market_snapshot_batch` 字段表，定案 21 个基础行情字段的源内语义；单位未由文档说明的字段继续标为未注明，不推断项目采集路径或跨源映射。
 - 按通达信官方五档盘口契约与项目适配器档位映射，定案 TDX 买二至买五价、卖二至卖五价的来源内含义；单位保留未注明，并明确当前 ELTDX 主路径只提供买一/卖一，不新增跨源映射。
 - 将源契约定案纳入独立 registry parity：重放决策并核对注册表证据，应用器同步新增来源字段到 field_matrix，幂等重放也会写入实际缺失的投影。
 - 按通达信官方 `get_more_info_batch` 字段表定案 77 个已登记扩展字段的来源内语义，并更正 11 个既有日期字段的接口归属；核实 ZHB `[25]` 为合同负债（万元）、`[34]` 为其他权益工具（万元），只更正解释元数据，不改变解析值或缓存行为。
+- 将 ZHB-tipinfo 原始列 `[11]`、`[21]` 的已验证语义显式暴露为 `forecast_date_recent`、`equity_incentive_date`；15 个保留包共 84,815 行逐行比对零差异，核验通达信字段说明及官方公开样本，不新增跨源映射。
 - 将通达信、同花顺、东方财富、新浪、开盘啦、开盘红等来源的官方站点核验纳入每日采集与碰撞后的字段研究流程；明确按实际提供方、完整来源路径留证，第三方页面只作有标注的次级佐证，并保留现有定案门槛。
 - Ulist 原始证据采集额外请求 `f297`，用于核验其与采集文件日期、交易日的关系；该字段保持调查状态，不进入业务路由、报告日期或缓存键。
 - 登记 AxData 257 个接口的 3,343 个输出字段及当前字典候选；按安装版 0.1.4 实现与保留样本，扩展 KPH/KPL 涨停字段对照并完成 6 项字段语义定案。
@@ -35,6 +65,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正东财日 K 字段注册范围：`东财-em_kline_f61` 仅从自身 `fields2` 字段表读取 `f51`–`f61`，移除被说明文字误带入的实时行情 `f43`、`f85`、`f168` 来源配对；详见[范围审计](docs/field_verification/20261111_eastmoney_kline_registry_scope_audit.md)。
+- 修正来源契约对跨接口短代码冲突的处理：仅当精确来源参考和证据全部 verified、无属性冲突且来源路径确属多来源聚合时，才允许核验目标 `(source, code)`；聚合冲突和其他接口状态继续保留。以东方财富日 K `f59` 的 140 个留存样本复算作证，不创建跨源映射。
+
+- 修正碰撞目录发现：日期目录必须含 `meta.json` 或顶层 `raw_*.json` 才算采集日；仅存碰撞报告的日期目录会跳过并提示缺日，避免报告输出目录冒充采集数据。
+- 更正对撞等级说明：L1/L1-U 明确为数值候选而非字典定案，L2 来源契约与 L3 覆盖不足改按独立证据流程处理；将 L4 合并精确命中率 40% 门槛集中到 `collision_rules.py` 并与运行逻辑共用，移除“8~17 个命中数”误述。
+- 按 ELTDX v3.3.2 `0x000f` category 1 契约更正 TDX 分红/送转/配股源值单位；归一化主用 ELTDX 适配器的每10股数值为每股值，修复报告分红额与股息率放大10倍的问题，并将缓存分类升至 `dividend_tdx_v3`。
 - 将 TDX `updated_date` 注释纠正为财务数据更新日期；股东人数回退现在接受 `YYYY-MM-DD` 与 `YYYYMMDD` 两种有效日期格式，并拒绝无效日期写入，保持 SQLite key、TTL 与记录字段不变。
 - 修正源契约 parity 对历史基线已有、但适配层来源名新进入字段矩阵的已验证字段漏补投影问题；原生来源路径计数保持不变。
 - 修正 TDX `quote_full.bid1_vol/ask1_vol/b_vol/s_vol` 未归一到已验证基础路径、重复进入破解目标的问题；保留其他 `quote_full` 注册路径与派生字段身份。

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "evidence_file": "adjudications/public_web/20261110_public_web_research.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "20261110-ulist239-f45",
+      "action": "verify_public_web_observation",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f45"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "f45",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "latest_report_parent_net_profit_ytd",
+      "meaning": "最新已披露定期报告中归属于上市公司股东的净利润，按年初至报告期末累计。",
+      "unit": "元",
+      "rationale": "同一原始数据日的三只股票均与东方财富官方个股页面的2026年三季报归属净利润标签逐值相符。原始单位为元，按1元=0.00000001亿元转换后，差值均不超过页面显示刻度的一半；三份上市公司正式三季报进一步确认原值为年初至报告期末累计、归属于上市公司股东的净利润。裁决只确认东财-ulist239(np/get)::f45的来源内语义，不登记与其他来源或接口的映射。",
+      "external_evidence": [
+        "https://data.eastmoney.com/stockcalendar/600519.html",
+        "https://data.eastmoney.com/stockcalendar/601288.html",
+        "https://data.eastmoney.com/stockcalendar/000568.html"
+      ],
+      "page_observations": [
+        {
+          "stock_code": "600519",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_ulist239.json",
+          "raw_value": 64467425981.95,
+          "display_value": "644.7",
+          "display_increment": "0.1",
+          "display_unit": "亿元",
+          "raw_to_display_factor": "0.00000001",
+          "page_url": "https://data.eastmoney.com/stockcalendar/600519.html",
+          "page_metric": "2026年三季报归属净利润",
+          "display_text": "2026年三季报归属净利润644.7亿元",
+          "missing_as_zero": false
+        },
+        {
+          "stock_code": "601288",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_ulist239.json",
+          "raw_value": 236546000000.0,
+          "display_value": "2365",
+          "display_increment": "1",
+          "display_unit": "亿元",
+          "raw_to_display_factor": "0.00000001",
+          "page_url": "https://data.eastmoney.com/stockcalendar/601288.html",
+          "page_metric": "2026年三季报归属净利润",
+          "display_text": "2026年三季报归属净利润2365亿元",
+          "missing_as_zero": false
+        },
+        {
+          "stock_code": "000568",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_ulist239.json",
+          "raw_value": 5671059241.53,
+          "display_value": "56.71",
+          "display_increment": "0.01",
+          "display_unit": "亿元",
+          "raw_to_display_factor": "0.00000001",
+          "page_url": "https://data.eastmoney.com/stockcalendar/000568.html",
+          "page_metric": "2026年三季报归属净利润",
+          "display_text": "2026年三季报归属净利润56.71亿元",
+          "missing_as_zero": false
+        }
+      ]
+    }
+  ]
+}

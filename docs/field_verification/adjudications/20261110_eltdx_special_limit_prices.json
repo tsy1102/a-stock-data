@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-eltdx-limit-up-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_up_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "limit_up_price / limit_down_price",
+        "meaning": "涨停价 / 跌停价",
+        "unit": ""
+      },
+      "canonical": "limit_up_price",
+      "meaning": "涨停价",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {
+        "before": "aggregate_status_scope_unresolved",
+        "after": "verified_by_source_contract"
+      },
+      "metadata_change": {
+        "before": {
+          "canonical": "limit_up_price / limit_down_price",
+          "meaning": "涨停价 / 跌停价",
+          "unit": ""
+        },
+        "after": {
+          "canonical": "limit_up_price",
+          "meaning": "涨停价",
+          "unit": ""
+        }
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "limit_up_price / limit_down_price",
+          "meaning": "涨停价 / 跌停价",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "limit_up_price",
+          "meaning": "涨停价",
+          "unit": ""
+        },
+        "rationale": "旧注册表将两个不同 source path 的候选释义合并在同一斜线文本中；ELTDX v3.3.2 的 SpecialLimitRecord 契约按独立属性区分涨停价与跌停价，需拆回当前精确路径。"
+      },
+      "rationale": "ELTDX v3.3.2 的 FIELD_REFERENCE 将 SpecialLimitRecord.limit_up_price 定义为涨停价；METHOD_REFERENCE 将 client.limits.special / scan_special 列为 0x0452 特殊品种涨跌停限制表接口。固定版本模型也将该属性定义为 upper_price_raw_f32 的读取属性。上游文档未声明单位，故单位留空。本裁决只确认来源内语义，不使用未核实来源日期的采集值，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 SpecialLimitRecord and limits API documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.limits.special(...) / client.limits.scan_special(...) -> SpecialLimitRecord.limit_up_price -> upper_price_raw_f32",
+        "locator": "FIELD_REFERENCE.md §SpecialLimitRecord; METHOD_REFERENCE.md §特殊品种涨跌停限制 (0x0452)",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-limit-down-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_down_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "limit_up_price / limit_down_price",
+        "meaning": "涨停价 / 跌停价",
+        "unit": ""
+      },
+      "canonical": "limit_down_price",
+      "meaning": "跌停价",
+      "unit": "",
+      "status": "verified",
+      "status_resolution_change": {
+        "before": "aggregate_status_scope_unresolved",
+        "after": "verified_by_source_contract"
+      },
+      "metadata_change": {
+        "before": {
+          "canonical": "limit_up_price / limit_down_price",
+          "meaning": "涨停价 / 跌停价",
+          "unit": ""
+        },
+        "after": {
+          "canonical": "limit_down_price",
+          "meaning": "跌停价",
+          "unit": ""
+        }
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "limit_up_price / limit_down_price",
+          "meaning": "涨停价 / 跌停价",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "limit_down_price",
+          "meaning": "跌停价",
+          "unit": ""
+        },
+        "rationale": "旧注册表将两个不同 source path 的候选释义合并在同一斜线文本中；ELTDX v3.3.2 的 SpecialLimitRecord 契约按独立属性区分涨停价与跌停价，需拆回当前精确路径。"
+      },
+      "rationale": "ELTDX v3.3.2 的 FIELD_REFERENCE 将 SpecialLimitRecord.limit_down_price 定义为跌停价；METHOD_REFERENCE 将 client.limits.special / scan_special 列为 0x0452 特殊品种涨跌停限制表接口。固定版本模型也将该属性定义为 lower_price_raw_f32 的读取属性。上游文档未声明单位，故单位留空。本裁决只确认来源内语义，不使用未核实来源日期的采集值，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 SpecialLimitRecord and limits API documentation",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "path": "client.limits.special(...) / client.limits.scan_special(...) -> SpecialLimitRecord.limit_down_price -> lower_price_raw_f32",
+        "locator": "FIELD_REFERENCE.md §SpecialLimitRecord; METHOD_REFERENCE.md §特殊品种涨跌停限制 (0x0452)",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    }
+  ]
+}

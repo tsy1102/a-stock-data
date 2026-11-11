@@ -32,16 +32,16 @@ def test_eltdx_quote_adapter_preserves_all_five_book_prices_and_volumes():
         assert row[f"ask{level}_vol"] == sell_levels[level - 1].volume
 
 
-def test_eltdx_xdxr_maps_capital_changes_to_mootdx_columns():
+def test_eltdx_xdxr_normalizes_per_ten_values_to_mootdx_columns():
     calls = []
     records = [
         SimpleNamespace(
             date="2026-10-30",
             category=1,
-            c1_value=0.5,
+            c1_value=5.0,
             c2_value=12.0,
-            c3_value=2.0,
-            c4_value=1.0,
+            c3_value=20.0,
+            c4_value=10.0,
         ),
         SimpleNamespace(date="2026-10-31", category=5, c1_value=0, c2_value=0),
     ]
@@ -66,10 +66,10 @@ def test_tdx_dividend_history_uses_eltdx_mapping_and_throttle(monkeypatch):
     record = SimpleNamespace(
         date="2026-10-30",
         category=1,
-        c1_value=0.5,
+        c1_value=5.0,
         c2_value=12.0,
-        c3_value=2.0,
-        c4_value=1.0,
+        c3_value=20.0,
+        c4_value=10.0,
     )
     corporate = SimpleNamespace(
         capital_changes=lambda code, *, include_raw: SimpleNamespace(records=[record])

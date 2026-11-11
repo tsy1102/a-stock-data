@@ -968,10 +968,33 @@ CANON_ALIASES = _build_canon_aliases()
 # ---------------------------------------------------------------------------
 # REG（兼容解析器；常规审计优先读取 registry.source_fields）
 # ---------------------------------------------------------------------------
+def _eastmoney_kline_field_tokens(text):
+    """Read only the K-line endpoint's own fields2 schema table."""
+    lines = text.splitlines()
+    tokens = set()
+    for index, line in enumerate(lines):
+        if "|" not in line:
+            continue
+        header = [
+            cell.strip().strip("`* ").casefold() for cell in line.strip().strip("|").split("|")
+        ]
+        if not header or header[0] != "fields2 列":
+            continue
+        for row in lines[index + 1 :]:
+            if "|" not in row:
+                break
+            cells = [cell.strip().strip("`* ") for cell in row.strip().strip("|").split("|")]
+            if cells and re.fullmatch(r"f\d+", cells[0]):
+                tokens.add(cells[0])
+    return tokens
+
+
 def reg_tokens_for_section(src, text):
     toks = set()
     if src == "开盘啦(kpl)":
         return _kpl_field_tokens(text)
+    if src == "东财-em_kline_f61":
+        return _eastmoney_kline_field_tokens(text)
     # 沪深交易所(§12.8.17): 官方龙虎榜端点为 pinyin+CamelCase 混合命名, 通用 snake_case
     # 抽取会把端点散文(szse/sse/com/api/market/snap/ann/anotice/dragon_tiger_backup/...)当字段
     # 登记 → 污染 registry 核心资产。显式白名单仅取 §12.8.17 字段表登记的真实源字段
@@ -983,7 +1006,6 @@ def reg_tokens_for_section(src, text):
         "东财-ulist239(np/get)",
         "AxData",
         "东财-资金流(em_fund_flow)",
-        "东财-em_kline_f61",
         "东财-slist",
         "东财-clist",
     ):

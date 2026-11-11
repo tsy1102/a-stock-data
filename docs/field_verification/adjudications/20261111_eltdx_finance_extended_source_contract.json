@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eltdx-li-run-zong-he-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "li_run_zong_he_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "li_run_zong_he_raw_float",
+      "meaning": "利润总额原始值；样本对应报告期累计值",
+      "unit": "千元",
+      "rationale": "先按拼音保留‘利润总和/利润合计’候选，再以 ELTDX v3.3.2 FinanceRecord 字段表核实为利润总额，金额单位为千元。2026-11-10 raw 的 updated_date 与所核报表均对应 2026Q3 报告数据：600519 为 89,017,664 千元，对照贵州茅台合并利润表 89,017,661,971.63 元；600309 为 21,389,450 千元，对照万华 21,389,451,060.26 元；920508 为 -922.600036 千元，对照殷图网联合并利润表 -922,643.10 元。差值分别约 +2,028.37、-1,060.26、+43.06 元，按上游浮点精度保留，不称作精确相等。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。只确认 TDX-eltdx 此路径，不建立其他来源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 li_run_zong_he_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-shui-hou-li-run-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "shui_hou_li_run_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "shui_hou_li_run_raw_float",
+      "meaning": "税后利润原始值；保留样本对应合并利润表的净利润行",
+      "unit": "千元",
+      "rationale": "拼音先给出‘税后利润’候选；ELTDX v3.3.2 字段表也明确标为税后利润、单位千元。2026-11-10 raw 与 2026Q3 报表合并利润表净利润行在上游精度内对应：600519 raw 66,717,144 千元、报告 66,717,143,218.04 元；600309 raw 17,714,176 千元、报告 17,714,176,455.40 元；920508 raw -927.600036 千元、报告 -927,639.62 元。差值约 +781.96、-455.40、+39.58 元；这里只说明样本对应关系，不把所有期间和公司的合并/母公司口径一概外推。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 shui_hou_li_run_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-wei-fen-li-run-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "wei_fen_li_run_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "wei_fen_li_run_raw_float",
+      "meaning": "未分配利润期末余额",
+      "unit": "千元",
+      "rationale": "按拼音拆分为‘未分配利润’候选；ELTDX v3.3.2 字段表写作‘未分利润’，单位千元。2026-11-10 raw 与 2026Q3 资产负债表期末未分配利润对应：600309 raw 106,767,888 千元，对照万华 106,767,885,079.19 元；000568 raw 38,611,996 千元，对照泸州老窖 38,611,993,869.65 元；601288 raw 1,370,115,072 千元，对照农行报告 13,701.15 亿元（该段按百万元/亿元展示）。该项是资产负债表余额，不是报告期流量；原始精度和公告展示精度差异均保留。报告：https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225639079.PDF；https://static.cninfo.com.cn/finalpage/2026-10-31/1225649460.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 wei_fen_li_run_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-ying-shou-zhang-kuan-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "ying_shou_zhang_kuan_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "ying_shou_zhang_kuan_raw_float",
+      "meaning": "应收账款期末余额",
+      "unit": "千元",
+      "rationale": "拼音候选为‘应收账款’，ELTDX v3.3.2 字段表直接确认该字段及千元单位。2026-11-10 raw 对照 2026Q3 资产负债表：600309 raw 18,286,628 千元、万华报告 18,286,628,470.03 元；000568 raw 32,425.199 千元、泸州老窖报告 32,425,289.30 元；920508 raw 26,271.599609 千元、殷图网联母公司报表 26,271,679.69 元。分别相差约 -470.03、-90.08、-80.08 元。殷图该值匹配母公司报表，记录中不把该范围外推到其他公司的合并/母公司口径；不把近似值写成精确相等。报告：https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225639079.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 ying_shou_zhang_kuan_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-cun-huo-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "cun_huo_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "cun_huo_raw_float",
+      "meaning": "存货期末余额",
+      "unit": "千元",
+      "rationale": "拼音候选‘存货’与 ELTDX v3.3.2 字段表定义一致，单位为千元。2026-11-10 raw 对照 2026Q3 资产负债表期末值：600309 raw 33,527,662 千元、万华报告 33,527,663,132.86 元；000568 raw 15,679,404 千元、泸州老窖报告 15,679,403,351.42 元；920508 raw 21,131.699219 千元、殷图网联母公司报表 21,131,792.18 元。分别相差约 -1,132.86、+648.58、-92.96 元。殷图的对照明确取母公司表，其他样本不据此推断报表范围；保留单位换算与 float 精度，不称作精确匹配。报告：https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225639079.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 cun_huo_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-tou-zi-shou-yu-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "tou_zi_shou_yu_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "tou_zi_shou_yu_raw_float",
+      "meaning": "投资收益；样本值对应报告期累计金额",
+      "unit": "千元",
+      "rationale": "先由拼音得到‘投资收益’候选；ELTDX v3.3.2 字段表明确该含义、单位千元。2026-11-10 raw 与 2026Q3 利润表同名行相符：600519 raw 230.899994 千元、报告 230,947.61 元；600309 raw 787,728 千元、报告 787,727,962.47 元；920508 raw 353.300018 千元、报告 353,345.33 元。三个差值约 -47.62、+37.53、-45.31 元，均小于各自原始值步进/精度所能支持的分辨率；视为近似数值佐证，绝不记为精确命中。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 tou_zi_shou_yu_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-mei-gu-jing-zi-chan-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "mei_gu_jing_zi_chan_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "mei_gu_jing_zi_chan_raw_float",
+      "meaning": "每股净资产",
+      "unit": "元/股",
+      "rationale": "拼音逐词候选为‘每股净资产’，ELTDX v3.3.2 字段表将此路径定义为每股净资产、数值单位为元。留存 raw 与发行人 2026Q3 归母权益/股本计算相符：600519 raw 216.949997；按报告归母权益 271,204,740,541.63 元除以股本 1,250,081,601 股，结果约 216.94963 元/股，按报告显示精度为 216.95；920508 raw 3.1889999；按归母权益 191,324,142.79 元除以 60,000,000 股，结果约 3.188736 元/股，按三位小数为 3.189。对照只验证这些样本，不扩展为跨源映射或所有发行人的计算约定。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-30/1225649649.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 mei_gu_jing_zi_chan_raw_float 与‘单位口径’每股类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-bao-liu-2-reserved-slot-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "bao_liu_2_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "bao_liu_2_raw_float",
+      "meaning": "上游保留字段 2；未公开业务语义",
+      "unit": "",
+      "rationale": "名称候选为‘保留字段 2’；ELTDX v3.3.2 FinanceRecord 字段表明确标为保留字段 2，未提供单位或业务解释。2026-11-10 的 20 条保留样本值均为 9.0，这只佐证其当前为固定占位值；不把 9.0 解释为业务数据，也不继续猜测未公开语义。此裁决确认的是保留槽位身份，不是业务指标含义。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "财务基础信息文档‘解析字段’行 bao_liu_2_raw_float（保留字段 2）",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，项目固定版本；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    }
+  ]
+}

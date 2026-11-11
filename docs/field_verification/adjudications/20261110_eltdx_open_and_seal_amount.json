@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "id": "20261110-eltdx-open-amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_amount",
+      "meaning": "开盘金额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 的 0x054b CategoryQuoteRecord 将 open_amount 定义为开盘金额，单位元。2026-11-09 保留样本的 realtime_rank 80/80 行均含 raw.open_amount，且逐行等于 raw.open_amount_raw × 100。仅确认 TDX-eltdx 的 CategoryQuoteRecord.open_amount；不把它与其他模型中的 open_amount_yuan 登记为同源别名，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 0x054b 分类行情字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本），核验于 2026-11-10",
+        "path": "0x054b CategoryQuoteRecord.open_amount",
+        "locator": "7709-分类行情 §解析字段：open_amount_raw / open_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-seal-amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "seal_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "seal_amount",
+      "meaning": "当前买一档挂单金额；不代表涨停总封单金额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md 将 ShortlineIndicator.seal_amount 定义为当前买一金额，单位元；字段说明指出它是当前买一价乘买一量。2026-11-09 保留样本的 realtime_rank 80/80 行均有 seal_amount，且逐行等于 raw.bid1 × raw.bid_vol1 × 100。该字段描述买一档挂单值，不能单独证明证券处于涨停封板状态；只确认本来源语义和单位，不创建与其他来源的映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator Helper 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本），核验于 2026-11-10",
+        "path": "ShortlineIndicator.seal_amount",
+        "locator": "FIELD_REFERENCE.md §ShortlineIndicator：seal_amount 的定义与单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

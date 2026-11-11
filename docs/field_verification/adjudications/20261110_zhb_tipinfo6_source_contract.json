@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-zhb-tipinfo-6-top-date-recent-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "[6]"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "[6]",
+        "meaning": "阶段新高日 = 官方 TopDate_Recent（\"Top\"=顶部/新高, 旧标\"最近除息日\"为音近误读, 已证伪）",
+        "unit": ""
+      },
+      "canonical": "[6]",
+      "meaning": "近 2 年最近龙虎榜日期（通达信 TopDate_Recent）",
+      "unit": "",
+      "rationale": "原释义把 TopDate_Recent 中的 Top 按价格高点解释。通达信量化平台官方 get_more_info_batch 字段表明确将 TopDate_Recent 定义为近 2 年最近龙虎榜日期。保留的 zhb_20261109.zip 中 tipinfo.dat 原始列 [6]，对 000568、000678、600825 的值分别为 20261030、20261106、20261019，均与东方财富官方个股龙虎榜页当前列出的最近上榜日期一致。该证据支持把原始列 [6] 的语义更正为最近龙虎榜日期；字段路径和 verified 状态不变，不新增跨源 mappings。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "[6]",
+          "meaning": "阶段新高日 = 官方 TopDate_Recent（\"Top\"=顶部/新高, 旧标\"最近除息日\"为音近误读, 已证伪）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "[6]",
+          "meaning": "近 2 年最近龙虎榜日期（通达信 TopDate_Recent）",
+          "unit": ""
+        },
+        "rationale": "按通达信官方字段定义纠正 TopDate_Recent 的旧释义；留存 ZHB 原始列值与三只股票东方财富官方龙虎榜页面的最新日期逐项吻合。日期字段没有计量单位，原空单位保留。"
+      },
+      "source_contract": {
+        "authority": "通达信量化平台官方 get_more_info_batch 字段文档；东方财富官方龙虎榜页作值级佐证",
+        "revision": "通达信官方在线文档于 2026-11-10 核验，页面未标注版本号",
+        "path": "ZHB tipinfo.dat 原始列 [6]；对应通达信 get_more_info_batch 字段 TopDate_Recent",
+        "locator": "官方字段表 TopDate_Recent：近 2 年最近龙虎榜日期",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      },
+      "evidence_file": "docs/field_verification/adjudications/20261110_zhb_tipinfo6_source_contract.md"
+    }
+  ]
+}

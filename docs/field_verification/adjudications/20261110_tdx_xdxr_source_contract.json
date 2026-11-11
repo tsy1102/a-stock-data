@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-tdx-xdxr-fenhong-per-ten-shares",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "fenhong"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "每股现金分红（XDXR category=1）",
+        "unit": "元/股"
+      },
+      "canonical": "fenhong",
+      "meaning": "XDXR category=1 现金分红金额（每10股）",
+      "unit": "元/10股",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md §CapitalChangeRecord 明确说明 category=1 的 c1_value 是每10股现金分红。项目 core.eltdx_adapter 将 c1_value 映射到 fenhong。两条交易所公告与实时 TDX 样本交叉核对：600519 的 2026-06-26 fenhong=280.2423095703125，四舍五入为每10股 280.2423 元，与贵州茅台公告的每股 28.02423 元相符；000858 的 2026-07-16 fenhong=25.796852111816406，与深交所公告的每10股 25.796852 元相符。该结论确认 TDX 来源字段单位，不表示登记跨源字段映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "每股现金分红（XDXR category=1）",
+          "unit": "元/股"
+        },
+        "updated": {
+          "canonical": "fenhong",
+          "meaning": "XDXR category=1 现金分红金额（每10股）",
+          "unit": "元/10股"
+        },
+        "rationale": "原注册项将 TDX 协议源值误记为每股金额。上游字段契约及两个交易所除权日样本均证明源值按每10股计；canonical 仅保留原路径标识，不登记跨源映射。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 CapitalChangeRecord 字段参考",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.capital_changes(codes, include_raw=False)，TDX 0x000f，CapitalChangeRecord(category=1)",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：标签1四个业务值的顺序和单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-xdxr-peigujia-per-share",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "peigujia"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "配股价（XDXR category=1）",
+        "unit": "元/股"
+      },
+      "canonical": "peigujia",
+      "meaning": "XDXR category=1 配股价格",
+      "unit": "元/股",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md §CapitalChangeRecord 明确说明 category=1 四个 c*_value 中第二项是配股价格；项目 core.eltdx_adapter 将 c2_value 映射到 peigu_price。该来源契约足以确认字段和单位；本轮公开样本没有找到非零配股价，因此不声称完成逐记录样本对撞，也不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "配股价（XDXR category=1）",
+          "unit": "元/股"
+        },
+        "updated": {
+          "canonical": "peigujia",
+          "meaning": "XDXR category=1 配股价格",
+          "unit": "元/股"
+        },
+        "rationale": "上游明确给出 category=1 第二业务值是配股价，保留该源内协议名为 canonical，并同步 registry 中准确的协议路径语义。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 CapitalChangeRecord 字段参考",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.capital_changes(codes, include_raw=False)，TDX 0x000f，CapitalChangeRecord(category=1)",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：标签1四个业务值的顺序和单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-xdxr-songzhuangu-per-ten-shares",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "songzhuangu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "每股送转股比例（XDXR category=1）",
+        "unit": "股/股"
+      },
+      "canonical": "songzhuangu",
+      "meaning": "XDXR category=1 送转股数量（每10股）",
+      "unit": "股/10股",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md §CapitalChangeRecord 明确说明 category=1 第三项是每10股送转数量，数量单位为股；项目 core.eltdx_adapter 将 c3_value 映射到 songzhuangu。上游字段契约确认源路径和单位；本轮未取得非零送转样本，不声称逐记录样本对撞，也不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "每股送转股比例（XDXR category=1）",
+          "unit": "股/股"
+        },
+        "updated": {
+          "canonical": "songzhuangu",
+          "meaning": "XDXR category=1 送转股数量（每10股）",
+          "unit": "股/10股"
+        },
+        "rationale": "原注册项把协议中的每10股数量写成每股比例。上游 category=1 字段参考明确指定数量口径，适配器归一化后的每股比例属于下游值，不改变本源字段单位。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 CapitalChangeRecord 字段参考",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.capital_changes(codes, include_raw=False)，TDX 0x000f，CapitalChangeRecord(category=1)",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：标签1四个业务值的顺序和单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-xdxr-peigu-per-ten-shares",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "peigu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "每股配股比例（XDXR category=1）",
+        "unit": "股/股"
+      },
+      "canonical": "peigu",
+      "meaning": "XDXR category=1 配股数量（每10股）",
+      "unit": "股/10股",
+      "rationale": "ELTDX v3.3.2 FIELD_REFERENCE.md §CapitalChangeRecord 明确说明 category=1 第四项是每10股配股数量，数量单位为股；项目 core.eltdx_adapter 将 c4_value 映射到 peigu。上游字段契约确认源路径和单位；本轮未取得非零配股数量样本，不声称逐记录样本对撞，也不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "每股配股比例（XDXR category=1）",
+          "unit": "股/股"
+        },
+        "updated": {
+          "canonical": "peigu",
+          "meaning": "XDXR category=1 配股数量（每10股）",
+          "unit": "股/10股"
+        },
+        "rationale": "原注册项把协议中的每10股数量写成每股比例。上游 category=1 字段参考明确指定数量口径，适配器归一化后的每股比例属于下游值，不改变本源字段单位。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 CapitalChangeRecord 字段参考",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.capital_changes(codes, include_raw=False)，TDX 0x000f，CapitalChangeRecord(category=1)",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：标签1四个业务值的顺序和单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

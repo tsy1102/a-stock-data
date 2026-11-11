@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eltdx-b-gu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "b_gu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "b_gu_raw_float",
+      "meaning": "B 股原始股数（来源原始单位为万股）",
+      "unit": "万股",
+      "rationale": "先按名称拆解候选：b_gu 表示 B 股，raw_float 只说明原始浮点表示。ELTDX v3.3.2 FinanceRecord 的 0x0010 文档直接定义 b_gu_raw_float 为 B 股原始值、单位万股。2026-11-10 留存样本中 000011（深物业A，存在对应 B 股代码 200011）的 source updated_date 为 2026-10-30，raw 为 6760.52001953125 万股；发行人 2026-06-30 报告列示境内上市外资股 67,605,243 股（折合 6760.5243 万股），差约 43 股。数值相近仅作交叉佐证；采集记录与报告日期不同，且报告差额不用于覆盖名称或来源契约。仅确认 TDX-eltdx 此路径，不建立其他来源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由发行人股份结构报告交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 b_gu_raw_float 与‘单位口径’股本类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-h-gu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "h_gu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "h_gu_raw_float",
+      "meaning": "H 股原始股数（来源原始单位为万股）",
+      "unit": "万股",
+      "rationale": "先按名称拆解候选：h_gu 表示 H 股，raw_float 只说明原始浮点表示。ELTDX v3.3.2 FinanceRecord 的 0x0010 文档直接定义 h_gu_raw_float 为 H 股原始值、单位万股。2026-11-10 留存样本中 601288 的 source updated_date 为 2026-10-31，raw 为 3073882.25 万股；农业银行截至 2026-10-31 的 H 股月报列示已发行 H 股 30,738,823,096 股，差 596 股。金额按万股换算后处于 f32 在该量级的量化精度范围内；这是近似值边界说明，不是精确相等，也不改变名称候选。仅确认 TDX-eltdx 此路径，不建立其他来源映射。发行人官网公告目录：https://www.abchina.com.cn/zt/AboutABC/investor_relations/announcements/h-announcement/；可检索的公告文本副本：https://www.cfi.net.cn/p20261105001430.html。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由农业银行 H 股月报交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 h_gu_raw_float 与‘单位口径’股本类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-finance-info-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "finance_info_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "finance_info_raw",
+      "meaning": "0x0010 财务基础信息记录的原始主体；解码后为 136 字节，JSON 中以十六进制字符串保存",
+      "unit": "十六进制字符串（解码后 136 字节）",
+      "rationale": "先按英文词项拆解候选：finance_info_raw 是财务信息原始数据块，不是独立业务指标。ELTDX v3.3.2 财务基础信息文档将 FinanceRecord.finance_info_raw 定义为 136 字节财务主体；Rust 协议模型声明该字段为 Bytes，并将完整 143 字节记录中的 [7..143] 作为 136 字节主体。项目 collect_eltdx 的 JSON 转换对 bytes 调用 hex()。对 2026-11-10 留存样本逐条解码，20/20 条均为 272 个十六进制字符（136 字节），且 record_hex 解码后均满足 record_hex[7:] == finance_info_raw。该证据确认不透明原始载荷的长度与序列化边界，不推断 136 字节内部任何业务槽位语义。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 模型、0x0010 协议解析器及项目 JSON 序列化路径",
+        "locator": "7709 财务基础信息文档‘解析字段’finance_info_raw；corporate.rs FINANCE_RECORD_SIZE、FINANCE_INFO_SIZE 与 parse_finance_record 的 info 切片",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> _jfy(bytes).hex() -> raw_eltdx.json stocks.<code>.finance_batch[0].finance_info_raw",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    }
+  ]
+}

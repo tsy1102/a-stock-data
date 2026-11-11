@@ -11,12 +11,13 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
   - 北交所代码统一使用 bj 前缀(尤其 92xxxx)；快照与短线指标按代码池请求，避免错误市场码。
   - 主站固定: pin 白名单 FULL 主机 + probe_hosts=False，避免冷连接全量探测（~6min）。
   - F10 二进制分类(0x02CF/0x02D0) eltdx 无等价实现 → F10C/F10 返回空，F10 函数走东财 fallback。
-  - xdxr(分红除权) eltdx capital_changes 映射待补 → 返回空 DataFrame，分红历史走其他源。
+  - xdxr category=1 的分红、送转、配股协议值按每10股计；适配器归一化为每股，兼容 easy_tdx 和报告层。
 """
 
 from __future__ import annotations
 
 from dataclasses import asdict, is_dataclass
+import math
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from stock_common import _debug_log
@@ -53,6 +54,15 @@ def _json_friendly(value: Any) -> Any:
     if isinstance(value, (str, int, float, bool)) or value is None:
         return value
     return str(value)
+
+
+def _per_ten_to_per_share(value: Any) -> float:
+    """Convert a TDX category-1 per-10-share value to a finite per-share value."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return 0.0
+    return number / 10.0 if math.isfinite(number) else 0.0
 
 
 def _normalize_eltdx_code(code: str) -> str:
@@ -222,10 +232,16 @@ class _EltdxAdapter:
             if category == 1:
                 row.update(
                     {
-                        "fenhong": getattr(record, "c1_value", getattr(record, "c1", 0)),
+                        "fenhong": _per_ten_to_per_share(
+                            getattr(record, "c1_value", getattr(record, "c1", 0))
+                        ),
                         "peigu_price": getattr(record, "c2_value", getattr(record, "c2", 0)),
-                        "songzhuangu": getattr(record, "c3_value", getattr(record, "c3", 0)),
-                        "peigu": getattr(record, "c4_value", getattr(record, "c4", 0)),
+                        "songzhuangu": _per_ten_to_per_share(
+                            getattr(record, "c3_value", getattr(record, "c3", 0))
+                        ),
+                        "peigu": _per_ten_to_per_share(
+                            getattr(record, "c4_value", getattr(record, "c4", 0))
+                        ),
                     }
                 )
             rows.append(row)

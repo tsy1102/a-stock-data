@@ -136,7 +136,7 @@ def _validate_source_contract(value: Any, label: str) -> dict[str, str]:
 
 
 def _is_registry_aggregate_status_conflict(record: dict[str, Any]) -> bool:
-    """Identify a status-only conflict caused by the aggregate registry projection."""
+    """Identify conflicts that source-scoped evidence can resolve without mapping codes."""
     evidence = record.get("status_evidence")
     if not isinstance(evidence, dict):
         return False
@@ -150,12 +150,11 @@ def _is_registry_aggregate_status_conflict(record: dict[str, Any]) -> bool:
         return False
     if not isinstance(values, list) or any(not isinstance(status, str) for status in values):
         return False
-    if set(values) != {"verified", "unverified"}:
-        return False
-    if evidence.get("registry_aggregate_status") != "unverified":
-        return False
     attribute_conflicts = record.get("attribute_conflicts")
     if attribute_conflicts not in (None, {}, []):
+        return False
+    attribute_ambiguities = record.get("attribute_ambiguities")
+    if attribute_ambiguities not in (None, {}, []):
         return False
     reference_evidence = record.get("reference_evidence")
     if not isinstance(reference_evidence, list) or not reference_evidence:
@@ -168,7 +167,37 @@ def _is_registry_aggregate_status_conflict(record: dict[str, Any]) -> bool:
         if not isinstance(status, str) or not status:
             return False
         reference_evidence_statuses.add(status)
-    return reference_evidence_statuses == {"verified"}
+    if reference_evidence_statuses != {"verified"}:
+        return False
+
+    registry_status = evidence.get("registry_aggregate_status")
+    value_statuses = set(values)
+    if registry_status == "unverified":
+        return value_statuses == {"verified", "unverified"}
+    if registry_status != "conflict" or value_statuses not in (
+        {"verified", "candidate"},
+        {"verified", "conflict"},
+    ):
+        return False
+
+    source = record.get("source")
+    sources = evidence.get("registry_aggregate_sources")
+    aggregate = record.get("registry_aggregate")
+    if not isinstance(aggregate, dict):
+        return False
+    aggregate_sources = aggregate.get("sources")
+    if (
+        not isinstance(source, str)
+        or not isinstance(sources, list)
+        or any(not isinstance(item, str) or not item for item in sources)
+        or len(sources) < 2
+        or len(set(sources)) != len(sources)
+        or source not in sources
+        or aggregate.get("status") != "conflict"
+        or aggregate_sources != sources
+    ):
+        return False
+    return True
 
 
 def _validate_source_contract_metadata_correction(

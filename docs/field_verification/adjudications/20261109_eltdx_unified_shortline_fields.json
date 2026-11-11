@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-unified-eltdx_auction_prev_volume_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_auction_prev_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_auction_prev_volume_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_auction_prev_volume_ratio",
+      "meaning": "竞价成交量昨比",
+      "unit": "倍",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_auction_prev_volume_ratio，core/data_provider.py从批量缓存记录的auction_prev_volume_ratio字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该字段按上游 v3.3.2 ShortlineIndicator.auction_prev_volume_ratio 契约透传。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['auction_prev_volume_ratio'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_auction_prev_volume_ratio; underlying ShortlineIndicator.auction_prev_volume_ratio",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_has_shortline-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_has_shortline"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_has_shortline",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_has_shortline",
+      "meaning": "ELTDX短线记录可用标记",
+      "unit": "",
+      "rationale": "stock_common/sc_schema.py将该bool字段定义为短线指标命中标记；core/data_provider.py仅在 get_eltdx_shortline_for_code(code) 返回非空记录时设为true，否则保留false。它表示缓存中存在短线记录，不代表记录内每个数值字段均非空或有效。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "本项目 CanonicalStockData 字段及 ELTDX 缓存读取实现",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code) -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_has_shortline = bool(non_empty_shortline_record)",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData.eltdx_has_shortline；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code",
+        "url": "https://github.com/tsy1102/a-stock-data/blob/main/stock_common/sc_schema.py"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_ladder_level-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_ladder_level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_ladder_level",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_ladder_level",
+      "meaning": "当前连板高度",
+      "unit": "板",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_ladder_level，core/data_provider.py从批量缓存记录的ladder_level字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该字段按上游 v3.3.2 ShortlineIndicator.ladder_level 契约透传。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['ladder_level'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_ladder_level; underlying ShortlineIndicator.ladder_level",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_limit_board_text-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_limit_board_text"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_limit_board_text",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_limit_board_text",
+      "meaning": "几天几板文本",
+      "unit": "文本",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_limit_board_text，core/data_provider.py从批量缓存记录的limit_board_text字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该字段按上游 v3.3.2 ShortlineIndicator.limit_board_text 契约透传。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['limit_board_text'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_limit_board_text; underlying ShortlineIndicator.limit_board_text",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_limit_up_streak_days-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_limit_up_streak_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_limit_up_streak_days",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_limit_up_streak_days",
+      "meaning": "统计文件记录的连续涨停天数",
+      "unit": "天",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_limit_up_streak_days，core/data_provider.py从批量缓存记录的limit_up_streak_days字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该值保留统计文件日期时的原值，不自动计入目标日。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['limit_up_streak_days'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_limit_up_streak_days; underlying ShortlineIndicator.limit_up_streak_days",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_open_change_pct-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_open_change_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_open_change_pct",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_open_change_pct",
+      "meaning": "开盘涨幅",
+      "unit": "%",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_open_change_pct，core/data_provider.py从批量缓存记录的open_change_pct字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该字段按上游 v3.3.2 ShortlineIndicator.open_change_pct 契约透传。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['open_change_pct'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_open_change_pct; underlying ShortlineIndicator.open_change_pct",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_open_prev_amount_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_open_prev_amount_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_open_prev_amount_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_open_prev_amount_ratio",
+      "meaning": "开盘成交额昨比",
+      "unit": "%",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_open_prev_amount_ratio，core/data_provider.py从批量缓存记录的open_prev_amount_ratio字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。该字段按上游 v3.3.2 ShortlineIndicator.open_prev_amount_ratio 契约透传。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['open_prev_amount_ratio'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_open_prev_amount_ratio; underlying ShortlineIndicator.open_prev_amount_ratio",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_open_turnover_z-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_open_turnover_z"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_open_turnover_z",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_open_turnover_z",
+      "meaning": "自由流通口径开盘换手率",
+      "unit": "%",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_open_turnover_z，core/data_provider.py从批量缓存记录的open_turnover_z字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。上游文档说明Z沿用自由流通口径命名，不是统计学Z-score。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['open_turnover_z'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_open_turnover_z; underlying ShortlineIndicator.open_turnover_z",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_open_volume_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_open_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_open_volume_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_open_volume_ratio",
+      "meaning": "开盘量比",
+      "unit": "倍",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_open_volume_ratio，core/data_provider.py从批量缓存记录的open_volume_ratio字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。上游定义为09:25成交量相对最近5个目标日前完整交易日平均每分钟成交量的倍数。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['open_volume_ratio'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_open_volume_ratio; underlying ShortlineIndicator.open_volume_ratio",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_seal_amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_seal_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_seal_amount",
+      "meaning": "当前买一金额；仅已封板时解释为涨停封单额",
+      "unit": "元",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_seal_amount，core/data_provider.py从批量缓存记录的seal_amount字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。上游文档定义seal_amount为当前买一金额，只有limit_status=sealed时才按涨停封单额解释。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['seal_amount'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_seal_amount; underlying ShortlineIndicator.seal_amount",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-unified-eltdx_seal_to_float_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "eltdx_seal_to_float_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "eltdx_seal_to_float_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eltdx_seal_to_float_ratio",
+      "meaning": "当前买一金额占自由流通市值Z比；仅已封板时解释为封板强度",
+      "unit": "%",
+      "rationale": "stock_common/sc_schema.py定义CanonicalStockData.eltdx_seal_to_float_ratio，core/data_provider.py从批量缓存记录的seal_to_float_ratio字段映射并规范类型；core/eltdx_adapter.py::get_eltdx_shortline_for_code从ELTDX ShortlineIndicator模型和同模型连板行提供该记录。上游公式为当前买一金额/自由流通市值Z×100，且只有已封板时才解释为封板强度。 统一层缺失/异常时使用0或空文本默认值；这类默认值不是上游实测零值，eltdx_has_shortline也不替代逐字段有效性判断。 本裁决只确认统一层字段与ELTDX缓存来源的对应关系，不新增跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 ShortlineIndicator 契约与本项目统一层适配代码",
+        "revision": "本项目统一层代码（2026-11-09工作区）与ELTDX v3.3.2",
+        "path": "core.eltdx_adapter.get_eltdx_shortline_for_code(code)['seal_to_float_ratio'] -> core.data_provider.get_canonical_stock_data() -> CanonicalStockData.eltdx_seal_to_float_ratio; underlying ShortlineIndicator.seal_to_float_ratio",
+        "locator": "stock_common/sc_schema.py::CanonicalStockData；core/data_provider.py::get_canonical_stock_data；core/eltdx_adapter.py::get_eltdx_shortline_for_code；ELTDX短线指标字段表",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    }
+  ]
+}

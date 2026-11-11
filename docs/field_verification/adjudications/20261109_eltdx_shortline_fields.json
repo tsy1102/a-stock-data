@@ -1,0 +1,840 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-shortline-alignment_status-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "alignment_status"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "alignment_status",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "alignment_status",
+      "meaning": "统计资源日期对齐状态",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按统计资源主导日期与目标/上一交易日的关系标记对齐状态。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].alignment_status -> stocks.<code>.shortline.alignment_status; 同模型出现在global_helpers.limit_ladder.rows[].alignment_status",
+        "locator": "短线指标 §返回字段、§时间对齐、§结果元数据；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-auction_prev_volume_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "auction_prev_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "auction_prev_volume_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_prev_volume_ratio",
+      "meaning": "竞价成交量昨比",
+      "unit": "倍",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：今日09:25竞价成交量÷上一实际交易日09:25竞价成交量；1.0表示两日相同。 314个非空样本重算314/314一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].auction_prev_volume_ratio -> stocks.<code>.shortline.auction_prev_volume_ratio; 同模型出现在global_helpers.limit_ladder.rows[].auction_prev_volume_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-beta_60d-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "beta_60d"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "beta_60d",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "beta_60d",
+      "meaning": "近60日 Beta",
+      "unit": "无量纲",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg直接值；相对该统计资源使用的市场基准，ELTDX不另选基准或重算。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].beta_60d -> stocks.<code>.shortline.beta_60d; 同模型出现在global_helpers.limit_ladder.rows[].beta_60d",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-float_market_value-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "float_market_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "float_market_value",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "float_market_value",
+      "meaning": "普通流通市值",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：普通流通股本×当前价。 320/320一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].float_market_value -> stocks.<code>.shortline.float_market_value; 同模型出现在global_helpers.limit_ladder.rows[].float_market_value",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-float_shares-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "float_shares"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "float_shares",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "float_shares",
+      "meaning": "普通流通股本",
+      "unit": "股",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：来自FinanceRecord.circulating_shares，按股计。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].float_shares -> stocks.<code>.shortline.float_shares; 同模型出现在global_helpers.limit_ladder.rows[].float_shares",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-free_float_market_value-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "free_float_market_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "free_float_market_value",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "free_float_market_value",
+      "meaning": "流通市值Z",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：自由流通股本Z×当前价；Z表示自由流通口径，不表示Z-score。 319个非空样本重算319/319一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].free_float_market_value -> stocks.<code>.shortline.free_float_market_value; 同模型出现在global_helpers.limit_ladder.rows[].free_float_market_value",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-free_float_shares-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "free_float_shares"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "free_float_shares",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "free_float_shares",
+      "meaning": "流通股本Z",
+      "unit": "股",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：TDX自由流通口径股本；底层free_float_shares_10k乘10000，区别于普通流通股本。 历史ZHB交叉核对279/280相符；2026-10-30代码688553为ELTDX 376,263,800股、同日ZHB归档377,665,400股。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].free_float_shares -> stocks.<code>.shortline.free_float_shares; 同模型出现在global_helpers.limit_ladder.rows[].free_float_shares",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-ladder_level-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "ladder_level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "ladder_level",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ladder_level",
+      "meaning": "当前连板高度",
+      "unit": "板",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：当前连续封住涨停的板数；仅limit_status为sealed时返回；统计日为上一交易日时会把目标日计入。 320/320按统计日期、当前封板状态及文件连板值重算一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].ladder_level -> stocks.<code>.shortline.ladder_level; 同模型出现在global_helpers.limit_ladder.rows[].ladder_level",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-limit_board_text-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_board_text"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "limit_board_text",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_board_text",
+      "meaning": "几天几板文本",
+      "unit": "文本",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：由统计窗口天数和窗口内涨停次数组成；文件日期为上一交易日且当前封板时计入目标日。 320/320按统计日期、当前封板状态及窗口字段重算一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].limit_board_text -> stocks.<code>.shortline.limit_board_text; 同模型出现在global_helpers.limit_ladder.rows[].limit_board_text",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-limit_stat_days-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_stat_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "limit_stat_days",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_stat_days",
+      "meaning": "涨停统计窗口天数",
+      "unit": "天",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg直接值，表示几天几板中的观察窗口长度。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].limit_stat_days -> stocks.<code>.shortline.limit_stat_days; 同模型出现在global_helpers.limit_ladder.rows[].limit_stat_days",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-limit_status-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_status"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "limit_status",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_status",
+      "meaning": "当前涨停状态",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：当前涨停判别状态；ELTDX定义sealed、touched、none、unknown状态。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].limit_status -> stocks.<code>.shortline.limit_status; 同模型出现在global_helpers.limit_ladder.rows[].limit_status",
+        "locator": "短线指标 §结果元数据、§时间对齐；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-limit_up_count_in_stat_days-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_up_count_in_stat_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "limit_up_count_in_stat_days",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_up_count_in_stat_days",
+      "meaning": "统计窗口内涨停次数",
+      "unit": "次",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg直接值，表示统计窗口中的涨停板数。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].limit_up_count_in_stat_days -> stocks.<code>.shortline.limit_up_count_in_stat_days; 同模型出现在global_helpers.limit_ladder.rows[].limit_up_count_in_stat_days",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-limit_up_streak_days-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_up_streak_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "limit_up_streak_days",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_up_streak_days",
+      "meaning": "统计文件记录的连续涨停天数",
+      "unit": "天",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：保留tdxstat.cfg统计文件原值；不自动把目标交易日并入。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].limit_up_streak_days -> stocks.<code>.shortline.limit_up_streak_days; 同模型出现在global_helpers.limit_ladder.rows[].limit_up_streak_days",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_change_pct-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_change_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_change_pct",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_change_pct",
+      "meaning": "开盘涨幅",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：(open_price-pre_close)/pre_close×100；百分比字段已乘100。 保留样本公式重算320/320一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_change_pct -> stocks.<code>.shortline.open_change_pct; 同模型出现在global_helpers.limit_ladder.rows[].open_change_pct",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_prev_amount_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_prev_amount_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_prev_amount_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_prev_amount_ratio",
+      "meaning": "开盘成交额昨比",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：今日09:25竞价金额÷上一实际交易日全天成交额×100。 319个非空样本重算319/319一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_prev_amount_ratio -> stocks.<code>.shortline.open_prev_amount_ratio; 同模型出现在global_helpers.limit_ladder.rows[].open_prev_amount_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_prev_seal_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_prev_seal_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_prev_seal_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_prev_seal_ratio",
+      "meaning": "开盘昨封比",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：今日09:25竞价金额÷上一实际交易日涨停封单额×100。 16个非空样本重算16/16一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_prev_seal_ratio -> stocks.<code>.shortline.open_prev_seal_ratio; 同模型出现在global_helpers.limit_ladder.rows[].open_prev_seal_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_turnover_z-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_turnover_z"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_turnover_z",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_turnover_z",
+      "meaning": "自由流通口径开盘换手率",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：09:25竞价成交量÷自由流通股本Z换算成手×100；Z不是统计学Z-score。 319个非空分子/分母样本重算319/319一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_turnover_z -> stocks.<code>.shortline.open_turnover_z; 同模型出现在global_helpers.limit_ladder.rows[].open_turnover_z",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_volume_hand-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_volume_hand"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_volume_hand",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_volume_hand",
+      "meaning": "开盘成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：09:25正式撮合开盘金额÷(开盘价×100)。 320/320按开盘金额/(开盘价×100)重算一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_volume_hand -> stocks.<code>.shortline.open_volume_hand; 同模型出现在global_helpers.limit_ladder.rows[].open_volume_hand",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-open_volume_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "open_volume_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_volume_ratio",
+      "meaning": "开盘量比",
+      "unit": "倍",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：开盘成交量÷最近5个目标日前完整交易日的平均每分钟成交量；每个完整交易日按240分钟。 本字段按ELTDX明示公式定案；独立raw kline_day仅保存5根并含目标日，而该helper请求6根、排除目标日后取前5根，因此现有独立K线样本不足以复算此值。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].open_volume_ratio -> stocks.<code>.shortline.open_volume_ratio; 同模型出现在global_helpers.limit_ladder.rows[].open_volume_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-pe_ttm-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "pe_ttm"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "pe_ttm",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "pe_ttm",
+      "meaning": "滚动市盈率",
+      "unit": "倍",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg直接值；ELTDX保留TDX统计值，不自行重算。 历史ZHB交叉核对279/280相符；2026-10-30代码920508为ELTDX 205.03、同日ZHB归档378.86。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].pe_ttm -> stocks.<code>.shortline.pe_ttm; 同模型出现在global_helpers.limit_ladder.rows[].pe_ttm",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-prev2_seal_amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "prev2_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "prev2_seal_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "prev2_seal_amount",
+      "meaning": "前两实际交易日封单额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按实际交易日对齐tdxstat2.cfg，目标日前第二个交易日的涨停封单金额。 历史ZHB交叉核对280/280相符，最大差值约2.38e-7。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].prev2_seal_amount -> stocks.<code>.shortline.prev2_seal_amount; 同模型出现在global_helpers.limit_ladder.rows[].prev2_seal_amount",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-prev_amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "prev_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "prev_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "prev_amount",
+      "meaning": "上一实际交易日成交额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按实际交易日对齐tdxstat2.cfg，目标日上一实际交易日全天成交金额。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].prev_amount -> stocks.<code>.shortline.prev_amount; 同模型出现在global_helpers.limit_ladder.rows[].prev_amount",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-prev_open_amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "prev_open_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "prev_open_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "prev_open_amount",
+      "meaning": "上一实际交易日开盘竞价金额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按实际交易日对齐tdxstat2.cfg，上一实际交易日09:25开盘集合竞价成交金额。 历史ZHB交叉核对280/280相符，最大差值约2.98e-8。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].prev_open_amount -> stocks.<code>.shortline.prev_open_amount; 同模型出现在global_helpers.limit_ladder.rows[].prev_open_amount",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-prev_open_volume_hand-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "prev_open_volume_hand"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "prev_open_volume_hand",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "prev_open_volume_hand",
+      "meaning": "上一实际交易日开盘竞价成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按实际交易日对齐tdxstat2.cfg，上一实际交易日09:25开盘集合竞价成交量。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].prev_open_volume_hand -> stocks.<code>.shortline.prev_open_volume_hand; 同模型出现在global_helpers.limit_ladder.rows[].prev_open_volume_hand",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-prev_seal_amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "prev_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "prev_seal_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "prev_seal_amount",
+      "meaning": "上一实际交易日涨停封单额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：按实际交易日对齐tdxstat2.cfg，上一实际交易日的涨停封单金额。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].prev_seal_amount -> stocks.<code>.shortline.prev_seal_amount; 同模型出现在global_helpers.limit_ladder.rows[].prev_seal_amount",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-previous_trade_date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "previous_trade_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "previous_trade_date",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "previous_trade_date",
+      "meaning": "上一实际交易日日期",
+      "unit": "日期",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：来自上证指数实际日K，不按本机自然日倒推。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].previous_trade_date -> stocks.<code>.shortline.previous_trade_date; 同模型出现在global_helpers.limit_ladder.rows[].previous_trade_date",
+        "locator": "短线指标 §返回字段、§时间对齐、§结果元数据；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-seal_prev_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "seal_prev_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "seal_prev_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "seal_prev_ratio",
+      "meaning": "当前买一金额相对上一日封单额倍数",
+      "unit": "倍",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：当前买一金额÷上一实际交易日涨停封单额；只有已封板时才解释为涨停封单强度。 16个非空样本重算16/16一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].seal_prev_ratio -> stocks.<code>.shortline.seal_prev_ratio; 同模型出现在global_helpers.limit_ladder.rows[].seal_prev_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-seal_to_amount_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "seal_to_amount_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "seal_to_amount_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "seal_to_amount_ratio",
+      "meaning": "当前买一金额占当日成交额比",
+      "unit": "倍",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：当前买一金额÷当日成交额；未封板时买一金额仍只是普通盘口金额。 319个非空样本重算319/319一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].seal_to_amount_ratio -> stocks.<code>.shortline.seal_to_amount_ratio; 同模型出现在global_helpers.limit_ladder.rows[].seal_to_amount_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-seal_to_float_ratio-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "seal_to_float_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "seal_to_float_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "seal_to_float_ratio",
+      "meaning": "当前买一金额占自由流通市值Z比",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：当前买一金额÷自由流通市值Z×100；只有已封板时才解释为封板强度。 319个非空样本重算319/319一致。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].seal_to_float_ratio -> stocks.<code>.shortline.seal_to_float_ratio; 同模型出现在global_helpers.limit_ladder.rows[].seal_to_float_ratio",
+        "locator": "短线指标 §计算字段、§实时竞价与普通流通口径字段；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-stats_date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "stats_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "stats_date",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "stats_date",
+      "meaning": "统计资源主导日期",
+      "unit": "日期",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg与tdxstat2.cfg共同使用的主导统计日期。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].stats_date -> stocks.<code>.shortline.stats_date; 同模型出现在global_helpers.limit_ladder.rows[].stats_date",
+        "locator": "短线指标 §返回字段、§时间对齐、§结果元数据；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-target_trade_date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "target_trade_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "target_trade_date",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "target_trade_date",
+      "meaning": "目标交易日日期",
+      "unit": "日期",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：来自TDX握手，表示当前行情对应交易日。 16个保留日期共320个股票日样本覆盖该模型字段；其数据含义和日期边界按固定版本上游契约确认。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].target_trade_date -> stocks.<code>.shortline.target_trade_date; 同模型出现在global_helpers.limit_ladder.rows[].target_trade_date",
+        "locator": "短线指标 §返回字段、§时间对齐、§结果元数据；helpers/shortline.py；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-shortline-year_limit_up_days-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "year_limit_up_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "year_limit_up_days",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "year_limit_up_days",
+      "meaning": "截至统计文件日期的年内涨停天数",
+      "unit": "天",
+      "rationale": "ELTDX v3.3.2固定版本的短线指标文档和本机安装的同版运行时代码明确规定该字段：tdxstat.cfg直接值；保留统计文件日期的当年累计值。 历史ZHB交叉核对280/280相符。 此裁决只确认ELTDX适配层字段，不推断其他来源同名字段或建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 ShortlineIndicator 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.shortline_indicators(codes).rows[].year_limit_up_days -> stocks.<code>.shortline.year_limit_up_days; 同模型出现在global_helpers.limit_ladder.rows[].year_limit_up_days",
+        "locator": "短线指标 §统计资源直接字段；2026-10-15起保留ELTDX原始采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    }
+  ]
+}

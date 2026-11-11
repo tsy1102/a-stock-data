@@ -10,6 +10,7 @@
     {
       "id": "YYYYMMDD-source-field",
       "action": "verify_public_web_observation",
+      "verification_mode": "resolve_placeholders",
       "target": {
         "source": "EXACT_SOURCE_NAME",
         "code": "EXACT_FULL_CODE_PATH"
@@ -38,6 +39,7 @@
           "display_value": 0,
           "display_increment": 1,
           "display_unit": "UNIT",
+          "raw_to_display_factor": "1",
           "page_url": "https://official.example/page",
           "page_metric": "Visible official page label and section",
           "display_text": "Exact value displayed on the page",
@@ -51,6 +53,7 @@
           "display_value": 1,
           "display_increment": 1,
           "display_unit": "UNIT",
+          "raw_to_display_factor": "1",
           "page_url": "https://official.example/page",
           "page_metric": "Visible official page label and section",
           "display_text": "Exact value displayed on the page",

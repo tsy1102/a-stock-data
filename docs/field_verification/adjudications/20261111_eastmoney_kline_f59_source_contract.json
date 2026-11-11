@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eastmoney-kline-f59-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-em_kline_f61",
+        "code": "f59"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "f59",
+        "meaning": "涨跌幅",
+        "unit": "%"
+      },
+      "canonical": "f59",
+      "meaning": "涨跌幅",
+      "unit": "%",
+      "rationale": "只核验东财日 K 的精确来源路径 (东财-em_kline_f61, f59)。采集器请求官方 push2his /api/qt/stock/kline/get 的 fields2=f51..f61；对保留范围内 16 个日期化 raw 文件中日期与采集目录一致的 140 个股票日样本重算，f59 按 (当日收盘 / 前一条 K 线收盘 - 1) × 100 四舍五入到 2 位小数后 140/140 一致，f60 当日收盘差额也 140/140 精确一致。源参考中该列已标记为数值实证 verified；当前 conflict 来自聚合短代码跨接口复用。本裁决只将此精确来源行设为 verified，不创建跨源 mapping，也不修改其他接口 f59 状态或全局 f59 冲突。详细过程见 docs/field_verification/20261111_eastmoney_kline_f59_crosscheck.md。",
+      "source_contract": {
+        "authority": "东方财富 push2his 历史日 K 官方接口响应",
+        "revision": "GET /api/qt/stock/kline/get 字段顺序与留存响应复核，2026-11-11",
+        "path": "scripts/capture_http_collectors.py::collect_em_kline_f61 -> /api/qt/stock/kline/get -> data.klines[]",
+        "locator": "请求 fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61；逗号分隔 K 线的第 9 项 f59 为涨跌幅百分比，公式及样本结果见 20261111_eastmoney_kline_f59_crosscheck.md。",
+        "url": "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+      }
+    }
+  ]
+}

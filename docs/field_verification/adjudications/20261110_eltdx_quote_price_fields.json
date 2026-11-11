@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-eltdx-last-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "last_price"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "last_price", "meaning": "", "unit": ""},
+      "canonical": "last_price",
+      "meaning": "最新价 / 现价",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 last_price 定义为最新价/现价；2026-11-09 保留样本中 realtime_rank 80/80 行和 quote_snapshot 20/20 行均有非空值。通达信官方快照文档以 Now 定义现价作语义交叉核对。接口文档未注明单位；仅定案本来源字段，不创建跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 TDX QuoteSnapshot / 7709 CategoryQuoteRecord 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信 get_market_snapshot_batch 官方文档访问于 2026-11-10",
+        "path": "client.quotes.get_snapshots(...) -> QuoteSnapshot.last_price; 7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.last_price -> client.helpers.realtime_rank().rows[].raw.last_price",
+        "locator": "FIELD_REFERENCE.md §QuoteSnapshot / §CategoryQuoteRecord；7709-分类行情 §0x054b 与 realtime_rank 关系及解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-pre-close-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "pre_close_price"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "pre_close_price",
+      "meaning": "昨收价",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 pre_close_price 定义为昨收价；2026-11-09 保留样本中 realtime_rank 80/80 行和 quote_snapshot 20/20 行均有非空值。通达信官方快照文档以 LastClose 定义前收盘价作语义交叉核对。接口文档未注明单位；仅定案本来源字段，不创建跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 TDX QuoteSnapshot / 7709 CategoryQuoteRecord 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信 get_market_snapshot_batch 官方文档访问于 2026-11-10",
+        "path": "client.quotes.get_snapshots(...) -> QuoteSnapshot.pre_close_price; 7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.pre_close_price -> client.helpers.realtime_rank().rows[].raw.pre_close_price",
+        "locator": "FIELD_REFERENCE.md §QuoteSnapshot / §CategoryQuoteRecord；7709-分类行情 §0x054b 与 realtime_rank 关系及解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-open-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "open_price"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "open_price", "meaning": "", "unit": ""},
+      "canonical": "open_price",
+      "meaning": "今开价",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 open_price 定义为今开；2026-11-09 保留样本中 realtime_rank 80/80 行和 quote_snapshot 20/20 行均有非空值。通达信官方快照文档以 Open 定义开盘价作语义交叉核对。接口文档未注明单位；仅定案本来源字段，不创建跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 TDX QuoteSnapshot / 7709 CategoryQuoteRecord 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信 get_market_snapshot_batch 官方文档访问于 2026-11-10",
+        "path": "client.quotes.get_snapshots(...) -> QuoteSnapshot.open_price; 7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.open_price -> client.helpers.realtime_rank().rows[].raw.open_price",
+        "locator": "FIELD_REFERENCE.md §QuoteSnapshot / §CategoryQuoteRecord；7709-分类行情 §0x054b 与 realtime_rank 关系及解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-high-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "high_price"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "high_price",
+      "meaning": "最高价",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 high_price 定义为最高价；2026-11-09 保留样本中 realtime_rank 80/80 行和 quote_snapshot 20/20 行均有非空值。通达信官方快照文档以 Max 定义最高价作语义交叉核对。接口文档未注明单位；仅定案本来源字段，不创建跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 TDX QuoteSnapshot / 7709 CategoryQuoteRecord 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信 get_market_snapshot_batch 官方文档访问于 2026-11-10",
+        "path": "client.quotes.get_snapshots(...) -> QuoteSnapshot.high_price; 7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.high_price -> client.helpers.realtime_rank().rows[].raw.high_price",
+        "locator": "FIELD_REFERENCE.md §QuoteSnapshot / §CategoryQuoteRecord；7709-分类行情 §0x054b 与 realtime_rank 关系及解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-eltdx-low-price-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX-eltdx(适配层)", "code": "low_price"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "low_price",
+      "meaning": "最低价",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 low_price 定义为最低价；2026-11-09 保留样本中 realtime_rank 80/80 行和 quote_snapshot 20/20 行均有非空值。通达信官方快照文档以 Min 定义最低价作语义交叉核对。接口文档未注明单位；仅定案本来源字段，不创建跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 TDX QuoteSnapshot / 7709 CategoryQuoteRecord 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信 get_market_snapshot_batch 官方文档访问于 2026-11-10",
+        "path": "client.quotes.get_snapshots(...) -> QuoteSnapshot.low_price; 7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.low_price -> client.helpers.realtime_rank().rows[].raw.low_price",
+        "locator": "FIELD_REFERENCE.md §QuoteSnapshot / §CategoryQuoteRecord；7709-分类行情 §0x054b 与 realtime_rank 关系及解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

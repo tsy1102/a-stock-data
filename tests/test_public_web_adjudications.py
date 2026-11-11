@@ -26,6 +26,30 @@ def _raw_payload(date_index):
     return {"stocks": stocks}
 
 
+def test_public_page_observation_uses_exact_source_to_raw_file_route(tmp_path):
+    sample_path = tmp_path / "docs" / "field_verification" / "20261109" / "raw_ulist239.json"
+    _write_json(sample_path, {"stocks": {"600519": {"data": {"f45": 123.45}}}})
+
+    assert (
+        adjudications._raw_value(
+            tmp_path,
+            "东财-ulist239(np/get)",
+            "20261109/raw_ulist239.json",
+            "600519",
+            "f45",
+        )
+        == 123.45
+    )
+    with pytest.raises(ValueError, match="must reference an archived raw_ulist239.json"):
+        adjudications._raw_value(
+            tmp_path,
+            "东财-ulist239(np/get)",
+            "20261109/raw_push2.json",
+            "600519",
+            "f45",
+        )
+
+
 def _registry():
     records = []
     for code in ("f147", "f148", "f149"):
@@ -225,6 +249,107 @@ def test_public_page_observations_resolve_source_semantics_without_cross_source_
     assert stats["mappings_added"] == 0
 
 
+def test_public_page_observation_can_confirm_existing_metadata_without_changing_it(tmp_path):
+    registry, document, decision_path, _ = _inputs(tmp_path)
+    row = next(item for item in registry["source_fields"] if item["code"] == "f147")
+    metadata = {
+        "canonical": "fund_small_buy",
+        "meaning": "小单买入金额",
+        "unit": "元",
+    }
+    row.update(
+        {
+            **metadata,
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "attribute_conflicts": {},
+            "reference_evidence": [{"status": "unverified"}],
+        }
+    )
+    row["status_evidence"].update(
+        {
+            "reference_statuses": ["unverified"],
+            "registry_aggregate_status": "unverified",
+            "values": ["unverified"],
+        }
+    )
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f147")
+    decision.update(
+        {
+            "verification_mode": "confirm_existing",
+            "previous_status": "unverified",
+            "previous_status_resolution": "registry_status_only_single_source",
+            "previous": metadata.copy(),
+            "previous_attribute_conflicts": {},
+            **metadata,
+        }
+    )
+    _write_json(tmp_path / "docs" / "field_verification" / decision_path, document)
+
+    updated, stats = adjudications.apply_public_web_observation_adjudications(
+        registry, document, decision_path, tmp_path
+    )
+    confirmed = next(item for item in updated["source_fields"] if item["code"] == "f147")
+    record = confirmed["adjudications"][-1]
+    assert {key: confirmed[key] for key in metadata} == metadata
+    assert confirmed["status"] == "verified"
+    assert confirmed["status_resolution"] == "verified_by_public_web_observation"
+    assert record["verification_mode"] == "confirm_existing"
+    assert record["metadata_change"] == {"before": metadata, "after": metadata}
+    assert stats["metadata_confirmed"] == 1
+    assert stats["metadata_resolved"] == 2
+    assert adjudications.validate_registry_adjudications(updated, tmp_path) == []
+
+    repeated, repeat_stats = adjudications.apply_public_web_observation_adjudications(
+        updated, document, decision_path, tmp_path
+    )
+    assert repeated == updated
+    assert repeat_stats["already_applied"] == 3
+
+    record["verification_mode"] = "resolve_placeholders"
+    assert any(
+        "registry public-page adjudication differs from decision metadata" in problem
+        for problem in adjudications.validate_registry_adjudications(updated, tmp_path)
+    )
+
+
+def test_public_page_observation_confirm_existing_rejects_metadata_changes(tmp_path):
+    registry, document, decision_path, _ = _inputs(tmp_path)
+    row = next(item for item in registry["source_fields"] if item["code"] == "f147")
+    metadata = {
+        "canonical": "fund_small_buy",
+        "meaning": "小单买入金额",
+        "unit": "元",
+    }
+    row.update(
+        {
+            **metadata,
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "attribute_conflicts": {},
+            "reference_evidence": [{"status": "unverified"}],
+        }
+    )
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f147")
+    decision.update(
+        {
+            "verification_mode": "confirm_existing",
+            "previous_status": "unverified",
+            "previous_status_resolution": "registry_status_only_single_source",
+            "previous": metadata.copy(),
+            "previous_attribute_conflicts": {},
+            **metadata,
+        }
+    )
+    decision["meaning"] = "不同含义"
+    _write_json(tmp_path / "docs" / "field_verification" / decision_path, document)
+
+    with pytest.raises(ValueError, match="requires unchanged canonical, meaning, and unit"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, document, decision_path, tmp_path
+        )
+
+
 def test_public_page_observation_is_idempotent_and_parity_validates_it(tmp_path):
     registry, document, decision_path, _ = _inputs(tmp_path)
     once, _ = adjudications.apply_public_web_observation_adjudications(
@@ -267,6 +392,80 @@ def test_public_page_observation_rejects_non_https_or_unrounded_match(tmp_path):
     with pytest.raises(ValueError, match="rounding precision"):
         adjudications.apply_public_web_observation_adjudications(
             registry, document, decision_path, tmp_path / "rounding"
+        )
+
+
+def test_public_page_observation_supports_explicit_unit_conversion_and_parity(tmp_path):
+    registry, document, decision_path, memo_path = _inputs(tmp_path)
+    document["formula_validation"] = None
+    document["formula_validations"] = []
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f147")
+    sample_path = tmp_path / "docs" / "field_verification" / "20261106" / "raw_push2.json"
+    payload = json.loads(sample_path.read_text(encoding="utf-8"))
+    raw_values = {"000001": 123456789, "000002": 987654321}
+    for stock_code, raw_value in raw_values.items():
+        payload["stocks"][stock_code]["data"]["f147"] = raw_value
+    _write_json(sample_path, payload)
+
+    evidence_lines = []
+    for observation in decision["page_observations"]:
+        raw_value = raw_values[observation["stock_code"]]
+        display_value = "1.2" if observation["stock_code"] == "000001" else "9.9"
+        observation.update(
+            {
+                "raw_value": raw_value,
+                "display_value": display_value,
+                "display_increment": "0.1",
+                "display_unit": "亿元",
+                "raw_to_display_factor": "0.00000001",
+                "display_text": f"{display_value}亿元",
+                "missing_as_zero": False,
+            }
+        )
+        normalized = {
+            **observation,
+            "display_value": str(adjudications._decimal(display_value, "display_value")),
+            "display_increment": str(adjudications._decimal("0.1", "display_increment")),
+            "raw_to_display_factor": "0.00000001",
+        }
+        evidence_lines.append(adjudications._observation_evidence_line(SOURCE, "f147", normalized))
+
+    evidence_path = tmp_path / "docs" / "field_verification" / memo_path
+    evidence_path.write_text(
+        evidence_path.read_text(encoding="utf-8") + "\n" + "\n".join(evidence_lines),
+        encoding="utf-8",
+    )
+    _write_json(tmp_path / "docs" / "field_verification" / decision_path, document)
+
+    updated, _ = adjudications.apply_public_web_observation_adjudications(
+        registry, document, decision_path, tmp_path
+    )
+    adjudicated = next(item for item in updated["source_fields"] if item["code"] == "f147")
+    assert all(
+        item["raw_to_display_factor"] == "0.00000001"
+        for item in adjudicated["adjudications"][-1]["page_observations"]
+    )
+    assert adjudications.validate_registry_adjudications(updated, tmp_path) == []
+
+
+def test_public_page_observation_requires_a_positive_conversion_factor_for_different_units(
+    tmp_path,
+):
+    registry, document, decision_path, _ = _inputs(tmp_path)
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f147")
+    decision["page_observations"][0]["display_unit"] = "亿元"
+    with pytest.raises(ValueError, match="require raw_to_display_factor"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, document, decision_path, tmp_path
+        )
+
+    registry, document, decision_path, _ = _inputs(tmp_path / "nonpositive")
+    decision = next(item for item in document["decisions"] if item["target"]["code"] == "f147")
+    decision["page_observations"][0]["display_unit"] = "亿元"
+    decision["page_observations"][0]["raw_to_display_factor"] = "0"
+    with pytest.raises(ValueError, match="must be positive"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, document, decision_path, tmp_path / "nonpositive"
         )
 
 

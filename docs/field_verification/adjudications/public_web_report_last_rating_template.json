@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "REPLACE_WITH_REVIEWER",
+  "reviewed_on": "YYYY-MM-DD",
+  "evidence_file": "adjudications/public_web/YYYYMMDD_report_last_rating.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "YYYYMMDD-reports-lastEmRatingName",
+      "action": "verify_public_web_observation",
+      "verification_mode": "resolve_report_record_conflict",
+      "target": {
+        "source": "reports",
+        "code": "lastEmRatingName"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "COPY_EXACT_CURRENT_CANONICAL",
+        "meaning": "COPY_EXACT_CURRENT_MEANING",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "meaning": ["COPY_EXACT_CURRENT_MEANING_CONFLICTS"]
+      },
+      "canonical": "lastEmRatingName",
+      "meaning": "上次东财统一评级名称",
+      "unit": "",
+      "rationale": "仅使用页面明确显示评级变动为维持且原始 ratingChange 为已验证值 3 的记录；说明该观测不推断评级发生变化时的值，也不声明完整 API 契约或跨源映射。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/STOCK_CODE_1.html",
+        "https://data.eastmoney.com/report/STOCK_CODE_2.html",
+        "https://data.eastmoney.com/report/STOCK_CODE_3.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_previous_rating_name",
+          "stock_code": "STOCK_CODE_1",
+          "data_date": "YYYYMMDD",
+          "source_file": "YYYYMMDD/raw_reports.json",
+          "record_identity": {
+            "infoCode": "EXACT_INFO_CODE",
+            "title": "EXACT_REPORT_TITLE",
+            "publishDate": "YYYY-MM-DD 00:00:00.000"
+          },
+          "raw_value": "EXACT_LAST_EM_RATING_NAME",
+          "page_current_rating": "EXACT_CURRENT_EM_RATING_NAME",
+          "page_rating_change": "维持",
+          "page_url": "https://data.eastmoney.com/report/STOCK_CODE_1.html",
+          "page_metric": "研报明细 > 东财评级 / 评级变动",
+          "display_text": "EXACT_CURRENT_EM_RATING_NAME / 维持"
+        },
+        {
+          "observation_type": "report_previous_rating_name",
+          "stock_code": "STOCK_CODE_2",
+          "data_date": "YYYYMMDD",
+          "source_file": "YYYYMMDD/raw_reports.json",
+          "record_identity": {
+            "infoCode": "EXACT_INFO_CODE",
+            "title": "EXACT_REPORT_TITLE",
+            "publishDate": "YYYY-MM-DD 00:00:00.000"
+          },
+          "raw_value": "EXACT_LAST_EM_RATING_NAME",
+          "page_current_rating": "EXACT_CURRENT_EM_RATING_NAME",
+          "page_rating_change": "维持",
+          "page_url": "https://data.eastmoney.com/report/STOCK_CODE_2.html",
+          "page_metric": "研报明细 > 东财评级 / 评级变动",
+          "display_text": "EXACT_CURRENT_EM_RATING_NAME / 维持"
+        },
+        {
+          "observation_type": "report_previous_rating_name",
+          "stock_code": "STOCK_CODE_3",
+          "data_date": "YYYYMMDD",
+          "source_file": "YYYYMMDD/raw_reports.json",
+          "record_identity": {
+            "infoCode": "EXACT_INFO_CODE",
+            "title": "EXACT_REPORT_TITLE",
+            "publishDate": "YYYY-MM-DD 00:00:00.000"
+          },
+          "raw_value": "EXACT_LAST_EM_RATING_NAME",
+          "page_current_rating": "EXACT_CURRENT_EM_RATING_NAME",
+          "page_rating_change": "维持",
+          "page_url": "https://data.eastmoney.com/report/STOCK_CODE_3.html",
+          "page_metric": "研报明细 > 东财评级 / 评级变动",
+          "display_text": "EXACT_CURRENT_EM_RATING_NAME / 维持"
+        }
+      ]
+    }
+  ]
+}

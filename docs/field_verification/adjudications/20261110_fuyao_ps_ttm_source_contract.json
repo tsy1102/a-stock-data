@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-fuyao-valuation-ps-ttm-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "valuation.ps_ttm"
+      },
+      "canonical": "valuation.ps_ttm",
+      "meaning": "最新估值快照中的市销率（TTM），表示股票估值相对于最近连续十二个月营业收入的倍数",
+      "unit": "倍",
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "valuation.ps_ttm",
+        "meaning": "",
+        "unit": ""
+      },
+      "rationale": "同花顺金融数据官方估值接口文档将响应路径 data.item[].ps_ttm 明确列为市销率（TTM），并定义 TTM 为最近连续 12 个月、通常由最近四个季度数据计算。项目 stock_common.sc_fuyao.get_fuyao_valuation 直接返回响应 item，core.data_provider 将 ps_ttm 原样投影到统一字段，因此本决策确认同花顺-fuyao::valuation.ps_ttm 的来源内语义。官方文档同时说明估值接口不提供历史估值，data.timestamp 是上游指标元数据最大有效时间且不保证所有指标同步；项目当前适配器没有把该顶层时间戳传到字段记录，所以采集日期不能用作该指标的数据日期。2026-11-10 对撞报告中该字段与 Ulist f130 有 120 个值、20 只股票、6 个采集日期的探索候选，但本源日期未确认、未达到 L1 门槛，且方法结果不是逐值完全一致证据；本决策不新建或复核 Fuyao::valuation.ps_ttm 到 Ulist::f130 的数值映射。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方估值数据文档",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/valuations/",
+        "locator": "估值数据：响应字段 data.item[].ps_ttm、指标说明市销率（PS）、计算口径 TTM，以及 data.timestamp 的时间语义",
+        "path": "GET /api/a-share/valuations/snapshot; response data.item[].ps_ttm",
+        "revision": "在线官方文档于 2026-11-10 核验"
+      }
+    }
+  ]
+}

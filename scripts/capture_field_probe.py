@@ -188,6 +188,37 @@ def _last_trading_day_str() -> str:
     return _last_completed_trading_day().strftime("%Y%m%d")
 
 
+def _zhb_collection_window_open(now: Optional[datetime] = None) -> bool:
+    """ZHB 文件通常在北京时间 08:00 后更新；避免过早补采旧日期快照。"""
+    china_timezone = timezone(timedelta(hours=8))
+    current = now or datetime.now(china_timezone)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=china_timezone)
+    else:
+        current = current.astimezone(china_timezone)
+    return current.timetz().replace(tzinfo=None) >= dt_time(8, 0)
+
+
+def _zhb_collection_policy(selected_only: list[str], now: Optional[datetime] = None) -> str:
+    """Return collect/defer/reject for the ZHB publication-time window."""
+    if _zhb_collection_window_open(now):
+        return "collect"
+    if "zhb" in selected_only:
+        return "reject"
+    return "defer"
+
+
+def _apply_zhb_collection_policy(
+    collectors: Dict[str, Callable[..., Dict[str, Any]]], policy: str
+) -> tuple[Dict[str, Callable[..., Dict[str, Any]]], bool]:
+    """Skip ZHB in an early default run while preserving all other producers."""
+    if policy != "defer" or "zhb" not in collectors:
+        return collectors, False
+    eligible = dict(collectors)
+    eligible.pop("zhb")
+    return eligible, True
+
+
 def _validate_capture_data_date(value: str, only_sources=None, session_checker=None):
     """Validate capture target date according to its data domain."""
     text = str(value or "").strip()
@@ -1498,6 +1529,7 @@ def main() -> None:
     if not args.date:
         args.date = _last_trading_day_str()
     selected_only = [name.strip() for name in args.only.split(",") if name.strip()]
+    zhb_policy = _zhb_collection_policy(selected_only)
     include_context = args.include_context or bool(set(selected_only) & CONTEXT_ONLY_SOURCES)
     try:
         _, data_date_domain = _validate_capture_data_date(args.date, selected_only)
@@ -1515,6 +1547,9 @@ def main() -> None:
         else:
             print("动态层刷新未产生候选(保留旧层)。")
         return
+
+    if not args.dry_run and zhb_policy == "reject":
+        ap.error("ZHB 采集仅在北京时间 08:00 后进行；请在 08:00 后使用 --only zhb 补采。")
 
     if args.refresh_pool:
         refresh_dynamic_layer(trade_date=args.date)
@@ -1620,6 +1655,13 @@ def main() -> None:
         if unknown_sources:
             ap.error("--only 含未知源: " + ", ".join(sorted(unknown_sources)))
         collectors = {k: v for k, v in collectors.items() if k in selected_only}
+    collectors, zhb_was_deferred = _apply_zhb_collection_policy(collectors, zhb_policy)
+    if zhb_was_deferred:
+        print(
+            "⏭ ZHB 尚未到北京时间 08:00 采集窗口，本轮跳过；"
+            "08:00 后可用同一数据日执行 --only zhb 补采。",
+            flush=True,
+        )
     active_source_names = set(collectors)
     if not include_context:
         active_source_names.difference_update(CONTEXT_ONLY_SOURCES)

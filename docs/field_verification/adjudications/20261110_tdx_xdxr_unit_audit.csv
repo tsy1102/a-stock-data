@@ -1,0 +1,6 @@
+source,code_path,stock_code,ex_date,observed_value,source_unit,public_value,public_unit,comparison,evidence_url
+TDX(双命名源),fenhong,600519,2026-06-26,280.2423095703125,元/10股,28.02423,元/股,observed value rounds to 10 times the issuer per-share amount,https://www.moutai.com.cn/mtgf/articleFileDir/2026-06/22/f7c1dbdf7142475d84269482757fd72d.pdf
+TDX(双命名源),fenhong,000858,2026-07-16,25.796852111816406,元/10股,25.796852,元/10股,match to published precision,https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-10/469435ce-3d6d-4b42-8691-75b03f142f90.PDF
+TDX(双命名源),peigujia,,,,元/股,,,,pinned ELTDX contract only; no nonzero sample found,https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md
+TDX(双命名源),songzhuangu,,,,股/10股,,,,pinned ELTDX contract only; no nonzero sample found,https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md
+TDX(双命名源),peigu,,,,股/10股,,,,pinned ELTDX contract only; no nonzero sample found,https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md

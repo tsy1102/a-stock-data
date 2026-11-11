@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-10",
+  "reviewer": "Codex source-contract review",
+  "evidence_basis": "source_contract",
+  "decisions": [
+    {
+      "action": "verify_source_contract",
+      "id": "20261110-eltdx-updated-date-raw-source-contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "updated_date_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "updated_date_raw",
+      "meaning": "财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日",
+      "unit": "YYYYMMDD",
+      "status": "verified",
+      "status_resolution_change": {
+        "before": "registry_status_only_single_source",
+        "after": "verified_by_source_contract"
+      },
+      "metadata_change": {
+        "before": {
+          "canonical": "",
+          "meaning": "",
+          "unit": ""
+        },
+        "after": {
+          "canonical": "updated_date_raw",
+          "meaning": "财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日",
+          "unit": "YYYYMMDD"
+        }
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API and TDX 0x0010 date encoding",
+        "locator": "FIELD_REFERENCE.md §FinanceRecord; METHOD_REFERENCE.md §财务基础信息; FinanceRecord.updated_date_raw / updated_date; field_source_reference.md §2.1",
+        "path": "client.corporate.finance_batch(..., include_raw=True), TDX 0x0010; FinanceRecord.updated_date_raw -> updated_date",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      },
+      "rationale": "固定版本 FinanceRecord 模型将 updated_date_raw 声明为整数，并与解析后的 updated_date 日期属性分开。上游契约将 updated_date 定义为财务数据更新日期；0x0010 字段参考定义原始 YYYYMMDD 编码。本字段描述记录内的财务日期，不是本次采集的来源 as_of_date。未读取 raw 样本或用目录日期推断。"
+    },
+    {
+      "action": "verify_source_contract",
+      "id": "20261110-eltdx-ipo-date-raw-source-contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "ipo_date_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_date_raw",
+      "meaning": "上市日期原始整数；YYYYMMDD 编码，不是采集来源数据日",
+      "unit": "YYYYMMDD",
+      "status": "verified",
+      "status_resolution_change": {
+        "before": "registry_status_only_single_source",
+        "after": "verified_by_source_contract"
+      },
+      "metadata_change": {
+        "before": {
+          "canonical": "",
+          "meaning": "",
+          "unit": ""
+        },
+        "after": {
+          "canonical": "ipo_date_raw",
+          "meaning": "上市日期原始整数；YYYYMMDD 编码，不是采集来源数据日",
+          "unit": "YYYYMMDD"
+        }
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API and TDX 0x0010 date encoding",
+        "locator": "FIELD_REFERENCE.md §FinanceRecord; METHOD_REFERENCE.md §财务基础信息; FinanceRecord.ipo_date_raw / ipo_date; field_source_reference.md §2.1",
+        "path": "client.corporate.finance_batch(..., include_raw=True), TDX 0x0010; FinanceRecord.ipo_date_raw -> ipo_date",
+        "revision": "eltdx v3.3.2 (requirements.txt pinned), reviewed 2026-11-10",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      },
+      "rationale": "固定版本 FinanceRecord 模型将 ipo_date_raw 声明为整数，并与解析后的 ipo_date 日期属性分开。上游契约将 ipo_date 定义为上市日期；0x0010 字段参考定义原始 YYYYMMDD 编码。本字段描述记录内的上市日期，不是本次采集的来源 as_of_date。未读取 raw 样本或用目录日期推断。"
+    }
+  ]
+}

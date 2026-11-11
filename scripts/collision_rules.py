@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""collision_rules.py — 对撞四铁律 + 定案状态机（对撞破解运行时规则真相源）
+"""collision_rules.py — 对撞证据规则与结果类别（运行时规则真相源）
 
 每次运行对撞破解脚本（scripts/crack_*.py）时，由脚本在入口调用
 ``print_active_rules()`` 自动「查询」本规则并打印横幅，确保破解严格遵循
@@ -38,12 +38,12 @@ from typing import TextIO, TypedDict
 # 1. 精度对齐。机器浮点误差使用 ULP；展示精度差异单独进入近似候选层。
 PRECISION = "非整数浮点误差 |a−b| ≤ max(ulp_a, ulp_b)；整数/枚举严格 1e-9；展示舍入不计 L1"
 # 2. 命中率分层
-HIT_RATE_L1 = 18  # 18/20 的门槛换算为信息配对命中率 ≥90% → L1 定案
-HIT_RATE_L4 = 8  # 8~17 → L4 候选（存疑）
+HIT_RATE_L1 = 18  # 固定 20 股候选池中 18/20 对应 90%；不是运行时的固定命中数
 MIN_DAILY_SAMPLES_L1 = 18  # 单日样本不足 18，不参与 L1 日数/命中率
 MIN_INFORMATIVE_SAMPLES_L1 = 5  # 同日还需至少 5 个非 0/0、非双方缺失配对
-MIN_DAILY_SAMPLES_L4 = 8  # 少于 8 个配对样本的日子不输出 L4
-# 3. 比值族（单位换算定案）
+MIN_DAILY_SAMPLES_L4 = 8  # 少于 8 个配对样本的日子不参与 L4
+L4_MIN_OVERALL_MATCH_RATE = 0.4  # L4 合格日合并后的最低精确命中率
+# 3. 比值族（单位/比例关系候选）
 RATIO_CV_MAX = 1e-4  # 变异系数阈值（CV = std/mean）
 RATIO_STEPS = (10, 100, 1000, 10000)  # 合法单位换算比集合
 # 4. 多日复核
@@ -64,13 +64,32 @@ CONTRACT_ANCHOR_RULES = [
 ]
 
 # ───────────────────────────────────────────────────────────────────────
-# 定案状态机 L1~L4（升格路径与含义）
+# 对撞结果类别（自动候选，不是注册表定案状态）
 # ───────────────────────────────────────────────────────────────────────
-LEVELS = [
-    ("L1", "定案（最高置信）", "多源对撞实锤，四铁律全满足"),
-    ("L2", "官方/强锚定", "fuyao 官方三表锚 / TDX 官方命名语义终止器"),
-    ("L3", "方向确证·覆盖不完整", "H12 实测方向对、样本不全"),
-    ("L4", "候选存疑", f"命中率 {HIT_RATE_L4}~{HIT_RATE_L1 - 1}，仅候选"),
+PAIR_RESULT_CATEGORIES = [
+    ("L1", "精确匹配统计候选", "达到多日精确匹配门槛；仍须核验字段身份并人工裁决"),
+    ("L1-U", "稳定比例统计候选", f"达到多日门槛且比值 CV≤{RATIO_CV_MAX:g}；仍须人工确认语义与单位"),
+    (
+        "L1-C",
+        "官方契约锚候选",
+        "底层来源独立性未确认的契约锚强匹配；不计独立来源覆盖且不自动裁决",
+    ),
+    (
+        "L4",
+        "较弱精确匹配线索",
+        f"每个计入日样本数≥{MIN_DAILY_SAMPLES_L4}，合并精确命中率≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；只供复核",
+    ),
+]
+
+ORTHOGONAL_EVIDENCE_PATHS = [
+    (
+        "L2（历史称呼：官方/强锚定）",
+        "当前走独立的 source-contract 来源内核验与注册表裁决，不是跨源碰撞结果等级。",
+    ),
+    (
+        "L3（历史称呼：方向正确但覆盖不完整）",
+        "当前保留为诊断、方法候选或人工分流线索；不会自动生成碰撞等级或写入注册表。",
+    ),
 ]
 
 # ───────────────────────────────────────────────────────────────────────
@@ -79,7 +98,7 @@ LEVELS = [
 SKIP_IDENTIFIERS = ["market", "code", "date", "name", "tx[1]", "tx[2]", "tx[3]"]
 SKIP_CONSTANTS = ["push2:f106（恒=100）", "f123/f124/f125/f134（恒=0）"]
 SKIP_RULES = [
-    "已 L1 定案字段：移出 FOCUS，不再主攻；仅进全历史复核的回归保护池",
+    "已通过注册表裁决的字段：移出 FOCUS，不再主攻；仅进全历史复核的回归保护池",
     "标识符字段（market/code/date/name/tx[1..3]）：排除出数值对撞目标，防 false L1",
     "常量占位字段（f106 恒100 / f123..f134 恒0）：无信息量，登记为占位而非未知语义",
     "20 股 ZHB 锚巧合陷阱：任何新映射若与已确立映射矛盾，判为巧合而非发现，须打印原数据人工核实",
@@ -234,7 +253,7 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
     out = stream or sys.stderr
     bar = "=" * 66
     print(bar, file=out)
-    print("【对撞四铁律 · 运行时生效规则】每次对撞自动查询", file=out)
+    print("【对撞证据规则 · 运行时生效规则】每次对撞自动查询", file=out)
     print(bar, file=out)
     print(f"1. 精度对齐 : {PRECISION}", file=out)
     print(
@@ -244,21 +263,28 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
         file=out,
     )
     print(
-        f"2. 命中率分层: 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → L1 定案；"
-        f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑）",
+        f"2. 精确匹配候选: 至少 {MULTI_DAY_MIN} 个独立日；每个合格日样本≥{MIN_DAILY_SAMPLES_L1}，"
+        f"信息配对≥{MIN_INFORMATIVE_SAMPLES_L1}，日命中率及合并命中率≥{HIT_RATE_L1 / 20:.0%}",
         file=out,
     )
-    print(f"3. 比值族   : CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案", file=out)
-    print(f"4. 多日复核 : ≥{MULTI_DAY_MIN} 个独立采集日重复方可定案；单日快照不够", file=out)
+    print(
+        f"L4 线索: 每个计入日样本≥{MIN_DAILY_SAMPLES_L4}，合并精确命中率≥"
+        f"{L4_MIN_OVERALL_MATCH_RATE:.0%}",
+        file=out,
+    )
+    print(f"3. 比值族   : CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 比例候选", file=out)
+    print(f"4. 多日复核 : ≥{MULTI_DAY_MIN} 个独立采集日是 L1/L1-U 候选门槛；仍需后续裁决", file=out)
     print(
         f"5. 相关性   : 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
         f"且留一法不翻号 → 候选，绝不定案",
         file=out,
     )
     print("-" * 66, file=out)
-    print("定案状态机 L1~L4:", file=out)
-    for code, name, desc in LEVELS:
+    print("对撞结果类别（候选，不是注册表定案）:", file=out)
+    for code, name, desc in PAIR_RESULT_CATEGORIES:
         print(f"  {code} {name}: {desc}", file=out)
+    for code, desc in ORTHOGONAL_EVIDENCE_PATHS:
+        print(f"  {code}: {desc}", file=out)
     print("-" * 66, file=out)
     print("官方契约语义锚分支（参与碰撞，不代表来源独立）:", file=out)
     for rule in CONTRACT_ANCHOR_RULES:
@@ -268,7 +294,10 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
     for r in SKIP_RULES:
         print(f"  ✗ {r}", file=out)
     print(bar, file=out)
-    print("⚠ L1 为当前最强结论，遇矛盾新证据可降级/重议；日常不再无故复撞。", file=out)
+    print(
+        "⚠ L1/L1-U 是数值候选，不等于字段语义定案；需经候选审阅与注册表裁决。",
+        file=out,
+    )
     print(bar, file=out)
     return out
 
@@ -276,7 +305,7 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
 def emit_markdown(path: str | None = None) -> str:
     """由本模块派生 COLLISION_RULES.md（与代码常量一致，避免双源漂移）。"""
     L = []
-    L.append("# 对撞四铁律与定案状态机（运行时规则真相源）\n")
+    L.append("# 对撞数值证据规则与结果类别（运行时规则真相源）\n")
     L.append(
         f"> 本文件由 `scripts/collision_rules.py` 自动派生"
         f"（`python scripts/collision_rules.py --emit`），生成日 {date.today().isoformat()}。\n"
@@ -285,16 +314,16 @@ def emit_markdown(path: str | None = None) -> str:
         "> 对撞脚本运行时自动 `print_active_rules()` 查询本规则；"
         "以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。\n"
     )
-    L.append("## 一、对撞四铁律（硬阈值）\n")
-    L.append("| # | 铁律 | 阈值 / 判定 |")
+    L.append("## 一、对撞硬门槛与方法边界\n")
+    L.append("| # | 规则 | 阈值 / 判定 |")
     L.append("|:--|:--|:--|")
     L.append(f"| 1 | 精度对齐 | {PRECISION} |")
     L.append(
-        f"| 2 | 命中率分层 | 信息配对每采样日命中率 ≥{HIT_RATE_L1 / 20:.0%} → **L1 定案**；"
-        f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑） |"
+        f"| 2 | L1/L1-U 候选门槛 | 至少 {MULTI_DAY_MIN} 个独立日；每个合格日有效样本 ≥{MIN_DAILY_SAMPLES_L1}、"
+        f"信息配对 ≥{MIN_INFORMATIVE_SAMPLES_L1}，各合格日及合并命中率均 ≥{HIT_RATE_L1 / 20:.0%} |"
     )
-    L.append(f"| 3 | 比值族 | CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案 |")
-    L.append(f"| 4 | 多日复核 | ≥{MULTI_DAY_MIN} 个独立采集日重复方可定案；单日 20 股快照不够 |")
+    L.append(f"| 3 | 比值族 | CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 比例候选 |")
+    L.append(f"| 4 | 多日复核 | ≥{MULTI_DAY_MIN} 个独立采集日是 L1/L1-U 候选门槛；单日快照不够 |")
     L.append(
         f"| 4a | 每日样本下限 | L1 每个独立日有效配对样本 ≥{MIN_DAILY_SAMPLES_L1}；"
         f"L4 每日 ≥{MIN_DAILY_SAMPLES_L4} |"
@@ -319,11 +348,20 @@ def emit_markdown(path: str | None = None) -> str:
     L.append(
         "- 近似命中不会计入精确命中率、L1/L1-U、已登记映射或字段注册表；单位换算按独立比值证据记录。\n"
     )
-    L.append("## 二、定案状态机 L1~L4\n")
-    L.append("| 层级 | 名称 | 升格来源 |")
+    L.append("## 二、对撞结果类别（自动候选，不是最终定案状态）\n")
+    L.append("| 报告类别 | 含义 | 解释 / 后续处理 |")
     L.append("|:--|:--|:--|")
-    for code, name, desc in LEVELS:
+    for code, name, desc in PAIR_RESULT_CATEGORIES:
         L.append(f"| {code} | {name} | {desc} |")
+    L.append("")
+    L.append(
+        f"L1/L1-U 必须经过候选审阅及注册表裁决后，才能成为项目字段结论。"
+        f"L4 的运行门槛为每个计入日样本数 ≥{MIN_DAILY_SAMPLES_L4}，"
+        f"这些日子的合并精确命中率 ≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；"
+        "它不是 8~17 个命中数的区间。"
+    )
+    for code, desc in ORTHOGONAL_EVIDENCE_PATHS:
+        L.append(f"- {code}：{desc}")
     L.append("")
     L.append("## 三、官方契约语义锚候选 L1-C\n")
     for rule in CONTRACT_ANCHOR_RULES:

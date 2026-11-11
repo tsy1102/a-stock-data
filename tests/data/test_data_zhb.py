@@ -186,6 +186,24 @@ def test_parse_tipinfo_shareholder_change_fields():
     assert "div_amount" not in parsed["002475"]
 
 
+def test_parse_tipinfo_forecast_and_equity_incentive_dates():
+    zhb = zhb_client.ZhbData()
+    parts = [""] * 22
+    parts[0] = "0"
+    parts[1] = "002475"
+    parts[7] = "20261102"
+    parts[11] = "20261030"
+    parts[12] = "3"
+    parts[21] = "20260819"
+    zhb.raw_files["tipinfo.dat"] = ("|".join(parts) + "\n").encode("gbk")
+
+    parsed = zhb.tip_info["002475"]
+    assert parsed["suspend_major_event_date"] == "20261102"
+    assert parsed["forecast_date_recent"] == "20261030"
+    assert parsed["forecast_type"] == "3"
+    assert parsed["equity_incentive_date"] == "20260819"
+
+
 def test_zhb_ipo_list():
     ipo_list = get_ipo_list()
     assert isinstance(ipo_list, list)

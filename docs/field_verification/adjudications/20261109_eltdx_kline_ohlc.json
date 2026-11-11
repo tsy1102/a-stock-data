@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-kline-open-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "time / open / high / low / close",
+        "meaning": "时间 / OHLC",
+        "unit": ""
+      },
+      "canonical": "open",
+      "meaning": "日K开盘价",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 将 7709 0x052d client.bars.get() 返回的 KlineBar.open 定义为开盘价，项目采集器将该属性原样序列化到 stocks.<code>.kline_day[].open。通达信官方公式文档定义 OPEN 为本周期开盘价，官方 K 线接口字段表规定开高低收单位为元。现有统一的“时间 / OHLC”释义把四条独立路径合并且遗漏单位，故在保留完整旧值快照的条件下逐源纠正；2026-10-15、2026-11-02、2026-11-06 三批共 300 根 K 线均有完整且顺序合理的 OHLC。该裁决只确认此 ELTDX 路径的来源内含义，不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "time / open / high / low / close",
+          "meaning": "时间 / OHLC",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "open",
+          "meaning": "日K开盘价",
+          "unit": "元"
+        },
+        "rationale": "以 ELTDX v3.3.2 KlineBar.open 的接口定义和通达信官方 OPEN/元单位文档精确区分该完整路径；采集代码确认其来自日 K 响应。"
+      },
+      "source_contract": {
+        "authority": "通达信官方行情字段契约与公式字段定义；ELTDX v3.3.2 固定文档用于定位 0x052d 的 KlineBar 返回路径",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.open -> stocks.<code>.kline_day[].open",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；通达信公式系统 OPEN；通达信获取K线行情字段表 OHLC 单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-high-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "high"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "time / open / high / low / close",
+        "meaning": "时间 / OHLC",
+        "unit": ""
+      },
+      "canonical": "high",
+      "meaning": "日K最高价",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 将 7709 0x052d client.bars.get() 返回的 KlineBar.high 定义为最高价，项目采集器将该属性原样序列化到 stocks.<code>.kline_day[].high。通达信官方公式文档定义 HIGH 为本周期最高价，官方 K 线接口字段表规定开高低收单位为元。现有统一的“时间 / OHLC”释义把四条独立路径合并且遗漏单位，故在保留完整旧值快照的条件下逐源纠正；2026-10-15、2026-11-02、2026-11-06 三批共 300 根 K 线均有完整且顺序合理的 OHLC。该裁决只确认此 ELTDX 路径的来源内含义，不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "time / open / high / low / close",
+          "meaning": "时间 / OHLC",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "high",
+          "meaning": "日K最高价",
+          "unit": "元"
+        },
+        "rationale": "以 ELTDX v3.3.2 KlineBar.high 的接口定义和通达信官方 HIGH/元单位文档精确区分该完整路径；采集代码确认其来自日 K 响应。"
+      },
+      "source_contract": {
+        "authority": "通达信官方行情字段契约与公式字段定义；ELTDX v3.3.2 固定文档用于定位 0x052d 的 KlineBar 返回路径",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.high -> stocks.<code>.kline_day[].high",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；通达信公式系统 HIGH；通达信获取K线行情字段表 OHLC 单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-low-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "low"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "time / open / high / low / close",
+        "meaning": "时间 / OHLC",
+        "unit": ""
+      },
+      "canonical": "low",
+      "meaning": "日K最低价",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 将 7709 0x052d client.bars.get() 返回的 KlineBar.low 定义为最低价，项目采集器将该属性原样序列化到 stocks.<code>.kline_day[].low。通达信官方公式文档定义 LOW 为本周期最低价，官方 K 线接口字段表规定开高低收单位为元。现有统一的“时间 / OHLC”释义把四条独立路径合并且遗漏单位，故在保留完整旧值快照的条件下逐源纠正；2026-10-15、2026-11-02、2026-11-06 三批共 300 根 K 线均有完整且顺序合理的 OHLC。该裁决只确认此 ELTDX 路径的来源内含义，不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "time / open / high / low / close",
+          "meaning": "时间 / OHLC",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "low",
+          "meaning": "日K最低价",
+          "unit": "元"
+        },
+        "rationale": "以 ELTDX v3.3.2 KlineBar.low 的接口定义和通达信官方 LOW/元单位文档精确区分该完整路径；采集代码确认其来自日 K 响应。"
+      },
+      "source_contract": {
+        "authority": "通达信官方行情字段契约与公式字段定义；ELTDX v3.3.2 固定文档用于定位 0x052d 的 KlineBar 返回路径",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.low -> stocks.<code>.kline_day[].low",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；通达信公式系统 LOW；通达信获取K线行情字段表 OHLC 单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-kline-close-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "close"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "time / open / high / low / close",
+        "meaning": "时间 / OHLC",
+        "unit": ""
+      },
+      "canonical": "close",
+      "meaning": "日K收盘价",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 将 7709 0x052d client.bars.get() 返回的 KlineBar.close 定义为收盘价，项目采集器将该属性原样序列化到 stocks.<code>.kline_day[].close。通达信官方公式文档定义 CLOSE 为本周期收盘价，官方 K 线接口字段表规定开高低收单位为元。现有统一的“时间 / OHLC”释义把四条独立路径合并且遗漏单位，故在保留完整旧值快照的条件下逐源纠正；2026-10-15、2026-11-02、2026-11-06 三批共 300 根 K 线均有完整且顺序合理的 OHLC。该裁决只确认此 ELTDX 路径的来源内含义，不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "time / open / high / low / close",
+          "meaning": "时间 / OHLC",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "close",
+          "meaning": "日K收盘价",
+          "unit": "元"
+        },
+        "rationale": "以 ELTDX v3.3.2 KlineBar.close 的接口定义和通达信官方 CLOSE/元单位文档精确区分该完整路径；采集代码确认其来自日 K 响应。"
+      },
+      "source_contract": {
+        "authority": "通达信官方行情字段契约与公式字段定义；ELTDX v3.3.2 固定文档用于定位 0x052d 的 KlineBar 返回路径",
+        "revision": "ELTDX v3.3.2（项目固定版本）；通达信官方文档于 2026-11-09 核验",
+        "path": "7709 0x052d -> client.bars.get(code, period='day') -> KlineSeries.bars[].KlineBar.close -> stocks.<code>.kline_day[].close",
+        "locator": "ELTDX 7709-K线周期线 §作用、§解析字段、§解码口径；通达信公式系统 CLOSE；通达信获取K线行情字段表 OHLC 单位",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-easy-tdx-gudong-renshu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "gudong_renshu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "gudong_renshu",
+      "meaning": "股东人数",
+      "unit": "户",
+      "rationale": "该精确下划线路径来自项目固定依赖 easy-tdx 1.20.8 的 FinanceInfo.gudong_renshu 输出字段；项目的 _EasyTdxAdapter.finance 保留原列名，另生成去下划线别名。Easy-TDX 模型释义为股东人数。通达信官方公式 FINANCE(8) 明确为股东人数（户），官方 getstockinfo 另列 J_gdrs；这些是不同接口，只作为术语与单位佐证，不建立接口码或跨源映射。保留的 17 个 raw_tdx 采集日没有出现该下划线键，因采集优先走 ELTDX；本裁决核验的是已固定依赖的 Easy-TDX 兜底输出契约，不把同族紧凑键样本当独立证据。",
+      "source_contract": {
+        "authority": "项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方资料仅佐证股东人数单位",
+        "revision": "项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验",
+        "path": "Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键",
+        "locator": "FinanceInfo.gudong_renshu 字段与中文注释；GetFinanceInfoCmd.parse_response 解码并赋值 gudong_renshu",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/main/src/easy_tdx/models/finance.py"
+      }
+    },
+    {
+      "id": "20261111-easy-tdx-zhuying-shouru-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhuying_shouru"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zhuying_shouru",
+      "meaning": "主营收入",
+      "unit": "元",
+      "rationale": "该精确下划线路径来自项目固定依赖 easy-tdx 1.20.8 的 FinanceInfo.zhuying_shouru 输出字段；项目适配器保留原列名。Easy-TDX FinanceInfo 模型将其列在利润指标（元）并释义为主营收入，0x0010 解码器把该槽位数值换算后赋给同名字段。通达信官方 getstockinfo J_yysy 标为营业收入（万元），官方公司报告与本项目 ELTDX 主营收入字段的核验仅作语义旁证；接口、路径及来源族均不同，本裁决不建立映射。17 个保留 raw_tdx 采集日没有出现该下划线键，当前归档不能用于声称该兜底键已逐值验证。",
+      "source_contract": {
+        "authority": "项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方资料与发行人报告仅作术语旁证",
+        "revision": "项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验",
+        "path": "Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键",
+        "locator": "FinanceInfo.zhuying_shouru 字段（利润指标，单位元）；GetFinanceInfoCmd.parse_response 中 zhuying_shouru 槽位及赋值",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/main/src/easy_tdx/models/finance.py"
+      }
+    },
+    {
+      "id": "20261111-easy-tdx-zong-xianjinliu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zong_xianjinliu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zong_xianjinliu",
+      "meaning": "总现金流",
+      "unit": "元",
+      "rationale": "该精确下划线路径来自项目固定依赖 easy-tdx 1.20.8 的 FinanceInfo.zong_xianjinliu 输出字段；模型把它列在利润与现金流指标（元），0x0010 解码器换算后赋给同名字段。通达信官方 getstockinfo 的另一接口提供 J_zxjl（总现金净流量，万元），只支持该业务类别的术语，不证明两接口字段逐值等价或口径相同。本项目 17 个保留 raw_tdx 采集日没有该下划线键，故不以紧凑键或 ELTDX 值冒充该路径的样本；此决定仅核验固定 Easy-TDX 依赖的输出字段契约。",
+      "source_contract": {
+        "authority": "项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方 getstockinfo 仅作术语旁证",
+        "revision": "项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验",
+        "path": "Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键",
+        "locator": "FinanceInfo.zong_xianjinliu 字段（利润与现金流指标，单位元）；GetFinanceInfoCmd.parse_response 中 zong_xianjinliu 槽位及赋值",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/main/src/easy_tdx/models/finance.py"
+      }
+    }
+  ]
+}

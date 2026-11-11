@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "evidence_file": "adjudications/public_web/20261110_reports_em_rating_code.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "20261110-reports-emRatingCode-observed-categories",
+      "action": "verify_public_web_observation",
+      "verification_mode": "resolve_report_record_conflict",
+      "target": {
+        "source": "reports",
+        "code": "emRatingCode"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "emRatingCode",
+          "emRatingCode / emRatingValue"
+        ],
+        "meaning": [
+          "统一",
+          "评级代码/值"
+        ]
+      },
+      "canonical": "emRatingCode",
+      "meaning": "东财统一评级类别代码；与同记录 emRatingName 关联，完整代码表未知。",
+      "unit": "",
+      "rationale": "三只不同股票的官网研报行均显示东财统一评级名称，并按 infoCode、标题、发布日期与同日 raw_reports 记录精确绑定。2026-11-09 归档中 395 条非空 emRatingCode/emRatingName 配对，观察到 005=持有、006=增持、007=买入，且每个已见代码只对应一个名称。网页未展示代码本身；因此只裁定 emRatingCode 是东财统一评级类别代码，不外推未见代码或完整接口契约，不建立跨源映射。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/600309.html",
+        "https://data.eastmoney.com/report/600519.html",
+        "https://data.eastmoney.com/report/601288.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_eastmoney_rating_code",
+          "stock_code": "600309",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202610281831068169",
+            "title": "公司信息更新报告：Q3归母净利润超预期，新建磷酸铁锂产能加速打开成长空间",
+            "publishDate": "2026-10-28 00:00:00.000"
+          },
+          "raw_value": "007",
+          "page_current_rating": "买入",
+          "page_url": "https://data.eastmoney.com/report/600309.html",
+          "page_metric": "研报明细 > 东财评级",
+          "display_text": "买入"
+        },
+        {
+          "observation_type": "report_eastmoney_rating_code",
+          "stock_code": "600519",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611081831533384",
+            "title": "贵州茅台26Q3点评：市场化改革持续兑现",
+            "publishDate": "2026-11-08 00:00:00.000"
+          },
+          "raw_value": "007",
+          "page_current_rating": "买入",
+          "page_url": "https://data.eastmoney.com/report/600519.html",
+          "page_metric": "研报明细 > 东财评级",
+          "display_text": "买入"
+        },
+        {
+          "observation_type": "report_eastmoney_rating_code",
+          "stock_code": "601288",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611011831293587",
+            "title": "2026年三季报点评：营收利润增速回升",
+            "publishDate": "2026-11-01 00:00:00.000"
+          },
+          "raw_value": "006",
+          "page_current_rating": "增持",
+          "page_url": "https://data.eastmoney.com/report/601288.html",
+          "page_metric": "研报明细 > 东财评级",
+          "display_text": "增持"
+        }
+      ]
+    }
+  ]
+}

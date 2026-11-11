@@ -18,6 +18,12 @@
 
        .\scripts\run_with_system_python.ps1 scripts\audit_source_date_mapping.py
 
+   ZHB 通常在北京时间 08:00 后才更新到最近交易日。08:00 前的默认采集会跳过 ZHB；显式 `--only zhb` 会在发出请求前拒绝执行。08:00 后可用同一数据日单独补采并归并进原目录，例如：
+
+       .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261109 --only zhb
+
+   将示例日期替换为目标 `data_date`，不要换成运行自然日。日期化归档 `zhb_YYYYMMDD.zip` 的文件名是 ZHB 数据日依据；`raw_zhb.json` 的 `zhb_date` 和 `meta.json` 中该来源的 `as_of_date` 是解析后的副本，应与归档文件名核对。若归档文件名、解析副本或上游日期互相冲突，先查明并记录日期来源，不得静默选取一个日期定案。若上游仍返回旧日期，保留并标记为过期，碰撞按来源实际日期归位，不当作目标数据日的新样本。
+
 4. **按故障类型处置网络错误。** 项目采集 HTTP 请求遵守直连策略；不要为排障改动 TUN、VPN 或系统代理设置。Google Drive 上传按其独立配置处理。网络限速数值、风险组和请求层重试次数以 `scripts/README.md` 与适配器实现为准，本页不复制易变参数。
 
    | 证据/状态 | 处理方式 |

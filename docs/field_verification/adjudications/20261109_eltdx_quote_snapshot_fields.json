@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-quote-total-hand-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "total_hand"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "total_hand",
+      "meaning": "总成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2 的 QuoteSnapshot 与 CategoryQuoteRecord 均将 total_hand 定义为总成交量、单位手；2026-11-09 的 20 个 QuoteSnapshot 都含该字段，且与相同采集日 K 线 volume_lots 的绝对差均小于 1 手，作为量纲旁证而非跨源映射。仅确认 ELTDX 文档明确的来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 7709 批量快照 (0x054c) / 分类行情 (0x054b) 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054c -> client.quotes.get_snapshots(codes) -> QuoteSnapshot.{code}; 7709 0x054b -> client.quotes.list_by_category(...) / client.helpers.realtime_rank() -> CategoryQuoteRecord.{code}; captured as stocks.<code>.quote_snapshot.{code} and global_helpers.realtime_rank.rows[].raw.{code}",
+        "locator": "7709-批量快照 §作用、§解析字段；7709-分类行情 §接口与 RealtimeRank 关系、§CategoryQuoteRecord 字段；2026-11-09 保留采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-quote-current-hand-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "current_hand"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "current_hand",
+      "meaning": "现手（当前成交量）",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 将 QuoteSnapshot.current_hand 定义为现手、CategoryQuoteRecord.current_hand 定义为现量；此叶字段在项目注册表不能按对象拆分。0x054c 快照说明未注明单位，因此只定案语义，单位留空。2026-11-09 的 20 个 QuoteSnapshot 均含该字段。仅确认 ELTDX 文档明确的来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 7709 批量快照 (0x054c) / 分类行情 (0x054b) 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054c -> client.quotes.get_snapshots(codes) -> QuoteSnapshot.{code}; 7709 0x054b -> client.quotes.list_by_category(...) / client.helpers.realtime_rank() -> CategoryQuoteRecord.{code}; captured as stocks.<code>.quote_snapshot.{code} and global_helpers.realtime_rank.rows[].raw.{code}",
+        "locator": "7709-批量快照 §作用、§解析字段；7709-分类行情 §接口与 RealtimeRank 关系、§CategoryQuoteRecord 字段；2026-11-09 保留采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-quote-inside-dish-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "inside_dish"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "inside_dish",
+      "meaning": "内盘成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2 的 QuoteSnapshot 与 CategoryQuoteRecord 均将 inside_dish 定义为内盘、单位手；2026-11-09 的 20 个 QuoteSnapshot 均含该字段。内外盘与总量未被假设为逐行恒等分解。仅确认 ELTDX 文档明确的来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 7709 批量快照 (0x054c) / 分类行情 (0x054b) 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054c -> client.quotes.get_snapshots(codes) -> QuoteSnapshot.{code}; 7709 0x054b -> client.quotes.list_by_category(...) / client.helpers.realtime_rank() -> CategoryQuoteRecord.{code}; captured as stocks.<code>.quote_snapshot.{code} and global_helpers.realtime_rank.rows[].raw.{code}",
+        "locator": "7709-批量快照 §作用、§解析字段；7709-分类行情 §接口与 RealtimeRank 关系、§CategoryQuoteRecord 字段；2026-11-09 保留采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-quote-outer-disc-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "outer_disc"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "outer_disc",
+      "meaning": "外盘成交量",
+      "unit": "手",
+      "rationale": "ELTDX v3.3.2 的 QuoteSnapshot 与 CategoryQuoteRecord 均将 outer_disc 定义为外盘、单位手；2026-11-09 的 20 个 QuoteSnapshot 均含该字段。内外盘与总量未被假设为逐行恒等分解。仅确认 ELTDX 文档明确的来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 7709 批量快照 (0x054c) / 分类行情 (0x054b) 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054c -> client.quotes.get_snapshots(codes) -> QuoteSnapshot.{code}; 7709 0x054b -> client.quotes.list_by_category(...) / client.helpers.realtime_rank() -> CategoryQuoteRecord.{code}; captured as stocks.<code>.quote_snapshot.{code} and global_helpers.realtime_rank.rows[].raw.{code}",
+        "locator": "7709-批量快照 §作用、§解析字段；7709-分类行情 §接口与 RealtimeRank 关系、§CategoryQuoteRecord 字段；2026-11-09 保留采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-quote-open-amount-yuan-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "open_amount_yuan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_amount_yuan",
+      "meaning": "开盘金额",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 的 0x054c QuoteSnapshot 字段表将 open_amount_yuan 定义为开盘金额、单位元；2026-11-09 的 20 个 QuoteSnapshot 均含该字段。字段名和上游契约的单位一致。仅确认 ELTDX 文档明确的来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本 7709 批量快照 (0x054c) / 分类行情 (0x054b) 字段契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054c -> client.quotes.get_snapshots(codes) -> QuoteSnapshot.open_amount_yuan; captured as stocks.<code>.quote_snapshot.open_amount_yuan",
+        "locator": "7709-批量快照 §作用、§解析字段；7709-分类行情 §接口与 RealtimeRank 关系、§CategoryQuoteRecord 字段；2026-11-09 保留采集样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      }
+    }
+  ]
+}

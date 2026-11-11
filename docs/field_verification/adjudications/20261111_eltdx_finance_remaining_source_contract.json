@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eltdx-guo-jia-gu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "guo_jia_gu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "guo_jia_gu_raw_float",
+      "meaning": "国家股原始值（与发起人法人股、法人股为不同股本分类）",
+      "unit": "万股",
+      "rationale": "先按拼音拆解候选：guo_jia_gu 为国家股，raw_float 表示来源原始浮点值。ELTDX v3.3.2 FinanceRecord 0x0010 字段表将 guo_jia_gu_raw_float 明确定义为国家股原始值；单位口径将股本类 raw 值定义为万股。本决定只确认 TDX-eltdx 适配层的该完整路径，不把旧式国家股分类等同于发行人当前股东名单中的国有股东持股，也不建立其他来源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "7709 财务基础信息文档 §解析字段：guo_jia_gu_raw_float；§单位口径：股本类 raw 单位万股",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].guo_jia_gu_raw_float",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md#L253-L329"
+      }
+    },
+    {
+      "id": "20261111-eltdx-zhu-ying-li-run-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "zhu_ying_li_run_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zhu_ying_li_run_raw_float",
+      "meaning": "主营利润原始值（与营业利润字段分开定义）",
+      "unit": "千元",
+      "rationale": "先按拼音拆解候选：zhu_ying_li_run 为主营利润，raw_float 表示来源原始浮点值。ELTDX v3.3.2 FinanceRecord 0x0010 字段表将 zhu_ying_li_run_raw_float 定义为主营利润原始值，单位口径将金额类 raw 值定义为千元；它与同一记录中独立存在的 ying_ye_li_run_raw_float（营业利润）不是同一字段。本决定只确认 TDX-eltdx 适配层的该完整路径，不据名称创建其他来源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约",
+        "locator": "7709 财务基础信息文档 §解析字段：zhu_ying_li_run_raw_float 与 ying_ye_li_run_raw_float；§单位口径：金额类 raw 单位千元",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0].zhu_ying_li_run_raw_float",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md#L253-L329"
+      }
+    }
+  ]
+}

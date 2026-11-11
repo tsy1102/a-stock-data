@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-zhb-tipinfo-forecast-date-recent-alias",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "forecast_date_recent"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "forecast_date_recent",
+      "meaning": "最新业绩预告发布日",
+      "unit": "",
+      "rationale": "The parser copies ZHB-tipinfo raw column [11] into `forecast_date_recent`. The retained-archive audit checks 84815 pairs across 15 date-named archives with zero mismatches; all non-empty values are 8-digit date strings. The verified same-source raw anchor supplies the field meaning and unit. Official TdxQuant documentation lists `NoticeDate_Recent` as “最近业绩预告日”, which corroborates the semantic label. This decision verifies only the ZHB runtime alias to its raw column; it does not assert a cross-source value mapping to a separate TDX API response.",
+      "same_source_alias": {
+        "source": "ZHB-tipinfo",
+        "code": "[11]",
+        "evidence_path": "docs/field_verification/adjudications/20261110_zhb_tipinfo_date_alias_audit.csv",
+        "locator": "CSV per-archive equality totals for `forecast_date_recent` and raw column [11]; all archive rows and mismatch counts",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信量化平台 TdxQuant 官方扩展信息字段文档",
+        "revision": "官方页面核验日期 2026-11-10",
+        "path": "get_more_info_batch",
+        "locator": "NoticeDate_Recent",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    },
+    {
+      "id": "20261110-zhb-tipinfo-equity-incentive-date-alias",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "equity_incentive_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "equity_incentive_date",
+      "meaning": "股权激励预案/草案公告日",
+      "unit": "",
+      "rationale": "The parser copies ZHB-tipinfo raw column [21] into `equity_incentive_date`. The retained-archive audit checks 84815 pairs across 15 date-named archives with zero mismatches; all non-empty values are 8-digit date strings. The verified same-source raw anchor supplies the field meaning and unit. Official TdxQuant documentation lists `RecentIncentDate` as “最近股权激励预案日”, which corroborates the semantic label. This decision verifies only the ZHB runtime alias to its raw column; it does not assert a cross-source value mapping to a separate TDX API response.",
+      "same_source_alias": {
+        "source": "ZHB-tipinfo",
+        "code": "[21]",
+        "evidence_path": "docs/field_verification/adjudications/20261110_zhb_tipinfo_date_alias_audit.csv",
+        "locator": "CSV per-archive equality totals for `equity_incentive_date` and raw column [21]; all archive rows and mismatch counts",
+        "observed_pairs": 84815,
+        "mismatches": 0
+      },
+      "source_contract": {
+        "authority": "通达信量化平台 TdxQuant 官方扩展信息字段文档",
+        "revision": "官方页面核验日期 2026-11-10",
+        "path": "get_more_info_batch",
+        "locator": "RecentIncentDate",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

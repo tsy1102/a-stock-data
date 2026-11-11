@@ -20,6 +20,27 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 VERIFICATION_RELATIVE = Path("docs") / "field_verification"
 VALID_ACTION = "verify_public_web_observation"
 RESOLUTION = "verified_by_public_web_observation"
+DEFAULT_VERIFICATION_MODE = "resolve_placeholders"
+CONFIRM_EXISTING_MODE = "confirm_existing"
+REPORT_RECORD_CONFLICT_MODE = "resolve_report_record_conflict"
+REPORT_SOURCE_RATING_CODE_MODE = "verify_report_source_rating_code"
+REPORT_RECORD_OBSERVATION_TYPE = "report_author_list"
+REPORT_RATING_OBSERVATION_TYPE = "report_previous_rating_name"
+REPORT_EASTMONEY_RATING_CODE_OBSERVATION_TYPE = "report_eastmoney_rating_code"
+REPORT_SOURCE_RATING_CODE_OBSERVATION_TYPE = "report_source_rating_code"
+REPORT_RECORD_FIELDS = {
+    "author",
+    "researcher",
+    "lastEmRatingName",
+    "emRatingCode",
+    "sRatingCode",
+}
+VERIFICATION_MODES = {
+    DEFAULT_VERIFICATION_MODE,
+    CONFIRM_EXISTING_MODE,
+    REPORT_RECORD_CONFLICT_MODE,
+    REPORT_SOURCE_RATING_CODE_MODE,
+}
 PLACEHOLDER_MEANINGS = {"", "待破解", "待确认", "待验证", "未验证", "未定义", "未知"}
 OFFICIAL_PROVIDER_HOSTS = {"Eastmoney": {"data.eastmoney.com"}}
 
@@ -34,6 +55,22 @@ def _text(value: Any, label: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{label} must be a non-empty string")
     return value.strip()
+
+
+def _optional_text(value: Any, label: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{label} must be a string")
+    return value.strip()
+
+
+def _verification_mode(decision: dict[str, Any]) -> str:
+    mode = _text(
+        decision.get("verification_mode", DEFAULT_VERIFICATION_MODE),
+        "decision.verification_mode",
+    )
+    if mode not in VERIFICATION_MODES:
+        raise ValueError(f"unsupported public-page verification_mode: {mode}")
+    return mode
 
 
 def _decimal(value: Any, label: str) -> Decimal:
@@ -100,10 +137,19 @@ def _stock_rows(payload: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
     return rows
 
 
-def _raw_value(repo_root: Path, source_file: Any, stock_code: str, field_code: str) -> Any:
+def _raw_value(
+    repo_root: Path, source: str, source_file: Any, stock_code: str, field_code: str
+) -> Any:
     path, _ = _sample_path(repo_root, source_file, "source_file")
-    if not path.is_file() or path.name != "raw_push2.json":
-        raise ValueError("source_file must reference an archived raw_push2.json")
+    expected_files = {
+        "东财-push2(stock/get)": "raw_push2.json",
+        "东财-ulist239(np/get)": "raw_ulist239.json",
+    }
+    expected_file = expected_files.get(source)
+    if expected_file is None:
+        raise ValueError(f"public-page observation does not support source {source!r}")
+    if not path.is_file() or path.name != expected_file:
+        raise ValueError(f"source_file for {source} must reference an archived {expected_file}")
     date_dir = path.parent.name
     if not re.fullmatch(r"20\d{6}", date_dir) or date_dir < "20261015":
         raise ValueError("source_file must use a retained sample date from 20261015 onward")
@@ -114,6 +160,105 @@ def _raw_value(repo_root: Path, source_file: Any, stock_code: str, field_code: s
                 raise ValueError(f"{stock_code} has no {field_code} in {source_file}")
             return data[field_code]
     raise ValueError(f"{stock_code} is absent from {source_file}")
+
+
+def _report_record(
+    repo_root: Path,
+    source_file: Any,
+    stock_code: str,
+    record_identity: Any,
+) -> dict[str, Any]:
+    path, _ = _sample_path(repo_root, source_file, "source_file")
+    if path.name != "raw_reports.json":
+        raise ValueError("reports observations must reference raw_reports.json")
+    date_dir = path.parent.name
+    if not re.fullmatch(r"20\d{6}", date_dir) or date_dir < "20261015":
+        raise ValueError("source_file must use a retained sample date from 20261015 onward")
+    identity = _object(record_identity, "page_observation.record_identity")
+    if set(identity) != {"infoCode", "title", "publishDate"}:
+        raise ValueError("record_identity must contain exactly infoCode, title, and publishDate")
+    for key in ("infoCode", "title", "publishDate"):
+        _text(identity.get(key), f"record_identity.{key}")
+    payload = _read_json(path, "raw reports sample")
+    stocks = payload.get("stocks")
+    if not isinstance(stocks, dict):
+        raise ValueError("raw_reports.json stocks must be an object")
+    records = stocks.get(stock_code)
+    if not isinstance(records, list):
+        raise ValueError(f"{stock_code} has no report records in {source_file}")
+    matches = [
+        record
+        for record in records
+        if isinstance(record, dict) and record.get("infoCode") == identity["infoCode"]
+    ]
+    if len(matches) != 1:
+        raise ValueError("record_identity.infoCode must uniquely select one raw report")
+    record = matches[0]
+    if record.get("stockCode") != stock_code:
+        raise ValueError("selected raw report stockCode differs from the stock key")
+    for key in ("infoCode", "title", "publishDate"):
+        if record.get(key) != identity[key]:
+            raise ValueError(f"record_identity.{key} differs from the selected raw report")
+    return record
+
+
+def _report_rating_code_name_values(repo_root: Path, source_file: str) -> dict[str, set[str]]:
+    path, _ = _sample_path(repo_root, source_file, "page_observation.source_file")
+    payload = _read_json(path, "raw reports sample")
+    stocks = payload.get("stocks")
+    if not isinstance(stocks, dict):
+        raise ValueError("raw_reports.json stocks must be an object")
+    values: dict[str, set[str]] = {}
+    for stock_code, stock_rows in stocks.items():
+        if not isinstance(stock_rows, list):
+            raise ValueError(f"raw report rows for {stock_code} must be a list")
+        for record in stock_rows:
+            if not isinstance(record, dict):
+                raise ValueError(f"raw report rows for {stock_code} must contain objects")
+            code = record.get("emRatingCode")
+            name = record.get("emRatingName")
+            if isinstance(code, str) and code and isinstance(name, str) and name:
+                values.setdefault(code, set()).add(name)
+    return values
+
+
+def _report_source_rating_code_name_values(
+    repo_root: Path, source_file: str
+) -> tuple[dict[tuple[str, str], set[str]], dict[str, set[str]]]:
+    path, _ = _sample_path(repo_root, source_file, "page_observation.source_file")
+    payload = _read_json(path, "raw reports sample")
+    stocks = payload.get("stocks")
+    if not isinstance(stocks, dict):
+        raise ValueError("raw_reports.json stocks must be an object")
+    scoped_values: dict[tuple[str, str], set[str]] = {}
+    global_values: dict[str, set[str]] = {}
+    for stock_code, stock_rows in stocks.items():
+        if not isinstance(stock_rows, list):
+            raise ValueError(f"raw report rows for {stock_code} must be a list")
+        for record in stock_rows:
+            if not isinstance(record, dict):
+                raise ValueError(f"raw report rows for {stock_code} must contain objects")
+            organization = record.get("orgSName")
+            code = record.get("sRatingCode")
+            name = record.get("sRatingName")
+            if code not in (None, "") and name not in (None, ""):
+                if not isinstance(organization, str) or not organization:
+                    raise ValueError("non-empty source rating code/name pair is missing orgSName")
+                if not isinstance(code, str) or not isinstance(name, str):
+                    raise ValueError("source rating code/name pairs must be strings")
+            if (
+                isinstance(organization, str)
+                and organization
+                and isinstance(code, str)
+                and code
+                and isinstance(name, str)
+                and name
+            ):
+                scoped_values.setdefault((organization, code), set()).add(name)
+                global_values.setdefault(code, set()).add(name)
+    if any(len(names) != 1 for names in scoped_values.values()):
+        raise ValueError("capture violates one sRatingName within its organization+code scope")
+    return scoped_values, global_values
 
 
 def _validate_external_urls(value: Any, label: str) -> list[str]:
@@ -150,6 +295,39 @@ def _validate_official_provider_urls(source: str, urls: list[str], repo_root: Pa
 
 
 def _observation_evidence_line(source: str, code: str, observation: dict[str, Any]) -> str:
+    if observation.get("observation_type") in {
+        REPORT_RECORD_OBSERVATION_TYPE,
+        REPORT_RATING_OBSERVATION_TYPE,
+        REPORT_EASTMONEY_RATING_CODE_OBSERVATION_TYPE,
+        REPORT_SOURCE_RATING_CODE_OBSERVATION_TYPE,
+    }:
+        payload = {
+            "source": source,
+            "code": code,
+            "observation_type": observation["observation_type"],
+            "stock_code": observation["stock_code"],
+            "data_date": observation["data_date"],
+            "source_file": observation["source_file"],
+            "record_identity": observation["record_identity"],
+            "raw_value": observation["raw_value"],
+            "page_url": observation["page_url"],
+            "page_metric": observation["page_metric"],
+            "display_text": observation["display_text"],
+        }
+        if observation.get("observation_type") == REPORT_RECORD_OBSERVATION_TYPE:
+            payload["page_authors"] = observation["page_authors"]
+        elif observation.get("observation_type") == REPORT_RATING_OBSERVATION_TYPE:
+            payload["page_current_rating"] = observation["page_current_rating"]
+            payload["page_rating_change"] = observation["page_rating_change"]
+        elif observation.get("observation_type") == REPORT_EASTMONEY_RATING_CODE_OBSERVATION_TYPE:
+            payload["page_current_rating"] = observation["page_current_rating"]
+        else:
+            payload["raw_organization"] = observation["raw_organization"]
+            payload["page_source_rating"] = observation["page_source_rating"]
+            payload["match_type"] = observation["match_type"]
+        return "[observation] " + json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
     payload = {
         "source": source,
         "code": code,
@@ -165,9 +343,277 @@ def _observation_evidence_line(source: str, code: str, observation: dict[str, An
         "display_text": observation["display_text"],
         "missing_as_zero": observation["missing_as_zero"],
     }
+    if "raw_to_display_factor" in observation:
+        payload["raw_to_display_factor"] = observation["raw_to_display_factor"]
     return "[observation] " + json.dumps(
         payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
+
+
+def _validate_report_record_observations(
+    decision: dict[str, Any], repo_root: Path, evidence_text: str
+) -> list[dict[str, Any]]:
+    target = _object(decision.get("target"), "decision.target")
+    source = _text(target.get("source"), "target.source")
+    code = _text(target.get("code"), "target.code")
+    if source != "reports" or code not in REPORT_RECORD_FIELDS:
+        raise ValueError("report record observations do not support this reports field")
+    expected_mode = (
+        REPORT_SOURCE_RATING_CODE_MODE if code == "sRatingCode" else REPORT_RECORD_CONFLICT_MODE
+    )
+    if _verification_mode(decision) != expected_mode:
+        raise ValueError("report record observations use a mode that does not match the target")
+    unit = _optional_text(decision.get("unit"), "decision.unit")
+    if unit:
+        raise ValueError("report record fields must keep an empty physical unit")
+    urls = _validate_external_urls(decision.get("external_evidence"), "external_evidence")
+    _validate_official_provider_urls(source, urls, repo_root)
+    rows = decision.get("page_observations")
+    if not isinstance(rows, list) or len(rows) < 3:
+        raise ValueError("report record observations require at least three stock records")
+
+    checked: list[dict[str, Any]] = []
+    seen_stocks: set[str] = set()
+    seen_info_codes: set[str] = set()
+    dates: set[str] = set()
+    rating_code_names: dict[str, set[str]] | None = None
+    source_rating_code_names: tuple[dict[tuple[str, str], set[str]], dict[str, set[str]]] | None = (
+        None
+    )
+    source_rating_match_counts = {"exact": 0, "approximate": 0}
+    for raw_observation in rows:
+        observation = _object(raw_observation, "page_observation")
+        expected_observation_type = (
+            REPORT_RECORD_OBSERVATION_TYPE
+            if code in {"author", "researcher"}
+            else (
+                REPORT_RATING_OBSERVATION_TYPE
+                if code == "lastEmRatingName"
+                else (
+                    REPORT_SOURCE_RATING_CODE_OBSERVATION_TYPE
+                    if code == "sRatingCode"
+                    else REPORT_EASTMONEY_RATING_CODE_OBSERVATION_TYPE
+                )
+            )
+        )
+        if observation.get("observation_type") != expected_observation_type:
+            raise ValueError("page_observation has an unsupported report observation_type")
+        stock_code = _text(observation.get("stock_code"), "page_observation.stock_code")
+        if not re.fullmatch(r"\d{6}", stock_code) or stock_code in seen_stocks:
+            raise ValueError("report record observations require distinct six-digit stock codes")
+        seen_stocks.add(stock_code)
+        data_date = _text(observation.get("data_date"), "page_observation.data_date")
+        try:
+            if not re.fullmatch(r"20\d{6}", data_date):
+                raise ValueError
+            date.fromisoformat(f"{data_date[:4]}-{data_date[4:6]}-{data_date[6:8]}")
+        except ValueError as exc:
+            raise ValueError("page_observation.data_date must be YYYYMMDD") from exc
+        dates.add(data_date)
+        source_file = _text(observation.get("source_file"), "page_observation.source_file")
+        source_path, _ = _sample_path(repo_root, source_file, "page_observation.source_file")
+        if source_path.parent.name != data_date:
+            raise ValueError("page observation date must match its raw source file directory")
+        identity = _object(observation.get("record_identity"), "page_observation.record_identity")
+        info_code = _text(identity.get("infoCode"), "record_identity.infoCode")
+        if info_code in seen_info_codes:
+            raise ValueError("report observations must use distinct infoCode values")
+        seen_info_codes.add(info_code)
+        record = _report_record(repo_root, source_file, stock_code, identity)
+        raw_value = record.get(code)
+        if raw_value is None or raw_value != observation.get("raw_value"):
+            raise ValueError(f"declared raw_value differs from archived {stock_code}::{code}")
+
+        normalized_details: dict[str, Any]
+        if code in {"author", "researcher"}:
+            author_ids = record.get("authorID")
+            if (
+                not isinstance(author_ids, list)
+                or not author_ids
+                or any(
+                    not isinstance(item, str) or not re.fullmatch(r"\d+", item)
+                    for item in author_ids
+                )
+            ):
+                raise ValueError(
+                    "selected raw report must contain a non-empty authorID string list"
+                )
+            page_authors_value = observation.get("page_authors")
+            if not isinstance(page_authors_value, list) or not page_authors_value:
+                raise ValueError("page_authors must be a non-empty list")
+            page_authors: list[dict[str, str]] = []
+            for raw_author in page_authors_value:
+                author = _object(raw_author, "page_author")
+                if set(author) != {"author_id", "name"}:
+                    raise ValueError("page_author must contain exactly author_id and name")
+                author_id = _text(author.get("author_id"), "page_author.author_id")
+                name = _text(author.get("name"), "page_author.name")
+                if not re.fullmatch(r"\d+", author_id):
+                    raise ValueError("page_author.author_id must contain only digits")
+                page_authors.append({"author_id": author_id, "name": name})
+            page_ids = [author["author_id"] for author in page_authors]
+            page_names = [author["name"] for author in page_authors]
+            if page_ids != author_ids:
+                raise ValueError("official author-link IDs differ from archived reports.authorID")
+            if code == "author":
+                if not isinstance(raw_value, list) or not raw_value:
+                    raise ValueError("reports.author must be a non-empty string list")
+                expected_authors: list[dict[str, str]] = []
+                for item in raw_value:
+                    if not isinstance(item, str):
+                        raise ValueError("reports.author items must be strings")
+                    author_id, separator, name = item.partition(".")
+                    if not separator or not re.fullmatch(r"\d+", author_id) or not name.strip():
+                        raise ValueError("reports.author items must use the ID.name format")
+                    expected_authors.append({"author_id": author_id, "name": name.strip()})
+                if expected_authors != page_authors:
+                    raise ValueError("official author links differ from archived reports.author")
+            else:
+                if not isinstance(raw_value, str) or not raw_value:
+                    raise ValueError(
+                        "reports.researcher must be a non-empty comma-delimited string"
+                    )
+                raw_names = [name.strip() for name in raw_value.split(",")]
+                if any(not name for name in raw_names) or raw_names != page_names:
+                    raise ValueError(
+                        "official author names differ from archived reports.researcher"
+                    )
+            expected_page_metric = "研报明细 > 作者"
+            expected_display_text = " ".join(page_names)
+            normalized_details = {"page_authors": page_authors}
+        elif code == "lastEmRatingName":
+            if not isinstance(raw_value, str) or not raw_value:
+                raise ValueError("reports.lastEmRatingName must be a non-empty string")
+            if record.get("ratingChange") != 3:
+                raise ValueError("previous rating name can only be verified for unchanged ratings")
+            page_current_rating = _text(
+                observation.get("page_current_rating"), "page_observation.page_current_rating"
+            )
+            page_rating_change = _text(
+                observation.get("page_rating_change"), "page_observation.page_rating_change"
+            )
+            if record.get("emRatingName") != page_current_rating:
+                raise ValueError("official Eastmoney rating differs from archived emRatingName")
+            if raw_value != page_current_rating or page_rating_change != "维持":
+                raise ValueError("lastEmRatingName requires the current rating and 维持 page label")
+            expected_page_metric = "研报明细 > 东财评级 / 评级变动"
+            expected_display_text = f"{page_current_rating} / {page_rating_change}"
+            normalized_details = {
+                "page_current_rating": page_current_rating,
+                "page_rating_change": page_rating_change,
+            }
+        elif code == "sRatingCode":
+            if not isinstance(raw_value, str) or not re.fullmatch(r"\d+", raw_value):
+                raise ValueError("reports.sRatingCode must be a non-empty decimal string")
+            raw_source_rating = record.get("sRatingName")
+            raw_organization = record.get("orgSName")
+            if not isinstance(raw_source_rating, str) or not raw_source_rating:
+                raise ValueError("selected raw report must contain a source sRatingName")
+            if not isinstance(raw_organization, str) or not raw_organization:
+                raise ValueError("selected raw report must contain orgSName for code scope")
+            page_source_rating = _text(
+                observation.get("page_source_rating"),
+                "page_observation.page_source_rating",
+            )
+            if page_source_rating == raw_source_rating:
+                match_type = "exact"
+            elif raw_source_rating == "买入(Buy)" and page_source_rating == "买入":
+                match_type = "approximate"
+            else:
+                raise ValueError("official source-rating text differs from archived sRatingName")
+            if observation.get("match_type") != match_type:
+                raise ValueError(
+                    "match_type must distinguish exact from the supported Buy suffix match"
+                )
+            if observation.get("raw_organization") != raw_organization:
+                raise ValueError("declared raw_organization differs from archived orgSName")
+            if source_rating_code_names is None:
+                source_rating_code_names = _report_source_rating_code_name_values(
+                    repo_root, source_file
+                )
+            scoped_names, global_names = source_rating_code_names
+            if scoped_names.get((raw_organization, raw_value)) != {raw_source_rating}:
+                raise ValueError(
+                    "archived sRatingCode does not have one sRatingName within its organization"
+                )
+            if len(global_names.get(raw_value, set())) < 2:
+                raise ValueError(
+                    "capture does not demonstrate that sRatingCode mappings are not globally unique"
+                )
+            source_rating_match_counts[match_type] += 1
+            expected_page_metric = "研报正文 > 投资建议/评级原文"
+            expected_display_text = _text(
+                observation.get("display_text"), "page_observation.display_text"
+            )
+            if page_source_rating not in expected_display_text:
+                raise ValueError("display_text must contain the observed source rating")
+            normalized_details = {
+                "raw_organization": raw_organization,
+                "page_source_rating": page_source_rating,
+                "match_type": match_type,
+            }
+        else:
+            if not isinstance(raw_value, str) or not re.fullmatch(r"\d+", raw_value):
+                raise ValueError("reports.emRatingCode must be a non-empty decimal string")
+            page_current_rating = _text(
+                observation.get("page_current_rating"), "page_observation.page_current_rating"
+            )
+            if record.get("emRatingName") != page_current_rating:
+                raise ValueError("official Eastmoney rating differs from archived emRatingName")
+            if rating_code_names is None:
+                rating_code_names = _report_rating_code_name_values(repo_root, source_file)
+            if rating_code_names.get(raw_value) != {page_current_rating}:
+                raise ValueError(
+                    "archived emRatingCode does not have one consistent emRatingName in this capture"
+                )
+            expected_page_metric = "研报明细 > 东财评级"
+            expected_display_text = page_current_rating
+            normalized_details = {"page_current_rating": page_current_rating}
+
+        page_url = _text(observation.get("page_url"), "page_observation.page_url")
+        if page_url not in urls:
+            raise ValueError("page_url must appear in external_evidence")
+        parsed_url = urlparse(page_url)
+        expected_page = (
+            f"/report/info/{info_code}.html"
+            if code == "sRatingCode"
+            else f"/report/{stock_code}.html"
+        )
+        if parsed_url.path != expected_page or parsed_url.query or parsed_url.fragment:
+            raise ValueError("page_url must be the official page for the observed report record")
+        page_metric = _text(observation.get("page_metric"), "page_observation.page_metric")
+        if page_metric != expected_page_metric:
+            raise ValueError("page_metric does not identify the official report columns")
+        display_text = _text(observation.get("display_text"), "page_observation.display_text")
+        if code != "sRatingCode" and display_text != expected_display_text:
+            raise ValueError("display_text differs from the observed report fields")
+        normalized_observation = {
+            "observation_type": expected_observation_type,
+            "stock_code": stock_code,
+            "data_date": data_date,
+            "source_file": source_file.replace("\\", "/"),
+            "record_identity": {
+                "infoCode": identity["infoCode"],
+                "title": identity["title"],
+                "publishDate": identity["publishDate"],
+            },
+            "raw_value": raw_value,
+            "page_url": page_url,
+            "page_metric": page_metric,
+            "display_text": display_text,
+            **normalized_details,
+        }
+        required_line = _observation_evidence_line(source, code, normalized_observation)
+        if required_line not in evidence_text:
+            raise ValueError(
+                f"evidence_file lacks the exact structured report observation for {stock_code}::{code}"
+            )
+        checked.append(normalized_observation)
+    if len(dates) != 1:
+        raise ValueError("report observations for one field must use a single capture date")
+    if code == "sRatingCode" and source_rating_match_counts["exact"] < 2:
+        raise ValueError("sRatingCode requires at least two exact source-rating text matches")
+    return checked
 
 
 def _validate_observations(
@@ -177,6 +623,8 @@ def _validate_observations(
         _object(decision.get("target"), "decision.target").get("source"), "target.source"
     )
     code = _text(decision["target"].get("code"), "target.code")
+    if source == "reports":
+        return _validate_report_record_observations(decision, repo_root, evidence_text)
     if not re.fullmatch(r"f\d+", code):
         raise ValueError("public-page source observations currently require an fNN code path")
     unit = _text(decision.get("unit"), "decision.unit")
@@ -207,7 +655,7 @@ def _validate_observations(
         source_path, _ = _sample_path(repo_root, source_file, "page_observation.source_file")
         if source_path.parent.name != data_date:
             raise ValueError("page observation date must match its raw source file directory")
-        raw_value = _raw_value(repo_root, source_file, stock_code, code)
+        raw_value = _raw_value(repo_root, source, source_file, stock_code, code)
         declared_raw = observation.get("raw_value")
         if isinstance(raw_value, (int, float)) and isinstance(declared_raw, (int, float)):
             if _decimal(raw_value, "raw source value") != _decimal(
@@ -218,8 +666,19 @@ def _validate_observations(
             raise ValueError(f"declared raw_value differs from archived {stock_code}::{code}")
 
         display_unit = _text(observation.get("display_unit"), "page_observation.display_unit")
-        if display_unit != unit:
-            raise ValueError("page display unit must match the adjudicated field unit")
+        factor_value = observation.get("raw_to_display_factor")
+        if factor_value is None:
+            if display_unit != unit:
+                raise ValueError("different page and raw units require raw_to_display_factor")
+            raw_to_display_factor = Decimal(1)
+        else:
+            raw_to_display_factor = _decimal(factor_value, "page_observation.raw_to_display_factor")
+            if raw_to_display_factor <= 0:
+                raise ValueError("raw_to_display_factor must be positive")
+            if display_unit == unit and raw_to_display_factor != 1:
+                raise ValueError(
+                    "raw_to_display_factor must be 1 when page and raw units are equal"
+                )
         display_value = _decimal(observation.get("display_value"), "page_observation.display_value")
         increment = _decimal(
             observation.get("display_increment"), "page_observation.display_increment"
@@ -234,7 +693,7 @@ def _validate_observations(
         else:
             if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
                 raise ValueError("raw source value must be numeric or the '-' sentinel")
-            comparison_value = _decimal(raw_value, "raw source value")
+            comparison_value = _decimal(raw_value, "raw source value") * raw_to_display_factor
         if abs(comparison_value - display_value) > increment / Decimal(2):
             raise ValueError(
                 f"page value is outside its stated rounding precision for {stock_code}"
@@ -258,6 +717,10 @@ def _validate_observations(
             "display_text": display_text,
             "missing_as_zero": missing_as_zero,
         }
+        if factor_value is not None:
+            normalized_observation["raw_to_display_factor"] = format(
+                raw_to_display_factor.normalize(), "f"
+            )
         required_line = _observation_evidence_line(source, code, normalized_observation)
         if required_line not in evidence_text:
             raise ValueError(
@@ -469,7 +932,10 @@ def _safe_resolvable_conflict(row: dict[str, Any]) -> bool:
     )
 
 
-def _validate_prior_state(row: dict[str, Any], decision: dict[str, Any]) -> None:
+def _validate_prior_state(
+    row: dict[str, Any], decision: dict[str, Any], after: dict[str, str]
+) -> None:
+    verification_mode = _verification_mode(decision)
     previous_status = _text(decision.get("previous_status"), "decision.previous_status")
     previous_resolution = _text(
         decision.get("previous_status_resolution"), "decision.previous_status_resolution"
@@ -486,6 +952,70 @@ def _validate_prior_state(row: dict[str, Any], decision: dict[str, Any]) -> None
         raise TypeError("previous_attribute_conflicts must be an object")
     if row.get("attribute_conflicts", {}) != previous_conflicts:
         raise ValueError("target attribute conflicts changed since public-page review")
+    if verification_mode == REPORT_SOURCE_RATING_CODE_MODE:
+        target = _object(decision.get("target"), "decision.target")
+        if (target.get("source"), target.get("code")) != ("reports", "sRatingCode"):
+            raise ValueError("verify_report_source_rating_code only supports reports::sRatingCode")
+        if (
+            previous_status != "unverified"
+            or previous_resolution != "registry_status_only_single_source"
+            or previous_conflicts
+        ):
+            raise ValueError(
+                "source rating code verification requires an unverified field without metadata conflicts"
+            )
+        if not after["canonical"] or after["meaning"] in PLACEHOLDER_MEANINGS:
+            raise ValueError("source rating code verification requires a bounded meaning")
+        if after["unit"] != previous["unit"]:
+            raise ValueError("source rating code verification cannot alter the unit")
+        return
+    if verification_mode == REPORT_RECORD_CONFLICT_MODE:
+        target = _object(decision.get("target"), "decision.target")
+        identity = (target.get("source"), target.get("code"))
+        if identity not in {
+            ("reports", "author"),
+            ("reports", "researcher"),
+            ("reports", "lastEmRatingName"),
+            ("reports", "emRatingCode"),
+        }:
+            raise ValueError(
+                "resolve_report_record_conflict only supports reports::author, reports::researcher, reports::lastEmRatingName, and reports::emRatingCode"
+            )
+        if previous_status != "conflict" or previous_resolution != "reference_status_conflict":
+            raise ValueError(
+                "report record conflict resolution requires a reference-status conflict"
+            )
+        if not previous_conflicts or set(previous_conflicts) - {"canonical", "meaning"}:
+            raise ValueError(
+                "report record conflict resolution only accepts canonical/meaning conflicts"
+            )
+        for key in previous_conflicts:
+            values = previous_conflicts[key]
+            if (
+                not isinstance(values, list)
+                or not values
+                or any(not isinstance(item, str) for item in values)
+            ):
+                raise ValueError(f"previous {key} conflict must be a non-empty string list")
+        if not after["canonical"] or after["meaning"] in PLACEHOLDER_MEANINGS:
+            raise ValueError("report record conflict resolution requires canonical and meaning")
+        if after["unit"] != previous["unit"]:
+            raise ValueError("report record conflict resolution cannot alter the unit")
+        for key in ("canonical", "meaning"):
+            if key not in previous_conflicts and after[key] != previous[key]:
+                raise ValueError(
+                    f"report record conflict resolution cannot alter established {key}"
+                )
+        return
+    if verification_mode == CONFIRM_EXISTING_MODE:
+        if previous_status not in {"candidate", "unverified"}:
+            raise ValueError("confirm_existing only accepts candidate or unverified source fields")
+        if after != previous:
+            raise ValueError("confirm_existing requires unchanged canonical, meaning, and unit")
+        if previous_conflicts:
+            raise ValueError("confirm_existing cannot be used while attribute conflicts remain")
+        return
+
     if set(previous_conflicts) - {"canonical"}:
         raise ValueError("public-page adjudication cannot resolve meaning or unit conflicts")
     if previous_status == "conflict":
@@ -555,6 +1085,7 @@ def apply_public_web_observation_adjudications(
         "public_web_observation_verified": 0,
         "status_conflicts_resolved": 0,
         "metadata_resolved": 0,
+        "metadata_confirmed": 0,
         "already_applied": 0,
         "mappings_added": 0,
     }
@@ -582,9 +1113,10 @@ def apply_public_web_observation_adjudications(
             raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
 
         observations = _validate_observations(decision, repo_root, evidence_text)
+        verification_mode = _verification_mode(decision)
         canonical = _text(decision.get("canonical"), "decision.canonical")
         meaning = _text(decision.get("meaning"), "decision.meaning")
-        unit = _text(decision.get("unit"), "decision.unit")
+        unit = _optional_text(decision.get("unit"), "decision.unit")
         if meaning in PLACEHOLDER_MEANINGS:
             raise ValueError("decision.meaning must resolve the placeholder")
         after = {"canonical": canonical, "meaning": meaning, "unit": unit}
@@ -616,6 +1148,8 @@ def apply_public_web_observation_adjudications(
             ),
             "page_observations": observations,
         }
+        if "verification_mode" in decision:
+            adjudication["verification_mode"] = verification_mode
         formula_summary = formula_summaries.get(target[1])
         if formula_summary is not None:
             adjudication["formula_validation"] = formula_summary
@@ -635,7 +1169,7 @@ def apply_public_web_observation_adjudications(
             stats["already_applied"] += 1
             continue
 
-        _validate_prior_state(row, decision)
+        _validate_prior_state(row, decision, after)
         current_conflicts = row.get("attribute_conflicts", {})
         if not isinstance(previous_conflicts, dict) or not isinstance(current_conflicts, dict):
             raise TypeError("previous_attribute_conflicts and target conflicts must be objects")
@@ -685,7 +1219,10 @@ def apply_public_web_observation_adjudications(
             ids.append(decision_id)
         if previous_status == "conflict":
             stats["status_conflicts_resolved"] += 1
-        stats["metadata_resolved"] += 1
+        if verification_mode == CONFIRM_EXISTING_MODE:
+            stats["metadata_confirmed"] += 1
+        else:
+            stats["metadata_resolved"] += 1
         stats["public_web_observation_verified"] += 1
 
     return updated, stats
@@ -722,7 +1259,22 @@ def validate_registry_adjudications(
             if isinstance(item, dict) and item.get("action") == VALID_ACTION
         ]
         if row.get("status_resolution") == RESOLUTION:
-            if row.get("status") != "verified" or not all(_metadata(row).values()):
+            metadata = _metadata(row)
+            unitless_report_record = (
+                source == "reports"
+                and code in REPORT_RECORD_FIELDS
+                and bool(public_records)
+                and all(
+                    item.get("verification_mode") == REPORT_RECORD_CONFLICT_MODE
+                    or item.get("verification_mode") == REPORT_SOURCE_RATING_CODE_MODE
+                    for item in public_records
+                )
+            )
+            metadata_complete = bool(metadata["canonical"] and metadata["meaning"])
+            metadata_complete = metadata_complete and bool(
+                metadata["unit"] or unitless_report_record
+            )
+            if row.get("status") != "verified" or not metadata_complete:
                 problems.append(
                     f"{identity[0]}::{identity[1]} public-page verified row is incomplete"
                 )
@@ -782,6 +1334,8 @@ def validate_registry_adjudications(
                     record.get("action") != VALID_ACTION
                     or record.get("status") != "verified"
                     or record.get("evidence_basis") != "official_page_value_observation"
+                    or record.get("verification_mode")
+                    != (_verification_mode(decision) if "verification_mode" in decision else None)
                     or record.get("metadata_change", {}).get("after")
                     != _metadata_from_decision(decision)
                     or record.get("metadata_change", {}).get("before")

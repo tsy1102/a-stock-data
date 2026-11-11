@@ -211,9 +211,9 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1869/2486/347)" in output
-    assert "parity[unverified-candidates]: PASS 121" in output
-    assert "parity[source-contract-adjudications]: PASS 8" in output
+    assert "registry-core(1872/2486/347)" in output
+    assert "parity[unverified-candidates]: PASS 119" in output
+    assert "parity[source-contract-adjudications]: PASS 10" in output
     assert "parity[adjudication-addenda]: PASS 8" in output
     assert "parity[capture-path-addenda]: PASS 2" in output
     assert "parity[field_matrix]: PASS" in output
@@ -247,19 +247,159 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         ("TDX(双命名源)", "ask3"),
         ("TDX(双命名源)", "ask4"),
         ("TDX(双命名源)", "ask5"),
+        ("TDX(双命名源)", "zhuying_shouru"),
+        ("TDX(双命名源)", "zong_xianjinliu"),
     }
     assert matrix == {
-        "eps_raw": {"TDX-eltdx(适配层)"},
+        "equity_incentive_date": {"ZHB-tipinfo"},
+        "eps_raw": {"TDX(双命名源)", "TDX-eltdx(适配层)"},
+        "f59": {"东财-em_kline_f61"},
+        "forecast_date_recent": {"ZHB-tipinfo"},
+        "forecast_type": {"ZHB-tipinfo"},
+        "gudong_renshu": {"TDX(双命名源)"},
+        "gu_dong_ren_shu_raw_float": {"TDX-eltdx(适配层)"},
+        "guo_jia_gu_raw_float": {"TDX-eltdx(适配层)"},
         "updated_date": {"TDX-eltdx(适配层)"},
         "ipo_date": {"TDX-eltdx(适配层)"},
+        "updated_date_raw": {"TDX-eltdx(适配层)"},
+        "ipo_date_raw": {"TDX-eltdx(适配层)"},
+        "limit_up_price": {"TDX-eltdx(适配层)"},
+        "limit_down_price": {"TDX-eltdx(适配层)"},
+        "absolute_index": {"TDX-eltdx(适配层)"},
+        "auction_matched_volume": {"TDX-eltdx(适配层)"},
+        "auction_unmatched_signed_volume": {"TDX-eltdx(适配层)"},
+        "event_kind": {"TDX-eltdx(适配层)"},
+        "order_count": {"TDX-eltdx(适配层)"},
+        "side": {"TDX-eltdx(适配层)"},
+        "status_raw": {"TDX-eltdx(适配层)"},
         "province_raw": {"TDX-eltdx(适配层)"},
         "industry_raw": {"TDX-eltdx(适配层)"},
         "record_hex": {"TDX-eltdx(适配层)"},
-        "jing_li_run_raw_float": {"TDX-eltdx(适配层)"},
-        "liu_tong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},
-        "zong_gu_ben_raw_float": {"TDX-eltdx(适配层)"},
-        "zong_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "b_gu_raw_float": {"TDX-eltdx(适配层)"},
+        "h_gu_raw_float": {"TDX-eltdx(适配层)"},
+        "finance_info_raw": {"TDX-eltdx(适配层)"},
+        "jing_li_run_raw_float": {"TDX(双命名源)", "TDX-eltdx(适配层)"},
+        "liu_tong_gu_ben_raw_float": {"TDX(双命名源)", "TDX-eltdx(适配层)"},
+        "zong_gu_ben_raw_float": {"TDX(双命名源)", "TDX-eltdx(适配层)"},
+        "zong_zi_chan_raw_float": {"TDX(双命名源)", "TDX-eltdx(适配层)"},
         "chang_qi_fu_zhai_raw_float": {"TDX-eltdx(适配层)"},
+        "gu_ding_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "jing_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "liu_dong_fu_zhai_raw_float": {"TDX-eltdx(适配层)"},
+        "liu_dong_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "wu_xing_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "zi_ben_gong_ji_jin_raw_float": {"TDX-eltdx(适配层)"},
+        "bao_liu_2_raw_float": {"TDX-eltdx(适配层)"},
+        "cun_huo_raw_float": {"TDX-eltdx(适配层)"},
+        "jing_ying_xian_jin_liu_raw_float": {"TDX-eltdx(适配层)"},
+        "li_run_zong_he_raw_float": {"TDX-eltdx(适配层)"},
+        "mei_gu_jing_zi_chan_raw_float": {"TDX-eltdx(适配层)"},
+        "shui_hou_li_run_raw_float": {"TDX-eltdx(适配层)"},
+        "tou_zi_shou_yu_raw_float": {"TDX-eltdx(适配层)"},
+        "wei_fen_li_run_raw_float": {"TDX-eltdx(适配层)"},
+        "ying_ye_li_run_raw_float": {"TDX-eltdx(适配层)"},
+        "ying_shou_zhang_kuan_raw_float": {"TDX-eltdx(适配层)"},
+        "zhu_ying_li_run_raw_float": {"TDX-eltdx(适配层)"},
+        "zhu_ying_shou_ru_raw_float": {"TDX-eltdx(适配层)"},
+        "zong_xian_jin_liu_raw_float": {"TDX-eltdx(适配层)"},
+        "open": {"TDX-eltdx(适配层)"},
+        "high": {"TDX-eltdx(适配层)"},
+        "low": {"TDX-eltdx(适配层)"},
+        "close": {"TDX-eltdx(适配层)"},
+        "time": {"TDX-eltdx(适配层)"},
+        "suspend_major_event_date": {"ZHB-tipinfo"},
+        "circulating_shares": {"TDX(双命名源)"},
+        "total_shares": {"TDX(双命名源)"},
+        "total_assets_yuan": {"TDX(双命名源)"},
+        "net_profit_yuan": {"TDX(双命名源)"},
+        "netamount": {"新浪(扩展API)"},
+        "fenhong": {"TDX(双命名源)"},
+        "peigujia": {"TDX(双命名源)"},
+        "songzhuangu": {"TDX(双命名源)"},
+        "peigu": {"TDX(双命名源)"},
+        "open_price_milli": {"TDX-eltdx(适配层)"},
+        "high_price_milli": {"TDX-eltdx(适配层)"},
+        "low_price_milli": {"TDX-eltdx(适配层)"},
+        "close_price_milli": {"TDX-eltdx(适配层)"},
+        "last_close_price_milli": {"TDX-eltdx(适配层)"},
+        "volume_lots": {"TDX-eltdx(适配层)"},
+        "volume_wire_value": {"TDX-eltdx(适配层)"},
+        "volume_hand": {"TDX-eltdx(适配层)"},
+        "up_count": {"TDX-eltdx(适配层)"},
+        "down_count": {"TDX-eltdx(适配层)"},
+        "open_delta_raw": {"TDX-eltdx(适配层)"},
+        "high_delta_raw": {"TDX-eltdx(适配层)"},
+        "low_delta_raw": {"TDX-eltdx(适配层)"},
+        "close_delta_raw": {"TDX-eltdx(适配层)"},
+        "total_hand": {"TDX-eltdx(适配层)"},
+        "current_hand": {"TDX-eltdx(适配层)"},
+        "inside_dish": {"TDX-eltdx(适配层)"},
+        "outer_disc": {"TDX-eltdx(适配层)"},
+        "open_amount": {"TDX-eltdx(适配层)"},
+        "open_amount_yuan": {"TDX-eltdx(适配层)"},
+        "last_price": {"TDX-eltdx(适配层)"},
+        "pre_close_price": {"TDX-eltdx(适配层)"},
+        "open_price": {"TDX-eltdx(适配层)"},
+        "high_price": {"TDX-eltdx(适配层)"},
+        "low_price": {"TDX-eltdx(适配层)"},
+        "bid1": {"TDX-eltdx(适配层)"},
+        "ask1": {"TDX-eltdx(适配层)"},
+        "bid_vol1": {"TDX-eltdx(适配层)"},
+        "ask_vol1": {"TDX-eltdx(适配层)"},
+        "change_pct": {"TDX-eltdx(适配层)"},
+        "depth": {"TDX-eltdx(适配层)"},
+        "min2_amount": {"TDX-eltdx(适配层)"},
+        "rise_speed": {"TDX-eltdx(适配层)"},
+        "short_turnover": {"TDX-eltdx(适配层)"},
+        "vol_rise_speed": {"TDX-eltdx(适配层)"},
+        "trade": {"新浪(扩展API)"},
+        "turnover": {"新浪(扩展API)"},
+        "alignment_status": {"TDX-eltdx(适配层)"},
+        "auction_prev_volume_ratio": {"TDX-eltdx(适配层)"},
+        "beta_60d": {"TDX-eltdx(适配层)"},
+        "float_market_value": {"TDX-eltdx(适配层)"},
+        "float_shares": {"TDX-eltdx(适配层)"},
+        "free_float_market_value": {"TDX-eltdx(适配层)"},
+        "free_float_shares": {"TDX-eltdx(适配层)"},
+        "ladder_level": {"TDX-eltdx(适配层)"},
+        "limit_board_text": {"TDX-eltdx(适配层)"},
+        "limit_stat_days": {"TDX-eltdx(适配层)"},
+        "limit_status": {"TDX-eltdx(适配层)"},
+        "limit_up_count_in_stat_days": {"TDX-eltdx(适配层)"},
+        "limit_up_streak_days": {"TDX-eltdx(适配层)"},
+        "locked_amount": {"TDX-eltdx(适配层)"},
+        "open_change_pct": {"TDX-eltdx(适配层)"},
+        "open_prev_amount_ratio": {"TDX-eltdx(适配层)"},
+        "open_prev_seal_ratio": {"TDX-eltdx(适配层)"},
+        "open_turnover_z": {"TDX-eltdx(适配层)"},
+        "open_volume_hand": {"TDX-eltdx(适配层)"},
+        "open_volume_ratio": {"TDX-eltdx(适配层)"},
+        "opening_rush": {"TDX-eltdx(适配层)"},
+        "pe_ttm": {"TDX-eltdx(适配层)"},
+        "prev2_seal_amount": {"TDX-eltdx(适配层)"},
+        "prev_amount": {"TDX-eltdx(适配层)"},
+        "prev_open_amount": {"TDX-eltdx(适配层)"},
+        "prev_open_volume_hand": {"TDX-eltdx(适配层)"},
+        "prev_seal_amount": {"TDX-eltdx(适配层)"},
+        "previous_trade_date": {"TDX-eltdx(适配层)"},
+        "seal_amount": {"TDX-eltdx(适配层)"},
+        "seal_prev_ratio": {"TDX-eltdx(适配层)"},
+        "seal_to_amount_ratio": {"TDX-eltdx(适配层)"},
+        "seal_to_float_ratio": {"TDX-eltdx(适配层)"},
+        "stats_date": {"TDX-eltdx(适配层)"},
+        "target_trade_date": {"TDX-eltdx(适配层)"},
+        "year_limit_up_days": {"TDX-eltdx(适配层)"},
+        "eltdx_auction_prev_volume_ratio": {"TDX-eltdx(适配层)"},
+        "eltdx_has_shortline": {"TDX-eltdx(适配层)"},
+        "eltdx_ladder_level": {"TDX-eltdx(适配层)"},
+        "eltdx_limit_board_text": {"TDX-eltdx(适配层)"},
+        "eltdx_limit_up_streak_days": {"TDX-eltdx(适配层)"},
+        "eltdx_open_change_pct": {"TDX-eltdx(适配层)"},
+        "eltdx_open_prev_amount_ratio": {"TDX-eltdx(适配层)"},
+        "eltdx_open_turnover_z": {"TDX-eltdx(适配层)"},
+        "eltdx_open_volume_ratio": {"TDX-eltdx(适配层)"},
+        "eltdx_seal_amount": {"TDX-eltdx(适配层)"},
+        "eltdx_seal_to_float_ratio": {"TDX-eltdx(适配层)"},
         "bid2": {"TDX(双命名源)"},
         "bid3": {"TDX(双命名源)"},
         "bid4": {"TDX(双命名源)"},
@@ -268,6 +408,8 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "ask3": {"TDX(双命名源)"},
         "ask4": {"TDX(双命名源)"},
         "ask5": {"TDX(双命名源)"},
+        "zhuying_shouru": {"TDX(双命名源)"},
+        "zong_xianjinliu": {"TDX(双命名源)"},
     }
 
 
@@ -468,10 +610,11 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     registry = registry_parity.fra.load_registry()
     captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
 
-    assert len(captured) == 39
+    assert len(captured) == 40
     verified = [row for row in captured if row["status"] == "verified"]
     assert {(row["source"], row["code"]) for row in verified} == {
         ("TDX(双命名源)", "ask1_vol"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_13"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_15"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_21"),
@@ -498,6 +641,20 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     assert sector_field["status_evidence"]["evidence_file"] == (
         "docs/field_verification/adjudications/20261105_kpl_sector_code_semantics.md"
     )
+    actual_float_mv = next(row for row in verified if row["code"] == "raw_columns.col_13")
+    assert actual_float_mv["canonical"] == "actual_float_mv"
+    assert actual_float_mv["meaning"] == "实际流通市值"
+    assert actual_float_mv["unit"] == "元"
+    assert actual_float_mv["status_resolution"] == "verified_by_empirical_addendum"
+    assert actual_float_mv["status_evidence"]["evidence_file"] == (
+        "docs/field_verification/adjudications/20261110_kpl_col13_actual_float_mv.md"
+    )
+    assert actual_float_mv["capture_evidence"] == [
+        {
+            "file": "docs/field_verification/20261109/raw_kpl.json",
+            "path": "stocks.[*].raw_columns.col_13",
+        }
+    ]
 
     unverified = [row for row in captured if row["status"] == "unverified"]
     assert len(unverified) == 34

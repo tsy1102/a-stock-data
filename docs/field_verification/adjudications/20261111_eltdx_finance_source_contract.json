@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eltdx-gu-dong-ren-shu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "gu_dong_ren_shu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "gu_dong_ren_shu_raw_float",
+      "meaning": "股东人数（按股东账户计；具体有效报告期以来源记录为准）",
+      "unit": "户",
+      "rationale": "ELTDX v3.3.2 的 FinanceRecord 字段表将该路径定义为股东人数。保留的 2026-11-10 样本中，601288 raw 值为 567189；农业银行 2026 年第三季度报告明确记载截至 2026-09-30 普通股股东总数为 567189 户，数值精确一致。通达信官方 get_financial_data 的 FN242 标注股东人数（户），仅作为单位术语佐证；该接口不同于 0x0010，本裁决不建立接口或跨源映射。17 个保留采集日中有 339 组 TDX/ELTDX 同更新日记录逐值相等、43 个唯一股票/更新日组合；两者同属 TDX 来源族，因此只用于解析一致性核对，不计为独立来源。详细证据见 docs/field_verification/20261111_finance_candidate_crosscheck.md。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 及 finance_batch 输出模型；通达信官方量化文档仅佐证股东人数单位",
+        "locator": "ELTDX METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: gu_dong_ren_shu_raw_float；通达信 get_financial_data FN242 股东人数（户）",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-zhu-ying-shou-ru-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "zhu_ying_shou_ru_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zhu_ying_shou_ru_raw_float",
+      "meaning": "主营收入（与上市公司报告中的营业收入行对应）",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 字段文档将该路径定义为主营收入/营业收入，单位千元。保留的 2026-11-10 数据与三份官方 2026 年三季报的 2026 年 1-9 月营业收入相符：600519 raw 130970736 千元，对应报告 130970743649.04 元；601288 raw 618812032 千元，对应报告表中 618812 百万元；920508 raw 37942 千元，对应报告 37942033.18 元。差异分别为 -7649.04 元、+32000 元、-33.18 元，作为浮点原始字段的精度/来源舍入差异记录，不伪称完全相等。通达信官方 FN74 定义营业收入，但它属于另一接口，仅作语义参照，不建立字段映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+        "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zhu_ying_shou_ru_raw_float；主营收入/营业收入，单位千元",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-ying-ye-li-run-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "ying_ye_li_run_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ying_ye_li_run_raw_float",
+      "meaning": "营业利润",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 字段文档将该路径定义为营业利润，单位千元。2026-11-10 raw 样本与三家公司官方三季报的报告期营业利润行相符：600519 raw 88979848 千元，对应 88979846257.79 元；601288 raw 288094016 千元，对应报告表中 288094 百万元；920508 raw -922.6000366 千元，对应 -922643.10 元。差异分别为 +1742.21 元、+16000 元、+43.06 元，保留为原始浮点精度/来源舍入差异，不将近似值写成精确值。通达信官方 FN86 定义营业利润，但属于另一接口，仅作语义参照，不建立字段映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+        "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: ying_ye_li_run_raw_float；营业利润，单位千元",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-zong-xian-jin-liu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "zong_xian_jin_liu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zong_xian_jin_liu_raw_float",
+      "meaning": "总现金流；样本中对应经营、投资、筹资三类活动净现金流量之和，不含汇率变动影响",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 明确将该路径定义为总现金流，单位千元；本次用官方现金流量表将公式边界细化。600519 三类净额之和为 69567977156.41 元，raw 为 69567976000 元；最终现金及现金等价物净增加额另受 -2482575.87 元汇率影响。601288 三类活动净额之和按报告百万元表为 -231015 百万元，raw 为 -231014.88 百万元；报表最终现金变动 -263488 百万元与汇率影响 -32473 百万元相减后得到该三类之和。920508 三类净额合计 -27930829.71 元，raw 为 -27930800.78 元，报表汇率影响为空。以上差异保留为报表展示单位与原始浮点精度差异。通达信官方 FN107/FN119/FN128 分别列经营、投资、筹资净额，FN131 则列现金及现金等价物净增加额；这是另一接口的字段表，仅作为公式结构参照，不建立接口映射。详见 docs/field_verification/20261111_finance_candidate_crosscheck.md。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API 文档及公开公司现金流量表交叉核验",
+        "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: zong_xian_jin_liu_raw_float；字段单位千元。通达信 get_financial_data FN107/FN119/FN128/FN131 仅作公式结构参照",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-jing-ying-xian-jin-liu-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "jing_ying_xian_jin_liu_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "jing_ying_xian_jin_liu_raw_float",
+      "meaning": "经营现金流（保留样本对应报告中的经营活动现金流量净额）",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 FinanceRecord 文档将该路径定义为经营现金流，原始单位为千元。2026-10-15 至 2026-11-10 保留样本中的 2026Q3 财务记录，经官方报告核对：600519 raw 84,058,976 千元，对应 84,058,979,832.29 元，差 -3,832.29 元；601288 raw 810,595,072 千元，对应报告按百万元列示的 810,595 百万元，差 +72,000 元，处于公告显示舍入范围；600309 raw 20,919,838 千元，对应 20,919,837,985.41 元，差 +14.59 元；000568 raw 4,445,413 千元，对应 4,445,413,276.27 元，差 -276.27 元；920508 raw 14,887.5996 千元，对应 14,887,698.40 元，差 -98.80 元。差异保留为 float32 原始精度和公告展示精度，不称为精确相等。五份报告的详细数值见 docs/field_verification/20261110/analysis.md。该裁决只确认 ELTDX 来源内该字段的释义和单位，不建立独立 TDX/ELTDX 跨源映射。",
+      "reviewed_on": "2026-11-11",
+      "reviewer": "Codex",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord API 文档",
+        "locator": "METHOD_REFERENCE.md §财务基础信息、FIELD_REFERENCE.md §FinanceRecord: jing_ying_xian_jin_liu_raw_float；经营现金流，单位千元",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    }
+  ]
+}

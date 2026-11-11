@@ -60,6 +60,32 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert not {"adjust", "period"} & eltdx_tokens
 
 
+def test_eastmoney_kline_registry_uses_its_own_fields2_table(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    section = """K-line endpoint warning: real-time push2 fields2 f43..f85 reuse codes differently.
+
+| fields2 列 | meaning | unit |
+|:---|:---|:---|
+| f51 | date | YYYY-MM-DD |
+| f59 | change pct | % |
+| f61 | turnover | % |
+
+| other endpoint | meaning |
+|:---|:---|
+| push2 f168 | turnover snapshot |
+"""
+
+    assert afc.reg_tokens_for_section("东财-em_kline_f61", section) == {
+        "f51",
+        "f59",
+        "f61",
+    }
+    assert afc.registered_field_sets()["东财-em_kline_f61"] == {
+        f"f{code}" for code in range(51, 62)
+    }
+
+
 def test_tdx_quote_raw_capture_container_is_not_a_registry_field(monkeypatch):
     monkeypatch.syspath_prepend("scripts")
     afc = importlib.import_module("audit_field_completeness")

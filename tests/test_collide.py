@@ -460,6 +460,24 @@ def _daily_fields(days, codes=20, ratio=1.0, intraday_days=()):
     return _field(left, "tdx"), _field(right, "sina")
 
 
+def test_l4_uses_shared_aggregate_match_rate_boundary():
+    def fields_with_matches(match_count):
+        left_values = {(f"{index:06d}", "T:20260929"): float(index + 1) for index in range(10)}
+        right_values = {
+            key: value if index < match_count else value + 1000.0
+            for index, (key, value) in enumerate(left_values.items())
+        }
+        return _field(left_values, "tdx"), _field(right_values, "sina")
+
+    below_threshold = collide.collide_pair(*fields_with_matches(3))
+    at_threshold = collide.collide_pair(*fields_with_matches(4))
+
+    assert below_threshold is None
+    assert at_threshold is not None
+    assert at_threshold["level"] == "L4"
+    assert at_threshold["overall_hit"] == collision_rules.L4_MIN_OVERALL_MATCH_RATE
+
+
 def test_l1_requires_minimum_samples_on_each_independent_day():
     left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=18)
 
@@ -1712,6 +1730,18 @@ def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs()
 
     collision_rules.print_active_rules(output)
 
+    assert "## 二、对撞结果类别（自动候选，不是最终定案状态）" in rendered
+    assert "| L1-U |" in rendered
+    assert "| L1-C |" in rendered
+    assert "| L2 |" not in rendered
+    assert "| L3 |" not in rendered
+    assert "L2（历史称呼：官方/强锚定）" in rendered
+    assert "L3（历史称呼：方向正确但覆盖不完整）" in rendered
+    assert "合并精确命中率 ≥40%" in rendered
+    assert "不是 8~17 个命中数的区间" in rendered
+    assert "L1/L1-U 是数值候选" in output.getvalue()
+    assert "L2（历史称呼：官方/强锚定）" in output.getvalue()
+    assert "L3（历史称呼：方向正确但覆盖不完整）" in output.getvalue()
     assert "## 三、官方契约语义锚候选 L1-C" in rendered
     assert "不计独立来源覆盖" in rendered
     assert "官方契约语义锚分支（参与碰撞，不代表来源独立）" in output.getvalue()

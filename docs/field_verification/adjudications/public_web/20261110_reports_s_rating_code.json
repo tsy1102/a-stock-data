@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "evidence_file": "adjudications/public_web/20261110_reports_s_rating_code.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "20261110-reports-sRatingCode-institution-scoped",
+      "action": "verify_public_web_observation",
+      "verification_mode": "verify_report_source_rating_code",
+      "target": {
+        "source": "reports",
+        "code": "sRatingCode"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "sRatingCode",
+        "meaning": "待破解",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "sRatingCode",
+      "meaning": "机构原始评级类别代码；须结合机构和同记录 sRatingName 解释，未确立跨机构代码表。",
+      "unit": "",
+      "rationale": "三只不同股票的官网研报详情按 URL 中 infoCode、标题和发布日期与 2026-11-09 raw_reports 精确绑定；600519、601288 的页面评级文字分别与同记录 sRatingName 精确一致；600309 页面显示“买入”，而原始 sRatingName 为“买入(Buy)”，作为近似文字证据单独记录，不计为精确匹配。同日完整归档 398 组非空 sRatingCode/sRatingName 中，同一 orgSName+代码组合只对应一个名称，而 0101、0301、0201 均跨机构对应多个名称。仅确认 sRatingCode 是与机构原始评级关联的类别代码；不建立全局码表，不推断未观察代码，也不声明完整 API 契约。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/info/AP202611081831533384.html",
+        "https://data.eastmoney.com/report/info/AP202611011831293587.html",
+        "https://data.eastmoney.com/report/info/AP202610281831068169.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "600519",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611081831533384",
+            "title": "贵州茅台26Q3点评：市场化改革持续兑现",
+            "publishDate": "2026-11-08 00:00:00.000"
+          },
+          "raw_value": "0101",
+          "raw_organization": "华安证券",
+          "page_source_rating": "买入",
+          "match_type": "exact",
+          "page_url": "https://data.eastmoney.com/report/info/AP202611081831533384.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "维持“买入”评级"
+        },
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "601288",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611011831293587",
+            "title": "2026年三季报点评：营收利润增速回升",
+            "publishDate": "2026-11-01 00:00:00.000"
+          },
+          "raw_value": "0301",
+          "raw_organization": "国信证券",
+          "page_source_rating": "优于大市",
+          "match_type": "exact",
+          "page_url": "https://data.eastmoney.com/report/info/AP202611011831293587.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "维持‘优于大市’评级"
+        },
+        {
+          "observation_type": "report_source_rating_code",
+          "stock_code": "600309",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202610281831068169",
+            "title": "公司信息更新报告：Q3归母净利润超预期，新建磷酸铁锂产能加速打开成长空间",
+            "publishDate": "2026-10-28 00:00:00.000"
+          },
+          "raw_value": "0201",
+          "raw_organization": "开源证券",
+          "page_source_rating": "买入",
+          "match_type": "approximate",
+          "page_url": "https://data.eastmoney.com/report/info/AP202610281831068169.html",
+          "page_metric": "研报正文 > 投资建议/评级原文",
+          "display_text": "维持‘买入’评级"
+        }
+      ]
+    }
+  ]
+}

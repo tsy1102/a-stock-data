@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-10",
+  "decisions": [
+    {
+      "id": "20261110-tdx-finance-eps-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "eps_raw"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "eps_raw", "meaning": "每股收益原始值", "unit": "-"},
+      "canonical": "eps_raw",
+      "meaning": "每股收益原始值",
+      "unit": "元/股",
+      "rationale": "ELTDX v3.3.2 的 0x0010 FinanceRecord 契约明确列出 eps_raw。保留的 16 组同日 TDX/ELTDX 记录中，TDX finance_info.eps 与 ELTDX finance_batch[].eps_raw 在 320/320 条记录中完全相同。上游契约没有说明基本/稀释子口径，因此不作区分。本决定只核验 TDX(双命名源)::eps_raw 的来源内定义，不登记跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息：FinanceRecord.eps_raw；FIELD_REFERENCE.md §FinanceRecord",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-jing-li-run-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "jing_li_run_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "jing_li_run_raw_float", "meaning": "净利润原始值", "unit": "千元"},
+      "canonical": "jing_li_run_raw_float",
+      "meaning": "净利润原始值",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 的 0x0010 FinanceRecord 契约明确将 jing_li_run_raw_float 定义为原始千元口径。16 组同日 TDX/ELTDX 记录中，TDX finance_info.jinglirun 与 ELTDX finance_batch[].jing_li_run_raw_float 按 10000 倍换算后在 320/320 条记录中完全相同；该比值仅作为双序列化一致性的佐证，不据此把旧键加入注册表或创建跨源映射。样本对应报告期累计值；不从接口字段名推断更细的报表分类。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息：jing_li_run_raw_float 为原始千元口径",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-liu-tong-share-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "liu_tong_gu_ben_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "liu_tong_gu_ben_raw_float", "meaning": "流通股本原始值", "unit": "万股"},
+      "canonical": "liu_tong_gu_ben_raw_float",
+      "meaning": "流通股本原始值",
+      "unit": "万股",
+      "rationale": "ELTDX v3.3.2 的 0x0010 FinanceRecord 契约明确将 liu_tong_gu_ben_raw_float 定义为流通股本原始万股口径。16 组同日 TDX/ELTDX 记录中，TDX finance_info.liutongguben 与该值在 320/320 条记录中完全相同。本决定只核验此 TDX 来源路径，不登记跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息：liu_tong_gu_ben_raw_float 为原始万股口径",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-total-shares-derived-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "total_shares"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "circulating_shares / total_shares", "meaning": "待破解", "unit": "股"},
+      "canonical": "total_shares",
+      "meaning": "总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到",
+      "unit": "股",
+      "rationale": "ELTDX v3.3.2 METHOD_REFERENCE.md §财务基础信息明确给出 total_shares = zong_gu_ben_raw_float * 10000；FIELD_REFERENCE.md 将其定义为总股本。该派生字段在留存的 finance_batch 原始序列化记录中未单独出现，因此定案依据是精确的上游模型契约，不声称做过派生字段的逐值样本比较。本决定只核验来源内契约，不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {"canonical": "circulating_shares / total_shares", "meaning": "待破解", "unit": "股"},
+        "updated": {"canonical": "total_shares", "meaning": "总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到", "unit": "股"},
+        "rationale": "原注册项将两个不同的 FinanceRecord 派生字段合并到一个 canonical。上游分别定义 total_shares 与 circulating_shares 及各自公式，故拆分为精确路径，避免继续保留错误的一对多合并。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息派生字段；FIELD_REFERENCE.md §FinanceRecord",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-circulating-shares-derived-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "circulating_shares"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "circulating_shares / total_shares", "meaning": "待破解", "unit": "股"},
+      "canonical": "circulating_shares",
+      "meaning": "流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到",
+      "unit": "股",
+      "rationale": "ELTDX v3.3.2 METHOD_REFERENCE.md §财务基础信息明确给出 circulating_shares = liu_tong_gu_ben_raw_float * 10000；FIELD_REFERENCE.md 将其定义为流通股本。该派生字段在留存的 finance_batch 原始序列化记录中未单独出现，因此定案依据是精确的上游模型契约，不声称做过派生字段的逐值样本比较。本决定只核验来源内契约，不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {"canonical": "circulating_shares / total_shares", "meaning": "待破解", "unit": "股"},
+        "updated": {"canonical": "circulating_shares", "meaning": "流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到", "unit": "股"},
+        "rationale": "原注册项将两个不同的 FinanceRecord 派生字段合并到一个 canonical。上游分别定义 circulating_shares 与 total_shares 及各自公式，故拆分为精确路径，避免继续保留错误的一对多合并。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息派生字段；FIELD_REFERENCE.md §FinanceRecord",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-net-profit-yuan-derived-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "net_profit_yuan"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "total_assets_yuan / net_profit_yuan", "meaning": "待破解", "unit": "元"},
+      "canonical": "net_profit_yuan",
+      "meaning": "净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 METHOD_REFERENCE.md §财务基础信息明确给出 net_profit_yuan = jing_li_run_raw_float * 1000；原始字段为千元口径。该派生字段在留存的 finance_batch 原始序列化记录中未单独出现，因此定案依据是精确的上游模型契约，不声称做过派生字段的逐值样本比较。本决定不进一步裁定更细的会计归属，也不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {"canonical": "total_assets_yuan / net_profit_yuan", "meaning": "待破解", "unit": "元"},
+        "updated": {"canonical": "net_profit_yuan", "meaning": "净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到", "unit": "元"},
+        "rationale": "原注册项将两个不同的 FinanceRecord 派生字段合并到一个 canonical。上游分别定义 net_profit_yuan 与 total_assets_yuan 及各自公式，故拆分为精确路径，避免继续保留错误的一对多合并。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息派生字段；FIELD_REFERENCE.md §FinanceRecord",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-zong-gu-ben-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "zong_gu_ben_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "zong_gu_ben_raw_float", "meaning": "总股本原始值", "unit": "万股"},
+      "canonical": "zong_gu_ben_raw_float",
+      "meaning": "总股本原始值",
+      "unit": "万股",
+      "rationale": "ELTDX v3.3.2 的 0x0010 FinanceRecord 契约明确将 zong_gu_ben_raw_float 定义为总股本原始万股口径。16 组同日 TDX/ELTDX 记录中，TDX finance_info.zhongguben 与该值在 320/320 条记录中完全相同。本决定只核验此 TDX 来源路径，不登记跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息：zong_gu_ben_raw_float 为原始万股口径",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-total-assets-yuan-derived-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "total_assets_yuan"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "total_assets_yuan / net_profit_yuan", "meaning": "待破解", "unit": "元"},
+      "canonical": "total_assets_yuan",
+      "meaning": "总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 METHOD_REFERENCE.md §财务基础信息明确给出 total_assets_yuan = zong_zi_chan_raw_float * 1000；原始字段为千元口径。该派生字段在留存的 finance_batch 原始序列化记录中未单独出现，因此定案依据是精确的上游模型契约，不声称做过派生字段的逐值样本比较。本决定只核验来源内契约，不登记跨源映射。",
+      "metadata_correction": {
+        "previous": {"canonical": "total_assets_yuan / net_profit_yuan", "meaning": "待破解", "unit": "元"},
+        "updated": {"canonical": "total_assets_yuan", "meaning": "总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到", "unit": "元"},
+        "rationale": "原注册项将两个不同的 FinanceRecord 派生字段合并到一个 canonical。上游分别定义 total_assets_yuan 与 net_profit_yuan 及各自公式，故拆分为精确路径，避免继续保留错误的一对多合并。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息派生字段；FIELD_REFERENCE.md §FinanceRecord",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261110-tdx-finance-zong-zi-chan-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {"source": "TDX(双命名源)", "code": "zong_zi_chan_raw_float"},
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "zong_zi_chan_raw_float", "meaning": "总资产原始值", "unit": "千元"},
+      "canonical": "zong_zi_chan_raw_float",
+      "meaning": "总资产原始值",
+      "unit": "千元",
+      "rationale": "ELTDX v3.3.2 的 0x0010 FinanceRecord 契约明确将 zong_zi_chan_raw_float 定义为总资产原始千元口径。16 组同日 TDX/ELTDX 记录中，TDX finance_info.zongzichan 与该值按 10000 倍换算后在 320/320 条记录中完全相同；该比值只作为双序列化一致性的佐证，不据此把旧键加入注册表或创建跨源映射。本决定只核验此 TDX 来源路径。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 公开 FinanceRecord API 文档",
+        "revision": "eltdx==3.3.2（requirements.txt 固定版本；2026-11-10 核验）",
+        "path": "client.corporate.finance_batch(codes, fields=None, include_raw=True)，TDX 0x0010",
+        "locator": "METHOD_REFERENCE.md §财务基础信息：zong_zi_chan_raw_float 为原始千元口径",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    }
+  ]
+}

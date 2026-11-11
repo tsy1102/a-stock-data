@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-09",
+  "decisions": [
+    {
+      "id": "20261109-eltdx-category-bid1-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "bid1"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "bid1",
+      "meaning": "买一价格",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 bid1 定义为买一价格；2026-11-09 的 80/80 条分类行情原始行均包含该字段。上游未注明单位，单位留空。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.bid1; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.bid1",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-ask1-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "ask1"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ask1",
+      "meaning": "卖一价格",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 ask1 定义为卖一价格；2026-11-09 的 80/80 条分类行情原始行均包含该字段。样本中的零值不改变字段语义；上游未注明单位，单位留空。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.ask1; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.ask1",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-bid-vol1-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "bid_vol1"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "bid_vol1",
+      "meaning": "买一委托量",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 bid_vol1 定义为买一量；2026-11-09 的 80/80 条分类行情原始行均包含该字段。上游未注明单位，单位留空。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.bid_vol1; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.bid_vol1",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-ask-vol1-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "ask_vol1"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ask_vol1",
+      "meaning": "卖一委托量",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 ask_vol1 定义为卖一量；2026-11-09 的 80/80 条分类行情原始行均包含该字段。样本中的零值不改变字段语义；上游未注明单位，单位留空。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.ask_vol1; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.ask_vol1",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-change-pct-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "change_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "change_pct",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_pct",
+      "meaning": "涨跌幅",
+      "unit": "%",
+      "rationale": "ELTDX v3.3.2 将 change_pct 明确为派生字段：(last_price - pre_close_price) / pre_close_price * 100；2026-11-09 的 80/80 条 RealtimeRankTable 行与该公式完全一致，最大绝对差为 0。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.helpers.realtime_rank() -> RealtimeRankTable.rows[].change_pct; derived from last_price and pre_close_price",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-depth-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "depth"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "depth",
+      "meaning": "盘口强弱 / 盘口深度口径指标",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 depth 定义为盘口强弱 / 盘口深度口径字段；2026-11-09 的 80/80 条分类行情原始行均包含该字段。具体算法和单位未公开，均保持未注明。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.depth; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.depth",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-min2-amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "min2_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "min2_amount / opening_rush",
+        "meaning": "近2分钟金额 / 开盘抢筹",
+        "unit": ""
+      },
+      "canonical": "min2_amount",
+      "meaning": "近 2 分钟金额口径指标",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 min2_amount 定义为近 2 分钟金额口径字段；2026-11-09 的 80/80 条分类行情原始行均包含该字段。上游未注明单位，单位留空。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.min2_amount; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.min2_amount",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "min2_amount / opening_rush",
+          "meaning": "近2分钟金额 / 开盘抢筹",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "min2_amount",
+          "meaning": "近 2 分钟金额口径指标",
+          "unit": ""
+        },
+        "rationale": "将历史合并占位释义改为该完整源字段路径的契约释义；保留旧值及本次前后快照。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-rise-speed-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "rise_speed"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "rise_speed / short_turnover",
+        "meaning": "涨速 / 短换手",
+        "unit": ""
+      },
+      "canonical": "rise_speed",
+      "meaning": "涨速指标",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 rise_speed 定义为涨速；2026-11-09 的 80/80 条分类行情原始行均包含该字段。具体算法和单位未公开，均保持未注明。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.rise_speed; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.rise_speed",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "rise_speed / short_turnover",
+          "meaning": "涨速 / 短换手",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "rise_speed",
+          "meaning": "涨速指标",
+          "unit": ""
+        },
+        "rationale": "将历史合并占位释义改为该完整源字段路径的契约释义；保留旧值及本次前后快照。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-short-turnover-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "short_turnover"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "rise_speed / short_turnover",
+        "meaning": "涨速 / 短换手",
+        "unit": ""
+      },
+      "canonical": "short_turnover",
+      "meaning": "短周期换手口径指标",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 short_turnover 定义为短周期换手口径字段；2026-11-09 的 80/80 条分类行情原始行均包含该字段。窗口和单位未公开，均保持未注明。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.short_turnover; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.short_turnover",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "rise_speed / short_turnover",
+          "meaning": "涨速 / 短换手",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "short_turnover",
+          "meaning": "短周期换手口径指标",
+          "unit": ""
+        },
+        "rationale": "将历史合并占位释义改为该完整源字段路径的契约释义；保留旧值及本次前后快照。"
+      }
+    },
+    {
+      "id": "20261109-eltdx-category-vol-rise-speed-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "vol_rise_speed"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "vol_rise_speed / locked_amount",
+        "meaning": "量涨速 / 封单额（=bid1×bid_vol1×100）",
+        "unit": ""
+      },
+      "canonical": "vol_rise_speed",
+      "meaning": "量增速指标",
+      "unit": "",
+      "rationale": "CategoryQuoteRecord 字段表将 vol_rise_speed 定义为量增速；2026-11-09 的 80/80 条分类行情原始行均包含该字段。具体算法和单位未公开，均保持未注明。仅确认 ELTDX v3.3.2 来源内字段契约，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 固定版本通达信 7709 分类行情 (0x054b) / CategoryQuoteRecord 与 RealtimeRankTable 契约",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "7709 0x054b -> client.quotes.list_by_category(...) -> CategoryQuoteRecord.vol_rise_speed; client.helpers.realtime_rank() wraps category pages; captured as global_helpers.realtime_rank.rows[].raw.vol_rise_speed",
+        "locator": "7709-分类行情 §0x054b 与 realtime_rank 关系、§CategoryQuoteRecord 字段、§派生字段；2026-11-09 保留样本",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%88%86%E7%B1%BB%E8%A1%8C%E6%83%85.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "vol_rise_speed / locked_amount",
+          "meaning": "量涨速 / 封单额（=bid1×bid_vol1×100）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "vol_rise_speed",
+          "meaning": "量增速指标",
+          "unit": ""
+        },
+        "rationale": "将历史合并占位释义改为该完整源字段路径的契约释义；保留旧值及本次前后快照。"
+      }
+    }
+  ]
+}

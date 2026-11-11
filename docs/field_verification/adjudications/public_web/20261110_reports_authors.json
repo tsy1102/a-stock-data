@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "public_web_observation",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-10",
+  "evidence_file": "adjudications/public_web/20261110_reports_authors.md",
+  "formula_validation": null,
+  "formula_validations": [],
+  "decisions": [
+    {
+      "id": "20261110-reports-author-official-records",
+      "action": "verify_public_web_observation",
+      "verification_mode": "resolve_report_record_conflict",
+      "target": {
+        "source": "reports",
+        "code": "author"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "author",
+          "researcher / author"
+        ],
+        "meaning": [
+          "作者数组",
+          "研究员姓名"
+        ]
+      },
+      "canonical": "report_author_id_name_list",
+      "meaning": "研报作者列表；每项由作者 ID 和姓名组成，原始格式为“ID.姓名”。",
+      "unit": "",
+      "rationale": "三只不同股票的官网“研报明细 > 作者”记录，按 infoCode、标题、发布日期与同日 raw_reports 精确绑定；网页作者链接的 ID 和姓名逐项对应原始 author 数组中的 ID.姓名，且 ID 与 authorID 数组一致。仅确认 reports::author 的记录级语义和表示形式，不声称完整 API 契约，不建立跨源映射。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/600519.html",
+        "https://data.eastmoney.com/report/601288.html",
+        "https://data.eastmoney.com/report/600309.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "600519",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611081831533384",
+            "title": "贵州茅台26Q3点评：市场化改革持续兑现",
+            "publishDate": "2026-11-08 00:00:00.000"
+          },
+          "raw_value": [
+            "11000276538.邓欣",
+            "11000474034.郑少轩"
+          ],
+          "page_authors": [
+            {
+              "author_id": "11000276538",
+              "name": "邓欣"
+            },
+            {
+              "author_id": "11000474034",
+              "name": "郑少轩"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/600519.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "邓欣 郑少轩"
+        },
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "601288",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611011831293587",
+            "title": "2026年三季报点评：营收利润增速回升",
+            "publishDate": "2026-11-01 00:00:00.000"
+          },
+          "raw_value": [
+            "11000257641.陈俊良",
+            "11000209220.王剑"
+          ],
+          "page_authors": [
+            {
+              "author_id": "11000257641",
+              "name": "陈俊良"
+            },
+            {
+              "author_id": "11000209220",
+              "name": "王剑"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/601288.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "陈俊良 王剑"
+        },
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "600309",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202610281831068169",
+            "title": "公司信息更新报告：Q3归母净利润超预期，新建磷酸铁锂产能加速打开成长空间",
+            "publishDate": "2026-10-28 00:00:00.000"
+          },
+          "raw_value": [
+            "11000267432.金益腾",
+            "11000338335.张晓锋",
+            "11000444537.李思佳"
+          ],
+          "page_authors": [
+            {
+              "author_id": "11000267432",
+              "name": "金益腾"
+            },
+            {
+              "author_id": "11000338335",
+              "name": "张晓锋"
+            },
+            {
+              "author_id": "11000444537",
+              "name": "李思佳"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/600309.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "金益腾 张晓锋 李思佳"
+        }
+      ]
+    },
+    {
+      "id": "20261110-reports-researcher-official-records",
+      "action": "verify_public_web_observation",
+      "verification_mode": "resolve_report_record_conflict",
+      "target": {
+        "source": "reports",
+        "code": "researcher"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "研究员姓名",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "researcher",
+          "researcher / author"
+        ]
+      },
+      "canonical": "report_researcher_name_list",
+      "meaning": "研究员姓名",
+      "unit": "",
+      "rationale": "同三条已精确绑定的官网研报记录中，作者姓名顺序与 researcher 原始逗号分隔字符串逐项一致。字段保留研究员姓名串的含义，官网展示标签为“作者”；仅确认 reports::researcher 的记录级语义，不声称完整 API 契约，不建立跨源映射。",
+      "external_evidence": [
+        "https://data.eastmoney.com/report/600519.html",
+        "https://data.eastmoney.com/report/601288.html",
+        "https://data.eastmoney.com/report/600309.html"
+      ],
+      "page_observations": [
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "600519",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611081831533384",
+            "title": "贵州茅台26Q3点评：市场化改革持续兑现",
+            "publishDate": "2026-11-08 00:00:00.000"
+          },
+          "raw_value": "邓欣,郑少轩",
+          "page_authors": [
+            {
+              "author_id": "11000276538",
+              "name": "邓欣"
+            },
+            {
+              "author_id": "11000474034",
+              "name": "郑少轩"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/600519.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "邓欣 郑少轩"
+        },
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "601288",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202611011831293587",
+            "title": "2026年三季报点评：营收利润增速回升",
+            "publishDate": "2026-11-01 00:00:00.000"
+          },
+          "raw_value": "陈俊良,王剑",
+          "page_authors": [
+            {
+              "author_id": "11000257641",
+              "name": "陈俊良"
+            },
+            {
+              "author_id": "11000209220",
+              "name": "王剑"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/601288.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "陈俊良 王剑"
+        },
+        {
+          "observation_type": "report_author_list",
+          "stock_code": "600309",
+          "data_date": "20261109",
+          "source_file": "20261109/raw_reports.json",
+          "record_identity": {
+            "infoCode": "AP202610281831068169",
+            "title": "公司信息更新报告：Q3归母净利润超预期，新建磷酸铁锂产能加速打开成长空间",
+            "publishDate": "2026-10-28 00:00:00.000"
+          },
+          "raw_value": "金益腾,张晓锋,李思佳",
+          "page_authors": [
+            {
+              "author_id": "11000267432",
+              "name": "金益腾"
+            },
+            {
+              "author_id": "11000338335",
+              "name": "张晓锋"
+            },
+            {
+              "author_id": "11000444537",
+              "name": "李思佳"
+            }
+          ],
+          "page_url": "https://data.eastmoney.com/report/600309.html",
+          "page_metric": "研报明细 > 作者",
+          "display_text": "金益腾 张晓锋 李思佳"
+        }
+      ]
+    }
+  ]
+}

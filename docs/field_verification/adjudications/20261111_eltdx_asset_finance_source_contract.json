@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-eltdx-gu-ding-zi-chan-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "gu_ding_zi_chan_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "gu_ding_zi_chan_raw_float",
+      "meaning": "固定资产原始值（报告日余额）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘固定资产’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认固定资产及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表：茅台 raw 21,819,360 千元，对照 21,819,359,530.45 元（差 +469.55 元）；万华 raw 157,859,648 千元，对照 157,859,654,056.79 元（差 -6,056.79 元）。名称、量级、单位及报告行一致，保留原始差额，不称逐元精确相等。只确认 TDX-eltdx 此路径，不建立其他来源映射。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 gu_ding_zi_chan_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-jing-zi-chan-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "jing_zi_chan_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "jing_zi_chan_raw_float",
+      "meaning": "净资产原始值（本批样本与归属于母公司所有者权益行相符）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘净资产’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认净资产及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表中的归属于母公司所有者权益：茅台 raw 271,204,736 千元，对照 271,204,740,541.63 元（差 -4,541.63 元）；万华 raw 116,306,448 千元，对照 116,306,449,989.32 元（差 -1,989.32 元）。本结论限定为该 ELTDX 路径及所核样本，不将‘净资产’扩写为所有来源通用的归母权益公式。保留原始差额，不称逐元精确相等。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 jing_zi_chan_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-liu-dong-fu-zhai-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "liu_dong_fu_zhai_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "liu_dong_fu_zhai_raw_float",
+      "meaning": "流动负债原始值（报告日余额）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘流动负债’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认流动负债及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表：茅台 raw 37,520,508 千元，对照 37,520,507,877.81 元（差 +122.19 元）；万华 raw 157,047,248 千元，对照 157,047,246,972.16 元（差 +1,027.84 元）。名称、量级、单位及报告行一致，保留原始差额，不称逐元精确相等。只确认 TDX-eltdx 此路径，不建立其他来源映射。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 liu_dong_fu_zhai_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-liu-dong-zi-chan-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "liu_dong_zi_chan_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "liu_dong_zi_chan_raw_float",
+      "meaning": "流动资产原始值（报告日余额）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘流动资产’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认流动资产及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表：茅台 raw 269,646,848 千元，对照 269,646,861,755.67 元（差 -13,755.67 元）；万华 raw 113,262,096 千元，对照 113,262,095,053.71 元（差 +946.29 元）。名称、量级、单位及报告行一致，保留原始差额，不称逐元精确相等。只确认 TDX-eltdx 此路径，不建立其他来源映射。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 liu_dong_zi_chan_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-wu-xing-zi-chan-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "wu_xing_zi_chan_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "wu_xing_zi_chan_raw_float",
+      "meaning": "无形资产原始值（报告日余额）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘无形资产’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认无形资产及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表：茅台 raw 8,522,163 千元，对照 8,522,163,065.22 元（差 -65.22 元）；万华 raw 12,560,699 千元，对照 12,560,698,747.44 元（差 +252.56 元）。名称、量级、单位及报告行一致，保留原始差额，不称逐元精确相等。只确认 TDX-eltdx 此路径，不建立其他来源映射。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 wu_xing_zi_chan_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    },
+    {
+      "id": "20261111-eltdx-zi-ben-gong-ji-jin-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "zi_ben_gong_ji_jin_raw_float"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "canonical": "zi_ben_gong_ji_jin_raw_float",
+      "meaning": "资本公积金原始值（报告日余额）",
+      "unit": "千元",
+      "rationale": "先按字段拼音形成‘资本公积金’候选，再由 ELTDX v3.3.2 FinanceRecord 字段表确认资本公积金及金额单位千元。2026-11-10 样本的 updated_date 分别为茅台 2026-10-31、万华 2026-10-26；对应 2026-09-30 合并资产负债表资本公积行：茅台 raw 1,577 千元，对照 1,577,095.18 元（差 -95.18 元）；万华 raw 3,760,897.25 千元，对照 3,760,897,106.57 元（差 +143.43 元）。名称、量级、单位及报告行一致，保留原始差额，不称逐元精确相等。只确认 TDX-eltdx 此路径，不建立其他来源映射。报告：https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF；https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 FinanceRecord 0x0010 输出契约，并由上市公司 2026Q3 合并资产负债表交叉核验",
+        "locator": "财务基础信息文档‘解析字段’行 zi_ben_gong_ji_jin_raw_float 与‘单位口径’金额类",
+        "path": "scripts/capture_tcp_collectors.py::collect_eltdx -> client.corporate.finance_batch(codes, include_raw=True) -> raw_eltdx.json stocks.<code>.finance_batch[0]",
+        "revision": "eltdx==3.3.2，requirements.txt 固定版本；v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03；2026-11-11 核验",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+      }
+    }
+  ]
+}

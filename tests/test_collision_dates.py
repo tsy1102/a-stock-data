@@ -18,6 +18,13 @@ def _write_capture(root: Path, folder: str, meta: dict, source: str, document: d
     (target / f"raw_{source}.json").write_text(json.dumps(document), encoding="utf-8")
 
 
+def _write_meta_only_capture(root: Path, folder: str, meta: dict | None = None):
+    target = root / folder
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "meta.json").write_text(json.dumps(meta or {}), encoding="utf-8")
+    return target
+
+
 def test_discovery_skips_folders_before_retention_start(tmp_path, monkeypatch):
     monkeypatch.setattr(collision_dates, "MIN_CAPTURE_DATE", date(2026, 10, 15))
     _write_capture(
@@ -92,6 +99,7 @@ def test_record_count_ignores_fuyao_auction_provenance_metadata():
 def test_legacy_weekend_folder_without_data_date_is_not_inferred_as_market_data(tmp_path):
     target = tmp_path / "20260920"
     target.mkdir()
+    (target / "raw_push2.json").write_text("{}", encoding="utf-8")
     folders, warnings = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
 
     assert folders[0].market_date is None
@@ -99,6 +107,25 @@ def test_legacy_weekend_folder_without_data_date_is_not_inferred_as_market_data(
     assert folders[0].market_date_origin == "nontrading_folder"
     assert any("不按运行日推断" in warning for warning in warnings)
     assert target.is_dir()
+
+
+def test_discovery_skips_report_only_and_empty_date_directories(tmp_path):
+    report_root = tmp_path / "20260929"
+    report_root.mkdir()
+    report_subdir = report_root / "20260929-postcapture"
+    report_subdir.mkdir()
+    (report_subdir / "20260929_collision_report.md").write_text("report", encoding="utf-8")
+    (tmp_path / "20260930").mkdir()
+    _write_meta_only_capture(tmp_path, "20260928")
+
+    folders, warnings = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+    window = collision_dates.select_folder_window(folders, 2, date(2026, 9, 29))
+
+    assert {folder.name for folder in folders} == {"20260928"}
+    assert any("20260929" in warning and "报告/空目录" in warning for warning in warnings)
+    assert any("20260930" in warning and "报告/空目录" in warning for warning in warnings)
+    assert window.trading_dates == ("20260928", "20260929")
+    assert any("20260929 无对应采集目录" in warning for warning in window.warnings)
 
 
 def test_data_date_folder_mismatch_is_rejected_without_inference(tmp_path):
@@ -132,7 +159,7 @@ def test_explicit_nontrading_data_date_is_rejected(tmp_path):
 
 def test_window_counts_distinct_sessions_and_separate_natural_capture_days(tmp_path):
     for folder in ("20260924", "20260925", "20260926", "20260928", "20260929"):
-        (tmp_path / folder).mkdir()
+        _write_meta_only_capture(tmp_path, folder)
     folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
     window = collision_dates.select_folder_window(folders, 2, date(2026, 9, 29), all_history=False)
 
@@ -144,7 +171,7 @@ def test_window_counts_distinct_sessions_and_separate_natural_capture_days(tmp_p
 
 def test_window_does_not_backfill_a_missing_trading_session(tmp_path, monkeypatch):
     for folder in ("20260925", "20260928"):
-        (tmp_path / folder).mkdir()
+        _write_meta_only_capture(tmp_path, folder)
     _write_capture(
         tmp_path,
         "20260930",
@@ -199,7 +226,7 @@ def test_event_window_can_use_later_capture_for_prior_natural_event(tmp_path):
 
 def test_window_excludes_bad_market_date_but_keeps_calendar_capture(tmp_path):
     for folder in ("20260813", "20260814", "20260817", "20260818", "20260819"):
-        (tmp_path / folder).mkdir()
+        _write_meta_only_capture(tmp_path, folder)
     folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
     window = collision_dates.select_folder_window(
         folders,
@@ -214,7 +241,7 @@ def test_window_excludes_bad_market_date_but_keeps_calendar_capture(tmp_path):
 
 
 def test_all_history_does_not_include_future_market_dates(tmp_path):
-    (tmp_path / "20260928").mkdir()
+    _write_meta_only_capture(tmp_path, "20260928")
     _write_capture(
         tmp_path,
         "20260930",

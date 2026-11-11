@@ -964,7 +964,8 @@ class ZhbData:
                 # 注: 以下 key 名沿用历史(语义见 docstring V16.2.18 修正):
                 #   change_20d 实为 Col[18] 20日涨跌幅（原误标30d）
                 #   change_30d 实为 Col[18] 20日涨跌幅（key 历史名, 值与 change_20d 相同）
-                #   change_60d 实为 Col[19] 近60根K线（原误标60d, 已另设 change_60k_bar）
+                #   change_60d 当前映射 Col[20]；历史解析键 change_60d_alt 已退出
+                #   Col[19] 近60根K线涨跌幅由 change_60k_bar 输出，不能再标成 change_60d
                 #   change_ytd 实为 Col[21] YTD ✓
                 "change_20d": _safe_cast(parts, 18, float),
                 "change_30d": _safe_cast(parts, 18, float),
@@ -1172,6 +1173,9 @@ class ZhbData:
             [3]  eps              报告期累计每股收益 (元/股；基本/稀释/扣非口径未区分)
             [4]  disclose_date    财报预约披露日 (YYYYMMDD；不代表实际公告时间)
             [5]  zt_date_recent   近2年最近涨停板日期（通达信官方 ZTDate_Recent）
+            [7]  suspend_major_event_date 重大事项停牌起始日（原样保留 YYYYMMDD）
+            [11] forecast_date_recent 最新业绩预告发布日（通达信官方 NoticeDate_Recent）
+            [12] forecast_type    业绩预告类型代码（保留原始字符串；完整码表未知）
             [10] dt_date_recent  最近跌停日（DTDate_Recent；2026-09-23 主数据 zhb_20260921.zip 解析实锤: 600519=20181029/000001=20150119/000002=20241009/000858=20200716/300750=空 全中；Gemini 终局候选值一致）
             [8]  shareholder_change_date 股东持股变动关联日期；可为交易日、区间截止日或协议签署日
             [9]  shareholder_change_shares_wan 股东持股变动数量(万股；正值增持/转入，负值减持/转出)
@@ -1179,6 +1183,7 @@ class ZhbData:
             [14] unlock_shares_wan 最新解禁数量(万股)
             [19] hg_date          最近回购预案日（通达信官方 RecentHGDate；不代表实际公告时间）
             [20] hg_amount_yi     回购预案金额上限(亿元；TdxW 二进制提示 `回购预案:上限%.2f亿元`；不声明公开字段码映射）
+            [21] equity_incentive_date 股权激励预案/草案公告日（通达信官方 RecentIncentDate）
         """
         data = self.raw_files.get("tipinfo.dat", b"")
         if not data:
@@ -1199,7 +1204,10 @@ class ZhbData:
                 "eps": _safe_cast(parts, 3, float),
                 "disclose_date": parts[4].strip() if len(parts) > 4 else "",
                 "zt_date_recent": parts[5].strip() if len(parts) > 5 else "",
+                "suspend_major_event_date": parts[7].strip() if len(parts) > 7 else "",
                 "dt_date_recent": parts[10].strip() if len(parts) > 10 else "",
+                "forecast_date_recent": parts[11].strip() if len(parts) > 11 else "",
+                "forecast_type": parts[12].strip() if len(parts) > 12 else "",
                 "shareholder_change_date": parts[8].strip() if len(parts) > 8 else "",
                 "shareholder_change_shares_wan": _safe_cast(parts, 9, float),
             }
@@ -1211,11 +1219,14 @@ class ZhbData:
             if len(parts) > 20:
                 rec["hg_date"] = parts[19].strip()
                 rec["hg_amount_yi"] = _safe_cast(parts, 20, float)
+            # 股权激励预案日期（同源已验证原始列 [21]；官方语义参考 RecentIncentDate）
+            if len(parts) > 21:
+                rec["equity_incentive_date"] = parts[21].strip()
             result[code] = rec
         return result
 
     def get_tip_info(self, code: str) -> Optional[Dict[str, Any]]:
-        """获取指定股票的财报、涨跌停、股东持股变动与回购预案信息。"""
+        """获取指定股票的财报、公告、停牌日期、涨跌停及股东持股变动信息。"""
         return self.tip_info.get(code)
 
     # ── xgsg 新股申购 ──

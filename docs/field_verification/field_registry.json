@@ -9,7 +9,7 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 384,
       "candidate": 3,
-      "conflict": 59,
+      "conflict": 58,
       "disproved": 22,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
@@ -27,15 +27,15 @@
       "registry_status_only_single_source": 602,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 1,
-      "status_conflict": 46,
+      "status_conflict": 45,
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1129,
-      "verified": 1398,
+      "verified": 1399,
       "verified_by_empirical_addendum": 70,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 356
+      "verified_by_source_contract": 357
     },
     "updated_at": "2026-11-07"
   },
@@ -26968,17 +26968,15 @@
       ],
       "section": "12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）",
       "canonical": "northbound_hold.date",
-      "meaning": "北向持股快照报告期(YYYY-MM-DD)",
-      "unit": "",
+      "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+      "unit": "YYYY-MM-DD",
       "status_raw": "✅ 东财 datacenter 实证：如 `2026-06-30",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "东财-datacenter(英文键)": "conflict"
+        "东财-datacenter(英文键)": "verified"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "northbound_hold.hold_ratio",
@@ -42116,7 +42114,8 @@
       "东财"
     ],
     "northbound_hold.date": [
-      "东财"
+      "东财",
+      "东财-datacenter(英文键)"
     ],
     "northbound_hold.hold_ratio": [
       "东财"
@@ -148695,14 +148694,15 @@
       "identity": "东财-datacenter(英文键)::northbound_hold.date",
       "path": "northbound_hold.date",
       "canonical": "northbound_hold.date",
-      "meaning": "北向持股快照报告期(YYYY-MM-DD)",
-      "unit": "",
+      "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+      "unit": "YYYY-MM-DD",
       "section": "12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）",
       "sections": [
-        "12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）"
+        "12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）",
+        "source contract: 东方财富数据中心：沪深港通个股持股明细 · stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> RPT_MUTUAL_HOLDSTOCKNORTH_STA -> TRADE_DATE -> northbound_hold[].date#项目代码将 row.TRADE_DATE 截取前 10 位写入 date；官方页面表头“持股日期”，注释说明该日对应港交所中央结算系统参与者日终持股量 @ 官方页面核验 2026-11-11；页面数据展示至 2024-08-16 的历史记录"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -148717,6 +148717,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261111-eastmoney-northbound-hold-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261111-eastmoney-northbound-hold-date-source-contract"
         ]
       },
       "reference_evidence": [
@@ -148727,6 +148733,35 @@
           "unit": "",
           "status_raw": "✅ 东财 datacenter 实证：如 `2026-06-30",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 东方财富数据中心：沪深港通个股持股明细 · stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> RPT_MUTUAL_HOLDSTOCKNORTH_STA -> TRADE_DATE -> northbound_hold[].date#项目代码将 row.TRADE_DATE 截取前 10 位写入 date；官方页面表头“持股日期”，注释说明该日对应港交所中央结算系统参与者日终持股量 @ 官方页面核验 2026-11-11；页面数据展示至 2024-08-16 的历史记录",
+          "canonical": "northbound_hold.date",
+          "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+          "unit": "YYYY-MM-DD",
+          "status_raw": "人工核验上游契约 2026-11-11：20261111-eastmoney-northbound-hold-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261111-eastmoney-northbound-hold-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富数据中心：沪深港通个股持股明细",
+            "revision": "官方页面核验 2026-11-11；页面数据展示至 2024-08-16 的历史记录",
+            "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> RPT_MUTUAL_HOLDSTOCKNORTH_STA -> TRADE_DATE -> northbound_hold[].date",
+            "locator": "项目代码将 row.TRADE_DATE 截取前 10 位写入 date；官方页面表头“持股日期”，注释说明该日对应港交所中央结算系统参与者日终持股量",
+            "url": "https://data.eastmoney.com/hsgt/StockHdDetail/002371.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股快照报告期(YYYY-MM-DD)",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+              "unit": "YYYY-MM-DD"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -148741,7 +148776,56 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261111-eastmoney-northbound-hold-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-11",
+          "decision_file": "adjudications/20261111_eastmoney_northbound_hold_date_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股快照报告期(YYYY-MM-DD)",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+              "unit": "YYYY-MM-DD"
+            }
+          },
+          "rationale": "项目适配器 stock_common/sc_datasource/_eastmoney.py::get_northbound_hold 请求 RPT_MUTUAL_HOLDSTOCKNORTH_STA，并将响应 TRADE_DATE 截取前 10 位写入返回 date。东方财富官方个股持股明细页将该列标为“持股日期”，并说明基础数据展示港交所中央结算系统参与者于该日日终的持股量；所选日期为星期日或香港公共假期时，页面显示最近的有效持股记录。网页当前可见的 002371 历史行日期为 2024-08-16 及此前日期；该样本只用于解释日期字段，不代表 2026 年当前最新持仓。注册表原 conflict 来自 verified 逐源参考状态与空白 aggregate 状态不一致，属性冲突为空。本决定只确认该来源路径的日期语义，不建立跨源映射，也不把该日期当成采集目录日、采集运行日或公告日。",
+          "source_contract": {
+            "authority": "东方财富数据中心：沪深港通个股持股明细",
+            "revision": "官方页面核验 2026-11-11；页面数据展示至 2024-08-16 的历史记录",
+            "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> RPT_MUTUAL_HOLDSTOCKNORTH_STA -> TRADE_DATE -> northbound_hold[].date",
+            "locator": "项目代码将 row.TRADE_DATE 截取前 10 位写入 date；官方页面表头“持股日期”，注释说明该日对应港交所中央结算系统参与者日终持股量",
+            "url": "https://data.eastmoney.com/hsgt/StockHdDetail/002371.html"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股快照报告期(YYYY-MM-DD)",
+              "unit": ""
+            },
+            "updated": {
+              "canonical": "northbound_hold.date",
+              "meaning": "北向持股记录日期：港交所中央结算系统参与者日终持仓快照对应的日期，不是采集运行日",
+              "unit": "YYYY-MM-DD"
+            },
+            "rationale": "官方页面将其称为持股日期，并解释为日终持仓记录日期；把较含糊的‘快照报告期’修正为持股数据的日期语义，并补记格式。"
+          }
+        }
+      ]
     },
     {
       "source": "东财-datacenter(英文键)",

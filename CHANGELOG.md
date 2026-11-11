@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - 明确区分 `YYYYMMDD` 日期格式标记与实际返回字段：按 TDX 0x0010 权威表定案 `updated_date` 为财报更新日期、`ipo_date` 为上市日期，关闭两个字段由弱聚合描述造成的元数据冲突；ZHB 裁决补充格式标记到实际日期字段的逐源对应关系。来源契约元数据更正现可在决策文件精确提供属性冲突快照时解除冲突，并把快照保留到定案历史。
+- 按项目映射 `RPT_MUTUAL_HOLDSTOCKNORTH_STA.TRADE_DATE → northbound_hold.date` 和东财官方个股持股页，明确该日期表示港交所中央结算系统参与者日终持仓快照日期，不是采集运行日；补记 `YYYY-MM-DD` 格式并解除聚合状态造成的单源冲突。
 - ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突，其中四项来源内确认、两项继续待核。报告和注册表不再把这些财务字段当作无路径叶名。
 - 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。`fa_qi_ren_fa_ren_gu`、`fa_ren_gu` 与 `zhu_ying_li_run` 仍保留冲突，详见 [`20261111_finance_extended_candidate_crosscheck.md`](docs/field_verification/20261111_finance_extended_candidate_crosscheck.md)。
 - 更正 `ZHB-tipinfo::[6]`：通达信官方 `TopDate_Recent` 指近 2 年最近龙虎榜日期；三只股票的留存 ZHB 原始值与东方财富官方页面日期一致。保留路径身份、verified 状态和空单位。

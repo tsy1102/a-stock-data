@@ -2900,14 +2900,6 @@
 |:--|:--|:--|:--|:--|
 | 东财-datacenter(英文键) · `northbound_hold.change_shares` | northbound_hold.change_shares | 较上一期持股增减变动数(股) | — | `conflict` |
 
-### `northbound_hold.date` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.date` | northbound_hold.date | 北向持股快照报告期(YYYY-MM-DD) | — | `conflict` |
-
 ### `northbound_hold.hold_ratio` — consistent
 
 聚合问题：source_status_conflict；聚合状态：`conflict`。

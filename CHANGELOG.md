@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- 修正 Fuyao 财务回退把披露日 `report_date_ms` 当作报告期末的错误：“报告日”现在读取 `period_end_ms` 并按 `Asia/Shanghai` 转换，缺少报告期末时留空；已加入披露日与报告期末不同的回归覆盖。
+
 ### Added
 
+- 定案 `同花顺-fuyao::report_date_ms` 为财务报表披露日，并与报告期末 `period_end_ms` 区分；依据官方 Fuyao 契约、来源日期合格的 2026-11-10 样本和三份 2026Q3 公告交叉核实。
 - 明确区分 `YYYYMMDD` 日期格式标记与实际返回字段：按 TDX 0x0010 权威表定案 `updated_date` 为财报更新日期、`ipo_date` 为上市日期，关闭两个字段由弱聚合描述造成的元数据冲突；ZHB 裁决补充格式标记到实际日期字段的逐源对应关系。来源契约元数据更正现可在决策文件精确提供属性冲突快照时解除冲突，并把快照保留到定案历史。
 - 按项目映射 `RPT_MUTUAL_HOLDSTOCKNORTH_STA.TRADE_DATE → northbound_hold.date` 和东财官方个股持股页，明确该日期表示港交所中央结算系统参与者日终持仓快照日期，不是采集运行日；补记 `YYYY-MM-DD` 格式并解除聚合状态造成的单源冲突。
 - ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突，其中四项来源内确认、两项继续待核。报告和注册表不再把这些财务字段当作无路径叶名。

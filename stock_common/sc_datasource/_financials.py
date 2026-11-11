@@ -1035,9 +1035,8 @@ def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> List
 
     返回与 get_sina_financial_report 完全同构的 List[Dict]：
     {"报告日","营业总收入","营业成本","净利润"}，值均为字符串(元)，
-    下游 float() 解析逻辑不变。fuyao 英文键→新浪中文键映射据
-    docs/field_verification/20260901/raw_fuyao.json 的 income_q 实测键名校准
-    （report_date_ms / operating_income / parent_holder_net_profit / basic_eps）。
+    下游 float() 解析逻辑不变。Fuyao 的 period_end_ms 表示报告期末，
+    report_date_ms 表示披露日；回退结果中的“报告日”必须使用前者。
     """
     sina = get_sina_financial_report(code, num_periods)
     if sina:
@@ -1050,23 +1049,18 @@ def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> List
             return []
         out = []
         for it in fy:
-            rdm = (
-                it.get("report_date_ms")
-                or it.get("report_date")
-                or it.get("end_date")
-                or it.get("accper")
-            )
             rdate = ""
-            if rdm:
+            period_end_ms = it.get("period_end_ms")
+            if period_end_ms not in (None, ""):
                 try:
-                    _ms = float(rdm)
-                    if _ms > 1e12:  # epoch 毫秒
-                        _ms /= 1000.0
-                    from datetime import datetime
+                    _ms = float(period_end_ms) / 1000.0
+                    from datetime import datetime, timedelta, timezone
 
-                    rdate = datetime.fromtimestamp(_ms).strftime("%Y-%m-%d")
-                except Exception:
-                    rdate = str(rdm)
+                    shanghai = timezone(timedelta(hours=8))
+                    if _ms > 0:
+                        rdate = datetime.fromtimestamp(_ms, tz=shanghai).strftime("%Y-%m-%d")
+                except (OverflowError, OSError, TypeError, ValueError):
+                    rdate = ""
             ni = it.get(
                 "parent_holder_net_profit", it.get("net_profit", it.get("归属母公司净利润", "0"))
             )

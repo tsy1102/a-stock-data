@@ -15,6 +15,7 @@
 ## 当前调查计划
 
 - [`20261111_finance_candidate_crosscheck.md`](20261111_finance_candidate_crosscheck.md) 与 [`20261111_finance_extended_candidate_crosscheck.md`](20261111_finance_extended_candidate_crosscheck.md)：按拼音/英文先生成候选，再用 ELTDX v3.3.2 来源契约、2026Q3 公开报告、单位和报告期独立核对；确认来源内财务语义，不建立跨源映射。发起人法人股、法人股和主营利润路径的冲突仍保留。
+- [`adjudications/20261111_fuyao_report_date_ms.md`](adjudications/20261111_fuyao_report_date_ms.md)：核对 Fuyao 报表披露日 `report_date_ms` 与报告期末 `period_end_ms`；以官方接口定义、合格采集样本及三份公告确认各自对应日期，并修正财务回退的日期使用。
 - [`adjudications/20261111_eltdx_finance_capture_paths.md`](adjudications/20261111_eltdx_finance_capture_paths.md)：补齐六条 `finance_batch[]` 完整采集路径；四项来源内定案、两项股本字段保留为未定案候选，并明确日期格式标记 `YYYYMMDD` 对应实际日期字段。
 - [`adjudications/20261111_eastmoney_northbound_hold_date.md`](adjudications/20261111_eastmoney_northbound_hold_date.md)：按项目 `TRADE_DATE → northbound_hold.date` 映射与东财个股持股页定案为持股日终快照日期；明确它不是采集运行日，并解除聚合状态造成的单源冲突。
 - [`20261111_eltdx_share_raw_crosscheck.md`](20261111_eltdx_share_raw_crosscheck.md)：先由名称提出 B 股、H 股和原始财务主体候选，再以 ELTDX v3.3.2 0x0010 契约、136/143 字节结构、保留样本及发行人股份数据核验；只确认 ELTDX 来源内定义，不新增跨源映射。

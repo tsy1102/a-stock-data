@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-fuyao-report-date-ms-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "report_date_ms"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "report_date_ms",
+      "meaning": "财务报表披露日，即该报表公开披露的日期；不是报告期末",
+      "unit": "毫秒级 Unix 时间戳，按 Asia/Shanghai 时区解释",
+      "rationale": "项目的财务回退路径调用 Fuyao income-statements 接口，原始记录同时包含 report_date_ms 与 period_end_ms。官方接口契约将前者定义为披露日、后者定义为报告期末。留存的 2026-11-10 来源日期合格样本中，600519 与 601288 的 report_date_ms 对应 2026-10-31，920508 对应 2026-10-30；三者的 period_end_ms 均对应 2026-09-30。各自的 2026Q3 上市公司公告日期及报告期数据与此对应。此决定只确认同花顺-fuyao::report_date_ms 的来源内语义，不建立跨来源字段映射。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 REST API",
+        "revision": "官方 llms-full.txt；2026-08-22 本地快照，2026-11-11 在线复核",
+        "path": "GET /api/a-share/financials/income-statements",
+        "locator": "共同响应字段：report_date_ms = 披露日（毫秒）；period_end_ms = 报告期末（Asia/Shanghai 零点毫秒时间戳）",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    }
+  ]
+}

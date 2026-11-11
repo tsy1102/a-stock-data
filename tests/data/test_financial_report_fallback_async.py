@@ -4,6 +4,7 @@ from threading import get_ident
 
 from stock_common import get_financial_report_with_fallback_async
 from stock_common.sc_datasource import _financials
+import stock_common.sc_fuyao as sc_fuyao
 
 
 class _ImmediateAwaitable:
@@ -60,3 +61,47 @@ def test_financial_report_fallback_async_delegates_once_to_thread(monkeypatch):
     assert fallback_calls[0][:2] == ("600000", 8)
     assert fallback_calls[0][2] != caller_thread
     assert dispatches == [(fake_fallback, ("600000", 8), {})]
+
+
+def test_financial_report_fallback_uses_fuyao_period_end_not_disclosure_date(monkeypatch):
+    monkeypatch.setattr(_financials, "get_sina_financial_report", lambda code, num_periods: [])
+    monkeypatch.setattr(
+        sc_fuyao,
+        "get_fuyao_financials",
+        lambda endpoint, code, *, limit, period: [
+            {
+                "report_date_ms": 1793376000000,
+                "period_end_ms": 1790697600000,
+                "operating_income": 123456,
+                "operating_cost": 45678,
+                "parent_holder_net_profit": 7890,
+            }
+        ],
+    )
+
+    result = _financials.get_financial_report_with_fallback("600519", num_periods=4)
+
+    assert result == [
+        {
+            "报告日": "2026-09-30",
+            "营业总收入": "123456",
+            "营业成本": "45678",
+            "净利润": "7890",
+        }
+    ]
+
+
+def test_financial_report_fallback_does_not_use_disclosure_date_as_period_end(monkeypatch):
+    monkeypatch.setattr(_financials, "get_sina_financial_report", lambda code, num_periods: [])
+    monkeypatch.setattr(
+        sc_fuyao,
+        "get_fuyao_financials",
+        lambda endpoint, code, *, limit, period: [
+            {"report_date_ms": 1793376000000, "operating_income": 123456},
+            {"report_date_ms": 1793376000000, "period_end_ms": 0},
+        ],
+    )
+
+    result = _financials.get_financial_report_with_fallback("600519", num_periods=4)
+
+    assert [row["报告日"] for row in result] == ["", ""]

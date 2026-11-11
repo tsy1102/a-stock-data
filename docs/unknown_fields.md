@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2611；日常来源路径 2467：unverified 1009、candidate 3、conflict 58、disproved 22；历史来源路径 144。
+> 注册字段路径 2611；日常来源路径 2467：unverified 1008、candidate 3、conflict 58、disproved 22；历史来源路径 144。
 > 另有 169 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 852 |
+| 含义栏为空/占位 | 851 |
 | 含义栏有文本（仍未验证） | 157 |
 
 ### 历史状态证据的解析结果
@@ -27,7 +27,7 @@
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 521 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 520 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（58）
@@ -101,7 +101,7 @@
 | TDX-eltdx(适配层) | `finance_batch[].fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 拼音及模型标签候选：法人股；样本值语义冲突待核 | 文档标注万股（待核） | 含义栏有文本（仍未验证） | reference_only_nonverified | 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕 |
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1009）
+## 三、待破解字段（1008）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -669,7 +669,6 @@
 | 同花顺-fuyao | `quick_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `rank` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `receive_account_turnover_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `report_date_ms` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `returns` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | 元 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕；12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕 |
 | 同花顺-fuyao | `roa` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 125 个 code；聚合定义不完整 222 个 code；疑似合并文本 348 条逐源记录。
+> 聚合歧义 125 个 code；聚合定义不完整 222 个 code；疑似合并文本 349 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3748,6 +3748,7 @@
 | 同花顺-fuyao | `period_end_ms` | period_end_ms | 报告期末（Asia/Shanghai 零点毫秒戳）。 | `verified` |
 | 同花顺-fuyao | `rank_change` | rank_change | 排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。 | `verified` |
 | 同花顺-fuyao | `rank_trend` | rank_trend | 排名趋势：`up` / `down` / `flat` / `unknown`。 | `verified` |
+| 同花顺-fuyao | `report_date_ms` | report_date_ms | 财务报表披露日，即该报表公开披露的日期；不是报告期末 | `verified` |
 | 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | `unverified` |
 | 同花顺-fuyao | `search` | meta/tickers/search | — | `unverified` |
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |

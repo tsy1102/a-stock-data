@@ -382,8 +382,11 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 68
+    assert len(pairs) == 71
     assert ("TDX(双命名源)", "bid2") in pairs
+    assert ("TDX-eltdx(适配层)", "limit_ladder.target_trade_date") in pairs
+    assert ("TDX-eltdx(适配层)", "limit_ladder.previous_trade_date") in pairs
+    assert ("TDX-eltdx(适配层)", "limit_ladder.stats_date") in pairs
     assert matrix["finance_batch[].gu_dong_ren_shu_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].zhu_ying_shou_ru_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].ying_ye_li_run_raw_float"] == {"TDX-eltdx(适配层)"}

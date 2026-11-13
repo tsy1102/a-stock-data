@@ -106,6 +106,7 @@
 - [`adjudications/20261111_zhb_free_ltgb_contract_and_filings.md`](adjudications/20261111_zhb_free_ltgb_contract_and_filings.md)：依据通达信官方 `FreeLtgb` 单位定义、项目 `tdxstat.cfg[11]` 解析路径及三家发行人 2026Q3 财报复算，将 `ZHB-tdxstat::stat.free_ltgb` 单位从“股”更正为“万股”；340 条保留 ZHB 行验证 `full/stat` 别名一致，不新增跨源映射。
 - [`adjudications/20261110_eltdx_special_limit_prices.md`](adjudications/20261110_eltdx_special_limit_prices.md)：按 ELTDX 3.3.2 `SpecialLimitRecord` 和 0x0452 契约拆分并确认 `limit_up_price`、`limit_down_price`；单位未公开，留空；不使用未确认来源数据日的样本或建立跨源映射。
 - [`adjudications/20261110_eltdx_trade_tick_contract.md`](adjudications/20261110_eltdx_trade_tick_contract.md)：按 ELTDX 3.3.2 `TradeTick` 契约确认七个上游模型字段；两个竞价量字段固定为 `None`，真实竞价数据来自 `auctions.series`。当前项目采集器未调用成交接口；不读取未核日期样本、不恢复路由或建立碰撞锚。
+- [`adjudications/20261114_eltdx_limit_ladder_date_fields.md`](adjudications/20261114_eltdx_limit_ladder_date_fields.md)：按 ELTDX v3.3.2 `LimitLadderTable.rows[*]` / `ShortlineIndicator` 契约及 13 条、10 个目标数据日样本，定案 `limit_ladder.target_trade_date`、`previous_trade_date`、`stats_date` 三个完整路径；严格区分行情目标日、上一实际交易日、统计资源日与采集目录日期，不新增跨源映射。
 
 ## 归档格式
 

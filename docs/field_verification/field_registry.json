@@ -30,11 +30,11 @@
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1098,
-      "verified": 1445,
+      "verified": 1448,
       "verified_by_empirical_addendum": 146,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 359
+      "verified_by_source_contract": 362
     },
     "updated_at": "2026-11-07"
   },
@@ -24236,6 +24236,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "limit_ladder.previous_trade_date",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "canonical": "previous_trade_date",
+      "meaning": "上一实际交易日日期",
+      "unit": "日期",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "limit_ladder.seal_amount",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -24245,6 +24263,42 @@
       "canonical": "limit_ladder.seal_amount",
       "meaning": "当前买一金额；封板时解释为封单额",
       "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "limit_ladder.stats_date",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "canonical": "stats_date",
+      "meaning": "统计资源主导日期",
+      "unit": "日期",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "limit_ladder.target_trade_date",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "canonical": "target_trade_date",
+      "meaning": "当前行情对应的目标交易日日期",
+      "unit": "日期",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -100586,6 +100640,50 @@
     },
     {
       "source": "TDX-eltdx(适配层)",
+      "code": "finance_batch[].zhu_ying_li_run_raw_float",
+      "identity": "TDX-eltdx(适配层)::finance_batch[].zhu_ying_li_run_raw_float",
+      "path": "finance_batch[].zhu_ying_li_run_raw_float",
+      "canonical": "finance_batch[].zhu_ying_li_run_raw_float",
+      "meaning": "营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突）",
+      "unit": "千元",
+      "section": "ELTDX v3.3.2 finance_batch raw capture path",
+      "sections": [
+        "ELTDX v3.3.2 finance_batch raw capture path"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_file": "docs/field_verification/adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md",
+        "evidence_level": "E3",
+        "capture_directory_count": 1,
+        "sample_floor": "20261015",
+        "capture_directory": "20261110",
+        "stock_count": 4,
+        "official_report_stock_count": 4,
+        "report_period_comparison_count": 4,
+        "max_absolute_difference_cny": 7413.52,
+        "max_relative_difference": 3.3596328374e-06,
+        "raw_capture_sha256": "6952797ab5f73c4915989ed2c1a5a4abf49336b8064f488b182d6fea947cddf6",
+        "meta_sha256": "904a33f00bb0a672d0f1f316835af8d4597cff23857e0d25e40d8959ea5cfa58",
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "ELTDX v3.3.2 label: 主营利润；实测值对应报告营业成本"
+        ],
+        "values": [
+          "verified"
+        ],
+        "relative_tolerance": 1e-05,
+        "within_relative_tolerance_count": 4
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "registry_aggregate": null
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
       "code": "finance_batch[].zhu_ying_shou_ru_raw_float",
       "identity": "TDX-eltdx(适配层)::finance_batch[].zhu_ying_shou_ru_raw_float",
       "path": "finance_batch[].zhu_ying_shou_ru_raw_float",
@@ -104671,6 +104769,104 @@
     },
     {
       "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.previous_trade_date",
+      "identity": "TDX-eltdx(适配层)::limit_ladder.previous_trade_date",
+      "path": "limit_ladder.previous_trade_date",
+      "canonical": "previous_trade_date",
+      "meaning": "上一实际交易日日期",
+      "unit": "日期",
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "sections": [
+        "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [],
+        "adjudication_ids": [
+          "20261114-eltdx-limit-ladder-previous-trade-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-limit-ladder-previous-trade-date-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+          "canonical": "previous_trade_date",
+          "meaning": "上一实际交易日日期",
+          "unit": "日期",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-limit-ladder-previous-trade-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-limit-ladder-previous-trade-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "previous_trade_date",
+              "meaning": "上一实际交易日日期",
+              "unit": "日期"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-limit-ladder-previous-trade-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_limit_ladder_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_only_source_pair",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "previous_trade_date",
+              "meaning": "上一实际交易日日期",
+              "unit": "日期"
+            }
+          },
+          "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 previous_trade_date 是由上证指数实际日 K 确定的上一交易日，不是运行自然日减一天。2026-10-15 起保留样本中 13/13 行均与表级交易日上下文一致，周末间隔记录为上一实际交易日。该裁决只确认此适配层完整路径，不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
       "code": "limit_ladder.seal_amount",
       "identity": "TDX-eltdx(适配层)::limit_ladder.seal_amount",
       "path": "limit_ladder.seal_amount",
@@ -104711,6 +104907,202 @@
       },
       "reference_evidence": [],
       "attribute_conflicts": {}
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.stats_date",
+      "identity": "TDX-eltdx(适配层)::limit_ladder.stats_date",
+      "path": "limit_ladder.stats_date",
+      "canonical": "stats_date",
+      "meaning": "统计资源主导日期",
+      "unit": "日期",
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "sections": [
+        "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [],
+        "adjudication_ids": [
+          "20261114-eltdx-limit-ladder-stats-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-limit-ladder-stats-date-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+          "canonical": "stats_date",
+          "meaning": "统计资源主导日期",
+          "unit": "日期",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-limit-ladder-stats-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-limit-ladder-stats-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "stats_date",
+              "meaning": "统计资源主导日期",
+              "unit": "日期"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-limit-ladder-stats-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_limit_ladder_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_only_source_pair",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "stats_date",
+              "meaning": "统计资源主导日期",
+              "unit": "日期"
+            }
+          },
+          "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 stats_date 是 tdxstat.cfg 与 tdxstat2.cfg 共同的主导统计资源日期；它只可等于目标交易日或上一实际交易日，并通过 alignment_status 标记。本项目 2026-10-15 起保留样本 13/13 行均符合该关系。stats_date 是业务统计日期，不替代采集 data_date 或行情目标日期。该裁决只确认此适配层完整路径，不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.target_trade_date",
+      "identity": "TDX-eltdx(适配层)::limit_ladder.target_trade_date",
+      "path": "limit_ladder.target_trade_date",
+      "canonical": "target_trade_date",
+      "meaning": "当前行情对应的目标交易日日期",
+      "unit": "日期",
+      "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+      "sections": [
+        "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [],
+        "adjudication_ids": [
+          "20261114-eltdx-limit-ladder-target-trade-date-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-limit-ladder-target-trade-date-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现 · client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)#连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现 @ ELTDX v3.3.2（requirements.txt 固定版本）",
+          "canonical": "target_trade_date",
+          "meaning": "当前行情对应的目标交易日日期",
+          "unit": "日期",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-limit-ladder-target-trade-date-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-limit-ladder-target-trade-date-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "target_trade_date",
+              "meaning": "当前行情对应的目标交易日日期",
+              "unit": "日期"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-limit-ladder-target-trade-date-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_limit_ladder_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_only_source_pair",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "target_trade_date",
+              "meaning": "当前行情对应的目标交易日日期",
+              "unit": "日期"
+            }
+          },
+          "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 target_trade_date 来自 TDX 握手，表示当前行情对应的目标交易日。2026-10-15 起保留样本中 13/13 行均与表级 trade_date 和 meta.data_date 一致。该裁决只确认此适配层完整路径，不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+            "path": "client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)",
+            "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -118918,50 +119310,6 @@
           }
         }
       ]
-    },
-    {
-      "source": "TDX-eltdx(适配层)",
-      "code": "finance_batch[].zhu_ying_li_run_raw_float",
-      "identity": "TDX-eltdx(适配层)::finance_batch[].zhu_ying_li_run_raw_float",
-      "path": "finance_batch[].zhu_ying_li_run_raw_float",
-      "canonical": "finance_batch[].zhu_ying_li_run_raw_float",
-      "meaning": "营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突）",
-      "unit": "千元",
-      "section": "ELTDX v3.3.2 finance_batch raw capture path",
-      "sections": [
-        "ELTDX v3.3.2 finance_batch raw capture path"
-      ],
-      "status": "verified",
-      "status_resolution": "verified_by_empirical_addendum",
-      "status_evidence": {
-        "evidence_basis": "empirical_source_field_semantics",
-        "evidence_file": "docs/field_verification/adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md",
-        "evidence_level": "E3",
-        "capture_directory_count": 1,
-        "sample_floor": "20261015",
-        "capture_directory": "20261110",
-        "stock_count": 4,
-        "official_report_stock_count": 4,
-        "report_period_comparison_count": 4,
-        "max_absolute_difference_cny": 7413.52,
-        "max_relative_difference": 3.3596328374e-06,
-        "raw_capture_sha256": "6952797ab5f73c4915989ed2c1a5a4abf49336b8064f488b182d6fea947cddf6",
-        "meta_sha256": "904a33f00bb0a672d0f1f316835af8d4597cff23857e0d25e40d8959ea5cfa58",
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "ELTDX v3.3.2 label: 主营利润；实测值对应报告营业成本"
-        ],
-        "values": [
-          "verified"
-        ],
-        "relative_tolerance": 1e-05,
-        "within_relative_tolerance_count": 4
-      },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "registry_aggregate": null
     },
     {
       "source": "TDX-eltdx(适配层)",

@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-14",
+  "decisions": [
+    {
+      "id": "20261114-eltdx-limit-ladder-target-trade-date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.target_trade_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "target_trade_date",
+      "meaning": "当前行情对应的目标交易日日期",
+      "unit": "日期",
+      "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 target_trade_date 来自 TDX 握手，表示当前行情对应的目标交易日。2026-10-15 起保留样本中 13/13 行均与表级 trade_date 和 meta.data_date 一致。该裁决只确认此适配层完整路径，不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.limit_ladder(codes).rows[*].target_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.target_trade_date)",
+        "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261114-eltdx-limit-ladder-previous-trade-date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.previous_trade_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "previous_trade_date",
+      "meaning": "上一实际交易日日期",
+      "unit": "日期",
+      "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 previous_trade_date 是由上证指数实际日 K 确定的上一交易日，不是运行自然日减一天。2026-10-15 起保留样本中 13/13 行均与表级交易日上下文一致，周末间隔记录为上一实际交易日。该裁决只确认此适配层完整路径，不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.limit_ladder(codes).rows[*].previous_trade_date -> LimitLadderTable.rows[*] (ShortlineIndicator.previous_trade_date)",
+        "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261114-eltdx-limit-ladder-stats-date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.stats_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "stats_date",
+      "meaning": "统计资源主导日期",
+      "unit": "日期",
+      "rationale": "项目将 ELTDX v3.3.2 limit_ladder() 返回的 ShortlineIndicator 行原样序列化至 limit_ladder 完整路径。固定版本契约规定 stats_date 是 tdxstat.cfg 与 tdxstat2.cfg 共同的主导统计资源日期；它只可等于目标交易日或上一实际交易日，并通过 alignment_status 标记。本项目 2026-10-15 起保留样本 13/13 行均符合该关系。stats_date 是业务统计日期，不替代采集 data_date 或行情目标日期。该裁决只确认此适配层完整路径，不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目固定版本 ELTDX v3.3.2 Helper 字段契约与运行时实现",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.helpers.limit_ladder(codes).rows[*].stats_date -> LimitLadderTable.rows[*] (ShortlineIndicator.stats_date)",
+        "locator": "连板天梯 Helper 文档 §返回结构/§行模型；短线指标文档 §时间对齐/§结果元数据；ShortlineIndicator 与 HelperApi.limit_ladder 实现",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    }
+  ]
+}

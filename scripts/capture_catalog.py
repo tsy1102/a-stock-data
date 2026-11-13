@@ -4,14 +4,13 @@ from typing import Any, Dict, List
 
 from scripts.collision_dates import EVENT_SOURCES
 
-# V17.1.x: 东财 stock/get 全字段(与主字典登记口径对齐 f1-f250, 保证采集不遗漏任何字段)。
-# 统一供 push2 / ulist239 / em_fund_flow 等东财 f 编号端点复用;
-# 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
+# V17.1.x: 东财 f 编号端点的连续请求字段组 f1-f250。
+# 供 push2 / ulist239 / em_fund_flow 复用；Ulist 专属的 f297 在下方单独追加，
+# 因此此范围只代表连续字段组，不代表 Ulist239 的全部登记字段。
 EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 
-# f297 is outside the registered f1-f250 capture range. Keep it Ulist-only:
-# efinance maps it to the latest trading date, so capture it as an investigation
-# field without treating that third-party mapping as a project field decision.
+# Ulist239-only field: verified as the per-security quote record's trading date.
+# Keep it out of the shared stock/get field group and append it only to Ulist requests.
 EM_ULIST_RESEARCH_FIELDS = ("f297",)
 
 # A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。

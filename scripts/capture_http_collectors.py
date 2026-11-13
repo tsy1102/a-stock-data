@@ -942,7 +942,7 @@ def collect_em_fund_flow(pool: list, deps: CaptureHttpDependencies) -> dict:
 
 
 def collect_ulist239(pool: list, deps: CaptureHttpDependencies) -> dict:
-    """东财 push2delay ulist.np 批量字段采集；附带 f297 供数据日研究。"""
+    """东财 push2delay ulist.np 批量采集；附带 Ulist239 专属行情日期字段 f297。"""
     EM_FULL_FIELDS = deps.em_full_fields
     ulist_fields = ",".join((EM_FULL_FIELDS, *EM_ULIST_RESEARCH_FIELDS))
     _request_failure_summary = deps.request_failure_summary

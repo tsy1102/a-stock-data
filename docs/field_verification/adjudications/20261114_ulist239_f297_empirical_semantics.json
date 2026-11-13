@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+  "evidence_sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838",
+  "decisions": [
+    {
+      "id": "20261114-ulist239-f297-quote-data-date",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f297"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f297",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ulist239_quote_data_date",
+      "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+      "unit": "YYYYMMDD（整数）",
+      "section": "2026-11-14 Ulist239 全字段实证附录",
+      "rationale": "项目 Ulist239 采集器将 f297 原样作为该官方接口的请求和响应路径。没有找到 Eastmoney 对 f297 的正式字段标签，因此按来源内实证而非官方契约定案。四个合格行情数据日中，同一 20 只证券的 f297 逐行均等于已验证 Ulist f124 Unix 秒时间戳转换后的北京时间日期、已验证新浪 [30] 日期值及目标 data_date，共 80/80，0 个反例；其中 2026-11-06 的样本在 2026-11-08（星期日）采集，字段仍为 2026-11-06，排除了运行日或采集日解释。2026-11-14 星期六对 Eastmoney 官方 Ulist 接口的实时查询返回 600519 的 f297=20261113，进一步支持该值随行情交易日而非访问自然日更新。裁决限定为逐证券 Ulist 行情记录日期；停牌或长期无成交证券的滞后边界尚未核验，不将此字段用作全源 as_of_date、日期路由或缓存键，也不创建跨源映射。",
+      "sample": {
+        "scope": "保留样本 20261105、20261106、20261109、20261110；每个数据日 20 只证券；比较 Ulist239 f297、同一行已验证 f124 的北京时间日期、已验证新浪[30]、目标 data_date；另于 2026-11-14 查询 Eastmoney 官方 Ulist 接口的 600519 当前行",
+        "comparison_count": 80,
+        "matched_count": 80,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

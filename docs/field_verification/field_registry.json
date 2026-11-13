@@ -30,8 +30,8 @@
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1098,
-      "verified": 1444,
-      "verified_by_empirical_addendum": 145,
+      "verified": 1445,
+      "verified_by_empirical_addendum": 146,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 359
@@ -18158,6 +18158,24 @@
         "meaning_incomplete",
         "source_statuses_differ"
       ]
+    },
+    {
+      "code": "f297",
+      "source": "东财-ulist239(np/get)",
+      "sources": [
+        "东财-ulist239(np/get)"
+      ],
+      "section": "2026-11-14 Ulist239 全字段实证附录",
+      "canonical": "ulist239_quote_data_date",
+      "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+      "unit": "YYYYMMDD（整数）",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-ulist239(np/get)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f3",
@@ -45493,6 +45511,9 @@
     ],
     "eps_ttm(f108)": [
       "东财-push2(stock/get)"
+    ],
+    "ulist239_quote_data_date": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -178071,6 +178092,123 @@
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
       }
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f297",
+      "identity": "东财-ulist239(np/get)::f297",
+      "path": "f297",
+      "canonical": "ulist239_quote_data_date",
+      "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+      "unit": "YYYYMMDD（整数）",
+      "section": "2026-11-14 Ulist239 全字段实证附录",
+      "sections": [
+        "2026-11-14 Ulist239 全字段实证附录"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-ulist239-f297-quote-data-date"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+        "evidence_sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838",
+        "sample": {
+          "scope": "保留样本 20261105、20261106、20261109、20261110；每个数据日 20 只证券；比较 Ulist239 f297、同一行已验证 f124 的北京时间日期、已验证新浪[30]、目标 data_date；另于 2026-11-14 查询 Eastmoney 官方 Ulist 接口的 600519 当前行",
+          "comparison_count": 80,
+          "matched_count": 80,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-14 Ulist239 全字段实证附录",
+          "canonical": "ulist239_quote_data_date",
+          "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+          "unit": "YYYYMMDD（整数）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-ulist239-f297-quote-data-date",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+          "evidence_sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838",
+          "metadata_change": {
+            "before": {
+              "canonical": "f297",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ulist239_quote_data_date",
+              "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+              "unit": "YYYYMMDD（整数）"
+            }
+          },
+          "sample": {
+            "scope": "保留样本 20261105、20261106、20261109、20261110；每个数据日 20 只证券；比较 Ulist239 f297、同一行已验证 f124 的北京时间日期、已验证新浪[30]、目标 data_date；另于 2026-11-14 查询 Eastmoney 官方 Ulist 接口的 600519 当前行",
+            "comparison_count": 80,
+            "matched_count": 80,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261114-ulist239-f297-quote-data-date",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_ulist239_f297_empirical_semantics.json",
+          "evidence_file": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+          "evidence_sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "f297",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f297",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ulist239_quote_data_date",
+              "meaning": "该证券当前 Ulist239 行情记录对应的交易日期",
+              "unit": "YYYYMMDD（整数）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目 Ulist239 采集器将 f297 原样作为该官方接口的请求和响应路径。没有找到 Eastmoney 对 f297 的正式字段标签，因此按来源内实证而非官方契约定案。四个合格行情数据日中，同一 20 只证券的 f297 逐行均等于已验证 Ulist f124 Unix 秒时间戳转换后的北京时间日期、已验证新浪 [30] 日期值及目标 data_date，共 80/80，0 个反例；其中 2026-11-06 的样本在 2026-11-08（星期日）采集，字段仍为 2026-11-06，排除了运行日或采集日解释。2026-11-14 星期六对 Eastmoney 官方 Ulist 接口的实时查询返回 600519 的 f297=20261113，进一步支持该值随行情交易日而非访问自然日更新。裁决限定为逐证券 Ulist 行情记录日期；停牌或长期无成交证券的滞后边界尚未核验，不将此字段用作全源 as_of_date、日期路由或缓存键，也不创建跨源映射。",
+          "sample": {
+            "scope": "保留样本 20261105、20261106、20261109、20261110；每个数据日 20 只证券；比较 Ulist239 f297、同一行已验证 f124 的北京时间日期、已验证新浪[30]、目标 data_date；另于 2026-11-14 查询 Eastmoney 官方 Ulist 接口的 600519 当前行",
+            "comparison_count": 80,
+            "matched_count": 80,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

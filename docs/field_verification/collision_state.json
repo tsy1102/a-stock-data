@@ -1579,6 +1579,9 @@
       "left": "zhb.full.change_ytd",
       "right": "push2.f122",
       "level": "L1",
+      "match_class": "multi_day_exact_match",
+      "evidence_basis": "independent_cross_source_value_comparison",
+      "adjudication_progress": "candidate_only",
       "ratio": null,
       "overall_hit": 0.9,
       "n_days": 5,
@@ -1612,7 +1615,7 @@
         }
       },
       "hub_flag": false,
-      "last_seen": "20261113",
+      "last_seen": "20261114",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10252,6 +10255,9 @@
       "left": "zhb.full.change_30d",
       "right": "tencent[70]",
       "level": "L1",
+      "match_class": "multi_day_exact_match",
+      "evidence_basis": "independent_cross_source_value_comparison",
+      "adjudication_progress": "candidate_only",
       "ratio": null,
       "overall_hit": 0.9773,
       "n_days": 11,
@@ -10291,7 +10297,7 @@
         }
       },
       "hub_flag": false,
-      "last_seen": "20261113",
+      "last_seen": "20261114",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -10440,6 +10446,9 @@
       "left": "zhb.full.high_52w",
       "right": "tencent[67]",
       "level": "L1",
+      "match_class": "multi_day_exact_match",
+      "evidence_basis": "independent_cross_source_value_comparison",
+      "adjudication_progress": "candidate_only",
       "ratio": null,
       "overall_hit": 0.95,
       "n_days": 11,
@@ -10479,7 +10488,7 @@
         }
       },
       "hub_flag": false,
-      "last_seen": "20261113",
+      "last_seen": "20261114",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -11966,6 +11975,9 @@
       "left": "zhb.full.change_30d",
       "right": "ulist239.f110",
       "level": "L1",
+      "match_class": "multi_day_exact_match",
+      "evidence_basis": "independent_cross_source_value_comparison",
+      "adjudication_progress": "candidate_only",
       "ratio": null,
       "overall_hit": 1.0,
       "n_days": 5,
@@ -11999,7 +12011,7 @@
         }
       },
       "hub_flag": false,
-      "last_seen": "20261113",
+      "last_seen": "20261114",
       "in_registry": false,
       "first_seen": "20261011",
       "status": "repeated"
@@ -13281,6 +13293,50 @@
       "in_registry": false,
       "first_seen": "20261112",
       "status": "repeated"
+    },
+    "sina[30]||ulist239.f297": {
+      "left": "ulist239.f297",
+      "right": "sina[30]",
+      "level": "L1",
+      "match_class": "date_value_correspondence",
+      "evidence_basis": "independent_cross_source_value_comparison",
+      "adjudication_progress": "candidate_only",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 4,
+      "n_pairs": 80,
+      "sample_dates": [
+        "T:20261105",
+        "T:20261106",
+        "T:20261109",
+        "T:20261110"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "sina"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 80
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 80
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261114",
+      "in_registry": false,
+      "first_seen": "20261114",
+      "status": "new"
     }
   },
   "legacy_findings_v1": {
@@ -23268,5 +23324,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261113"
+  "updated": "20261114"
 }

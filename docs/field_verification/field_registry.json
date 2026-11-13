@@ -9,7 +9,7 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 377,
       "candidate": 1,
-      "conflict": 43,
+      "conflict": 42,
       "disproved": 26,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
@@ -26,12 +26,12 @@
       "registry_status_only_single_source": 579,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 4,
-      "status_conflict": 37,
+      "status_conflict": 36,
       "status_missing": 43,
       "unresolved": 7,
       "unverified": 1098,
-      "verified": 1448,
-      "verified_by_empirical_addendum": 146,
+      "verified": 1449,
+      "verified_by_empirical_addendum": 147,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 362
@@ -27536,17 +27536,15 @@
       ],
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "canonical": "opendate",
-      "meaning": "日期",
-      "unit": "",
+      "meaning": "新浪个股资金流记录所对应的交易日期",
+      "unit": "日期",
       "status_raw": "✅",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "新浪(扩展API)": "conflict"
+        "新浪(扩展API)": "verified"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "opening_rush",
@@ -42223,7 +42221,8 @@
       "TDX-eltdx(适配层)"
     ],
     "opendate": [
-      "新浪"
+      "新浪",
+      "新浪(扩展API)"
     ],
     "opening_rush": [
       "AxData",
@@ -226326,14 +226325,15 @@
       "identity": "新浪(扩展API)::opendate",
       "path": "opendate",
       "canonical": "opendate",
-      "meaning": "日期",
-      "unit": "",
+      "meaning": "新浪个股资金流记录所对应的交易日期",
+      "unit": "日期",
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "sections": [
-        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
+        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
+        "新浪(扩展API)::opendate 日期字段实证（2026-11-14）"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -226346,9 +226346,24 @@
           "新浪(扩展API)"
         ],
         "values": [
-          "verified",
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-sina-extended-opendate-date-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_sina_opendate_evidence.md",
+        "evidence_sha256": "15cdca0ff5900e9e8acbc486491588b7b0a08098f8dc4863243d0736d31498b0",
+        "sample": {
+          "scope": "2026-10-19 至 2026-11-12 的 16 个可用收盘数据日；精确路径 新浪(扩展API)::opendate；每个数据日来源状态为 ok，每日 20 只股票。只纳入同时有 raw_sina_extended.json 和 meta.json 的保留期目录。",
+          "comparison_count": 320,
+          "matched_count": 320,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -226358,6 +226373,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "新浪(扩展API)::opendate 日期字段实证（2026-11-14）",
+          "canonical": "opendate",
+          "meaning": "新浪个股资金流记录所对应的交易日期",
+          "unit": "日期",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-sina-extended-opendate-date-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_sina_opendate_evidence.md",
+          "evidence_sha256": "15cdca0ff5900e9e8acbc486491588b7b0a08098f8dc4863243d0736d31498b0",
+          "metadata_change": {
+            "before": {
+              "canonical": "opendate",
+              "meaning": "日期",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "opendate",
+              "meaning": "新浪个股资金流记录所对应的交易日期",
+              "unit": "日期"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-19 至 2026-11-12 的 16 个可用收盘数据日；精确路径 新浪(扩展API)::opendate；每个数据日来源状态为 ok，每日 20 只股票。只纳入同时有 raw_sina_extended.json 和 meta.json 的保留期目录。",
+            "comparison_count": 320,
+            "matched_count": 320,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -226372,7 +226421,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-sina-extended-opendate-date-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_sina_opendate_semantics.json",
+          "evidence_file": "adjudications/20261114_sina_opendate_evidence.md",
+          "evidence_sha256": "15cdca0ff5900e9e8acbc486491588b7b0a08098f8dc4863243d0736d31498b0",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "opendate",
+            "meaning": "日期",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "opendate",
+              "meaning": "日期",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "opendate",
+              "meaning": "新浪个股资金流记录所对应的交易日期",
+              "unit": "日期"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目直接调用新浪 MoneyFlow.ssl_qsfx_zjlrqs；请求按 opendate 倒序取一行，采集器把该行原始 opendate 复制到注册表对应标量路径。新浪官方资金流帮助页确认其个股资金流按交易所成交数据逐日统计，但未公布 JSON 键级 schema，所以不把页面文字当作接口字段契约。独立核查 2026-10-15 保留起点后的全部可用 raw_sina_extended 样本：16 个收盘数据日、20 只股票、320 行；每个标量都与底层 money_flow 行值、来源 as_of_date、归一化 data_date 相同，缺失和反例均为零。范围仅为行日期语义，不推断盘中更新时间或其他来源等价关系。此裁决解除来源参考状态 verified 与注册表聚合 unverified 造成的 status_conflict，不改动其他来源，不新增 mappings。",
+          "sample": {
+            "scope": "2026-10-19 至 2026-11-12 的 16 个可用收盘数据日；精确路径 新浪(扩展API)::opendate；每个数据日来源状态为 ok，每日 20 只股票。只纳入同时有 raw_sina_extended.json 和 meta.json 的保留期目录。",
+            "comparison_count": 320,
+            "matched_count": 320,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "新浪(扩展API)",

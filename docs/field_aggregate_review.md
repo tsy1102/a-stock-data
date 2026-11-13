@@ -2906,14 +2906,6 @@
 | 开盘红 · `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | — | `unverified` |
 | 开盘红(Levistock适配) · `open_time` | limit_time / open_time | 待破解 | — | `unverified` |
 
-### `opendate` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `opendate` | opendate | 日期 | — | `conflict` |
-
 ### `pb` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。

@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261114_sina_opendate_evidence.md`](adjudications/20261114_sina_opendate_evidence.md) 与 [`adjudications/20261114_sina_opendate_semantics.json`](adjudications/20261114_sina_opendate_semantics.json)：按新浪官方个股资金流帮助说明及项目的 `MoneyFlow.ssl_qsfx_zjlrqs` 精确采集路径，审计保留期 16 个数据日×20 股共 320 条 `opendate`；全部与底层行日期、来源 `as_of_date` 和目标数据日一致，解除该路径由参考状态与注册表聚合不一致造成的状态冲突。不建立跨源映射；精确盘中更新时间仍未知。逐条样本见 [`research/20261114_sina_opendate_samples.csv`](research/20261114_sina_opendate_samples.csv)。
 - [`adjudications/20261114_push2_f108_eps_ttm_evidence.md`](adjudications/20261114_push2_f108_eps_ttm_evidence.md) 与 [`adjudications/20261114_push2_f108_eps_ttm.json`](adjudications/20261114_push2_f108_eps_ttm.json)：根据 2026-11-10 收盘 Push2 raw 与三只股票的 2025 年报、2025Q3、2026Q3 官方财报，来源内定案 `东财-push2(stock/get)::f108` 为归母净利润 TTM ÷ 当前总股本的每股收益；3/3 与普通归母公式在九位小数范围内吻合，扣非公式 0/3，明确反例为 0。未找到 f108 官方代码级字段表，不把它称为法定基本/稀释 EPS；不影响 Ulist239 同编号字段，不建立跨源 mapping。
 - 注册表源字段中的嵌套 `registry_aggregate.status_raw` 是裁决前的聚合原文快照，可能仍保留旧的 f108 标签；它只用于追溯历史来源，不代表当前释义。当前 Push2 定案以该源字段的裁决记录为准；Ulist239 的同编号字段仍单独待核。
 - [`20261113_cracking_closeout.md`](20261113_cracking_closeout.md)：汇总 2026-11-11 至 11-13 的来源契约、实证定案和边界；35 份结构化决策文件的 101 项决定均已写入逐源注册表并纳入 parity。

@@ -913,6 +913,22 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
                         "meaning": "52周最高价",
                         "unit": "元",
                     },
+                    {
+                        "source": "ZHB-tipinfo",
+                        "code": "[10]",
+                        "status": "verified",
+                        "canonical": "[10]",
+                        "meaning": "最近跌停日期",
+                        "unit": "日期",
+                    },
+                    {
+                        "source": "ZHB-tipinfo",
+                        "code": "[13]",
+                        "status": "verified",
+                        "canonical": "[13]",
+                        "meaning": "最近解禁日期",
+                        "unit": "日期",
+                    },
                 ],
                 "mappings": [],
             }
@@ -927,7 +943,7 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
                 "independence_status": "confirmed",
                 "independence_family": "tdx",
             }
-            for source in ("ZHB-tdxstat", "ZHB-tdxstat2")
+            for source in ("ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo")
         },
         "runtime_sources": {
             "zhb": {"independence_status": "confirmed", "independence_family": "tdx"}
@@ -944,10 +960,19 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert ("zhb", "stat.pe_lyr") not in context["anchors"]
     assert ("zhb", "stat2.high_52w") in context["verified"]
     assert ("zhb", "stat2.high_52w") in context["anchors"]
+    assert ("zhb", "tipinfo.dt_date_recent") in context["verified"]
+    assert ("zhb", "tipinfo.unlock_date") in context["verified"]
+    assert ("zhb", "tipinfo.dt_date_recent") in context["verified_target_exclusions"]
+    assert ("zhb", "tipinfo.unlock_date") in context["verified_target_exclusions"]
 
     store = {
         field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
-        for field_id in ("zhb.stat.pe_lyr", "zhb.stat2.high_52w")
+        for field_id in (
+            "zhb.stat.pe_lyr",
+            "zhb.stat2.high_52w",
+            "zhb.tipinfo.dt_date_recent",
+            "zhb.tipinfo.unlock_date",
+        )
     }
     left_ids, right_ids = collide.select_collision_fields(
         store,
@@ -961,6 +986,30 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert left_ids == []
     assert "zhb.stat.pe_lyr" not in right_ids
     assert "zhb.stat2.high_52w" in right_ids
+
+    date_store = {
+        field_id: {
+            "vals": {("600519", "T:20261112"): "20181029"},
+            "sample_meta": {},
+            "is_date_value_candidate": True,
+            "information_state": "variable",
+            "n_observed": 1,
+            "n_nonblank": 1,
+            "n_missing_or_blank": 0,
+            "n_distinct": 1,
+            "date_value_match_count": 1,
+            "date_value_ratio": 1.0,
+            "date_value_formats": {"YYYYMMDD": 1},
+            "date_value_examples": ["2018-10-29"],
+        }
+        for field_id in ("zhb.tipinfo.dt_date_recent", "zhb.tipinfo.unlock_date")
+    }
+    queues = collide._build_semantic_review_queues(
+        date_store,
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+    )
+    assert queues["date_value_candidates"] == []
 
 
 def test_verified_zhb_full_view_alias_exits_targets_even_with_duplicate_owners(

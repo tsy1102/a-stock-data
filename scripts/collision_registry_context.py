@@ -19,6 +19,15 @@ _ZHB_RUNTIME_PATH_PREFIXES = {
     "ZHB-tipinfo": "tipinfo",
 }
 
+# tipinfo's main dictionary uses the original TDX column positions for these
+# two fields, while the capture adapter exposes named convenience keys. Keep
+# that exact parser mapping here so verified source identities exclude their
+# runtime aliases from cracking targets and semantic-review queues.
+_ZHB_RUNTIME_FIELD_ALIASES = {
+    ("ZHB-tipinfo", "[10]"): "tipinfo.dt_date_recent",
+    ("ZHB-tipinfo", "[13]"): "tipinfo.unlock_date",
+}
+
 
 def _lineage_aliases(source, lineage):
     """Resolve an exact registry source to its runtime source identity or identities."""
@@ -57,6 +66,13 @@ def _runtime_codes_for_source_identity(
         explicit_owners = (explicit_runtime_owners or {}).get((alias, qualified_code), set())
         if qualified_code not in codes and (not explicit_owners or identity in explicit_owners):
             codes.append(qualified_code)
+    runtime_alias_code = _ZHB_RUNTIME_FIELD_ALIASES.get((source, code)) if alias == "zhb" else None
+    if runtime_alias_code:
+        runtime_alias_code = SLA.normalize_runtime_field_code(alias, runtime_alias_code)
+        identity = (source, code)
+        explicit_owners = (explicit_runtime_owners or {}).get((alias, runtime_alias_code), set())
+        if runtime_alias_code not in codes and (not explicit_owners or identity in explicit_owners):
+            codes.append(runtime_alias_code)
     if alias == "zhb":
         full_view_code = SLA.zhb_full_view_field_code(source, code)
         identity = (source, code)

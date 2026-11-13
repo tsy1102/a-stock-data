@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - 修正碰撞目标对 ZHB 合并 `full` 路径的状态解析：多个逐源注册路径共同拥有该运行时字段时，若所有 owner 均已验证或证伪，该路径不再重复进入破解；全体证伪时保留负向护栏。碰撞覆盖快照中的注册状态若已过期，也会按当前主注册表纠正，避免旧状态重新生成候选。
+- 将 ZHB tipinfo 的已验证原始列 `[10]`、`[13]` 分别映射到采集器便捷路径 `tipinfo.dt_date_recent`、`tipinfo.unlock_date`；两条已确认日期字段不再重复进入碰撞目标或日期语义队列。
 - 更正 Eastmoney Push2 `stock/get::f108` 的长期错标：三只股票的年报、上年同期三季报和本年三季报复算均支持“归母净利润 TTM ÷ 当前总股本”，不支持扣非 EPS；新增规范字段 `eps_ttm`，旧 `eps_deduct_ttm` 保留为相同数值兼容别名，并清理 Fuyao 的过期矩阵投影。
 - 移除主入口自动写入用户级 `PYTHONUTF8`、PowerShell Profile 和 `CurrentUser ExecutionPolicy` 的启动行为及无调用者修复代码；入口已有进程内 UTF-8 输出设置。
 - 修正深交所龙虎榜采集和东财被封后的深交所备用请求使用未验证 TLS 上下文的问题，改用系统信任库校验证书；移除运行时全局屏蔽 HTTPS 证书警告，并将仅供 real_network 测试直接导入的 urllib3 移入开发依赖。

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_sina_opendate_evidence.md",
+  "evidence_sha256": "15cdca0ff5900e9e8acbc486491588b7b0a08098f8dc4863243d0736d31498b0",
+  "decisions": [
+    {
+      "id": "20261114-sina-extended-opendate-date-semantics",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "新浪(扩展API)",
+        "code": "opendate"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "opendate",
+        "meaning": "日期",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "opendate",
+      "meaning": "新浪个股资金流记录所对应的交易日期",
+      "unit": "日期",
+      "section": "新浪(扩展API)::opendate 日期字段实证（2026-11-14）",
+      "rationale": "项目直接调用新浪 MoneyFlow.ssl_qsfx_zjlrqs；请求按 opendate 倒序取一行，采集器把该行原始 opendate 复制到注册表对应标量路径。新浪官方资金流帮助页确认其个股资金流按交易所成交数据逐日统计，但未公布 JSON 键级 schema，所以不把页面文字当作接口字段契约。独立核查 2026-10-15 保留起点后的全部可用 raw_sina_extended 样本：16 个收盘数据日、20 只股票、320 行；每个标量都与底层 money_flow 行值、来源 as_of_date、归一化 data_date 相同，缺失和反例均为零。范围仅为行日期语义，不推断盘中更新时间或其他来源等价关系。此裁决解除来源参考状态 verified 与注册表聚合 unverified 造成的 status_conflict，不改动其他来源，不新增 mappings。",
+      "sample": {
+        "scope": "2026-10-19 至 2026-11-12 的 16 个可用收盘数据日；精确路径 新浪(扩展API)::opendate；每个数据日来源状态为 ok，每日 20 只股票。只纳入同时有 raw_sina_extended.json 和 meta.json 的保留期目录。",
+        "comparison_count": 320,
+        "matched_count": 320,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

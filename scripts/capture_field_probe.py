@@ -15,6 +15,7 @@ Examples::
     python scripts/capture_field_probe.py
     python scripts/capture_field_probe.py --date 20261021
     python scripts/capture_field_probe.py --only zhb,tdx,tencent
+    python scripts/capture_field_probe.py --only-unit fuyao.income_statements
     python scripts/capture_field_probe.py --include-context
     python scripts/capture_field_probe.py --dry-run
     python scripts/capture_field_probe.py --refresh-pool
@@ -54,6 +55,7 @@ from scripts.context_policy import (
 
 from scripts.capture_catalog import (
     BAIDU_PENDING_FIELD_CODES,
+    CAPTURE_UNIT_CATALOG,
     EM_FULL_FIELDS,
     EVENT_ONLY_CAPTURE_SOURCES,
     FULL_POOL_STOCK_SOURCES,
@@ -756,13 +758,32 @@ def collect_market_sources(
     include_context: bool = False,
     include_kpl_detail: bool = True,
     trade_date: Optional[str] = None,
+    selected_units: Optional[set[str]] = None,
+    market_phase: str = "unknown",
 ) -> dict:
     """采集市场数值指标；龙虎榜和 KPL 明细均可由调用方单独控制。"""
     import stock_common
+    from scripts.capture_unit_evidence import (
+        build_capture_unit_evidence,
+        capture_units_for_collector,
+    )
 
     out: Dict[str, Any] = {}
+    unit_ids = capture_units_for_collector("market_sources")
+    requested_units = set(selected_units) if selected_units is not None else unit_ids
+    unit_capture_times: Dict[str, tuple[datetime, datetime]] = {}
+    unit_request_parameters: Dict[str, Dict[str, Any]] = {}
 
     def capture_one(name: str, function_name: str, *args, **kwargs) -> None:
+        unit_id = f"market_sources.{name}"
+        if unit_id not in requested_units:
+            return
+        unit_started_at = datetime.now().astimezone()
+        unit_request_parameters[unit_id] = {
+            "adapter": function_name,
+            "argument_count": len(args),
+            "parameter_names": sorted(kwargs),
+        }
         try:
             fn = getattr(stock_common, function_name)
             result = fn(*args, **kwargs)
@@ -806,6 +827,8 @@ def collect_market_sources(
                 out[name] = result
         except Exception as exc:
             out[name] = {"__error__": str(exc)[:200]}
+        finally:
+            unit_capture_times[unit_id] = (unit_started_at, datetime.now().astimezone())
 
     try:
         if trade_date:
@@ -817,35 +840,41 @@ def collect_market_sources(
             kph_trade_date = _last_completed_trading_day().isoformat()
     except Exception as exc:
         kph_trade_date = None
-        out["kph_limit_ladder"] = {
-            "__error__": f"KPH trade-date selection failed: {str(exc)[:160]}"
-        }
+        if "market_sources.kph_limit_ladder" in requested_units:
+            out["kph_limit_ladder"] = {
+                "__error__": f"KPH trade-date selection failed: {str(exc)[:160]}"
+            }
 
-    out["__source_meta__"] = {
-        "cls_market_emotion": {
+    out["__source_meta__"] = {}
+    if "market_sources.cls_market_emotion" in requested_units:
+        out["__source_meta__"]["cls_market_emotion"] = {
             "adapter": "levistock.market_emotion_cls",
             "provider_family": "cls",
             "date_domain": "trading_day",
             "date_evidence": "response_only",
             "collection_path": "existing_market_sources_call",
-        },
-        "kph_limit_ladder": {
+        }
+    if "market_sources.kph_limit_ladder" in requested_units:
+        out["__source_meta__"]["kph_limit_ladder"] = {
             "adapter": "levistock.get_zttt",
             "provider_family": "kph",
             "date_domain": "trading_day",
             "requested_trade_date": kph_trade_date,
             "date_evidence": "request_parameter" if kph_trade_date else "unavailable",
             "collection_path": "existing_market_sources_call",
-        },
-    }
+        }
     capture_one("cls_market_emotion", "get_cls_market_emotion")
     if kph_trade_date:
         capture_one("kph_limit_ladder", "get_kph_limit_ladder", kph_trade_date)
+        unit_request_parameters["market_sources.kph_limit_ladder"] = {
+            "adapter": "get_kph_limit_ladder",
+            "requested_trade_date": kph_trade_date,
+        }
     capture_one("stock_changes_8201", "get_stock_changes", "8201")
     capture_one("kpl_sentiment", "get_kpl_market_sentiment", capture_raw=True)
     capture_one("kpl_up_down", "get_kpl_up_down", capture_raw=True)
     capture_one("kpl_plate_strength", "get_kpl_plate_strength", capture_raw=True)
-    if include_kpl_detail:
+    if include_kpl_detail and selected_units is None:
         try:
             out["kpl_limit_up_detail"] = collect_kpl_detail(trade_date or datetime.now().date())
         except Exception as exc:
@@ -858,13 +887,13 @@ def collect_market_sources(
         days=20,
         top_n=30,
     )
-    matrix = out["plate_rotation_matrix"]
+    matrix = out.get("plate_rotation_matrix")
     if isinstance(matrix, dict) and ("__error__" in matrix or "__skipped__" in matrix):
         error_key = "__error__" if "__error__" in matrix else "__skipped__"
         out["plate_rotation_top"] = {error_key: matrix[error_key]}
-    else:
+    elif matrix is not None:
         top: List[Dict[str, Any]] = []
-        for plate in matrix["plates"][:10]:
+        for plate in (matrix.get("plates") or [])[:10]:
             if not isinstance(plate, dict):
                 continue
             cells = plate.get("cells")
@@ -880,28 +909,108 @@ def collect_market_sources(
                     "color": cell.get("color"),
                 }
             )
-        out["plate_rotation_top"] = (
-            top if top else {"__error__": "plate_rotation_matrix contained no top rows"}
+        out["plate_rotation_top"] = top or {
+            "__error__": "plate_rotation_matrix contained no top rows"
+        }
+    context_unit_id = "market_sources.dragon_tiger_today"
+    if include_context and context_unit_id in requested_units:
+        try:
+            context_trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
+        except Exception as exc:
+            context_trade_date = None
+            out["trade_date"] = None
+            out["dragon_tiger_today"] = {"__error__": f"query date unavailable: {str(exc)[:160]}"}
+            unit_request_parameters[context_unit_id] = {"date_selection": "failed"}
+        else:
+            out["trade_date"] = context_trade_date
+            capture_one(
+                "dragon_tiger_today",
+                "eastmoney_datacenter",
+                "",
+                "RPT_DAILYBILLBOARD_DETAILSNEW",
+                filter_str=(
+                    f"(TRADE_DATE>='{context_trade_date}')" f"(TRADE_DATE<='{context_trade_date}')"
+                ),
+                page_size=50,
+                sort_columns="TRADE_DATE",
+                sort_types="-1",
+            )
+            unit_request_parameters[context_unit_id] = {
+                "adapter": "eastmoney_datacenter",
+                "report_name": "RPT_DAILYBILLBOARD_DETAILSNEW",
+                "requested_trade_date": context_trade_date,
+                "page_size": 50,
+            }
+    else:
+        context_trade_date = None
+
+    unit_evidence: Dict[str, Any] = {}
+    for unit_id in sorted(requested_units):
+        unit_name = unit_id.split(".", 1)[1]
+        attempted = unit_id in unit_capture_times
+        skip_reason = None
+        if not attempted:
+            if CAPTURE_UNIT_CATALOG.get(unit_id, {}).get("context_only") and not include_context:
+                skip_reason = "market context is disabled"
+            elif unit_id == context_unit_id and context_trade_date is None:
+                skip_reason = "query date unavailable; request was not sent"
+            elif unit_name == "kph_limit_ladder" and kph_trade_date is None:
+                skip_reason = "KPH trade-date selection failed"
+            else:
+                skip_reason = "not selected by the collector scope"
+        started_at, finished_at = unit_capture_times.get(unit_id, (None, None))
+        if unit_id == context_unit_id:
+            requested_unit_date = context_trade_date or ""
+        elif unit_name == "kph_limit_ladder":
+            requested_unit_date = kph_trade_date or ""
+        else:
+            requested_unit_date = trade_date or ""
+        payload: Dict[str, Any] = {}
+        for output_path in CAPTURE_UNIT_CATALOG.get(unit_id, {}).get("output_paths", []):
+            if len(output_path) == 1 and output_path[0] in out:
+                payload[output_path[0]] = out[output_path[0]]
+        if not payload:
+            payload = out.get(unit_name, {"__skipped__": skip_reason or "not requested"})
+        source_as_of_date = None
+        source_as_of_date_basis = None
+        if unit_name == "kph_limit_ladder" and isinstance(out.get(unit_name), dict):
+            response = out[unit_name]
+            response_trade_date = response.get("trade_date")
+            response_ok = "__error__" not in response and "__skipped__" not in response
+            if response_ok and response_trade_date:
+                try:
+                    source_as_of_date = _parse_capture_date(response_trade_date).isoformat()
+                    source_as_of_date_basis = "response.trade_date"
+                except ValueError:
+                    pass
+        unit_evidence[unit_id] = build_capture_unit_evidence(
+            unit_id,
+            payload,
+            collector_started_at=started_at,
+            collector_finished_at=finished_at,
+            requested_data_date=requested_unit_date,
+            market_phase=market_phase,
+            collector_invoked=attempted,
+            logical_call_count=1 if attempted else 0,
+            skip_reason=skip_reason,
+            request_parameters=unit_request_parameters.get(unit_id),
+            source_as_of_date=source_as_of_date,
+            source_as_of_date_basis=source_as_of_date_basis,
         )
-    if not include_context:
-        return out
-    try:
-        trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
-    except Exception as exc:
-        out["trade_date"] = None
-        out["dragon_tiger_today"] = {"__error__": f"query date unavailable: {str(exc)[:160]}"}
-        return out
-    out["trade_date"] = trade_date
-    capture_one(
-        "dragon_tiger_today",
-        "eastmoney_datacenter",
-        "",
-        "RPT_DAILYBILLBOARD_DETAILSNEW",
-        filter_str=f"(TRADE_DATE>='{trade_date}')(TRADE_DATE<='{trade_date}')",
-        page_size=50,
-        sort_columns="TRADE_DATE",
-        sort_types="-1",
-    )
+    if selected_units is None:
+        for unit_id in unit_ids - requested_units:
+            if CAPTURE_UNIT_CATALOG.get(unit_id, {}).get("context_only"):
+                unit_evidence[unit_id] = build_capture_unit_evidence(
+                    unit_id,
+                    {"__skipped__": "market context is disabled"},
+                    collector_started_at=None,
+                    collector_finished_at=None,
+                    requested_data_date=trade_date or "",
+                    market_phase=market_phase,
+                    collector_invoked=False,
+                    skip_reason="market context is disabled",
+                )
+    out["__capture_units__"] = unit_evidence
     return out
 
 
@@ -1292,10 +1401,19 @@ def _fuyao_auction_items(envelope: Any) -> list:
     return [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
 
 
-def collect_fuyao(pool: list, include_context: bool = False) -> dict:
+def collect_fuyao(
+    pool: list,
+    include_context: bool = False,
+    selected_units: Optional[set[str]] = None,
+    market_phase: str = "unknown",
+) -> dict:
     """Compatibility wrapper preserving Fuyao date and auction metadata seams."""
     return _capture_verified_collectors.collect_fuyao(
-        pool, _capture_source_dependencies(), include_context
+        pool,
+        _capture_source_dependencies(),
+        include_context,
+        selected_units=selected_units,
+        market_phase=market_phase,
     )
 
 
@@ -1479,6 +1597,19 @@ def _capture_result_quality(ok: bool, info: Dict[str, Any]) -> tuple[int, ...]:
     )
 
 
+def _capture_unit_result_quality(record: Any) -> tuple[int, ...]:
+    if not isinstance(record, dict):
+        return (0, 0, 0, 0, 0, 0)
+    return (
+        int(record.get("status") == "ok"),
+        int(record.get("nonempty_value_count", 0) or 0),
+        int(record.get("observed_path_count", 0) or 0),
+        int(record.get("record_count", 0) or 0),
+        -int(record.get("error_count", 0) or 0),
+        -int(record.get("skip_count", 0) or 0),
+    )
+
+
 def _write_raw_snapshot(path: str, data: Any) -> None:
     """Atomically replace one raw snapshot using a temporary file under .tmp/."""
     temp_dir = os.path.join(_ROOT, ".tmp")
@@ -1534,6 +1665,14 @@ def main() -> None:
         help="只采指定源(逗号分隔；可显式选择 pending_validation 源进行限量验证)",
     )
     ap.add_argument(
+        "--only-unit",
+        default="",
+        help=(
+            "只采复合源中的指定子接口单元，逗号分隔；适用于 market_sources.* 与 fuyao.*。"
+            "同数据日只替换所选路径并保留同源其他路径"
+        ),
+    )
+    ap.add_argument(
         "--include-context",
         action="store_true",
         help="额外采集龙虎榜/人气榜等市场上下文；--only 明确指定 exchange 或 em_hot 时自动启用",
@@ -1558,8 +1697,37 @@ def main() -> None:
     if not args.date:
         args.date = _last_trading_day_str()
     selected_only = [name.strip() for name in args.only.split(",") if name.strip()]
+    selected_unit_ids: set[str] = set()
+    if args.only_unit:
+        from scripts.capture_unit_evidence import (
+            capture_unit_parents,
+            validate_capture_unit_ids,
+        )
+
+        selected_unit_ids, unknown_units = validate_capture_unit_ids(args.only_unit.split(","))
+        if unknown_units:
+            ap.error("--only-unit 含未知接口单元: " + ", ".join(unknown_units))
+        if not selected_unit_ids:
+            ap.error("--only-unit 至少需要一个接口单元")
+        unit_parents = capture_unit_parents(selected_unit_ids)
+        if args.only and set(selected_only) != unit_parents:
+            ap.error("同时使用 --only-unit 时，--only 必须恰好列出这些子接口所属的源")
+        if not args.only:
+            selected_only = sorted(unit_parents)
+        if args.overwrite:
+            ap.error("--only-unit 不支持 --overwrite；子接口补采会精确替换所选路径")
+        if args.refresh_pool or args.refresh_pool_only:
+            ap.error("--only-unit 不能与股票池刷新同时使用")
     zhb_policy = _zhb_collection_policy(selected_only)
-    include_context = args.include_context or bool(set(selected_only) & CONTEXT_ONLY_SOURCES)
+    selected_unit_context = any(
+        CAPTURE_UNIT_CATALOG.get(unit_id, {}).get("context_only") for unit_id in selected_unit_ids
+    )
+    include_context = (
+        args.include_context
+        or selected_unit_context
+        or bool(set(selected_only) & CONTEXT_ONLY_SOURCES)
+    )
+    partial_scope = bool(args.only or args.only_unit)
     try:
         _, data_date_domain = _validate_capture_data_date(args.date, selected_only)
     except ValueError as exc:
@@ -1590,6 +1758,13 @@ def main() -> None:
 
     t0 = time.time()
     startup_scope = _startup_scope_label(selected_only, include_context)
+    if selected_unit_ids:
+        context_label = "启用" if include_context else "跳过"
+        startup_scope = (
+            f"源范围: 接口单元所属源 {','.join(selected_only)}"
+            f" | 市场上下文: {context_label}"
+            f" | 接口单元: {','.join(sorted(selected_unit_ids))}"
+        )
     print(
         f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | {startup_scope}",
         flush=True,
@@ -1617,6 +1792,7 @@ def main() -> None:
         "capture_market_phase": _capture_market_phase(_now),
         "sources": {},
         "source_as_of_dates": {},
+        "capture_units": {},
     }
     # Same-data-date reruns merge prior source entries. The later collection pass
     # refreshes only missing/incomplete sources unless --overwrite is explicit.
@@ -1666,6 +1842,8 @@ def main() -> None:
                 meta["schemes"] = dict(_prev["schemes"])
             if isinstance(_prev.get("source_as_of_dates"), dict):
                 meta["source_as_of_dates"] = dict(_prev["source_as_of_dates"])
+            if isinstance(_prev.get("capture_units"), dict):
+                meta["capture_units"] = dict(_prev["capture_units"])
             if isinstance(_prev.get("axdata_validation"), dict):
                 meta["axdata_validation"] = _prev["axdata_validation"]
             for _k in ("start", "zhb_data_date", "levistock_validation"):
@@ -1676,13 +1854,14 @@ def main() -> None:
         except Exception as e:
             print(f"  ⚠ 已有 meta.json 读取失败, 本次将整份覆盖: {e}", flush=True)
     meta["only"] = args.only or None
+    meta["only_units"] = sorted(selected_unit_ids) or None
     meta["include_context"] = include_context
 
     collectors = build_collectors()
-    if args.only:
+    if partial_scope:
         unknown_sources = set(selected_only) - set(collectors)
         if unknown_sources:
-            ap.error("--only 含未知源: " + ", ".join(sorted(unknown_sources)))
+            ap.error("--only / --only-unit 含未知源: " + ", ".join(sorted(unknown_sources)))
         collectors = {k: v for k, v in collectors.items() if k in selected_only}
     collectors, zhb_was_deferred = _apply_zhb_collection_policy(collectors, zhb_policy)
     if zhb_was_deferred:
@@ -1695,7 +1874,7 @@ def main() -> None:
     if not include_context:
         active_source_names.difference_update(CONTEXT_ONLY_SOURCES)
     source_names_to_refresh = set(active_source_names)
-    if not args.only:
+    if not partial_scope:
         # Pending endpoint probes are not part of the default network pass; preserve
         # any prior explicit probe file and its evidence when refreshing other sources.
         source_names_to_refresh.difference_update(NON_RAW_SOURCE_STATUS)
@@ -1734,7 +1913,7 @@ def main() -> None:
             except Exception as meta_error:
                 _remove_unusable_meta(meta_path, meta_error)
         _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
-    if not args.only and (
+    if not partial_scope and (
         _existing_raws or any(source in NON_RAW_SOURCE_STATUS for source in collectors)
     ):
         _have = {os.path.basename(p)[len("raw_") : -len(".json")] for p in _existing_raws}
@@ -1784,7 +1963,7 @@ def main() -> None:
                 )
                 return
             # 已有=盘中快照, 本次=盘后运行 → 刷新为收盘数据(覆盖重采目标源)
-        if not args.only and not args.overwrite and _existing_raws:
+        if not partial_scope and not args.overwrite and _existing_raws:
             _existing_closed = _is_closed_phase_existing(meta_path, args.date)
             _new_closed = _is_closed_phase_now(args.date)
             if not _existing_closed and _new_closed:
@@ -1863,6 +2042,7 @@ def main() -> None:
         axdata_identity_endpoints = endpoint_candidates
 
     collected_data: Dict[str, Any] = {}
+    prior_capture_unit_records = dict(meta.get("capture_units", {}))
     for name, fn in collectors.items():
         if name in CONTEXT_ONLY_SOURCES and not include_context:
             meta["sources"][name] = {
@@ -1889,11 +2069,22 @@ def main() -> None:
             if name == "eltdx":
                 data = fn(pool, lite=args.eltdx_lite)
             elif name == "market_sources":
+                source_units = (
+                    {
+                        unit_id
+                        for unit_id in selected_unit_ids
+                        if CAPTURE_UNIT_CATALOG[unit_id]["collector"] == name
+                    }
+                    if selected_unit_ids
+                    else None
+                )
                 data = fn(
                     pool,
                     include_context=include_context,
                     include_kpl_detail=False,
                     trade_date=args.date,
+                    selected_units=source_units,
+                    market_phase=meta.get("market_phase", "unknown"),
                 )
                 try:
                     try:
@@ -1901,17 +2092,25 @@ def main() -> None:
                     except ModuleNotFoundError:
                         from scripts.levistock_daily_probe import run_levistock_daily_probe
 
-                    _levistock_probe = run_levistock_daily_probe(
-                        out_dir=out_dir,
-                        data_date=args.date,
-                        latest_completed_trade_date=_last_trading_day_str(),
-                        # market_sources contains trading-date data even when full
-                        # meta is mixed with natural-day event sources.
-                        data_date_domain="trading",
-                        market_phase=meta.get("market_phase", "unknown"),
-                        only=args.only or None,
-                        market_data=data,
-                        pool=pool,
+                    _levistock_probe = (
+                        {
+                            "status": "not_run_selected_unit_scope",
+                            "reason": "sub-interface capture does not run auxiliary candidate probes",
+                            "request_count": 0,
+                        }
+                        if selected_unit_ids
+                        else run_levistock_daily_probe(
+                            out_dir=out_dir,
+                            data_date=args.date,
+                            latest_completed_trade_date=_last_trading_day_str(),
+                            # market_sources contains trading-date data even when full
+                            # meta is mixed with natural-day event sources.
+                            data_date_domain="trading",
+                            market_phase=meta.get("market_phase", "unknown"),
+                            only=args.only or None,
+                            market_data=data,
+                            pool=pool,
+                        )
                     )
                     meta["levistock_daily_candidate"] = {
                         key: value for key, value in _levistock_probe.items() if key != "payload"
@@ -1949,7 +2148,21 @@ def main() -> None:
                     identity_policy=axdata_identity_endpoints.get("stock_shortline_indicators_tdx"),
                 )
             elif name == "fuyao":
-                data = fn(pool, include_context=include_context)
+                source_units = (
+                    {
+                        unit_id
+                        for unit_id in selected_unit_ids
+                        if CAPTURE_UNIT_CATALOG[unit_id]["collector"] == name
+                    }
+                    if selected_unit_ids
+                    else None
+                )
+                data = fn(
+                    pool,
+                    include_context=include_context,
+                    selected_units=source_units,
+                    market_phase=meta.get("market_phase", "unknown"),
+                )
             elif name == "baidu":
                 # The Baidu endpoint is pending validation and is probed only when
                 # the caller explicitly selects it with --only baidu.
@@ -1961,7 +2174,93 @@ def main() -> None:
                 data = fn(pool, data_date=args.date)
             else:
                 data = fn(pool)
+            unit_records: Dict[str, Any] = {}
             if isinstance(data, dict):
+                raw_unit_records = data.pop("__capture_units__", {})
+                if isinstance(raw_unit_records, dict):
+                    unit_records = raw_unit_records
+                    saved_units = meta.setdefault("capture_units", {})
+                    for unit_id, record in unit_records.items():
+                        if not isinstance(record, dict):
+                            continue
+                        previous_unit = saved_units.get(unit_id, {})
+                        if not isinstance(previous_unit, dict):
+                            previous_unit = {}
+                        current_data_date = record.get("requested_data_date")
+                        same_date = previous_unit.get("requested_data_date") == current_data_date
+                        fingerprints = (
+                            list(previous_unit.get("same_data_date_payload_fingerprints", []))
+                            if same_date
+                            and isinstance(
+                                previous_unit.get("same_data_date_payload_fingerprints"), list
+                            )
+                            else []
+                        )
+                        previous_fingerprint = previous_unit.get("payload_fingerprint")
+                        if previous_fingerprint and previous_fingerprint not in fingerprints:
+                            fingerprints.append(previous_fingerprint)
+                        current_fingerprint = record.get("payload_fingerprint")
+                        if current_fingerprint and current_fingerprint not in fingerprints:
+                            fingerprints.append(current_fingerprint)
+                        record["same_data_date_attempts"] = (
+                            int(previous_unit.get("same_data_date_attempts", 0) or 0) + 1
+                            if same_date
+                            else 1
+                        )
+                        record["same_data_date_payload_fingerprints"] = fingerprints[-5:]
+                        saved_units[unit_id] = record
+
+                if selected_unit_ids and name in {
+                    CAPTURE_UNIT_CATALOG[u]["collector"] for u in selected_unit_ids
+                }:
+                    from scripts.capture_unit_evidence import merge_selected_unit_outputs
+
+                    source_selected_units = {
+                        unit_id
+                        for unit_id in selected_unit_ids
+                        if CAPTURE_UNIT_CATALOG[unit_id]["collector"] == name
+                    }
+                    previous_raw_path = os.path.join(out_dir, f"raw_{name}.json")
+                    if os.path.isfile(previous_raw_path):
+                        with open(previous_raw_path, encoding="utf-8") as previous_stream:
+                            previous_raw = json.load(previous_stream)
+                        if not isinstance(previous_raw, dict):
+                            raise ValueError(f"existing raw_{name}.json is not an object")
+                    else:
+                        previous_raw = {}
+                    units_to_merge = set(source_selected_units)
+                    raw_update_statuses = {}
+                    if previous_raw:
+                        for unit_id in sorted(source_selected_units):
+                            current_record = unit_records.get(unit_id)
+                            previous_record = prior_capture_unit_records.get(unit_id)
+                            previous_unknown = not isinstance(previous_record, dict)
+                            quality_regressed = _capture_unit_result_quality(
+                                current_record
+                            ) < _capture_unit_result_quality(previous_record)
+                            if quality_regressed or (
+                                previous_unknown
+                                and isinstance(current_record, dict)
+                                and current_record.get("status") != "ok"
+                            ):
+                                units_to_merge.discard(unit_id)
+                                raw_update_statuses[unit_id] = (
+                                    "preserved_previous_raw_after_quality_regression"
+                                )
+                            else:
+                                raw_update_statuses[unit_id] = "updated_selected_paths"
+                    else:
+                        raw_update_statuses = {
+                            unit_id: "wrote_selected_paths_without_previous_raw"
+                            for unit_id in source_selected_units
+                        }
+                    for unit_id, update_status in raw_update_statuses.items():
+                        if isinstance(unit_records.get(unit_id), dict):
+                            unit_records[unit_id]["raw_update_status"] = update_status
+                            saved_record = meta["capture_units"].get(unit_id)
+                            if isinstance(saved_record, dict):
+                                saved_record["raw_update_status"] = update_status
+                    data = merge_selected_unit_outputs(previous_raw, data, units_to_merge)
                 collected_data[name] = data
             # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
             # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
@@ -2069,6 +2368,19 @@ def main() -> None:
                 "file": path,
                 **source_capture_meta,
             }
+            source_selected_unit_ids = sorted(
+                unit_id
+                for unit_id in selected_unit_ids
+                if CAPTURE_UNIT_CATALOG[unit_id]["collector"] == name
+            )
+            if source_selected_unit_ids:
+                _entry["capture_scope"] = "selected_units"
+                _entry["selected_units"] = source_selected_unit_ids
+                _entry["as_of_date_scope"] = "composite_snapshot_may_include_older_sibling_units"
+                _entry["capture_unit_statuses"] = {
+                    unit_id: meta.get("capture_units", {}).get(unit_id, {}).get("status")
+                    for unit_id in source_selected_unit_ids
+                }
             if preserve_previous_snapshot:
                 if isinstance(previous_source_entry, dict):
                     for key in source_capture_meta:
@@ -2088,9 +2400,15 @@ def main() -> None:
                     "ok": _ok,
                     **_info,
                 }
-            if _as_of_date:
+            if _as_of_date and not source_selected_unit_ids:
                 _entry["as_of_date"] = _as_of_date
                 meta["source_as_of_dates"][name] = _as_of_date
+            elif source_selected_unit_ids:
+                _entry["as_of_date"] = previous_as_of_date
+                if previous_as_of_date:
+                    meta["source_as_of_dates"][name] = previous_as_of_date
+                else:
+                    meta["source_as_of_dates"].pop(name, None)
             _entry.update(_info)
             if name in {"axdata", "kph"} and isinstance(data, dict):
                 _identity = data.get("__source_meta__")
@@ -2204,17 +2522,24 @@ def main() -> None:
         except ModuleNotFoundError:
             from scripts.axdata_daily_validation import run_axdata_daily_validation
 
-        meta["axdata_validation"] = run_axdata_daily_validation(
-            data_date=args.date,
-            data_date_domain=meta.get("data_date_domain", data_date_domain),
-            market_phase=meta.get("market_phase", "unknown"),
-            latest_completed_trade_date=_last_trading_day_str(),
-            only=args.only,
-            out_dir=out_dir,
-            pool=pool,
-            source_meta=meta.get("sources", {}),
-            requested_sources=set(collectors),
-        )
+        if selected_unit_ids:
+            meta["axdata_validation"] = meta.get("axdata_validation") or {
+                "status": "not_run_selected_unit_scope",
+                "requests_added": 0,
+                "reason": "sub-interface capture does not run auxiliary AxData validation",
+            }
+        else:
+            meta["axdata_validation"] = run_axdata_daily_validation(
+                data_date=args.date,
+                data_date_domain=meta.get("data_date_domain", data_date_domain),
+                market_phase=meta.get("market_phase", "unknown"),
+                latest_completed_trade_date=_last_trading_day_str(),
+                only=args.only,
+                out_dir=out_dir,
+                pool=pool,
+                source_meta=meta.get("sources", {}),
+                requested_sources=set(collectors),
+            )
         _validation_status = meta["axdata_validation"].get("status")
         if _validation_status != "not_eligible":
             _validation_probe = meta["axdata_validation"].get("probe", {})
@@ -2252,7 +2577,7 @@ def main() -> None:
     # Levistock is a multi-provider client, not an independent source family. The
     # validator reuses captured CLS/KPH data; the bounded candidate probe is recorded
     # separately and never changes dictionary status.
-    if not args.only or "market_sources" in selected_only:
+    if not args.only_unit and (not args.only or "market_sources" in selected_only):
         try:
             try:
                 from levistock_daily_validation import run_levistock_daily_validation
@@ -2321,6 +2646,8 @@ def main() -> None:
     _bad = [k for k in collectors if _is_abnormal(meta["sources"].get(k, {}))]
     meta["run"] = {
         "only": args.only or None,
+        "only_units": sorted(selected_unit_ids) or None,
+        "partial_scope": partial_scope,
         "include_context": include_context,
         "n_sources": len(collectors),
         "context_only_sources": [

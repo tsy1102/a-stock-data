@@ -8,6 +8,7 @@
     - 智能下载：仅在数据日期更新时下载，避免无效请求
     - 数据校验：校验 zip 完整性、字段数量、数据日期合理性
     - 自动入库：解析后写入本地缓存，支持内存缓存预热
+    - 失败恢复：交易日补充缓存失效失败会持久化待重试状态
     - 清理策略：保留最近 N 天数据，自动清理过期文件
     - 断点续传：支持从上次中断处继续
     - 状态追踪：记录最后成功同步时间，避免重复同步
@@ -80,6 +81,16 @@ DEFAULT_SYNC_TIMES = ["09:00", "18:00"]
 # 最小同步间隔（避免过于频繁）
 _MIN_SYNC_INTERVAL_SECONDS = 3600
 
+_DEFAULT_SYNC_STATE: Dict[str, Any] = {
+    "last_sync_time": 0,
+    "last_sync_date": "",
+    "last_sync_success": False,
+    "consecutive_failures": 0,
+    "total_syncs": 0,
+    "total_failures": 0,
+    "calendar_cache_invalidation_pending": False,
+}
+
 
 # ═══════════════════════════════════════
 # 状态管理
@@ -93,28 +104,66 @@ def _load_sync_state() -> Dict[str, Any]:
             with open(_SYNC_STATE_FILE, "r", encoding="utf-8") as f:
                 state = json.load(f)
             if isinstance(state, dict):
+                for key, value in _DEFAULT_SYNC_STATE.items():
+                    state.setdefault(key, value)
+                for key in ("consecutive_failures", "total_syncs", "total_failures"):
+                    try:
+                        state[key] = int(state[key])
+                    except (TypeError, ValueError):
+                        state[key] = _DEFAULT_SYNC_STATE[key]
+                try:
+                    state["last_sync_time"] = float(state["last_sync_time"])
+                except (TypeError, ValueError):
+                    state["last_sync_time"] = _DEFAULT_SYNC_STATE["last_sync_time"]
+                state["calendar_cache_invalidation_pending"] = (
+                    state["calendar_cache_invalidation_pending"] is True
+                )
                 return state
             _log_sync("同步状态 JSON 顶层不是对象，使用默认状态")
         except (OSError, json.JSONDecodeError, UnicodeError) as exc:
             _log_sync(f"读取同步状态失败，使用默认状态：{exc}")
-    return {
-        "last_sync_time": 0,
-        "last_sync_date": "",
-        "last_sync_success": False,
-        "consecutive_failures": 0,
-        "total_syncs": 0,
-        "total_failures": 0,
-    }
+    return dict(_DEFAULT_SYNC_STATE)
 
 
-def _save_sync_state(state: Dict[str, Any]) -> None:
-    """保存同步状态。"""
+def _save_sync_state(state: Dict[str, Any]) -> bool:
+    """Atomically save sync state; report failures to the caller."""
+    temp_path = ""
     try:
         os.makedirs(_ZHB_CACHE_DIR, exist_ok=True)
-        with open(_SYNC_STATE_FILE, "w", encoding="utf-8") as f:
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=_ZHB_CACHE_DIR,
+            prefix=".sync_state.",
+            suffix=".tmp",
+            delete=False,
+        ) as f:
+            temp_path = f.name
             json.dump(state, f, indent=2, ensure_ascii=False)
-    except Exception:
-        pass
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, _SYNC_STATE_FILE)
+        return True
+    except Exception as exc:
+        _log_sync(f"写入同步状态失败：{exc}")
+        if temp_path:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+        return False
+
+
+def _mark_sync_failed(state: Dict[str, Any], now: float) -> None:
+    """Update attempt status and failure counters consistently."""
+    state["last_sync_time"] = now
+    state["last_sync_success"] = False
+    state["consecutive_failures"] = int(state.get("consecutive_failures", 0) or 0) + 1
+    state["total_failures"] = int(state.get("total_failures", 0) or 0) + 1
 
 
 def _log_sync(message: str) -> None:
@@ -230,36 +279,72 @@ def sync_once(force: bool = False) -> bool:
     Returns:
         True if sync succeeded, False otherwise
     """
-    state = _load_sync_state()
-    now = time.time()
-
-    if not force and now - state["last_sync_time"] < _MIN_SYNC_INTERVAL_SECONDS:
-        _log_sync(f"跳过同步：距离上次同步仅 {(now - state['last_sync_time'])/60:.0f} 分钟")
-        return False
-
-    _log_sync("开始同步...")
-
-    if not _check_disk_space():
-        _log_sync("磁盘空间不足")
-        state["consecutive_failures"] += 1
-        state["total_failures"] += 1
-        _save_sync_state(state)
+    state_hint = _load_sync_state()
+    hint_now = time.time()
+    hint_last_sync_time = float(state_hint.get("last_sync_time", 0) or 0)
+    if (
+        not force
+        and not state_hint.get("calendar_cache_invalidation_pending")
+        and hint_now - hint_last_sync_time < _MIN_SYNC_INTERVAL_SECONDS
+    ):
+        _log_sync(f"跳过同步：距离上次同步仅 {(hint_now - hint_last_sync_time)/60:.0f} 分钟")
         return False
 
     if not _acquire_file_lock(timeout=30.0):
         _log_sync("获取文件锁失败，可能有其他进程正在同步")
         return False
 
+    state = dict(_DEFAULT_SYNC_STATE)
+    now = time.time()
     try:
+        state = _load_sync_state()
+        now = time.time()
+
+        if state.get("calendar_cache_invalidation_pending"):
+            _log_sync("重试待处理的 stock_calendar ZHB 补充缓存失效")
+            try:
+                from stock_common.stock_calendar import invalidate_zhb_supplement_cache
+
+                invalidate_zhb_supplement_cache()
+            except Exception as exc:
+                _log_sync(f"stock_calendar ZHB 补充缓存失效重试失败: {exc}")
+                _mark_sync_failed(state, now)
+                _save_sync_state(state)
+                return False
+
+            state["calendar_cache_invalidation_pending"] = False
+            state["last_sync_time"] = now
+            state["last_sync_date"] = _get_latest_cached_date() or state.get("last_sync_date", "")
+            state["last_sync_success"] = True
+            state["consecutive_failures"] = 0
+            state["total_syncs"] = int(state.get("total_syncs", 0) or 0) + 1
+            if not _save_sync_state(state):
+                _log_sync("缓存失效重试已完成，但状态未能持久化；下次同步将再次重试")
+                return False
+            _log_sync("待处理的 ZHB 补充缓存失效已完成")
+            if not force:
+                return True
+
+        now = time.time()
+        last_sync_time = float(state.get("last_sync_time", 0) or 0)
+        if not force and now - last_sync_time < _MIN_SYNC_INTERVAL_SECONDS:
+            _log_sync(f"跳过同步：距离上次同步仅 {(now - last_sync_time)/60:.0f} 分钟")
+            return False
+
+        _log_sync("开始同步...")
+        if not _check_disk_space():
+            _log_sync("磁盘空间不足")
+            _mark_sync_failed(state, now)
+            _save_sync_state(state)
+            return False
+
         latest_cached_date = _get_latest_cached_date()
         _log_sync(f"本地最新缓存日期: {latest_cached_date or '无'}")
 
         data = _download_zhb_zip()
         if not data:
             _log_sync("下载失败：所有服务器连接失败")
-            state["consecutive_failures"] += 1
-            state["total_failures"] += 1
-            state["last_sync_time"] = now
+            _mark_sync_failed(state, now)
             _save_sync_state(state)
             return False
 
@@ -268,16 +353,12 @@ def sync_once(force: bool = False) -> bool:
         zhb = _parse_zhb_data(data)
         if not zhb:
             _log_sync("解析失败")
-            state["consecutive_failures"] += 1
-            state["total_failures"] += 1
-            state["last_sync_time"] = now
+            _mark_sync_failed(state, now)
             _save_sync_state(state)
             return False
 
         if not _validate_zhb_data(zhb):
-            state["consecutive_failures"] += 1
-            state["total_failures"] += 1
-            state["last_sync_time"] = now
+            _mark_sync_failed(state, now)
             _save_sync_state(state)
             return False
 
@@ -285,7 +366,9 @@ def sync_once(force: bool = False) -> bool:
             _log_sync(f"数据日期未更新({zhb.date})，无需保存")
             state["last_sync_time"] = now
             state["last_sync_success"] = True
-            _save_sync_state(state)
+            state["consecutive_failures"] = 0
+            if not _save_sync_state(state):
+                return False
             return True
 
         _save_to_cache(zhb.date, data)
@@ -299,29 +382,42 @@ def sync_once(force: bool = False) -> bool:
                 _zbc._zhb_memory_cache = zhb
         except Exception as _e:
             _log_sync(f"zhb_client 内存缓存预热失败: {_e}")
-        # V16.4.1: 下载新包后失效 stock_calendar 的 ZHB 补充缓存(其 docstring 明确要求)
+
+        # Persist a retry marker before invalidating the in-memory calendar cache.
+        state["calendar_cache_invalidation_pending"] = True
+        state["last_sync_time"] = now
+        state["last_sync_date"] = zhb.date
+        state["last_sync_success"] = False
+        _save_sync_state(state)
+
+        # A new ZHB package is not a successful sync until the calendar supplement cache is invalidated.
         try:
             from stock_common.stock_calendar import invalidate_zhb_supplement_cache
 
             invalidate_zhb_supplement_cache()
-        except Exception:
-            pass
+        except Exception as exc:
+            _log_sync(f"stock_calendar ZHB 补充缓存失效失败，已标记待重试: {exc}")
+            _mark_sync_failed(state, now)
+            state["calendar_cache_invalidation_pending"] = True
+            _save_sync_state(state)
+            return False
 
         state["last_sync_time"] = now
         state["last_sync_date"] = zhb.date
         state["last_sync_success"] = True
         state["consecutive_failures"] = 0
-        state["total_syncs"] += 1
-        _save_sync_state(state)
+        state["calendar_cache_invalidation_pending"] = False
+        state["total_syncs"] = int(state.get("total_syncs", 0) or 0) + 1
+        if not _save_sync_state(state):
+            _log_sync("缓存和日历已更新，但同步状态未能持久化；本次按失败处理")
+            return False
 
         _log_sync(f"同步成功：日期={zhb.date}")
         return True
 
     except Exception as e:
         _log_sync(f"同步异常：{e}")
-        state["consecutive_failures"] += 1
-        state["total_failures"] += 1
-        state["last_sync_time"] = now
+        _mark_sync_failed(state, now)
         _save_sync_state(state)
         return False
     finally:
@@ -443,6 +539,9 @@ def main() -> None:
         )
         print(f"  上次同步日期: {state['last_sync_date'] or '无'}")
         print(f"  上次同步成功: {'是' if state['last_sync_success'] else '否'}")
+        print(
+            f"  日历补充缓存待重试: {'是' if state['calendar_cache_invalidation_pending'] else '否'}"
+        )
         print(f"  连续失败次数: {state['consecutive_failures']}")
         print(f"  总同步次数: {state['total_syncs']}")
         print(f"  总失败次数: {state['total_failures']}")

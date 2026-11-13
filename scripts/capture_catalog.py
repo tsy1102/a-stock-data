@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from scripts.collision_dates import EVENT_SOURCES
 
@@ -63,6 +63,220 @@ SOURCE_SCHEME = {
     "news_wscn_cctv": "cctv.news",  # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
     "sse_e_interaction": "sse.e_interaction",  # 上证e互动(§10.3)
     "st_list": "em.clist",  # ST/*ST 名单(§6.8, 风险警示板过滤)
+}
+
+# Composite collectors expose stable sub-interface units for selective recapture
+# and longitudinal evidence. `provider_hint` is a routing clue, not a verified
+# provider-identity claim. `output_paths` preserve the existing raw JSON shape.
+CAPTURE_UNIT_CATALOG: dict[str, dict[str, Any]] = {
+    "market_sources.cls_market_emotion": {
+        "collector": "market_sources",
+        "interface_id": "levistock.market_emotion_cls",
+        "provider_hint": "CLS",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("cls_market_emotion",)],
+    },
+    "market_sources.kph_limit_ladder": {
+        "collector": "market_sources",
+        "interface_id": "levistock.get_zttt",
+        "provider_hint": "KPH",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "source_date_contract": "inspect response trade_date; compare with the requested trade date",
+        "output_paths": [("kph_limit_ladder",)],
+    },
+    "market_sources.stock_changes_8201": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_stock_changes(8201)",
+        "provider_hint": "unconfirmed",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("stock_changes_8201",)],
+    },
+    "market_sources.kpl_sentiment": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_kpl_market_sentiment",
+        "provider_hint": "KPL",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("kpl_sentiment",)],
+    },
+    "market_sources.kpl_up_down": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_kpl_up_down",
+        "provider_hint": "KPL",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("kpl_up_down",)],
+    },
+    "market_sources.kpl_plate_strength": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_kpl_plate_strength",
+        "provider_hint": "KPL",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("kpl_plate_strength",)],
+    },
+    "market_sources.kpl_broken_ratio": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_kpl_broken_ratio",
+        "provider_hint": "KPL",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("kpl_broken_ratio",)],
+    },
+    "market_sources.plate_rotation_matrix": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.get_plate_rotation_matrix(source=kaipan)",
+        "provider_hint": "开盘啦",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "output_paths": [("plate_rotation_matrix",), ("plate_rotation_top",)],
+    },
+    "market_sources.dragon_tiger_today": {
+        "collector": "market_sources",
+        "interface_id": "stock_common.eastmoney_datacenter(RPT_DAILYBILLBOARD_DETAILSNEW)",
+        "provider_hint": "Eastmoney",
+        "identity_status": "unconfirmed",
+        "data_domain": "trading",
+        "source_date_contract": "request filter is not response evidence; inspect row TRADE_DATE values",
+        "context_only": True,
+        "output_paths": [("trade_date",), ("dragon_tiger_today",)],
+    },
+    "fuyao.snapshot": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/prices/snapshot",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "output_paths": [("stocks", "*", "snapshot")],
+    },
+    "fuyao.valuation": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/valuations/snapshot",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "output_paths": [("stocks", "*", "valuation")],
+    },
+    "fuyao.auction_final": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/auction/snapshot (stage=final)",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": "use response source_data_date when present; timestamp is assembly time",
+        "output_paths": [
+            ("stocks", "*", "auction_final"),
+            ("auction_snapshot_meta",),
+        ],
+    },
+    "fuyao.fin_indicators": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/financials/indicators",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "report_period",
+        "source_date_contract": "report-period labels are not source refresh timestamps",
+        "output_paths": [
+            ("stocks", "*", "fin_indicators"),
+            ("stocks", "*", "fin_report"),
+            ("market", "h1_indicators_ready"),
+            ("market", "h1_indicators"),
+        ],
+    },
+    "fuyao.income_statements": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/financials/income-statements",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "report_period",
+        "source_date_contract": "statement period fields are not source refresh timestamps",
+        "output_paths": [
+            ("stocks", "*", "financials", "income_q"),
+            ("stocks", "*", "financials", "income_a"),
+        ],
+    },
+    "fuyao.balance_sheets": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/financials/balance-sheets",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "report_period",
+        "source_date_contract": "statement period fields are not source refresh timestamps",
+        "output_paths": [("stocks", "*", "financials", "balance_q")],
+    },
+    "fuyao.cash_flow_statements": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/financials/cash-flow-statements",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "report_period",
+        "source_date_contract": "statement period fields are not source refresh timestamps",
+        "output_paths": [("stocks", "*", "financials", "cashflow_q")],
+    },
+    "fuyao.short_term_benchmark": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/auction/short-term-benchmark",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "output_paths": [("market", "short_term_benchmark")],
+    },
+    "fuyao.limit_up_pool": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/limit-up-pool",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": "date_ms is the requested trade date; inspect returned items for actual date evidence",
+        "output_paths": [("market", "limit_up_pool")],
+    },
+    "fuyao.limit_down_pool": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/limit-down-pool",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": "date_ms is the requested trade date; inspect returned items for actual date evidence",
+        "output_paths": [("market", "limit_down_pool")],
+    },
+    "fuyao.limit_break_pool": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/limit-break-pool",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": "date_ms is the requested trade date; inspect returned items for actual date evidence",
+        "output_paths": [("market", "limit_break_pool")],
+    },
+    "fuyao.anomaly_list": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/anomaly-analysis-list",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "output_paths": [("market", "anomaly_list")],
+    },
+    "fuyao.dragon_tiger": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/dragon-tiger-list",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "context_only": True,
+        "output_paths": [("market", "dragon_tiger")],
+    },
+    "fuyao.hot_list_hour": {
+        "collector": "fuyao",
+        "interface_id": "/api/a-share/special-data/hot-stock-list (period=hour)",
+        "provider_hint": "Tonghuashun Fuyao",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "context_only": True,
+        "output_paths": [("market", "hot_list_hour")],
+    },
 }
 
 # 逐股采集器的预期覆盖范围。明确抽样的来源只检查实际计划采集的代码；

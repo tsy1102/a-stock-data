@@ -10,14 +10,14 @@
 --------
 - 以本文件的 Python 常量为**唯一权威**（single source of truth）；
   人读文档 ``docs/field_verification/COLLISION_RULES.md`` 由本模块派生
-  （``python scripts/collision_rules.py --emit``），避免双源漂移。
+  （``./scripts/run_with_system_python.ps1 scripts/collision_rules.py --emit``），避免双源漂移。
 - ``print_active_rules()`` 默认输出到 **stderr**，不污染对撞脚本自身的
   stdout 报告（报告通常重定向到 .md）。
 
 用法
 ----
-    python scripts/collision_rules.py            # 打印规则横幅（stderr）
-    python scripts/collision_rules.py --emit     # 派生 COLLISION_RULES.md
+    .\\scripts\\run_with_system_python.ps1 scripts\\collision_rules.py  # 打印规则横幅（stderr）
+    .\\scripts\\run_with_system_python.ps1 scripts\\collision_rules.py --emit  # 派生文档
 在对撞脚本入口：
     from collision_rules import print_active_rules
     if __name__ == "__main__":
@@ -64,7 +64,7 @@ CONTRACT_ANCHOR_RULES = [
 ]
 
 # ───────────────────────────────────────────────────────────────────────
-# 对撞结果类别（自动候选，不是注册表定案状态）
+# 自动对撞匹配类别。历史 level 字段保留兼容，不表示逐级晋升。
 # ───────────────────────────────────────────────────────────────────────
 PAIR_RESULT_CATEGORIES = [
     ("L1", "精确匹配统计候选", "达到多日精确匹配门槛；仍须核验字段身份并人工裁决"),
@@ -81,26 +81,36 @@ PAIR_RESULT_CATEGORIES = [
     ),
 ]
 
-ORTHOGONAL_EVIDENCE_PATHS = [
-    (
-        "L2（历史称呼：官方/强锚定）",
-        "当前走独立的 source-contract 来源内核验与注册表裁决，不是跨源碰撞结果等级。",
-    ),
-    (
-        "L3（历史称呼：方向正确但覆盖不完整）",
-        "当前保留为诊断、方法候选或人工分流线索；不会自动生成碰撞等级或写入注册表。",
-    ),
+MATCH_CLASSES = [
+    ("multi_day_exact_match", "多日精确值关系候选"),
+    ("stable_unit_ratio", "稳定比例候选"),
+    ("weak_exact_overlap", "弱精确重叠线索"),
+    ("date_value_correspondence", "日期值对应线索，须核业务角色"),
+    ("hub_downgraded_match", "多重匹配冲突后降为诊断"),
+    ("exploratory_non_anchor_match", "探索模式非锚线索"),
+]
+
+EVIDENCE_BASES = [
+    ("official_contract_anchor_and_value_comparison", "官方契约路径与采集值对照"),
+    ("official_contract_anchor_provider_unconfirmed", "官方契约锚；底层提供方关系未确认"),
+    ("independent_cross_source_value_comparison", "独立来源之间的采集值对照"),
+]
+
+ADJUDICATION_PROGRESS = [
+    ("candidate_only", "候选；不自动改变注册表"),
+    ("diagnostic_only", "诊断线索；不能直接进入映射裁决"),
+    ("registered_relation_revalidation", "已登记关系的当前窗口复验"),
 ]
 
 # ───────────────────────────────────────────────────────────────────────
 # 不对撞（跳过）规则
 # ───────────────────────────────────────────────────────────────────────
 SKIP_IDENTIFIERS = ["market", "code", "date", "name", "tx[1]", "tx[2]", "tx[3]"]
-SKIP_CONSTANTS = ["push2:f106（恒=100）", "f123/f124/f125/f134（恒=0）"]
 SKIP_RULES = [
     "已通过注册表裁决的字段：移出 FOCUS，不再主攻；仅进全历史复核的回归保护池",
     "标识符字段（market/code/date/name/tx[1..3]）：排除出数值对撞目标，防 false L1",
-    "常量占位字段（f106 恒100 / f123..f134 恒0）：无信息量，登记为占位而非未知语义",
+    "恒空、恒零或当前恒定字段进入低信息队列，暂不碰撞；新样本变化后重新评估，不能仅凭恒值断言永远无意义",
+    "高比例合法 YYYYMMDD / ISO 日期值进入日期语义队列；不参与比例/公式猜测，先核业务日期角色",
     "20 股 ZHB 锚巧合陷阱：任何新映射若与已确立映射矛盾，判为巧合而非发现，须打印原数据人工核实",
     "相关性（Pearson/Spearman）只生成候选，绝不定案",
     f"L1 每日有效样本须 ≥{MIN_DAILY_SAMPLES_L1}，且 ≥{MULTI_DAY_MIN} 个独立交易日/自然事件日",
@@ -283,8 +293,7 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
     print("对撞结果类别（候选，不是注册表定案）:", file=out)
     for code, name, desc in PAIR_RESULT_CATEGORIES:
         print(f"  {code} {name}: {desc}", file=out)
-    for code, desc in ORTHOGONAL_EVIDENCE_PATHS:
-        print(f"  {code}: {desc}", file=out)
+    print("匹配类别、证据依据、定案进度分开记录；L1-L4 是兼容类别而非晋级阶梯。", file=out)
     print("-" * 66, file=out)
     print("官方契约语义锚分支（参与碰撞，不代表来源独立）:", file=out)
     for rule in CONTRACT_ANCHOR_RULES:
@@ -308,7 +317,7 @@ def emit_markdown(path: str | None = None) -> str:
     L.append("# 对撞数值证据规则与结果类别（运行时规则真相源）\n")
     L.append(
         f"> 本文件由 `scripts/collision_rules.py` 自动派生"
-        f"（`python scripts/collision_rules.py --emit`），生成日 {date.today().isoformat()}。\n"
+        f"（`.\\scripts\\run_with_system_python.ps1 scripts\\collision_rules.py --emit`），生成日 {date.today().isoformat()}。\n"
     )
     L.append(
         "> 对撞脚本运行时自动 `print_active_rules()` 查询本规则；"
@@ -348,20 +357,38 @@ def emit_markdown(path: str | None = None) -> str:
     L.append(
         "- 近似命中不会计入精确命中率、L1/L1-U、已登记映射或字段注册表；单位换算按独立比值证据记录。\n"
     )
-    L.append("## 二、对撞结果类别（自动候选，不是最终定案状态）\n")
-    L.append("| 报告类别 | 含义 | 解释 / 后续处理 |")
+    L.append("## 二、对撞匹配类别（自动候选，不是定案进度）\n")
+    L.append(
+        "`level` 中的 L1/L1-U/L1-C/L4 是历史兼容代码，不组成从低到高的晋级链。新报告同时写入 `match_class`、`evidence_basis` 和 `adjudication_progress`，分别描述值关系、证据路径和处理状态。"
+    )
+    L.append("")
+    L.append("| 兼容类别 | 含义 | 解释 / 后续处理 |")
     L.append("|:--|:--|:--|")
     for code, name, desc in PAIR_RESULT_CATEGORIES:
         L.append(f"| {code} | {name} | {desc} |")
     L.append("")
     L.append(
-        f"L1/L1-U 必须经过候选审阅及注册表裁决后，才能成为项目字段结论。"
+        f"L1/L1-U 只是独立来源的数值关系候选，必须经过字段身份、单位、日期与注册表裁决。"
         f"L4 的运行门槛为每个计入日样本数 ≥{MIN_DAILY_SAMPLES_L4}，"
         f"这些日子的合并精确命中率 ≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；"
         "它不是 8~17 个命中数的区间。"
     )
-    for code, desc in ORTHOGONAL_EVIDENCE_PATHS:
-        L.append(f"- {code}：{desc}")
+    L.append("\n### 独立分类维度\n")
+    L.append("| 维度 | 值 | 含义 |")
+    L.append("|:--|:--|:--|")
+    for code, desc in MATCH_CLASSES:
+        L.append(f"| `match_class` | `{code}` | {desc} |")
+    for code, desc in EVIDENCE_BASES:
+        L.append(f"| `evidence_basis` | `{code}` | {desc} |")
+    for code, desc in ADJUDICATION_PROGRESS:
+        L.append(f"| `adjudication_progress` | `{code}` | {desc} |")
+    L.append("")
+    L.append(
+        "- 官方字段定义与项目完整路径精确对应时，可走来源契约路径直接确认该字段语义；不以 L1 或历史 E3 标记作为前置步骤。"
+    )
+    L.append(
+        "- `E3` 是既有经验实证记录的兼容标记，不是 `L1-L4` 的另一等级，也不是强制晋级步骤；新规则按证据依据与适用范围分别记录。"
+    )
     L.append("")
     L.append("## 三、官方契约语义锚候选 L1-C\n")
     for rule in CONTRACT_ANCHOR_RULES:
@@ -381,12 +408,12 @@ def emit_markdown(path: str | None = None) -> str:
         "结果标注「再确认 / 强化现有结论，未改动语义」，作为回归保护。"
     )
     L.append(
-        "- **锁定点 = 升到 L1**：该字段转为对齐锚 / 真值参考，"
-        "用于破解其他未知字段时的核对与跨源一致性校验。"
+        "- **字段语义已验证才成为字段锚**：只有注册表对精确来源路径记录 verified，"
+        "并满足来源独立性和元数据要求时，才可作为跨源锚；L1 本身不会把字段变成锚。"
     )
     L.append(
         "- **双向可修正**：L1 遇矛盾新证据可降级或重议"
-        "（如 tx[85] 均价候选因锚仅 3/20 回退 L3；tdxstat[31] 对撞东财仅 77% 匹配降级）。\n"
+        "；反例应标为冲突/失配并保留证据，不能把数值类别当成字段语义等级。\n"
     )
     L.append("")
     L.append("## 五、已证伪结论护栏（回归反例，2026-09-16 立规）\n")
@@ -410,7 +437,7 @@ def emit_markdown(path: str | None = None) -> str:
             "field_verification",
             "COLLISION_RULES.md",
         )
-    with open(path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
     print(f"[collision_rules] 已派生 {path}", file=sys.stderr)
     return path

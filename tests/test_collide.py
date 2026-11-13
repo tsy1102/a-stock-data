@@ -1922,18 +1922,19 @@ def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs()
 
     collision_rules.print_active_rules(output)
 
-    assert "## 二、对撞结果类别（自动候选，不是最终定案状态）" in rendered
+    assert "## 二、对撞匹配类别（自动候选，不是定案进度）" in rendered
     assert "| L1-U |" in rendered
     assert "| L1-C |" in rendered
     assert "| L2 |" not in rendered
     assert "| L3 |" not in rendered
-    assert "L2（历史称呼：官方/强锚定）" in rendered
-    assert "L3（历史称呼：方向正确但覆盖不完整）" in rendered
+    assert "不组成从低到高的晋级链" in rendered
+    assert "`match_class`" in rendered
+    assert "`evidence_basis`" in rendered
+    assert "`adjudication_progress`" in rendered
     assert "合并精确命中率 ≥40%" in rendered
     assert "不是 8~17 个命中数的区间" in rendered
     assert "L1/L1-U 是数值候选" in output.getvalue()
-    assert "L2（历史称呼：官方/强锚定）" in output.getvalue()
-    assert "L3（历史称呼：方向正确但覆盖不完整）" in output.getvalue()
+    assert "L1-L4 是兼容类别而非晋级阶梯" in output.getvalue()
     assert "## 三、官方契约语义锚候选 L1-C" in rendered
     assert "不计独立来源覆盖" in rendered
     assert "官方契约语义锚分支（参与碰撞，不代表来源独立）" in output.getvalue()

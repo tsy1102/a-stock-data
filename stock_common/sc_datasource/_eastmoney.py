@@ -1238,91 +1238,107 @@ def cls_telegraph(page_size: int = 50) -> List[Dict[str, Any]]:
         return []
 
 
+def _fetch_official_dragon_tiger(
+    trade_date: str, before_request: Optional[Callable[[], Any]] = None
+) -> Dict[str, Any]:
+    """Fetch both exchanges' official dragon-tiger data through one shared path."""
+    import ssl
+    import urllib.request
+
+    import truststore
+    from stock_common.sc_network import _source_rate_limit_wait
+
+    out: Dict[str, Any] = {
+        "szse_rows": [],
+        "szse_keys": [],
+        "sse_raw": "",
+        "errors": {},
+    }
+    context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    opener: Optional[Any] = None
+
+    endpoints = (
+        (
+            "szse",
+            "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+            f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
+            f"&txtEnd={trade_date}&random=0.9",
+            {
+                "User-Agent": UA,
+                "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
+            },
+        ),
+        (
+            "sse",
+            "https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+            f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}",
+            {
+                "User-Agent": UA,
+                "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
+            },
+        ),
+    )
+    for source, url, headers in endpoints:
+        try:
+            if before_request is not None:
+                before_request()
+            _source_rate_limit_wait(url)
+            if opener is None:
+                opener = urllib.request.build_opener(
+                    urllib.request.ProxyHandler({}),
+                    urllib.request.HTTPSHandler(context=context),
+                )
+            request = urllib.request.Request(url, headers=headers)
+            with opener.open(request, timeout=15) as response:
+                payload = response.read()
+
+            if source == "szse":
+                data = json.loads(payload)
+                if isinstance(data, list) and data:
+                    rows = data[0].get("data", []) or []
+                    if isinstance(rows, list):
+                        out["szse_rows"] = rows
+                        if rows and isinstance(rows[0], dict):
+                            out["szse_keys"] = sorted(rows[0].keys())
+            else:
+                text = payload.decode("utf-8", "ignore")
+                if "(" in text and ")" in text:
+                    data = json.loads(text[text.index("(") + 1 : text.rindex(")")])
+                    contents = data.get("fileContents", []) or []
+                    out["sse_raw"] = "\n".join(contents)
+        except Exception as exc:
+            out["errors"][source] = str(exc)[:200]
+            _debug_log(f"official dragon-tiger {source}: {exc}")
+
+    return out
+
+
 def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
-    """龙虎榜官方备用源（东财被封时用）：上交所+深交所官方，零鉴权权威一手，含营业部席位。
+    """龙虎榜官方备用源；保留原有公开返回结构以兼容现有调用方。
 
     Args:
         trade_date: 交易日，格式 YYYY-MM-DD
 
     Returns:
-        包含深交所结构化数据和上交所原始文件内容的字典
+        包含深交所结构化记录和上交所原始文件内容的字典
     """
-    import urllib.request
-    import ssl
-
-    out: Dict[str, Any] = {"date": trade_date, "sse_raw": "", "szse": []}
-    _ctx = ssl._create_unverified_context()
-
-    # 深交所龙虎榜
-    su = (
-        "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
-        f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}&txtEnd={trade_date}&random=0.9"
-    )
-    try:
-        req = urllib.request.Request(
-            su,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
-            },
-        )
-        # 备胎源裸 urlopen 也按深交所来源组跨进程限速。
-        from stock_common.sc_network import _source_rate_limit_wait
-
-        _source_rate_limit_wait(su)
-        # V16.3 O14: 备胎源强制直连（ProxyHandler({}) 忽略系统代理——GD 外全部直连）
-        # V16.3 O22: OpenerDirector.open 不接受 context 关键字（原 TypeError 使备胎源永久失效）——
-        # 自定义 SSL context 通过 HTTPSHandler 注入
-        _opener = urllib.request.build_opener(
-            urllib.request.ProxyHandler({}),
-            urllib.request.HTTPSHandler(context=_ctx),
-        )
-        with _opener.open(req, timeout=15) as r:
-            d = json.loads(r.read())
-        if isinstance(d, list) and d:
-            for row in d[0].get("data", []):
-                out["szse"].append(
-                    {
-                        "code": row.get("zqdm"),
-                        "name": row.get("zqjc"),
-                        "amount": row.get("cjje"),
-                        "reason": row.get("plyy"),
-                        "volume": row.get("cjsl"),
-                        "note": row.get("bz"),
-                    }
-                )
-    except Exception as _e:
-        _debug_log(f"dragon_tiger_backup szse: {_e}")
-
-    # 上交所龙虎榜（JSONP格式）
-    eu = (
-        "https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
-        f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}"
-    )
-    try:
-        req = urllib.request.Request(
-            eu,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
-            },
-        )
-        # 备胎源裸 urlopen 也按上交所来源组跨进程限速。
-        from stock_common.sc_network import _source_rate_limit_wait
-
-        _source_rate_limit_wait(eu)
-        # V16.3 O14: 强制直连（忽略系统代理）
-        _opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with _opener.open(req, timeout=15) as r:
-            t = r.read().decode("utf-8", "ignore")
-        if "(" in t and ")" in t:
-            json_str = t[t.index("(") + 1 : t.rindex(")")]
-            d = json.loads(json_str)
-            out["sse_raw"] = "\n".join(d.get("fileContents", []))
-    except Exception as _e:
-        _debug_log(f"dragon_tiger_backup sse: {_e}")
-
-    return out
+    fetched = _fetch_official_dragon_tiger(trade_date)
+    return {
+        "date": trade_date,
+        "sse_raw": fetched["sse_raw"],
+        "szse": [
+            {
+                "code": row.get("zqdm"),
+                "name": row.get("zqjc"),
+                "amount": row.get("cjje"),
+                "reason": row.get("plyy"),
+                "volume": row.get("cjsl"),
+                "note": row.get("bz"),
+            }
+            for row in fetched["szse_rows"]
+            if isinstance(row, dict)
+        ],
+    }
 
 
 def get_sina_stock_fund_flow_raw(code: str, days: int = 60) -> Optional[List[Dict[str, Any]]]:

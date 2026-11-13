@@ -225,7 +225,8 @@ def main(argv=None):
     )
     print(
         f"parity[empirical-source-semantics]: "
-        f"{'PASS' if not empirical_problems else 'FAIL'} {len(empirical_pairs)} 条"
+        f"{'PASS' if not empirical_problems else 'FAIL'} "
+        f"{len(empirical_pairs)} 条已登记 / {len(empirical_problems)} 项问题"
     )
     print(
         f"parity[adjudication-addenda]: "

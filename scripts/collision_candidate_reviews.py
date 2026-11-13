@@ -19,8 +19,10 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 # Bump when candidate methods, normalization, precision, or sample qualification changes.
-METHOD_VERSION = "collision-candidate-v2"
-SUPPORTED_REPORT_METHOD_VERSIONS = frozenset({"collision-candidate-v1", METHOD_VERSION})
+METHOD_VERSION = "collision-candidate-v3"
+SUPPORTED_REPORT_METHOD_VERSIONS = frozenset(
+    {"collision-candidate-v1", "collision-candidate-v2", METHOD_VERSION}
+)
 DISPOSITIONS = frozenset(
     {
         "duplicate_grouped",

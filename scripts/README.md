@@ -39,6 +39,32 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 
 采集启动行会显示 `--only` 中实际选择的源，未指定时显示“默认源集合”，并单独标明市场上下文是“启用”还是“跳过”。
 
+### 复合来源的接口单元采集与证据
+
+`market_sources` 和 `fuyao` 内部各包含多个接口或不同更新域；为后续判断字段覆盖、来源重叠和更新频率，采集器按 `scripts/capture_catalog.py` 中的稳定单元 ID 在 `meta.json.capture_units` 留存逐单元证据。Fuyao 三张财务报表与涨跌停/炸板池按不同 API 路径拆开；财务指标和 H1 摘要保留同一接口身份。记录包括接口/来源提示、所覆盖 raw 路径、字段路径与结构指纹、按字段计算的值指纹、响应中日期形状字段的观察值、采集器调用时间、请求数据日、阶段、状态及安全的调用参数摘要。值指纹不复制字段原值；原始响应仍保存在 `raw_market_sources.json` 或 `raw_fuyao.json`。`provider_hint` 仅作线索，身份状态未确认时不视为已证明同源。
+
+该层记录的是采集器/适配器调用，逻辑调用数与耗时不等于实际 HTTP 请求数；缓存命中、底层重试和请求合并未在这里计数。状态按采集器输出结构计算，适配器可能把传输失败归一为空结果，故 `empty` 不能证明上游成功返回空数据。降频决策前需另行获得底层网络请求计数及可区分失败的传输状态。审计中的目录输出路径覆盖也不等于注册表完整字段覆盖。
+
+可在同一数据日只补采复合源中的特定单元，成功且质量未退化的结果只替换其目录路径，其余同源 raw 路径和来源元数据合并保留；失败、空结果或质量较差时保留原单元 raw，并在单元证据中记录响应状态及写入处置。该模式不支持 `--overwrite`，也不运行额外的 AxData/Levistock 辅助核验：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261113 --only-unit market_sources.kpl_sentiment
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261113 --only-unit 'fuyao.income_statements,fuyao.limit_up_pool'
+```
+
+支持的单元 ID 由 `CAPTURE_UNIT_CATALOG` 维护。只读历史审计命令为：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\audit_capture_unit_history.py
+.\scripts\run_with_system_python.ps1 scripts\audit_capture_unit_history.py --unit 'market_sources.kpl_sentiment,fuyao.income_statements' --json
+```
+
+审计只读保留起点 `MIN_CAPTURE_DATE` 及之后的数据日目录中的 `meta.json`，汇总接口状态、请求数据日、catalog 输出路径出现情况、结构变化、同日重复运行和跨请求数据日值指纹变化。请求数据日不是来源实际数据日；审计不把未核实的日期值自动提升为有效来源日期，也不据此建议降频或退役。相同请求/来源数据日只计一次独立日期。只有确认完整注册表字段路径、接口身份与日期契约、字段级更新策略、同日替代关系、独有字段、备用源/失败回退及发布时点后，才可另行评估采集频率或退役；程序不会自动改变这些设置。
+
+新增元数据只会由后续采集产生；已有目录没有接口级调用、失败或缓存记录，审计不会从 raw 反推并伪造这些运行事实。已有 raw 样本仍可按完整路径进行独立历史比较，但必须标明其请求/缓存状态未知。
+
+碰撞报告使用 `collision-candidate-v3`，按官方契约锚结果、日期语义和一般数值候选安排研究顺序；`match_class`、`evidence_basis`、`adjudication_progress` 分别表示观测关系、证据来源和当前处理阶段，旧 `level` 只保留兼容。报告另含按完整路径及来源日期/阶段对齐的来源重叠审阅，舍入近似只作为独立线索，不计强匹配；并列出恒空/恒零/恒定低信息队列和日期值业务含义队列。它们只改善人工排查顺序，不自动写注册表或停用采集；来源路由变更仍需完整核对接口字段覆盖、独有路径、备用关系和复验规则。
+
 ### 字段采集覆盖与生命周期
 
 主字典字段变为 `verified` 后，碰撞脚本只将它从“待破解目标”中移除，仍保留为独立锚点；采集器不读取字段状态，因此已定案字段会继续进入每日样本，用于复核和漂移监测。接口因来源身份重复而暂停请求是另一项独立的源级决定，不由字段定案触发。
@@ -60,12 +86,13 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | 模块 | 职责 |
 |:---|:---|
 | `capture_catalog.py` | 采集器源配置、字段族和来源契约目录。 |
+| `capture_unit_evidence.py`、`audit_capture_unit_history.py` | 为 `market_sources`/`fuyao` 子接口记录低敏感度纵向证据；按保留起点只读汇总覆盖、日期线索、结构和值变化，不作自动退役/降频决策。 |
 | `capture_diagnostics.py` | 响应、错误、数据日和 ZHB 新鲜度诊断；保留原采集入口兼容名称。 |
 | `capture_archive.py` | ZHB 快照保护、上下文保留及归档完整性/覆盖刷新。 |
 | `capture_context_collectors.py`、`capture_tcp_collectors.py`、`capture_verified_collectors.py`、`capture_http_collectors.py` | 按来源族实现采集 producer；`capture_field_probe.py` 继续持有 CLI、日期/覆盖编排、注册表和落盘。 |
 | `stock_common/sc_network_limits.py` | 纯跨进程间隔等待与锁文件机制；所有限流、熔断状态仍由 `sc_network.py` 单一持有。 |
 | `collision_snapshots.py`、`collision_math.py` | 碰撞快照身份/筛选，与纯数值、公式候选方法。 |
-| `collision_candidate_methods.py`、`collision_registry_context.py`、`collision_candidate_triage.py` | 碰撞候选计算、只读来源/registry 上下文与覆盖 triage；`collide.py` 保留运行编排和兼容名称。 |
+| `collision_candidate_methods.py`、`collision_registry_context.py`、`collision_candidate_triage.py`、`source_relation_candidates.py` | 碰撞数值/日期候选计算、只读来源/registry 上下文、覆盖 triage 与来源路径重叠审阅；`collide.py` 保留运行编排和兼容名称。 |
 | `collision_candidate_ranking.py`、`collision_state.py`、`collision_reporting.py` | 候选排序、碰撞状态读写及报告序列化。 |
 | `collision_candidate_reviews.py` | 独立候选审阅台账；`review_collision_candidates.py` 默认预览，显式 `--apply` 才记录处置。 |
 | `query_collision_report.py` | 只读校验 schema 5 碰撞报告完整性，并按报告章节、来源、完整字段路径或候选 ID 分页导出 JSON/紧凑列式结果。 |
@@ -81,8 +108,8 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | 脚本 | 用途与写入行为 |
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
-| `registry_parity.py` | 校验历史来源基线、字段登记表、主字典投影和字段矩阵；源契约与单源财报实证 E3 定案会重放决策并核对证据 SHA-256、注册表状态和矩阵投影，碰撞定案与采集根路径补录也须可追溯；未验证候选必须仍在 `unknown_fields.md` 中。`registry_parity_scope.json` 只保留不纳入破解队列的 Fuyao 上下文标签；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
-| `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、单源上游契约、单源来源内实证 E3（财务及带明确官方标签的评级/枚举等），以及有来源独立性检查和 CSV 复算的公式关系定案。E3 使用证据文件 SHA-256、精确来源字段和样本计数，不设固定股票/日期下限，也不生成跨源 `mappings`；它可依据完整来源内实证解决指定的参考状态/释义冲突，并在决策记录中保留冲突快照。来源身份不明或已证伪字段仍拒绝覆盖。已验证元数据存在属性冲突时，决策也必须精确附带 `previous_attribute_conflicts` 快照；历史冲突保留在定案记录中。校验与内存变换委托给相邻模块；公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
+| `registry_parity.py` | 校验历史来源基线、字段登记表、主字典投影和字段矩阵；源契约与单源实证定案会重放决策并核对证据 SHA-256、注册表状态和矩阵投影，碰撞定案与采集根路径补录也须可追溯；未验证候选必须仍在 `unknown_fields.md` 中。`registry_parity_scope.json` 只保留不纳入破解队列的 Fuyao 上下文标签；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
+| `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、单源上游契约、单源来源内实证定案（财务及带明确官方标签的评级/枚举等），以及有来源独立性检查和 CSV 复算的公式关系定案。来源内实证使用证据文件 SHA-256、精确来源字段和样本计数，不设固定股票/日期下限，也不生成跨源 `mappings`；可依据完整来源内实证解决指定的参考状态/释义冲突，并在决策记录中保留冲突快照。历史 E3 作为注册表兼容标记保留。来源身份不明或已证伪字段仍拒绝覆盖。已验证元数据存在属性冲突时，决策也必须精确附带 `previous_attribute_conflicts` 快照；历史冲突保留在定案记录中。校验与内存变换委托给相邻模块；公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
 | `derived_relation_evidence.py` | 定案器调用的公式证据校验模块；限制算术语法与本地样本范围，核验来源族、已验证输入、有效日期和样本误差。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |

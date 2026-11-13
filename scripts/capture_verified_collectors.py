@@ -332,7 +332,11 @@ def collect_kph_history(
 
 
 def collect_fuyao(
-    pool: list, deps: CaptureSourceDependencies, include_context: bool = False
+    pool: list,
+    deps: CaptureSourceDependencies,
+    include_context: bool = False,
+    selected_units: Optional[set[str]] = None,
+    market_phase: str = "unknown",
 ) -> dict:
     """fuyao 官方 REST 全景采集（V17.0.5 新源——字典 §12.8.12c，全量契约见 verify/fuyao_api_full.md）。
 
@@ -353,102 +357,402 @@ def collect_fuyao(
         is_fuyao_enabled,
     )
 
+    from scripts.capture_unit_evidence import (
+        build_capture_unit_evidence,
+        capture_units_for_collector,
+        extract_capture_unit_payload,
+    )
+    from scripts.capture_catalog import CAPTURE_UNIT_CATALOG
+
+    all_units = capture_units_for_collector("fuyao")
+    requested_units = set(selected_units) if selected_units is not None else all_units
     out: dict = {"stocks": {}, "market": {}}
+    unit_evidence: Dict[str, Any] = {}
+    unit_times: Dict[str, tuple[datetime, datetime]] = {}
+    unit_parameters: Dict[str, Dict[str, Any]] = {}
+    unit_logical_calls: Dict[str, int] = {}
+    unit_skip_reasons: Dict[str, str] = {}
+    unit_capture_stopped = False
+    unit_capture_stop_reason = None
+
+    def call_api(unit_name: str, function: Callable[..., Any], *args, **kwargs) -> Any:
+        unit_id = f"fuyao.{unit_name}"
+        unit_logical_calls[unit_id] = unit_logical_calls.get(unit_id, 0) + 1
+        return function(*args, **kwargs)
+
+    def run_unit(
+        unit_name: str,
+        callback: Callable[[], Any],
+        *,
+        stop_following_units: bool = True,
+    ) -> Any:
+        nonlocal unit_capture_stopped, unit_capture_stop_reason
+        unit_id = f"fuyao.{unit_name}"
+        if unit_id not in requested_units:
+            unit_skip_reasons[unit_id] = "unit was not selected by the collector scope"
+            return None
+        if unit_capture_stopped:
+            unit_skip_reasons[unit_id] = unit_capture_stop_reason or "previous Fuyao unit failed"
+            return None
+        started = datetime.now().astimezone()
+        try:
+            return callback()
+        except Exception as exc:
+            if stop_following_units:
+                unit_capture_stopped = True
+                unit_capture_stop_reason = f"{unit_id} failed; later Fuyao units were not requested"
+            return {"__error__": f"{type(exc).__name__}: {str(exc)[:200]}"}
+        finally:
+            unit_times[unit_id] = (started, datetime.now().astimezone())
+
+    codes = [p["code"] for p in pool]
     if not is_fuyao_enabled():
         out["error"] = "no_key_disabled"
+        for unit_id in sorted(requested_units):
+            unit_name = unit_id.split(".", 1)[1]
+            unit_evidence[unit_id] = build_capture_unit_evidence(
+                unit_id,
+                {"__skipped__": "no_key_disabled"},
+                collector_started_at=None,
+                collector_finished_at=None,
+                requested_data_date="",
+                market_phase=market_phase,
+                collector_invoked=False,
+                skip_reason="no_key_disabled",
+            )
+        if selected_units is None:
+            for unit_id in all_units - requested_units:
+                unit_evidence[unit_id] = build_capture_unit_evidence(
+                    unit_id,
+                    {"__skipped__": "context is disabled"},
+                    collector_started_at=None,
+                    collector_finished_at=None,
+                    requested_data_date="",
+                    market_phase=market_phase,
+                    collector_invoked=False,
+                    skip_reason="context is disabled",
+                )
+        out["__capture_units__"] = unit_evidence
         return out
-    codes = [p["code"] for p in pool]
+
     td = deps.last_completed_trading_day()
     date_ms = int(datetime.combine(td, dt_time()).timestamp() * 1000)
     out["probe_trading_day"] = td.isoformat()
     out["date_ms"] = date_ms
+    code_count = len(codes)
 
-    snap = {r.get("ticker"): r for r in (get_fuyao_snapshot(codes) or [])}
-    val = {r.get("ticker"): r for r in (get_fuyao_valuation(codes) or [])}
-    auction_envelope = get_fuyao_auction_snapshot_envelope(codes, stage="final")
-    auction_items = deps.fuyao_auction_items(auction_envelope)
-    auction_meta = deps.fuyao_auction_snapshot_meta(auction_envelope, "final", td)
-    auction_meta["item_count"] = len(auction_items)
-    out["auction_snapshot_meta"] = auction_meta
-    auction = {}
-    for item in auction_items:
-        enriched_item = dict(item)
-        enriched_item["__source_meta__"] = dict(auction_meta)
-        auction[item.get("ticker")] = enriched_item
-    # V17.0.24: 三大报表(近 8 期 quarterly + 年报 annual)——财务 TTM 族主源原始锚:
-    # f163 静态PE=现价÷f160(年报EPS) 闭环验证 + ocf_ttm/revenue_ttm TTM 重建(R_YTD+FY−H1)
-    finrep: Dict[str, Any] = {}
-    try:
-        from stock_common.sc_fuyao import get_fuyao_financials as _gff
+    def capture_snapshot() -> dict:
+        rows = call_api("snapshot", get_fuyao_snapshot, codes) or []
+        return {row.get("ticker"): row for row in rows if isinstance(row, dict)}
 
-        for p in pool:
-            c = p["code"]
-            finrep[c] = {
-                "income_q": _gff("income", c, limit=8, period="quarterly") or [],
-                "balance_q": _gff("balance", c, limit=8, period="quarterly") or [],
-                "cashflow_q": _gff("cashflow", c, limit=8, period="quarterly") or [],
-                "income_a": _gff("income", c, limit=3, period="annual") or [],
-            }
-    except Exception as _e:
-        finrep["__error__"] = str(_e)[:200]
-    for p in pool:
-        c = p["code"]
-        ind = None
-        used_report = None
-        for rpt in (
-            deps.last_completed_trading_day().strftime("%Y") + "-2",
-            deps.last_completed_trading_day().strftime("%Y") + "-1",
+    snap = run_unit("snapshot", capture_snapshot)
+    if "fuyao.snapshot" in requested_units:
+        unit_parameters["fuyao.snapshot"] = {"code_count": code_count}
+        if "fuyao.snapshot" in unit_times and isinstance(snap, dict):
+            for code in codes:
+                if "__error__" in snap:
+                    out["stocks"].setdefault(code, {})["snapshot"] = {
+                        "__error__": snap["__error__"]
+                    }
+                else:
+                    out["stocks"].setdefault(code, {})["snapshot"] = snap.get(code)
+
+    val = run_unit(
+        "valuation",
+        lambda: {
+            row.get("ticker"): row
+            for row in (call_api("valuation", get_fuyao_valuation, codes) or [])
+            if isinstance(row, dict)
+        },
+    )
+    if "fuyao.valuation" in requested_units:
+        unit_parameters["fuyao.valuation"] = {"code_count": code_count}
+        if "fuyao.valuation" in unit_times and isinstance(val, dict):
+            for code in codes:
+                if "__error__" in val:
+                    out["stocks"].setdefault(code, {})["valuation"] = {
+                        "__error__": val["__error__"]
+                    }
+                else:
+                    out["stocks"].setdefault(code, {})["valuation"] = val.get(code)
+
+    def capture_auction() -> dict:
+        envelope = call_api(
+            "auction_final", get_fuyao_auction_snapshot_envelope, codes, stage="final"
+        )
+        items = deps.fuyao_auction_items(envelope)
+        auction_meta = deps.fuyao_auction_snapshot_meta(envelope, "final", td)
+        auction_meta["item_count"] = len(items)
+        values = {}
+        for item in items:
+            enriched = dict(item)
+            enriched["__source_meta__"] = dict(auction_meta)
+            values[item.get("ticker")] = enriched
+        return {"items": values, "meta": auction_meta}
+
+    auction = run_unit("auction_final", capture_auction)
+    if "fuyao.auction_final" in requested_units:
+        unit_parameters["fuyao.auction_final"] = {"code_count": code_count, "stage": "final"}
+        if (
+            "fuyao.auction_final" in unit_times
+            and isinstance(auction, dict)
+            and "__error__" not in auction
         ):
-            ind = get_fuyao_fin_indicators(c, rpt)
-            if ind:
-                used_report = rpt
-                break
-        out["stocks"][c] = {
-            "snapshot": snap.get(c),
-            "valuation": val.get(c),
-            "auction_final": auction.get(c),
-            "fin_indicators": ind,
-            "fin_report": used_report,
-            # V17.0.24: 三大报表原始数据(TTM 重建/静态PE 闭环锚)
-            "financials": finrep.get(c) if isinstance(finrep.get(c), dict) else None,
-        }
-
-    mkt = out["market"]
-    bench = get_fuyao_auction_benchmark(td.isoformat())
-    mkt["short_term_benchmark"] = bench[:80] if isinstance(bench, list) else bench
-
-    # ── 中报(yyyy-2)就绪自动探测——tx[65]=扣非加权ROE(TTM) 的 L1 终判数据源 ──
-    # 哨兵: 首只股探 2026-2；上游入库滞后(披露日≠入库日, code=5003)时跳过全量拉取省配额
-    year = td.strftime("%Y")
-    sentinel = get_fuyao_fin_indicators(codes[0], year + "-2")
-    mkt["h1_indicators_ready"] = bool(sentinel)
-    mkt["h1_indicators"] = {}
-    if sentinel:
-        for c in codes:
-            ind = get_fuyao_fin_indicators(c, year + "-2") or {}
-            p = ind.get("profitability") or {}
-            if p:
-                mkt["h1_indicators"][c] = {
-                    "ded_weighted_roe": p.get("index_deduct_weighted_avg_roe"),
-                    "weighted_roe": p.get("index_weighted_avg_roe"),
-                    "roa": p.get("total_assets_net_ratio"),
+            out["auction_snapshot_meta"] = auction.get("meta")
+            for code in codes:
+                out["stocks"].setdefault(code, {})["auction_final"] = auction.get("items", {}).get(
+                    code
+                )
+        elif "fuyao.auction_final" in unit_times and isinstance(auction, dict):
+            out["auction_snapshot_meta"] = {"__error__": auction["__error__"]}
+            for code in codes:
+                out["stocks"].setdefault(code, {})["auction_final"] = {
+                    "__error__": auction["__error__"]
                 }
-        print(f"  ⭐ 中报指标已入库({len(mkt['h1_indicators'])} 只)——tx65/tx66 L1 终判条件达成")
 
-    for kind in ("up", "down", "break"):
-        pd_ = get_fuyao_limit_pool(kind, page=1, size=200, date_ms=date_ms)
-        items = (pd_ or {}).get("item") or []
-        mkt[f"limit_{kind}_pool"] = {
-            "total": ((pd_ or {}).get("pagination") or {}).get("total"),
-            "count_captured": len(items),
-            "item": items,
+    from stock_common.sc_fuyao import get_fuyao_financials as _get_financials
+
+    statement_units = (
+        ("income_statements", "income", ("income_q", "quarterly", 8), ("income_a", "annual", 3)),
+        ("balance_sheets", "balance", ("balance_q", "quarterly", 8)),
+        ("cash_flow_statements", "cashflow", ("cashflow_q", "quarterly", 8)),
+    )
+    statement_capture_stopped = False
+    statement_stop_reason = None
+    for unit_name, kind, *outputs in statement_units:
+
+        def capture_statement_values(
+            _unit_name=unit_name, _kind=kind, _outputs=tuple(outputs)
+        ) -> dict:
+            result: Dict[str, Dict[str, Any]] = {}
+            for code in codes:
+                result[code] = {}
+                for field, period, limit in _outputs:
+                    result[code][field] = (
+                        call_api(
+                            _unit_name,
+                            _get_financials,
+                            _kind,
+                            code,
+                            limit=limit,
+                            period=period,
+                        )
+                        or []
+                    )
+            return result
+
+        unit_id = f"fuyao.{unit_name}"
+        if statement_capture_stopped:
+            statement_values = None
+            unit_skip_reasons[unit_id] = (
+                statement_stop_reason or "previous statement endpoint failed"
+            )
+        else:
+            statement_values = run_unit(
+                unit_name,
+                capture_statement_values,
+                stop_following_units=False,
+            )
+            if isinstance(statement_values, dict) and statement_values.get("__error__"):
+                statement_capture_stopped = True
+                statement_stop_reason = (
+                    f"{unit_id} failed; remaining financial statement endpoints were skipped"
+                )
+        if unit_id in requested_units:
+            unit_parameters[unit_id] = {
+                "code_count": code_count,
+                "periods": [f"{period}:{limit}" for _, period, limit in outputs],
+            }
+        if unit_id in unit_times and isinstance(statement_values, dict):
+            for code in codes:
+                values = statement_values.get(code)
+                if not isinstance(values, dict) and statement_values.get("__error__"):
+                    values = {
+                        field: {"__error__": statement_values["__error__"]}
+                        for field, _, _ in outputs
+                    }
+                if isinstance(values, dict):
+                    out["stocks"].setdefault(code, {}).setdefault("financials", {}).update(values)
+
+    report_periods = [td.strftime("%Y") + "-2", td.strftime("%Y") + "-1"]
+    year = td.strftime("%Y")
+
+    def capture_fin_indicators() -> dict:
+        result = {}
+        for code in codes:
+            indicator = None
+            used_report = None
+            for report in report_periods:
+                indicator = call_api("fin_indicators", get_fuyao_fin_indicators, code, report)
+                if indicator:
+                    used_report = report
+                    break
+            result[code] = {"fin_indicators": indicator, "fin_report": used_report}
+
+        sentinel = (
+            call_api("fin_indicators", get_fuyao_fin_indicators, codes[0], year + "-2")
+            if codes
+            else None
+        )
+        h1 = {}
+        if sentinel:
+            for code in codes:
+                indicator = (
+                    call_api("fin_indicators", get_fuyao_fin_indicators, code, year + "-2") or {}
+                )
+                profitability = indicator.get("profitability") or {}
+                if profitability:
+                    h1[code] = {
+                        "ded_weighted_roe": profitability.get("index_deduct_weighted_avg_roe"),
+                        "weighted_roe": profitability.get("index_weighted_avg_roe"),
+                        "roa": profitability.get("total_assets_net_ratio"),
+                    }
+        return {
+            "stocks": result,
+            "h1_indicators_ready": bool(sentinel),
+            "h1_indicators": h1,
         }
-    mkt["anomaly_list"] = (get_fuyao_anomaly() or [])[:60]
+
+    indicators = run_unit("fin_indicators", capture_fin_indicators)
+    if "fuyao.fin_indicators" in requested_units:
+        unit_parameters["fuyao.fin_indicators"] = {
+            "code_count": code_count,
+            "report_period_fallbacks": report_periods,
+            "h1_report_period": year + "-2",
+        }
+        if "fuyao.fin_indicators" in unit_times and isinstance(indicators, dict):
+            if "__error__" in indicators:
+                for code in codes:
+                    out["stocks"].setdefault(code, {}).update(
+                        {
+                            "fin_indicators": {"__error__": indicators["__error__"]},
+                            "fin_report": None,
+                        }
+                    )
+                out["market"]["h1_indicators_ready"] = False
+                out["market"]["h1_indicators"] = {"__error__": indicators["__error__"]}
+            else:
+                for code in codes:
+                    out["stocks"].setdefault(code, {}).update(
+                        indicators.get("stocks", {}).get(code, {})
+                    )
+                out["market"]["h1_indicators_ready"] = indicators.get("h1_indicators_ready", False)
+                out["market"]["h1_indicators"] = indicators.get("h1_indicators", {})
+                if indicators.get("h1_indicators_ready"):
+                    print(
+                        f"  ⭐ 中报指标已入库({len(indicators.get('h1_indicators', {}))} 只)——"
+                        "tx65/tx66 L1 终判条件达成"
+                    )
+
+    benchmark = run_unit(
+        "short_term_benchmark",
+        lambda: call_api("short_term_benchmark", get_fuyao_auction_benchmark, td.isoformat()),
+    )
+    if "fuyao.short_term_benchmark" in unit_times:
+        unit_parameters["fuyao.short_term_benchmark"] = {"trade_date": td.isoformat()}
+        if isinstance(benchmark, list):
+            out["market"]["short_term_benchmark"] = benchmark[:80]
+        else:
+            out["market"]["short_term_benchmark"] = benchmark
+
+    for unit_name, kind, output_key in (
+        ("limit_up_pool", "up", "limit_up_pool"),
+        ("limit_down_pool", "down", "limit_down_pool"),
+        ("limit_break_pool", "break", "limit_break_pool"),
+    ):
+
+        def capture_limit_pool(_unit: str = unit_name, _kind: str = kind) -> Any:
+            return call_api(_unit, get_fuyao_limit_pool, _kind, page=1, size=200, date_ms=date_ms)
+
+        pool_values = run_unit(unit_name, capture_limit_pool)
+        unit_id = f"fuyao.{unit_name}"
+        if unit_id in requested_units:
+            unit_parameters[unit_id] = {"date_ms": date_ms, "page": 1, "size": 200}
+        if unit_id in unit_times and isinstance(pool_values, dict):
+            items = pool_values.get("item") or []
+            out["market"][output_key] = {
+                "total": (pool_values.get("pagination") or {}).get("total"),
+                "count_captured": len(items),
+                "item": items,
+            }
+
+    anomalies = run_unit("anomaly_list", lambda: call_api("anomaly_list", get_fuyao_anomaly) or [])
+    if "fuyao.anomaly_list" in unit_times:
+        unit_parameters["fuyao.anomaly_list"] = {"limit": 60}
+        out["market"]["anomaly_list"] = anomalies
+
     if include_context:
         from stock_common import get_fuyao_dragon_tiger, get_fuyao_hot_list
 
-        mkt["dragon_tiger"] = (get_fuyao_dragon_tiger(td.isoformat()) or [])[:60]
-        mkt["hot_list_hour"] = (get_fuyao_hot_list("hour") or [])[:50]
+        dragon = run_unit(
+            "dragon_tiger",
+            lambda: (call_api("dragon_tiger", get_fuyao_dragon_tiger, td.isoformat()) or [])[:60],
+        )
+        hot = run_unit(
+            "hot_list_hour",
+            lambda: (call_api("hot_list_hour", get_fuyao_hot_list, "hour") or [])[:50],
+        )
+        if "fuyao.dragon_tiger" in unit_times:
+            unit_parameters["fuyao.dragon_tiger"] = {"trade_date": td.isoformat(), "limit": 60}
+            out["market"]["dragon_tiger"] = dragon
+        if "fuyao.hot_list_hour" in unit_times:
+            unit_parameters["fuyao.hot_list_hour"] = {"period": "hour", "limit": 50}
+            out["market"]["hot_list_hour"] = hot
+
+    for unit_id in sorted(requested_units):
+        unit_name = unit_id.split(".", 1)[1]
+        spec = CAPTURE_UNIT_CATALOG[unit_id]
+        if unit_id in unit_times:
+            payload = extract_capture_unit_payload(out, unit_id)
+            attempted = True
+            skip_reason = None
+        else:
+            payload = {"__skipped__": "unit was not requested"}
+            attempted = False
+            if spec.get("context_only") and not include_context:
+                skip_reason = "context is disabled"
+            elif unit_id in unit_skip_reasons:
+                skip_reason = unit_skip_reasons[unit_id]
+            elif unit_capture_stopped:
+                skip_reason = unit_capture_stop_reason or "previous unit failed"
+            else:
+                skip_reason = "unit was not selected by the collector scope"
+            payload["__skipped__"] = skip_reason
+        started, finished = unit_times.get(unit_id, (None, None))
+        source_as_of_date = None
+        source_as_of_date_basis = None
+        if unit_id == "fuyao.auction_final" and isinstance(out.get("auction_snapshot_meta"), dict):
+            auction_meta = out["auction_snapshot_meta"]
+            if auction_meta.get("source_data_date"):
+                source_as_of_date = str(auction_meta["source_data_date"])
+                source_as_of_date_basis = "response.auction_snapshot_meta.source_data_date"
+        unit_evidence[unit_id] = build_capture_unit_evidence(
+            unit_id,
+            payload,
+            collector_started_at=started,
+            collector_finished_at=finished,
+            requested_data_date=td.isoformat(),
+            market_phase=market_phase,
+            collector_invoked=attempted,
+            logical_call_count=unit_logical_calls.get(unit_id, 0),
+            skip_reason=skip_reason,
+            request_parameters=unit_parameters.get(unit_id),
+            source_as_of_date=source_as_of_date,
+            source_as_of_date_basis=source_as_of_date_basis,
+        )
+    if selected_units is None:
+        for unit_id in all_units - requested_units:
+            unit_evidence[unit_id] = build_capture_unit_evidence(
+                unit_id,
+                {"__skipped__": "context is disabled"},
+                collector_started_at=None,
+                collector_finished_at=None,
+                requested_data_date=td.isoformat(),
+                market_phase=market_phase,
+                collector_invoked=False,
+                skip_reason="context is disabled",
+            )
+    out["__capture_units__"] = unit_evidence
     return out
 
 

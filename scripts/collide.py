@@ -98,6 +98,7 @@ from scripts.collision_candidate_methods import (
     _eligible_for_l1,
     _informative_pair,
     _median,
+    _parse_date_value,
     _ratio_step,
     _temporal_candidate,
     classify,
@@ -137,6 +138,7 @@ from scripts.collision_candidate_ranking import (
 from scripts.collision_state import load_state as _load_collision_state
 from scripts.collision_state import save_state as _save_collision_state
 from scripts import collision_reporting as CREP
+from scripts.source_relation_candidates import build_source_relation_review
 
 append_source_coverage_report = CREP.append_source_coverage_report
 append_source_identity_report = CREP.append_source_identity_report
@@ -204,7 +206,7 @@ EXCLUDE_DIRS = set(EXCLUDED_MARKET_DATES)
 # ───────────────────────────────────────────────────────────────────────
 
 
-def collide_pair(L, R, *, contract_anchor=False):
+def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False):
     """Compare fields with per-session sample floors and independent-day gates."""
     left_source = str(L.get("src") or "")
     right_source = str(R.get("src") or "")
@@ -215,6 +217,7 @@ def collide_pair(L, R, *, contract_anchor=False):
         return None
     evidence_gate = independent_sources or contract_anchor
     lv, rv = L["vals"], R["vals"]
+    date_value_pair = bool(L.get("is_date_value_candidate") and R.get("is_date_value_candidate"))
     common = set(lv) & set(rv)
     if len(common) < MIN_PAIR:
         return None
@@ -225,6 +228,25 @@ def collide_pair(L, R, *, contract_anchor=False):
     ratios_by_day = defaultdict(list)
     for key in common:
         a, b = lv[key], rv[key]
+        if date_value_pair:
+            left_date = _parse_date_value(a)
+            right_date = _parse_date_value(b)
+            matched = bool(left_date and right_date and left_date[0] == right_date[0])
+            day_key = key[1]
+            exact_all[day_key][1] += 1
+            l1_eligible = _eligible_for_l1(L, key) and _eligible_for_l1(R, key)
+            informative = _informative_pair(a, b, to_num(a), to_num(b))
+            if l1_eligible:
+                exact_l1[day_key][1] += 1
+                if informative:
+                    informative_l1[day_key][1] += 1
+            if matched:
+                exact_all[day_key][0] += 1
+                if l1_eligible:
+                    exact_l1[day_key][0] += 1
+                    if informative:
+                        informative_l1[day_key][0] += 1
+            continue
         left_num, right_num = to_num(a), to_num(b)
         day_key = key[1]
         exact_all[day_key][1] += 1
@@ -283,9 +305,16 @@ def collide_pair(L, R, *, contract_anchor=False):
 
     # A unit-ratio conclusion needs enough independent non-zero observations on
     # every day; exact hits and undefined 0/0 ratios cannot establish a scale.
-    all_ratios = [
-        ratio for values in ratios_by_day.values() for ratio, l1_eligible in values if l1_eligible
-    ]
+    all_ratios = (
+        []
+        if date_value_pair
+        else [
+            ratio
+            for values in ratios_by_day.values()
+            for ratio, l1_eligible in values
+            if l1_eligible
+        ]
+    )
     ratio_info = None
     ratio_days = {}
     ratio_days_ge = 0
@@ -349,6 +378,21 @@ def collide_pair(L, R, *, contract_anchor=False):
     if contract_anchor and not independent_sources and level in ("L1", "L1-U"):
         level = "L1-C"
 
+    if date_value_pair:
+        match_class = "date_value_correspondence"
+    elif statistical_level == "L1":
+        match_class = "multi_day_exact_match"
+    elif statistical_level == "L1-U":
+        match_class = "stable_unit_ratio"
+    else:
+        match_class = "weak_exact_overlap"
+    if official_contract_anchor:
+        evidence_basis = "official_contract_anchor_and_value_comparison"
+    elif contract_anchor:
+        evidence_basis = "official_contract_anchor_provider_unconfirmed"
+    else:
+        evidence_basis = "independent_cross_source_value_comparison"
+
     if statistical_level == "L1":
         informative_report_days = informative_l1
         n_informative_pairs = sum(
@@ -368,6 +412,12 @@ def collide_pair(L, R, *, contract_anchor=False):
         "right": None,
         "level": level,
         "statistical_level": statistical_level,
+        "match_class": match_class,
+        "evidence_basis": evidence_basis,
+        "adjudication_progress": (
+            "diagnostic_only" if statistical_level == "L4" else "candidate_only"
+        ),
+        "date_value_pair": date_value_pair,
         "ratio": ratio_info if statistical_level == "L1-U" else None,
         "anchor_basis": "official_contract" if contract_anchor else "independent_source",
         "source_independence_confirmed": independent_sources,
@@ -421,6 +471,8 @@ def _semantic_tokens(fid):
 
 def _method_candidate_for_pair(left_id, right_id, L, R):
     """Return a non-final candidate and the reason when no method signal is found."""
+    if L.get("is_date_value_candidate") or R.get("is_date_value_candidate"):
+        return None, "date_value_semantics_review"
     common = sorted(set(L["vals"]) & set(R["vals"]), key=lambda item: (item[1], item[0]))
     if len(common) < MIN_CANDIDATE_PAIRS:
         return None, "insufficient_common_samples"
@@ -619,6 +671,12 @@ def _pair_analysis_eligibility(left, right):
     Unit conversions and affine relationships can place valid fields in disjoint
     numeric ranges, so range separation is diagnostic only.
     """
+    left_is_date = bool(left.get("is_date_value_candidate"))
+    right_is_date = bool(right.get("is_date_value_candidate"))
+    if left_is_date != right_is_date:
+        return False, "date_value_shape_mismatch"
+    if left_is_date and right_is_date:
+        return True, "date_value"
     if left.get("type") != right.get("type"):
         return False, "incompatible_type"
     if left.get("type") != "num":
@@ -628,6 +686,121 @@ def _pair_analysis_eligibility(left, right):
     if left["vmax"] < right["vmin"] or right["vmax"] < left["vmin"]:
         return True, "range_disjoint"
     return True, "eligible"
+
+
+def _build_semantic_review_queues(store, target_exclusions, disproved):
+    """Keep low-information and date-shaped unknown paths visible outside numeric search."""
+    low_information = []
+    date_value_candidates = []
+    for field_id, info in store.items():
+        identity = (alias_src(field_id), code_of(field_id))
+        if identity in target_exclusions or identity in disproved:
+            continue
+        values = info.get("vals", {})
+        metadata = info.get("sample_meta", {})
+        sample_dates = sorted({str(key[1]) for key in values})
+        source_dates = sorted(
+            {
+                str(meta.get("as_of_date"))
+                for meta in metadata.values()
+                if isinstance(meta, dict) and meta.get("as_of_date")
+            }
+        )
+        row_base = {
+            "field": field_id,
+            "source": identity[0],
+            "code": identity[1],
+            "information_state": info.get("information_state", "unknown"),
+            "sample_count": info.get("n_observed", len(values)),
+            "nonblank_sample_count": info.get("n_nonblank", info.get("n", 0)),
+            "missing_or_blank_sample_count": info.get("n_missing_or_blank", 0),
+            "distinct_value_count": info.get("n_distinct", 0),
+            "sample_key_dates": sample_dates,
+            "source_as_of_dates_observed": source_dates,
+        }
+        if info.get("is_low_information"):
+            raw_examples = []
+            for value in values.values():
+                if value is None:
+                    continue
+                rendered = str(value)
+                if rendered not in raw_examples:
+                    raw_examples.append(rendered)
+                if len(raw_examples) >= 5:
+                    break
+            low_information.append(
+                {
+                    **row_base,
+                    "value_examples": raw_examples,
+                    "next_action": "待出现有效变化后重新进入碰撞；当前恒值/恒空不证明字段无意义",
+                }
+            )
+        if info.get("is_date_value_candidate"):
+            date_samples = []
+            for sample_key, value in sorted(
+                values.items(), key=lambda item: (str(item[0][1]), str(item[0][0]))
+            ):
+                parsed = _parse_date_value(value)
+                if parsed is None:
+                    continue
+                sample_meta = metadata.get(sample_key, {})
+                date_samples.append(
+                    {
+                        "security": str(sample_key[0]).split("#event:", 1)[0],
+                        "sample_key_date": str(sample_key[1]),
+                        "source_as_of_date": (
+                            sample_meta.get("as_of_date") if isinstance(sample_meta, dict) else None
+                        ),
+                        "phase": (
+                            sample_meta.get("phase") if isinstance(sample_meta, dict) else None
+                        ),
+                        "raw_value": value,
+                        "normalized_date_value": parsed[0],
+                    }
+                )
+            date_value_candidates.append(
+                {
+                    **row_base,
+                    "date_value_match_count": info.get("date_value_match_count", 0),
+                    "date_value_ratio": info.get("date_value_ratio", 0.0),
+                    "date_value_formats": info.get("date_value_formats", {}),
+                    "normalized_date_examples": info.get("date_value_examples", []),
+                    "date_value_sample_count": len(date_samples),
+                    "date_value_samples": date_samples[:20],
+                    "date_value_samples_truncated": max(0, len(date_samples) - 20),
+                    "next_action": (
+                        "核对官方字段定义与完整采集路径，判定上市日、报告期、披露/事件日、"
+                        "生效日或来源数据日；不得仅凭格式认义"
+                    ),
+                }
+            )
+
+    low_information.sort(
+        key=lambda row: (
+            row["information_state"] not in {"all_missing_or_blank", "constant_zero"},
+            row["sample_count"],
+            row["field"],
+        )
+    )
+    date_value_candidates.sort(
+        key=lambda row: (-row["date_value_match_count"], -row["date_value_ratio"], row["field"])
+    )
+    max_details = 500
+    return {
+        "low_information_fields": low_information[:max_details],
+        "low_information_summary": {
+            "total": len(low_information),
+            "details_retained": min(len(low_information), max_details),
+            "details_truncated": max(0, len(low_information) - max_details),
+            "states": dict(Counter(row["information_state"] for row in low_information)),
+        },
+        "date_value_candidates": date_value_candidates[:max_details],
+        "date_value_summary": {
+            "total": len(date_value_candidates),
+            "details_retained": min(len(date_value_candidates), max_details),
+            "details_truncated": max(0, len(date_value_candidates) - max_details),
+        },
+    }
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -658,6 +831,25 @@ norm_src_of = CRCX.norm_src_of
 
 def alias_src(fid):
     return CRCX.alias_source(fid, _SOURCE_LINEAGE)
+
+
+def repositories_for_runtime_source(source_alias):
+    repositories = []
+    for source_record in _SOURCE_LINEAGE.get("sources", {}).values():
+        if not isinstance(source_record, dict):
+            continue
+        if source_alias not in source_record.get("runtime_aliases", []):
+            continue
+        for repository in source_record.get("repositories", []):
+            if isinstance(repository, dict) and repository.get("url"):
+                repositories.append(
+                    {
+                        "url": repository["url"],
+                        "relation": repository.get("relation"),
+                        "status": repository.get("status"),
+                    }
+                )
+    return repositories
 
 
 def evidence_source_family(fid):
@@ -729,6 +921,8 @@ def mark_exploratory_candidate(result, right_is_anchor):
     result["exploratory"] = True
     if result.get("level") in ("L1", "L1-U"):
         result["level"] = "L4"
+    result["match_class"] = "exploratory_non_anchor_match"
+    result["adjudication_progress"] = "diagnostic_only"
     return True
 
 
@@ -843,6 +1037,20 @@ def run(args):
     diagnostics.extend(registry_context["diagnostics"])
     temporal_policy_summary = TP.apply_store_policies(store)
     diagnostics.extend(temporal_policy_summary["diagnostics"])
+    source_relation_review = build_source_relation_review(
+        store,
+        alias_src,
+        code_of,
+        lambda source: SLA.runtime_family(source, _SOURCE_LINEAGE),
+        _eligible_for_l1,
+        is_close,
+        repositories_for_runtime_source,
+    )
+    diagnostics.append(
+        "来源关系审阅队列: "
+        f"{source_relation_review['source_pair_count']} 组有同完整路径的来源对；"
+        "仅作观测等价/互补线索，不自动认定同源或停采"
+    )
     diagnostics.append(
         "字段时效分类: "
         + ", ".join(
@@ -883,6 +1091,32 @@ def run(args):
         right_ids = safe_right_ids
     else:
         right_ids = []
+    official_contract_anchor_ids = set(official_contract_anchors)
+    right_ids.sort(
+        key=lambda fid: (
+            (alias_src(fid), code_of(fid)) not in official_contract_anchor_ids,
+            alias_src(fid),
+            code_of(fid),
+        )
+    )
+    official_anchor_type_counts = Counter(
+        store[fid].get("type")
+        for fid in right_ids
+        if (alias_src(fid), code_of(fid)) in official_contract_anchor_ids
+    )
+    left_ids.sort(
+        key=lambda fid: (
+            -official_anchor_type_counts.get(store[fid].get("type"), 0),
+            not bool(store[fid].get("is_date_value_candidate")),
+            alias_src(fid),
+            code_of(fid),
+        )
+    )
+    semantic_review_queues = _build_semantic_review_queues(
+        store,
+        target_exclusions,
+        disproved,
+    )
     diagnostics.append(
         f"对撞模式：{'exploratory' if args.exploratory else 'verified_anchor_only'}；"
         f"待破解字段={len(left_ids)}，verified 锚资格字段={len(verified)}，"
@@ -960,9 +1194,17 @@ def run(args):
                 pair_stats_by_left[li]["contract_anchor_pairs"] += 1
             else:
                 pair_stats_by_left[li]["independent_pairs"] += 1
+            right_is_official_contract_anchor = right_identity in official_contract_anchor_ids
+            if right_is_official_contract_anchor:
+                pair_stats_by_left[li]["official_contract_anchor_pairs"] += 1
             if right_is_independent_anchor and right_family is not None:
                 anchor_family_counts_by_left[li][right_family] += 1
-            res = collide_pair(L, R, contract_anchor=right_is_contract_anchor)
+            res = collide_pair(
+                L,
+                R,
+                contract_anchor=right_is_contract_anchor,
+                official_contract_anchor=right_is_official_contract_anchor,
+            )
             if args.exploratory and mark_exploratory_candidate(res, right_is_anchor):
                 exploratory_pair_count += 1
             refuted = CR.match_refuted(li, ri) if RULES_OK else None
@@ -1033,6 +1275,7 @@ def run(args):
                 res["left"] = li
                 res["right"] = ri
                 res["same_code"] = code_of(li) == code_of(ri)
+                res["official_contract_anchor"] = right_is_official_contract_anchor
                 res["evidence_sources"] = sorted(
                     family
                     for family in {evidence_source_family(li), evidence_source_family(ri)}
@@ -1080,6 +1323,26 @@ def run(args):
         sample_by_left,
         anchor_family_counts_by_left,
     )
+    for target in candidate_triage["targets"]:
+        field_id = target["left"]
+        info = store[field_id]
+        target["value_profile"] = {
+            "information_state": info.get("information_state", "unknown"),
+            "is_date_value_candidate": bool(info.get("is_date_value_candidate")),
+            "date_value_ratio": info.get("date_value_ratio", 0.0),
+            "date_value_formats": info.get("date_value_formats", {}),
+            "date_value_examples": info.get("date_value_examples", []),
+        }
+    candidate_triage["low_information_fields"] = semantic_review_queues["low_information_fields"]
+    candidate_triage["low_information_summary"] = semantic_review_queues["low_information_summary"]
+    candidate_triage["date_value_candidates"] = semantic_review_queues["date_value_candidates"]
+    candidate_triage["date_value_summary"] = semantic_review_queues["date_value_summary"]
+    candidate_triage["summary"]["low_information_field_count"] = semantic_review_queues[
+        "low_information_summary"
+    ]["total"]
+    candidate_triage["summary"]["date_value_review_count"] = semantic_review_queues[
+        "date_value_summary"
+    ]["total"]
     approximate_match_evidence.sort(
         key=lambda row: (
             -row["near_hit_rate"],
@@ -1158,8 +1421,65 @@ def run(args):
     for p in raw_pairs:
         if left_count[p["left"]] > HUB_MAX or right_count[p["right"]] > HUB_MAX:
             if p["level"] in ("L1", "L1-U", "L1-C"):
+                p["legacy_level_before_hub"] = p["level"]
                 p["level"] = "L4"
                 p["hub_flag"] = True
+                p["match_class"] = "hub_downgraded_match"
+                p["adjudication_progress"] = "diagnostic_only"
+
+    official_anchor_counts = defaultdict(Counter)
+    for pair in raw_pairs:
+        if not pair.get("official_contract_anchor"):
+            continue
+        counts = official_anchor_counts[pair["left"]]
+        counts["matches"] += 1
+        if pair["level"] in {"L1", "L1-U", "L1-C"}:
+            counts["strong_matches"] += 1
+        else:
+            counts["diagnostic_matches"] += 1
+    for target in candidate_triage["targets"]:
+        field_id = target["left"]
+        pair_counts = target.get("pair_counts", {})
+        anchor_counts = official_anchor_counts[field_id]
+        target["official_contract_anchor_pair_count"] = pair_counts.get(
+            "official_contract_anchor_pairs", 0
+        )
+        target["official_contract_anchor_match_count"] = anchor_counts["strong_matches"]
+        target["official_contract_anchor_diagnostic_count"] = anchor_counts["diagnostic_matches"]
+        if target["official_contract_anchor_match_count"]:
+            target["review_route"] = "official_anchor_match_path_review"
+            target["focus_priority"] = 0
+        elif target["official_contract_anchor_diagnostic_count"]:
+            target["review_route"] = "official_anchor_diagnostic_review"
+            target["focus_priority"] = 1
+        elif target.get("value_profile", {}).get("is_date_value_candidate"):
+            target["review_route"] = "date_semantics_review"
+            target["focus_priority"] = 1
+        elif target["official_contract_anchor_pair_count"]:
+            target["review_route"] = "official_anchor_comparison_review"
+            target["focus_priority"] = 1
+        else:
+            target["review_route"] = "general_field_investigation"
+            target["focus_priority"] = 2
+    candidate_triage["targets"].sort(
+        key=lambda row: (
+            row.get("focus_priority", 2),
+            row.get("priority", 99),
+            -row.get("candidate_count", 0),
+            row.get("left", ""),
+        )
+    )
+    candidate_triage["summary"]["targets_with_official_contract_anchor_matches"] = sum(
+        bool(row.get("official_contract_anchor_match_count")) for row in candidate_triage["targets"]
+    )
+    candidate_triage["summary"]["targets_with_official_contract_anchor_diagnostics"] = sum(
+        bool(row.get("official_contract_anchor_diagnostic_count"))
+        for row in candidate_triage["targets"]
+    )
+    candidate_triage["summary"]["date_value_target_count"] = sum(
+        bool(row.get("value_profile", {}).get("is_date_value_candidate"))
+        for row in candidate_triage["targets"]
+    )
 
     # 7) 增量状态合并
     st = load_state()
@@ -1176,6 +1496,9 @@ def run(args):
             "left": p["left"],
             "right": p["right"],
             "level": p["level"],
+            "match_class": p.get("match_class"),
+            "evidence_basis": p.get("evidence_basis"),
+            "adjudication_progress": p.get("adjudication_progress"),
             "ratio": p["ratio"],
             "overall_hit": p["overall_hit"],
             "n_days": p["n_days"],
@@ -1192,6 +1515,9 @@ def run(args):
         lv = (alias_src(p["left"]), code_of(p["left"]))
         rv = (alias_src(p["right"]), code_of(p["right"]))
         rec["in_registry"] = (lv + rv in known_maps) or (rv + lv in known_maps)
+        if rec["in_registry"]:
+            rec["adjudication_progress"] = "registered_relation_revalidation"
+            p["adjudication_progress"] = "registered_relation_revalidation"
         if prev is None:
             rec["first_seen"] = today
             if rec["in_registry"]:
@@ -1222,7 +1548,15 @@ def run(args):
     actionable_l1 = [p for p in l1 if not p.get("in_registry", False)]
     mapped_pair_revalidations = [p for p in l1 if p.get("in_registry", False)]
     l4 = [p for p in raw_pairs if p["level"] == "L4"]
-    l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
+    l1.sort(
+        key=lambda p: (
+            not p.get("official_contract_anchor"),
+            -p["overall_hit"],
+            -p["n_days"],
+            p["left"],
+            p["right"],
+        )
+    )
     l4.sort(key=lambda p: -p["overall_hit"])
     source_coverage = build_source_coverage_report(
         store,
@@ -1284,6 +1618,12 @@ def run(args):
         "schema_version": 5,
         "date": today,
         "collision_mode": collision_mode,
+        "classification_axes": {
+            "legacy_level_field": "level is retained for schema compatibility and is not a progression ladder",
+            "match_class_values": [value for value, _ in CR.MATCH_CLASSES],
+            "evidence_basis_values": [value for value, _ in CR.EVIDENCE_BASES],
+            "adjudication_progress_values": [value for value, _ in CR.ADJUDICATION_PROGRESS],
+        },
         "anchor_policy": (
             "verified_independent_and_official_contract" if not args.exploratory else "exploratory"
         ),
@@ -1297,6 +1637,7 @@ def run(args):
         "official_contract_anchor_identity_count": len(official_contract_anchors),
         "temporal_policy": temporal_policy_summary,
         "source_coverage": source_coverage,
+        "source_relation_review": source_relation_review,
         "right_field_count": len(right_ids),
         "exploratory_pair_count": exploratory_pair_count,
         "contract_anchor_pair_count": contract_anchor_pair_count,
@@ -1396,6 +1737,9 @@ def run(args):
             rendered, l1, l1_contract, temporal_policy_summary
         )
         rendered = append_source_coverage_report(rendered, report_data.get("source_coverage", []))
+        rendered = CREP.append_source_relation_review_report(
+            rendered, report_data.get("source_relation_review", {})
+        )
         rendered = CAE.append_daily_aggregate_report(rendered, daily_aggregate_evidence)
         rendered = FNC.append_field_name_candidate_report(rendered, name_candidate_report)
         rendered = append_research_state_report(rendered, report_data["research_state"])
@@ -1406,6 +1750,7 @@ def run(args):
             formula_candidates,
             candidate_controls,
         )
+        rendered = CREP.append_field_semantic_review_queues(rendered, candidate_triage)
         rendered = CCR.append_review_summary_report(rendered, candidate_review_summary)
         return append_report_completeness_report(rendered, report_data["report_completeness"])
 

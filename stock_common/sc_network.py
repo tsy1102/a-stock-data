@@ -39,7 +39,6 @@ from typing import (
 from urllib.parse import urlparse
 
 import requests
-import urllib3
 from . import sc_network_limits as _network_limits
 from stock_common._temp import configure_project_temp
 
@@ -66,8 +65,6 @@ try:
     _HAS_FAULT_TOLERANCE = True
 except ImportError:
     _HAS_FAULT_TOLERANCE = False
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ═══════════════════════════════════════
 # 导出接口

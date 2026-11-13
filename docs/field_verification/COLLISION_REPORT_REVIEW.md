@@ -8,7 +8,9 @@
 
 同时核对 `trading_window` 是否为报告要求的最近 N 个交易日，并检查缺采集目录、来源日期、采集阶段、每日样本量、信息配对、来源独立性、来源失败和告警。逐源读取 JSON 的完整 `source_coverage` 并与 Markdown 汇总对照；契约字段数不是实测覆盖数。来源日期和字段时效按 [`temporal_policy.json`](temporal_policy.json) 与 `scripts/temporal_policy.py` 判断。
 
-报告候选审阅不能只看 Markdown Top-N。遍历 JSON 中的完整 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和 `candidate_triage.approximate_matches`。近似命中只用于安排复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。已登记映射的复验与新候选分开记录。
+报告候选审阅不能只看 Markdown Top-N。先按 `candidate_triage.targets` 的 `review_route` 排序：优先检查官方契约锚强匹配，再检查官方锚诊断/无结果、日期业务语义，最后检查一般数值方法线索。官方锚只为来源内语义提供起点；建立跨源映射仍须逐项核路径、单位、日期域、来源独立性和反例。然后按需审阅 JSON 中完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和 `candidate_triage.approximate_matches`。近似命中只用于安排复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。已登记映射的复验与新候选分开记录。
+
+同时检查 `source_relation_review`、`candidate_triage.low_information_fields` 和 `candidate_triage.date_value_candidates`。来源关系只比较完整路径上数据域、来源日期和阶段对齐的样本；两来源可用不同但已确认的日期依据，只要实际来源日期一致。强重叠要求相同样本覆盖、无精确值失配或未对齐样本，且排除恒定低信息路径。舍入窗口命中单独列作近似线索，不计强匹配。该队列用于调查接口重复/互补，不等同提供方身份结论，也不自动停采。低信息字段等到出现有效变化后再进入普通碰撞。日期值队列需把字段值与股票、样本键日期、来源 `as_of_date` 联看，再查官方字段定义，以判定上市日、报告期末、披露/事件日、生效日或其他业务角色。
 
 ## 2. 使用只读查询器
 

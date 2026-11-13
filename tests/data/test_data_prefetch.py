@@ -31,7 +31,7 @@ Mock 策略（对重构免疫）:
         Session（`_HTTP_SESSION` vs `EM_SESSION`），且 Session 层会真实执行
         令牌桶/熔断/封禁跳过，受风控状态影响而**不稳定**。
 
-依赖: pytest（仅 Python API，见 AGENTS.md §2.1.1）。全程离线，无真实网络。
+依赖: pytest（安装见 requirements-dev.txt；执行入口见 tests/README.md）。全程离线，无真实网络。
 """
 
 from __future__ import annotations

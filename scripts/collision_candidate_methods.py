@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import re
 from collections import defaultdict
+from datetime import date
 from typing import Any, Dict, cast
 
 try:
@@ -57,6 +58,8 @@ MAX_FORMULA_CANDIDATES_PER_TARGET = 2
 HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
+DATE_VALUE_MIN_SAMPLES = 3
+DATE_VALUE_MIN_RATIO = 0.8
 
 
 def to_num(v):
@@ -104,6 +107,8 @@ def rounding_near_match_candidate(
     if (
         L.get("type") != "num"
         or R.get("type") != "num"
+        or L.get("is_date_value_candidate")
+        or R.get("is_date_value_candidate")
         or L.get("is_constant")
         or R.get("is_constant")
         or L.get("is_identifier")
@@ -220,20 +225,70 @@ def cv(xs):
 
 
 def classify(store):
-    """为每个字段补充 type / n_distinct / is_constant / is_identifier。"""
+    """Annotate observed variation, low-information state, and date-like values."""
     for fid, info in store.items():
-        vals = [
-            v for v in info["vals"].values() if v is not None and not isinstance(v, (dict, list))
+        raw_values = [
+            value for value in info["vals"].values() if not isinstance(value, (dict, list))
+        ]
+        vals = [value for value in raw_values if value is not None]
+        nonblank_values = [
+            value for value in vals if not (isinstance(value, str) and not value.strip())
         ]
         nums = [to_num(v) for v in vals]
         nums = [n for n in nums if n is not None]
         n_total = len(vals)
         n_num = len(nums)
-        distinct = len(set(vals))
+        value_tokens = set()
+        for value in nonblank_values:
+            parsed_date = _parse_date_value(value)
+            number = to_num(value)
+            if parsed_date is not None:
+                value_tokens.add(("date", parsed_date[0]))
+            elif number is not None and math.isfinite(number):
+                value_tokens.add(("number", number))
+            else:
+                value_tokens.add(("text", str(value).strip()))
+        distinct = len(value_tokens)
+        date_values = []
+        date_formats = defaultdict(int)
+        for value in nonblank_values:
+            parsed = _parse_date_value(value)
+            if parsed is not None:
+                normalized, value_format = parsed
+                date_values.append(normalized)
+                date_formats[value_format] += 1
+        date_value_ratio = len(date_values) / len(nonblank_values) if nonblank_values else 0.0
+        is_date_value_candidate = (
+            len(nonblank_values) >= DATE_VALUE_MIN_SAMPLES
+            and date_value_ratio >= DATE_VALUE_MIN_RATIO
+        )
         info["n"] = n_total
+        info["n_observed"] = len(raw_values)
+        info["n_nonblank"] = len(nonblank_values)
+        info["n_missing_or_blank"] = len(raw_values) - len(nonblank_values)
         info["n_num"] = n_num
         info["n_distinct"] = distinct
-        info["is_constant"] = distinct <= CONST_MAX_DISTINCT and n_total > 0
+        info["is_constant"] = distinct <= CONST_MAX_DISTINCT and bool(nonblank_values)
+        if not raw_values:
+            information_state = "no_observations"
+        elif not nonblank_values:
+            information_state = "all_missing_or_blank"
+        elif info["is_constant"]:
+            only_value = next(iter(value_tokens))
+            information_state = (
+                "constant_zero"
+                if only_value[0] == "number" and only_value[1] == 0
+                else "constant_value"
+            )
+        else:
+            information_state = "variable"
+        info["information_state"] = information_state
+        info["is_low_information"] = information_state != "variable"
+        info["is_date_value_candidate"] = is_date_value_candidate
+        info["date_value_match_count"] = len(date_values)
+        info["date_value_ratio"] = round(date_value_ratio, 6)
+        info["date_value_formats"] = dict(sorted(date_formats.items()))
+        info["date_value_examples"] = sorted(set(date_values))[:8]
         low = fid.lower()
         info["is_identifier"] = any(h in low for h in ID_SUFFIX_HINTS)
         if n_total > 0 and n_num >= 0.8 * n_total:
@@ -242,6 +297,8 @@ def classify(store):
             info["type"] = "enum"
         else:
             info["type"] = "str"
+        if is_date_value_candidate:
+            info["type"] = "date"
         # 值域（用于快速预筛）
         if nums:
             info["vmin"] = min(nums)
@@ -249,6 +306,35 @@ def classify(store):
         else:
             info["vmin"] = None
             info["vmax"] = None
+
+
+def _parse_date_value(value: Any) -> tuple[str, str] | None:
+    """Recognize valid YYYYMMDD / ISO date values without assigning their meaning."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int):
+        text = str(value)
+    elif isinstance(value, float) and math.isfinite(value) and value.is_integer():
+        text = str(int(value))
+    else:
+        text = str(value).strip()
+    if re.fullmatch(r"\d{8}", text):
+        try:
+            parsed = date(int(text[:4]), int(text[4:6]), int(text[6:8]))
+        except ValueError:
+            return None
+        if not 1900 <= parsed.year <= 2100:
+            return None
+        return parsed.isoformat(), "YYYYMMDD"
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        try:
+            parsed = date.fromisoformat(text)
+        except ValueError:
+            return None
+        if not 1900 <= parsed.year <= 2100:
+            return None
+        return parsed.isoformat(), "YYYY-MM-DD"
+    return None
 
 
 def _eligible_for_l1(info, key):
@@ -329,7 +415,11 @@ def _temporal_candidate(common, left_values, right_values):
 def formula_candidates_for_target(left_id, store, input_candidates):
     """Generate conservative two-input formula clues with stock-level holdout."""
     left = store.get(left_id)
-    if not isinstance(left, dict) or left.get("type") != "num":
+    if (
+        not isinstance(left, dict)
+        or left.get("type") != "num"
+        or left.get("is_date_value_candidate")
+    ):
         return [], {"tested": 0, "validated": 0}
 
     input_ids = []
@@ -341,6 +431,7 @@ def formula_candidates_for_target(left_id, store, input_candidates):
             and right_id != left_id
             and isinstance(right, dict)
             and right.get("type") == "num"
+            and not right.get("is_date_value_candidate")
             and right_id not in input_ids
         ):
             input_ids.append(right_id)

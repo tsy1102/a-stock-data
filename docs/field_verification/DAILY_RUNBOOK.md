@@ -4,7 +4,7 @@
 
 ## 日常顺序
 
-1. **确定数据日。** 默认 `data_date` 为最近已完成的 A 股交易日：交易日 15:00 起包含当天，15:00 前取上一个交易日；休市日取最近已完成的交易日。采集目录使用 `docs/field_verification/<data_date>/`，同一数据日复用目录。`capture_date/run_date` 表示运行自然日，逐源 `source_capture_date/source_capture_started_at` 表示实际采集时间，`as_of_date` 表示来源数据日期。日期化 ZHB 包以 `zhb_YYYYMMDD.zip` 文件名作为 ZHB 数据日；它可以不同于项目采集目录日期。样本保留起点和旧数据限制遵守根目录 [`AGENTS.md`](../../AGENTS.md)，不得回补或读取保留起点之前的 raw、ZHB 压缩包或解析缓存。
+1. **确定数据日。** 默认 `data_date` 为最近已完成的 A 股交易日：交易日 15:00 起包含当天，15:00 前取上一个交易日；休市日取最近已完成的交易日。采集目录使用 `docs/field_verification/<data_date>/`，同一数据日复用目录。`capture_date/run_date` 表示运行自然日，逐源 `source_capture_date/source_capture_started_at` 表示实际采集时间，`as_of_date` 表示来源数据日期。日期化 ZHB 包以 `zhb_YYYYMMDD.zip` 文件名作为 ZHB 数据日；它可以不同于项目采集目录日期。保留起点由 [`scripts/capture_retention.py`](../../scripts/capture_retention.py) 的 `MIN_CAPTURE_DATE` 定义；遵守根目录 [`AGENTS.md`](../../AGENTS.md) 的禁止绕过规则，不得回补或读取保留起点之前的 raw、ZHB 压缩包或解析缓存。
 
 2. **运行字段采集。**
 
@@ -12,11 +12,21 @@
 
    需要刷新动态股票池时加 `--refresh-pool`；需要龙虎榜/人气榜等市场上下文时加 `--include-context`，也可用 `--only exchange` 或 `--only em_hot` 单独选择。此命令只采集字段样本，不运行五大报告，也不启动碰撞。采集的日期参数、同日重跑行为和来源清单见 `scripts/README.md`。
 
+   复合来源 `market_sources` 与 `fuyao` 可用 `--only-unit '<unit-id,unit-id>'` 精确补采子接口；成功且质量未退化时只更新所选 raw 路径并保留同源其他路径，失败/空结果或质量退化时保留旧 raw 并记录本次证据，不支持与 `--overwrite` 同用。Fuyao 财务报表按 income/balance/cashflow API 分开，涨停/跌停/炸板池也分别记录；财务指标与 H1 摘要因共用同一接口而合并为一个单元。例：`--date 20261113 --only-unit 'fuyao.income_statements,fuyao.limit_up_pool'`。此入口不运行额外的 AxData 或 Levistock 辅助核验；每日默认采集范围与频率保持不变。
+
 3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json` 中的 `data_date`、运行时间、市场阶段、逐源采集时间、`as_of_date`、ZHB 日期、来源状态、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝。盘前采集上一交易日时，来源日期早于采集自然日仍可能是已收盘样本；以来源级资格和报告诊断为准。
 
    同一数据日重跑默认跳过完整来源，只补采缺失或不完整来源并保留既有成功样本。`--only <source>` 会重新请求指定来源，`--overwrite` 会强制刷新所选范围；重采前备份该来源 raw 和 `meta.json`。旧 `meta.json` 缺少逐源时间时，按 `legacy_global_metadata` 处理，不推断精确请求时刻。需要检查历史来源日期对应关系时运行：
 
        .\scripts\run_with_system_python.ps1 scripts\audit_source_date_mapping.py
+
+   复合接口子单元的覆盖和长期变化证据记在 `meta.json.capture_units`，包括路径/结构和值指纹、响应日期候选、采集器调用时间、逻辑适配器调用数和状态；指纹不复制原始值。此层不观测缓存命中、合并或底层重试，因此逻辑调用数不是实际 HTTP 请求数；适配器也可能把传输失败归一为空结果，`empty` 不证明上游正常返回空数据。用下列只读审计命令汇总保留起点之后的数据日记录：
+
+       .\scripts\run_with_system_python.ps1 scripts\audit_capture_unit_history.py
+
+   审计把请求数据日与来源实际数据日分开；如来源日期未由接口契约或响应字段明确确认，会标作未确认，不将重复请求或同一来源数据日算作独立日期。审计的 catalog 路径出现情况不等于注册表字段全集覆盖；审计结果仅积累证据，不自动降频、停采或退役。后续作此决定前还需核实完整字段覆盖、同日替代关系、独有路径、更新策略、备用源和失败回退行为；判断网络压力或上游空数据时还需要底层 HTTP 请求和状态计数。
+
+   该接口级元数据从修改后的后续采集开始累积。既有归档缺少子接口调用、缓存和错误记录；可另行从保留期 raw 做历史值比较，但不得把推导结果写成真实请求或上游状态。
 
    ZHB 通常在北京时间 08:00 后才更新到最近交易日。08:00 前的默认采集会跳过 ZHB；显式 `--only zhb` 会在发出请求前拒绝执行。08:00 后可用同一数据日单独补采并归并进原目录，例如：
 

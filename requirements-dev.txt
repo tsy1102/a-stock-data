@@ -9,6 +9,7 @@
 # ── 单元测试（V16.3：从 requirements.txt 移入，运行时不再声明）──
 pytest>=7.0
 pytest-asyncio>=0.21
+urllib3>=1.26,<3.0  # 仅供 real_network 测试直接导入
 
 # ── 静态类型检查 ─────────────────────────────────────────
 # Project target is Python 3.11+, so MyPy 2.x is supported; cap the next major until verified.

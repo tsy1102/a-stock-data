@@ -293,7 +293,7 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
 #       -> ZHB (valuation / finance / share / sector)
 #
 # ⚠️ 2026-08-30 校正：上面这段是 V12.6 的**设计意图**，已不是当前实际行为。
-#    实际路由**不读取**下方两个集合做分支，而是由三处决定（详见 AGENTS.md §8.2 注记）：
+#    实际路由**不读取**下方两个集合做分支，而是由三处决定（详见 docs/architecture.md 与 AGENTS.md §4）：
 #      1. _should_use_zhb_for_realtime()       —— 交易时段判定（本文件 :1394）
 #      2. get_canonical_stock_data 内联三态     —— need_realtime_quote（本文件 :365-383）
 #      3. sc_datasource.zhb_field_safe(field)  —— ABCD 新鲜度分级（A=0 / B=1 / C=3 / D=90 天）

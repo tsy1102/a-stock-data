@@ -64,7 +64,7 @@
 .\scripts\run_with_system_python.ps1 main.py --sht 600519 000858 03606 --med 600519 000858
 ```
 
-项目当前的标准启动和测试流程以 Windows PowerShell 为准；跨平台支持尚未作为验证承诺。
+项目当前的标准启动和测试流程使用 Windows 原生 PowerShell 7；跨平台支持尚未作为验证承诺。
 
 ---
 

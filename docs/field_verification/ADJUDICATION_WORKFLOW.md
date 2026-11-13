@@ -9,7 +9,9 @@
 
 ## 跨来源碰撞候选审阅状态（schema 5 起）
 
-schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格及其报告记录的候选方法版本。当前新报告使用 `collision-candidate-v2`：收紧 L1 精确匹配精度，并将展示舍入差异移到独立研究层。历史 `collision-candidate-v1` 报告仍按报告内记录的版本校验和查询；其旧审阅不会附着到 v2 新身份。若候选算法、归一化、精度或样本资格语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
+schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格及其报告记录的候选方法版本。当前新报告使用 `collision-candidate-v3`：保留 v2 的精确匹配和独立近似层，新增日期值候选识别与关系/证据/进度分类轴。历史 `collision-candidate-v1/v2` 报告仍按报告内记录的版本校验和查询；旧审阅不会附着到 v3 新身份。报告另以 `match_class`、`evidence_basis`、`adjudication_progress` 分列值关系、证据来源和处理状态，兼容字段 `level` 不代表晋级顺序。若候选算法、归一化、精度或样本资格语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
+
+新报告先展示通过官方契约核验的锚路径结果，再列日期语义候选和一般数值方法线索。此顺序只安排研究优先级，不降低映射裁决门槛。来源/接口重叠审阅按完整规范路径及来源实际日期对齐，识别可能的重复或互补路由；它不自动证明底层同源，也不自动停用采集。恒空、恒零和当前恒定路径进入低信息队列；样本出现有效变化后再加入普通碰撞。日期值队列需继续核实业务日期角色，不把日期格式本身当作释义。
 
 复制 [`review_templates/candidate_review_template.json`](review_templates/candidate_review_template.json) 后填写决定，先预览，再显式应用：
 
@@ -57,8 +59,8 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 ### 单源实证定案（不要求 L1 或重复数据日）
 
 - 若提供方官方接口/协议明确给出字段释义，且精确采集路径已映射到该官方字段，可直接按来源契约核验；公开财报或官方页面逐值吻合可作为增强证据，不再要求固定股票数、采集日数或第二个报告期。
-- 对需要发行人财报实证的字段，若精确采集路径已与原始响应字段对应，官方财报明确列出待核指标，且同一报告期内全部已采集、具有可比正式报告的样本在报告期、主体口径和单位对齐后均吻合、无反例，可直接记录 E3 来源内定案。样本数不设机械下限；应记录样本全集、未匹配/缺失项、换算公式、精度依据和逐样本误差，并说明证据能区分哪些候选。数值可精确吻合，也可在不同公司/金额量级上稳定贴合唯一官方项目且残差相对很小；后者须保留差值和最大相对误差，不得把未证实的残差归因于舍入。该路径不要求 `actionable_L1`、跨源独立性或另一个报告期；它只确认该来源路径的语义，不写 `mappings`。
-- E3 不限于财务数值。对评级、枚举、日期或其他字段，如果官方接口在原始记录中明确提供字段标签、配套名称/代码/单位，且项目采集路径精确映射到该响应键，可用完整的全部可比留存记录、缺失项说明和官方详情页/公告抽核建立来源内实证；全部可比样本支持同一解释且没有反例时即可定案。记录样本全集、排除理由和观察范围，不外推未观察到的枚举值。不得因为该字段不是财报行项目而误套 L1 多日门槛，也不得把单条页面命中当作完整证据。
+- 对需要发行人财报实证的字段，若精确采集路径已与原始响应字段对应，官方财报明确列出待核指标，且同一报告期内全部已采集、具有可比正式报告的样本在报告期、主体口径和单位对齐后均吻合、无反例，可直接用 `empirical_source_semantics` 定案来源内语义。样本数不设机械下限；应记录样本全集、未匹配/缺失项、换算公式、精度依据和逐样本误差，并说明证据能区分哪些候选。数值可精确吻合，也可在不同公司/金额量级上稳定贴合唯一官方项目且残差相对很小；后者须保留差值和最大相对误差，不得把未证实的残差归因于舍入。该路径不要求 `actionable_L1`、跨源独立性或另一个报告期；它只确认该来源路径的语义，不写 `mappings`。历史注册表中的 E3 是该路径的兼容标记，不是额外晋级步骤。
+- 来源内实证不限于财务数值。对评级、枚举、日期或其他字段，如果官方接口在原始记录中明确提供字段标签、配套名称/代码/单位，且项目采集路径精确映射到该响应键，可用完整的全部可比留存记录、缺失项说明和官方详情页/公告抽核建立来源内实证；全部可比样本支持同一解释且没有反例时即可定案。记录样本全集、排除理由和观察范围，不外推未观察到的枚举值。不得因为该字段不是财报行项目而误套 L1 多日门槛，也不得把单条页面命中当作完整证据。E3 仅为旧记录兼容标记。
 - 对按报告期更新的静态财务项目，同一报告期内的横向样本可以完成语义核验。仅当需要判断跨期变化、日期/刷新规则，或存在仍无法区分的替代解释时，才要求第二个报告期/交易日。记录样本全集、未匹配/缺失项、换算公式、精度依据和逐样本误差；不得只呈现命中样本。
 - 第三方客户端、SDK 或包装仓库的字段表只证明该层文档如何命名字段，不等同底层官方契约。若它的标签与发行人正式财报实测含义冲突，完成路径/解析核对且全部可比正式报告样本吻合后，按实测语义定案，冲突标签留作 `reference_evidence` 或裁决记录；追查标签冲突根因不是阻止语义定案的理由。
 - 若存在不贴合目标项目的反例、字段路径无法追到实际响应值，或有区分力的替代项目同样贴合，继续列明具体缺口；只有具体说明样本不足以区分某个候选时，才因样本覆盖不足暂缓定案。不得用近似筛查窗口本身代替实证。
@@ -80,14 +82,14 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 该决策文件使用顶层 `evidence_basis: "source_contract"`，不填写碰撞报告；不可把它与 L1 候选决定混在同一文件。应用仍以事务方式更新注册表并重生成字段治理文档。
 
-来源内实证 E3 决定（包括财报项目及官方接口带明确标签的评级/枚举字段）使用 [`empirical_source_semantics_template.json`](adjudications/empirical_source_semantics_template.json)，避免把单源释义塞进跨源 L1 候选流程。决策必须引用仓库内证据文件及其 SHA-256；`sample` 逐项报告完整比较数、吻合数、反例数及可选的发行人报告数、排除数和股票数。该工具没有固定样本数门槛，但要求每个已纳入比较的样本均按字段适用的日期、口径、单位与精度规则判定为吻合，且反例为零。已有 E3 定案需要补充新证据、但不改变规范名/含义/单位时，可使用 `append_empirical_source_evidence`；它要求目标已由 E3 验证，保留原 `status_resolution`，并把最新证据写入状态快照，不重新定案、不建立映射。先预览，再显式应用：
+来源内实证决定（包括财报项目及官方接口带明确标签的评级/枚举字段）使用 [`empirical_source_semantics_template.json`](adjudications/empirical_source_semantics_template.json)，避免把单源释义塞进跨源 L1 候选流程。决策必须引用仓库内证据文件及其 SHA-256；`sample` 逐项报告完整比较数、吻合数、反例数及可选的发行人报告数、排除数和股票数。该工具没有固定样本数门槛，但要求每个已纳入比较的样本均按字段适用的日期、口径、单位与精度规则判定为吻合，且反例为零。注册表现有 E3 状态作为历史兼容标记。已验证字段需补充新证据、但不改变规范名/含义/单位时，可使用 `append_empirical_source_evidence`；它要求目标已由该来源内实证流程验证，保留原 `status_resolution`，并把最新证据写入状态快照，不重新定案、不建立映射。先预览，再显式应用：
 
 ```powershell
 .\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_empirical_source_semantics.json
 .\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_empirical_source_semantics.json --apply
 ```
 
-`verify_empirical_source_semantics` 只更新精确 `(source, 完整 code path)` 的来源内含义、单位和证据，不生成跨源 `mappings`。E3 可将 `reference_status_conflict`、`reference_semantic_attribute_conflict` 或 `status_conflict` 收敛为来源内定案，但决策必须记录原状态、元数据及完整的 `previous_attribute_conflicts` 快照；应用器会保留这些旧冲突作为审计证据。`append_empirical_source_evidence` 只允许为已有 E3 定案追加证据并保留原元数据。来源身份仍不明确、来源路径无法映射或已证伪的字段不得借此覆盖。`source_field_addenda` 仍仅用于注册表 parity 所需的基线外字段投影，不是 E3 定案命令。
+`verify_empirical_source_semantics` 只更新精确 `(source, 完整 code path)` 的来源内含义、单位和证据，不生成跨源 `mappings`。该实证流程可将 `reference_status_conflict`、`reference_semantic_attribute_conflict` 或 `status_conflict` 收敛为来源内定案，但决策必须记录原状态、元数据及完整的 `previous_attribute_conflicts` 快照；应用器会保留这些旧冲突作为审计证据。`append_empirical_source_evidence` 只允许为已有来源内定案追加证据并保留原元数据。来源身份仍不明确、来源路径无法映射或已证伪的字段不得借此覆盖。`source_field_addenda` 仍仅用于注册表 parity 所需的基线外字段投影，不是字段定案命令。
 
 ## 官方来源网站的标签与数值核验
 
@@ -132,7 +134,7 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 高命中率但存在少量反例时，不要把整个字段对压成“全部定案”或“全部不定案”两种结论。分别判断并记录：
 
-- **来源内语义**：官方字段契约与项目解析器的精确路径映射，可直接确认该来源字段；对契约标签冲突或需要财报实证的字段，官方报告列项、全部可比采集样本、单位/报告期/主体口径及可区分的替代解释形成闭环后，可按 E3 定案。重复日期、跨源独立性或第二个报告期只有在识别时序语义或排除仍可行的替代假设时才需要。分类体系、层级或口径未证实的部分仍须明确保留未知。使用 `source_contract` 或 `empirical_source_semantics` 决策入口登记，不创建跨源映射。
+- **来源内语义**：官方字段契约与项目解析器的精确路径映射，可直接确认该来源字段；对契约标签冲突或需要财报实证的字段，官方报告列项、全部可比采集样本、单位/报告期/主体口径及可区分的替代解释形成闭环后，按 `empirical_source_semantics` 定案（历史注册表 E3 标记仅作兼容）。重复日期、跨源独立性或第二个报告期只有在识别时序语义或排除仍可行的替代假设时才需要。分类体系、层级或口径未证实的部分仍须明确保留未知。使用 `source_contract` 或 `empirical_source_semantics` 决策入口登记，不创建跨源映射。
 - **跨源关系**：只有双方语义、单位、来源日期和精度对齐后，才能登记逐值同义映射。少数反例若超出已证实的舍入/精度边界，应保留或拒绝这条映射；它本身不自动推翻字段来源内较宽的语义结论。
 - **近似证据**：近似命中率只用于定位线索，不能代替字段定义或直接生成映射。必须逐项核对反例、单位、展示精度和有效日期；不得为了达到命中率而放宽整数或精确匹配阈值。
 

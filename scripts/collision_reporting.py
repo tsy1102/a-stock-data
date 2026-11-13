@@ -67,6 +67,69 @@ def append_source_identity_report(report_md, result):
     return "\n".join(lines) + "\n"
 
 
+def append_source_relation_review_report(markdown: str, review: dict[str, Any]) -> str:
+    """Render measured path overlap without turning it into a provider claim."""
+    rows = review.get("rows", []) if isinstance(review, dict) else []
+    lines = [markdown.rstrip(), "", "## 来源/接口重叠审阅（不自动停采）", ""]
+    lines.append(
+        "此处按**完整规范路径**和来源实际日期对齐比较已采值，单独呈现同家族、不同仓库或血缘未明来源的重叠。"
+        "数值一致只说明观测范围内的路径等价候选，不证明底层提供方相同、字段语义相同或整条路由可删除。"
+        "只有接口字段覆盖、唯一字段、备用关系和复验策略均核实后，才可调整采集路由。"
+    )
+    lines.append(
+        f"来源对 {review.get('source_pair_count', 0)} 组；保留详情 "
+        f"{review.get('source_pair_details_retained', 0)} 组；"
+        f"路径身份歧义 {review.get('ambiguous_path_count', 0)} 项；"
+        "采集自动停用：否。"
+    )
+    lines.extend(
+        [
+            "",
+            "| 来源 A / 仓库 | 来源 B / 仓库 | 血缘关系 | 观测关系 | 共同路径 | 强匹配路径 | 失配路径/失配样本/近似样本/未对齐样本 | A/B 独有路径 | 强匹配完整路径样例 |",
+            "|:--|:--|:--|:--|--:|--:|--:|:--|:--|",
+        ]
+    )
+    for row in rows[:50]:
+        strong_codes = [
+            item.get("code", "")
+            for item in row.get("field_paths", [])
+            if item.get("strong_path_evidence")
+        ]
+        left_repos = (
+            ", ".join(item.get("url", "") for item in row.get("left_repositories", [])[:2]) or "—"
+        )
+        right_repos = (
+            ", ".join(item.get("url", "") for item in row.get("right_repositories", [])[:2]) or "—"
+        )
+        lines.append(
+            f"| `{row.get('left_source', '')}` / {left_repos} | "
+            f"`{row.get('right_source', '')}` / {right_repos} | "
+            f"{row.get('lineage_relation', '')} | {row.get('observed_relation', '')} | "
+            f"{row.get('shared_field_path_count', 0)} | "
+            f"{row.get('strong_matching_field_path_count', 0)} | "
+            f"{row.get('mismatched_field_path_count', 0)}/"
+            f"{row.get('mismatch_sample_count', 0)}/"
+            f"{row.get('rounding_near_match_sample_count', 0)}/"
+            f"{row.get('context_skipped_sample_count', 0)} | "
+            f"{row.get('left_unique_field_path_count', 0)}/{row.get('right_unique_field_path_count', 0)} | "
+            f"{', '.join(f'`{code}`' for code in strong_codes[:3]) or '—'} |"
+        )
+    if len(rows) > 50:
+        lines.append(f"\n_显示前 50 / 共 {len(rows)} 组；完整来源对与路径数据在 JSON。_")
+    if not rows:
+        lines.append("| _没有同完整路径的可比来源对_ | — | — | — | 0 | 0 | 0/0/0/0 | 0/0 | — |")
+    thresholds = review.get("thresholds", {})
+    lines.append(
+        "\n强匹配路径不得有值失配、未对齐样本或低信息常量，并达到每条路径至少 "
+        f"{thresholds.get('minimum_informative_samples_per_field_path', 0)} 个信息样本、"
+        f"{thresholds.get('minimum_distinct_sample_key_dates_per_field_path', 0)} 个不同样本日期、"
+        f"{thresholds.get('minimum_distinct_securities_per_field_path', 0)} 只证券；"
+        "宽松舍入窗口只列为独立近似样本数，不计强匹配；该筛选只产生路由复核候选，"
+        "不取代现有接口专用退出和复验规则。\n"
+    )
+    return "\n".join(lines) + "\n"
+
+
 def append_contract_anchor_candidates(report_md, candidates):
     """Render contract-backed candidates without presenting them as independent-source L1."""
     lines = [
@@ -189,6 +252,8 @@ def append_research_state_report(report_md: str, state_summary: dict) -> str:
 def _l1_row(p):
     return (
         f"| `{p['left']}` | `{p['right']}` | {p['level']} | "
+        f"{p.get('match_class', '—')} | {p.get('evidence_basis', '—')} | "
+        f"{p.get('adjudication_progress', '—')} | "
         f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
         f"{p.get('n_informative_pairs') if p.get('n_informative_pairs') is not None else '—'} | "
         f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
@@ -215,7 +280,10 @@ def append_candidate_triage_report(
         f"- 未知目标 {summary.get('target_count', 0)} 个；其中有方法候选 "
         f"{summary.get('targets_with_method_candidates', 0)} 个、无候选 "
         f"{summary.get('targets_without_method_candidates', 0)} 个；多候选目标 "
-        f"{summary.get('targets_with_multiple_candidates', 0)} 个。"
+        f"{summary.get('targets_with_multiple_candidates', 0)} 个；"
+        f"有官方契约锚强匹配 {summary.get('targets_with_official_contract_anchor_matches', 0)} 个、"
+        f"诊断命中 {summary.get('targets_with_official_contract_anchor_diagnostics', 0)} 个，"
+        f"日期值候选 {summary.get('date_value_target_count', 0)} 个。"
     )
     lines.append(
         f"- 方法候选生成 {summary.get('candidate_pairs_generated', 0)} 条；"
@@ -246,9 +314,9 @@ def append_candidate_triage_report(
     }
     lines.append("\n### 优先处理字段\n")
     lines.append(
-        "| 未知字段 | 当前诊断 | 独立对比/候选数 | 独立锚家族/本源日期 | 建议复核股票 | 最强候选线索 |"
+        "| 未知字段 | 核验入口 | 当前诊断 | 官方锚强/诊断 | 独立对比/候选数 | 独立锚家族/本源日期 | 建议复核股票 | 最强候选线索 |"
     )
-    lines.append("|:--|:--|--:|:--|:--|:--|")
+    lines.append("|:--|:--|:--|--:|--:|:--|:--|:--|")
     for target in targets[:50]:
         coverage = target.get("coverage", {})
         families = coverage.get("independent_anchor_families", [])
@@ -282,8 +350,21 @@ def append_candidate_triage_report(
             else f"{anchor_text} / 本源详情不可用"
         )
         label = status_labels.get(target.get("status"), target.get("status", "未知"))
+        route_labels = {
+            "official_anchor_match_path_review": "官方锚优先核路径",
+            "official_anchor_diagnostic_review": "官方锚诊断待核",
+            "official_anchor_comparison_review": "检查官方锚对撞",
+            "date_semantics_review": "先核日期语义",
+            "general_field_investigation": "常规破解",
+        }
+        route = route_labels.get(target.get("review_route"), target.get("review_route", "常规破解"))
+        official_matches = (
+            f"{target.get('official_contract_anchor_match_count', 0)}/"
+            f"{target.get('official_contract_anchor_diagnostic_count', 0)}"
+        )
         lines.append(
-            f"| `{target.get('left', '')}` | {label} | {comparisons} | "
+            f"| `{target.get('left', '')}` | {route} | {label} | "
+            f"{official_matches} | {comparisons} | "
             f"{coverage_text} | {sample_text} | {evidence_text} |"
         )
     if len(targets) > 50:
@@ -384,6 +465,87 @@ def append_candidate_triage_report(
     return markdown.rstrip() + "\n" + "\n".join(lines) + "\n"
 
 
+def append_field_semantic_review_queues(markdown: str, triage: dict[str, Any]) -> str:
+    """Show fields deferred for low information and fields needing date-role research."""
+    low_rows = triage.get("low_information_fields", [])
+    low_summary = triage.get("low_information_summary", {})
+    date_rows = triage.get("date_value_candidates", [])
+    date_summary = triage.get("date_value_summary", {})
+    lines = [markdown.rstrip(), "", "## 低信息与日期语义专项队列", ""]
+    lines.append(
+        "恒空、恒零或当前恒定字段不参与普通碰撞；状态表示当前样本没有区分力，"
+        "新采样出现有效变化后重新纳入。日期形状只代表值可解析为日期，"
+        "必须查清业务角色，不能拿字段值代替来源 `as_of_date`。"
+    )
+    lines.append(
+        f"低信息未知路径 {low_summary.get('total', len(low_rows))} 项，"
+        f"状态分布 `{low_summary.get('states', {})}`。"
+    )
+    if low_rows:
+        lines.extend(
+            [
+                "",
+                "### 等待新信息的字段",
+                "",
+                "| 完整字段路径 | 状态 | 观测/非空/缺失或空白/不同值 | 样本日期数 | 示例值 |",
+                "|:--|:--|--:|--:|:--|",
+            ]
+        )
+        for row in low_rows[:50]:
+            values = row.get("value_examples", [])
+            counts = (
+                f"{row.get('sample_count', 0)}/"
+                f"{row.get('nonblank_sample_count', 0)}/"
+                f"{row.get('missing_or_blank_sample_count', 0)}/"
+                f"{row.get('distinct_value_count', 0)}"
+            )
+            lines.append(
+                f"| `{row.get('field', '')}` | {row.get('information_state', '')} | "
+                f"{counts} | {len(row.get('sample_key_dates', []))} | "
+                f"{', '.join(f'`{value}`' for value in values[:3]) or '—'} |"
+            )
+        if len(low_rows) > 50:
+            lines.append(f"\n_显示前 50 / 共 {len(low_rows)} 项；完整清单在 JSON。_")
+    else:
+        lines.append("\n_本窗口没有新的低信息未知字段。_")
+
+    lines.append(
+        f"\n日期值候选 {date_summary.get('total', len(date_rows))} 项；"
+        "应先查官方定义和完整路径，再确定上市日、记录更新日、报告期、公告/事件日、"
+        "生效日或来源数据日。"
+    )
+    if date_rows:
+        lines.extend(
+            [
+                "",
+                "### 日期形状字段待核业务含义",
+                "",
+                "| 完整字段路径 | 日期样本比例 | 编码 | 样本键日期数 | 日期值/来源日/样本日/股票样例 |",
+                "|:--|--:|:--|--:|:--|",
+            ]
+        )
+        for row in date_rows[:50]:
+            formats = ", ".join(row.get("date_value_formats", {})) or "—"
+            examples = [
+                (
+                    f"{item.get('normalized_date_value')}"
+                    f"(来源日={item.get('source_as_of_date') or '未知'};"
+                    f"样本日={item.get('sample_key_date')};股票={item.get('security')})"
+                )
+                for item in row.get("date_value_samples", [])[:5]
+            ]
+            lines.append(
+                f"| `{row.get('field', '')}` | {row.get('date_value_ratio', 0):.1%} | "
+                f"{formats} | {len(row.get('sample_key_dates', []))} | "
+                f"{', '.join(examples) or '—'} |"
+            )
+        if len(date_rows) > 50:
+            lines.append(f"\n_显示前 50 / 共 {len(date_rows)} 项；完整清单在 JSON。_")
+    else:
+        lines.append("\n_本窗口没有达到日期值形状筛查门槛的未知字段。_")
+    return "\n".join(lines) + "\n"
+
+
 def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
     """Reconcile complete JSON evidence against intentionally summarized Markdown views."""
     triage = report_data.get("candidate_triage")
@@ -409,6 +571,15 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
             None,
             "完整逐来源契约定义、窗口观察与碰撞参与统计",
         ),
+        "source_relation_review.rows": (
+            (
+                (report_data.get("source_relation_review") or {}).get("rows")
+                if isinstance(report_data.get("source_relation_review"), dict)
+                else None
+            ),
+            50,
+            "完整同路径来源重叠审阅清单；不自动停采",
+        ),
         "guardrail_hits": (
             report_data.get("guardrail_hits"),
             None,
@@ -433,6 +604,16 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
             targets,
             50,
             "逐个未知目标的完整诊断清单；完整清单见 JSON",
+        ),
+        "candidate_triage.low_information_fields": (
+            triage.get("low_information_fields"),
+            50,
+            "恒定/空值未知路径；出现有效变化后重新纳入碰撞",
+        ),
+        "candidate_triage.date_value_candidates": (
+            triage.get("date_value_candidates"),
+            50,
+            "日期形状值的业务含义待核清单",
         ),
         "formula_candidates": (
             report_data.get("formula_candidates"),
@@ -779,9 +960,9 @@ def build_report_md(
     L.append(f"## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
     if cross:
         L.append(
-            "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
+            "| 左字段(unverified) | 右字段 | 兼容代码 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
         )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
+        L.append("|:--|:--|:--|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
         for p in cross:
             L.append(_l1_row(p))
     else:
@@ -789,9 +970,9 @@ def build_report_md(
     L.append(f"\n## 二、L1 / L1-U 新候选 — 同号镜像（同编号，低优先级）({len(same)})\n")
     if same:
         L.append(
-            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
+            "| 左字段 | 右字段 | 兼容代码 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
         )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
+        L.append("|:--|:--|:--|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
         for p in same:
             L.append(_l1_row(p))
     else:
@@ -803,21 +984,22 @@ def build_report_md(
     )
     if revalidations:
         L.append(
-            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
+            "| 左字段 | 右字段 | 兼容代码 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
         )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
+        L.append("|:--|:--|:--|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
         for pair in revalidations:
             L.append(_l1_row(pair))
     else:
         L.append("_本轮没有已登记关系进入复验窗口。_\n")
     L.append("\n## 四、L4 存疑候选（{0}）\n".format(len(l4)))
     if l4:
-        L.append("| 左字段 | 右字段 | 命中率 | 天数 | 样本 |")
-        L.append("|:--|:--|--:|--:|--:|")
+        L.append("| 左字段 | 右字段 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 样本 |")
+        L.append("|:--|:--|:--|:--|:--|--:|--:|--:|")
         for p in l4[:60]:
             L.append(
-                f"| `{p['left']}` | `{p['right']}` | {p['overall_hit']:.2%} | "
-                f"{p['n_days']} | {p['n_pairs']} |"
+                f"| `{p['left']}` | `{p['right']}` | {p.get('match_class', '—')} | "
+                f"{p.get('evidence_basis', '—')} | {p.get('adjudication_progress', '—')} | "
+                f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} |"
             )
         if len(l4) > 60:
             L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")

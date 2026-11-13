@@ -17,7 +17,7 @@
 - 所有 6 个 `002` 报告均在同条记录中带有 `column=002004003`；424 个 `001` 报告均未使用该栏目码。430/430 可比较报告相符，零反例。
 - 另有 13 个不同报告 ID 的 `indvIsNew` 为空，均排除比较并保持缺失语义。16 份 raw 快照中，同一 `infoCode` 的标记值和栏目码没有发生变化。
 
-逐报告样本见 [`20261112_reports_indv_is_new_samples.csv`](20261112_reports_indv_is_new_samples.csv)：SHA-256 `81a0aa8f987dbf7c80b15fb1cfe39d53cc511a5888c82cbe5358ebcd463f3781`。16 份源文件路径、长度和 SHA-256 见 [`20261112_reports_indv_is_new_raw_manifest.csv`](20261112_reports_indv_is_new_raw_manifest.csv)：SHA-256 `bb046c0338c2836cab43662276d67b4a52ec6bdf2cc5bf8ff6b21cb362b2f7af`。
+逐报告样本见 [`20261112_reports_indv_is_new_samples.csv`](20261112_reports_indv_is_new_samples.csv)：SHA-256 `44c32beaf29756cdbcaac8254f508c6d73ca8cdd0bd487e70f7a88f2613af931`。16 份源文件路径、长度和 SHA-256 见 [`20261112_reports_indv_is_new_raw_manifest.csv`](20261112_reports_indv_is_new_raw_manifest.csv)：SHA-256 `a15bf1af0940074a13662e67962743918e801f228f51202d4e93466f0b9f4c5c`。
 
 ## 东方财富官网核对
 

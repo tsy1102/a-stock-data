@@ -547,11 +547,4 @@ def main():
 
 if __name__ == "__main__":
     check_dependencies()
-    # V16.4.0: 首次运行自动检测/修复 UTF-8 环境（幂等——已配置零开销跳过，换电脑自动配置）
-    try:
-        from stock_common.env_setup import ensure_utf8_env
-
-        ensure_utf8_env()
-    except Exception:
-        pass
     main()

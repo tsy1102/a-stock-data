@@ -740,80 +740,29 @@ def collect_exchange(pool: list, deps: CaptureHttpDependencies) -> dict:
 
     直连交易所官方龙虎榜端点(深交所 szse.cn + 上交所 query.sse.com.cn),
     抓取 §12.8.17 登记字段 zqdm/zqjc/cjje/plyy(+原始 cjsl/dqrq/bz) 与 sse_raw(沪市全文),
-    验证 registry「沪深交易所」源字段。复用 dragon_tiger_backup(_eastmoney.py:1155)
-    已验证端点的节流范式: ProxyHandler({}) 直连 + _gen_wait_process_interval 全局节流(A1)。
+    验证 registry「沪深交易所」源字段。与公开备用函数 dragon_tiger_backup 共用端点、TLS、
+    直连和来源级限流实现，并保留采集流程的 _gen_wait_process_interval 全局节流(A1)。
     注: 龙虎榜仅交易日产出; 非交易日(如周六休市)自动回退到最近交易日快照
     (_last_completed_trading_day 取周五, 交易所历史龙虎榜数据可查, 不受周末影响)。
     """
     _last_completed_trading_day = deps.last_completed_trading_day
-    import urllib.request, json, ssl
-    from stock_common import UA
-
     from stock_common.sc_network import _gen_wait_process_interval
+    from stock_common.sc_datasource._eastmoney import _fetch_official_dragon_tiger
 
     trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
+    fetched = _fetch_official_dragon_tiger(trade_date, before_request=_gen_wait_process_interval)
+    records = fetched["szse_rows"]
     out: Dict[str, Any] = {
-        "records": [],
-        "sse_raw": "",
-        "szse_keys": [],
-        "n_szse": 0,
+        "records": records,
+        "sse_raw": fetched["sse_raw"],
+        "szse_keys": fetched["szse_keys"],
+        "n_szse": len(records),
         "trade_date": trade_date,
     }
-    _ctx = ssl._create_unverified_context()
-
-    # 深交所龙虎榜(结构化 JSON: zqdm/zqjc/cjje/plyy/cjsl/dqrq/bz)
-    su = (
-        "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
-        f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
-        f"&txtEnd={trade_date}&random=0.9"
-    )
-    try:
-        _gen_wait_process_interval()
-        req = urllib.request.Request(
-            su,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
-            },
-        )
-        op = urllib.request.build_opener(
-            urllib.request.ProxyHandler({}),
-            urllib.request.HTTPSHandler(context=_ctx),
-        )
-        with op.open(req, timeout=15) as r:
-            d = json.loads(r.read())
-        if isinstance(d, list) and d:
-            rows = d[0].get("data", []) or []
-            out["n_szse"] = len(rows)
-            if rows:
-                out["szse_keys"] = sorted(rows[0].keys())
-                out["records"] = rows
-    except Exception as e:
-        out["__error_szse__"] = str(e)[:200]
-
-    # 上交所龙虎榜(JSONP 全文, 含营业部席位 → sse_raw)
-    eu = (
-        "https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
-        f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}"
-    )
-    try:
-        _gen_wait_process_interval()
-        req = urllib.request.Request(
-            eu,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
-            },
-        )
-        op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with op.open(req, timeout=15) as r:
-            t = r.read().decode("utf-8", "ignore")
-        if "(" in t and ")" in t:
-            d2 = json.loads(t[t.index("(") + 1 : t.rindex(")")])
-            fc = d2.get("fileContents", []) or []
-            out["sse_raw"] = "\n".join(fc)
-    except Exception as e:
-        out["__error_sse__"] = str(e)[:200]
+    if "szse" in fetched["errors"]:
+        out["__error_szse__"] = fetched["errors"]["szse"]
+    if "sse" in fetched["errors"]:
+        out["__error_sse__"] = fetched["errors"]["sse"]
 
     return out
 

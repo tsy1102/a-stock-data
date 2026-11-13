@@ -29,7 +29,7 @@
       "codes": ["000007.SZ", "000011.SZ", "000037.SZ", "000568.SZ", "000678.SZ", "002034.SZ", "002242.SZ", "300031.SZ", "300788.SZ", "301190.SZ", "600309.SH", "600519.SH", "600675.SH", "600825.SH", "688327.SH", "688553.SH", "688589.SH", "920118.BJ", "920508.BJ"],
       "rows": 19,
       "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_general_20260930.json",
-      "sha256": "85C70D4B3B6ED2ADE5D203EC800C89CEE101590E41DA35B1828CF4FC09D7FEE9"
+      "sha256": "21D06BB6777DEBE5C5DBDAC56BFFE2C270CC2312A204BE8C9F3CDD848DC8F024"
     },
     {
       "report": "RPT_F10_FINANCE_BBALANCE",
@@ -38,7 +38,7 @@
       "filter": "SECUCODE=601288.SH",
       "rows": 1,
       "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_bank_20260930.json",
-      "sha256": "79E3269AF4D13579B387E4FEB61D07C0B1558363F44CD73C951502FE8E19870F"
+      "sha256": "50E0F2B33B39826A91DB775BF34ADCC34ED313DDDAA130D8D7796FBB26FB05E6"
     },
     {
       "report": "RPT_F10_FINANCE_BBALANCE",
@@ -47,7 +47,7 @@
       "filter": "SECUCODE=601288.SH",
       "rows": 1,
       "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_bank_20260630.json",
-      "sha256": "68965CF52B37B65A3D26848352CD7AEC4B658CB13CCFC850B8B50764648B82DF"
+      "sha256": "9710B9047E1C6D585BD3DD3D6506A7EDBE6D6131004963448A4D31CA1DF32F5B"
     },
     {
       "report": "RPT_F10_FINANCE_MAINFINADATA",
@@ -58,15 +58,15 @@
       "fields_checked": ["MGWFPLR"],
       "rows": 20,
       "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_main_indicators_20260930.json",
-      "sha256": "1C41593674BAA899A041A40F914AC3C2B7A3E70B48534753E820C46D86847E15"
+      "sha256": "EFA9F782D85491A70CFF437BE4CD7A3952AC4AB9E1635EB730C4257B1D87FFB0"
     }
   ],
   "comparison_file": "docs/field_verification/adjudications/20261113_push2_f190_denominator_samples.csv",
   "comparison_rows": 20,
-  "comparison_sha256": "6A92C5D2C0B2E75AE270894EB5F256F0E82553DC1C8130581A0535B42F6784F8",
+  "comparison_sha256": "E46B2FE6F04E4E4092740F39B856274B2D2634BC9F8CCED6671FD3D5F3B97EFC",
   "history_file": "docs/field_verification/adjudications/20261113_push2_f190_601288_history.csv",
   "history_rows": 11,
-  "history_sha256": "6AF5CB3139D55A0F2FC5D550E0E008E29B4530007C61ACB6215EC28AFA3264E2",
+  "history_sha256": "FFA7D045544368A70377B694D7D81A784C7CF71FB89CB78E9B0D2251C9EC6DCD",
   "results": {
     "f190_times_f84_matches_report_unassign": "19/20",
     "f190_times_f84_plus_bank_dividend_payable_matches": "20/20",

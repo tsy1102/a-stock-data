@@ -7,7 +7,7 @@
 #   .\scripts\run_with_system_python.ps1 get_sht_report.py 600519 --no-upload
 #
 # If execution policy blocks the script, allow this invocation only:
-#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_with_system_python.ps1 ...
+#   pwsh.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_with_system_python.ps1 ...
 # ============================================================================
 
 Set-StrictMode -Version Latest

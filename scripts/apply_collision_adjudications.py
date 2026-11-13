@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
-import hashlib
 import json
 import os
 import re
@@ -79,6 +78,7 @@ from scripts.collision_adjudication_transformations import (
     _mapping_key,
     _refresh_aggregate_projection,
 )
+from scripts.evidence_hash import text_file_sha256_candidates
 
 VALID_ACTIONS = {"verify", "enrich_metadata", "link_verified"}
 EMPIRICAL_RESOLVABLE_CONFLICT_RESOLUTIONS = {
@@ -614,7 +614,8 @@ def apply_source_contract_adjudications(
             decision.get("previous_status"), "decision.previous_status"
         )
         previous_resolution = _non_empty_string(
-            decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+            decision.get("previous_status_resolution"),
+            "decision.previous_status_resolution",
         )
         if action == "verify_source_contract":
             if previous_status not in {"unverified", "candidate", "conflict"}:
@@ -649,7 +650,8 @@ def apply_source_contract_adjudications(
         previous_attribute_conflicts: dict[str, Any] | None = None
         if previous_attribute_conflicts_raw is not None:
             previous_attribute_conflicts = _require_object(
-                previous_attribute_conflicts_raw, "decision.previous_attribute_conflicts"
+                previous_attribute_conflicts_raw,
+                "decision.previous_attribute_conflicts",
             )
             if not previous_attribute_conflicts:
                 raise ValueError("decision.previous_attribute_conflicts must be non-empty")
@@ -725,7 +727,11 @@ def apply_source_contract_adjudications(
             if previous_attribute_conflicts is not None:
                 if prior.get(
                     "resolved_attribute_conflicts"
-                ) != previous_attribute_conflicts or persisted_conflicts not in (None, {}, []):
+                ) != previous_attribute_conflicts or persisted_conflicts not in (
+                    None,
+                    {},
+                    [],
+                ):
                     raise ValueError(
                         f"resolved attribute conflicts changed after decision: {decision_id}"
                     )
@@ -886,7 +892,12 @@ def _validate_empirical_sample(value: Any, label: str = "sample") -> dict[str, A
     normalized = copy.deepcopy(sample)
     normalized["scope"] = scope
     normalized.update(counts)
-    for key in ("official_report_count", "excluded_count", "observation_count", "stock_count"):
+    for key in (
+        "official_report_count",
+        "excluded_count",
+        "observation_count",
+        "stock_count",
+    ):
         if key in normalized and (type(normalized[key]) is not int or normalized[key] < 0):
             raise ValueError(f"{label}.{key} must be a non-negative integer")
     return normalized
@@ -959,8 +970,10 @@ def apply_empirical_source_semantics_adjudications(
     )
     if not evidence_path.is_file():
         raise FileNotFoundError(f"empirical evidence file does not exist: {evidence_relative}")
-    evidence_digest = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-    if decision_document.get("evidence_sha256") != evidence_digest:
+    evidence_digest = decision_document.get("evidence_sha256")
+    if not isinstance(evidence_digest, str) or evidence_digest not in text_file_sha256_candidates(
+        evidence_path
+    ):
         raise ValueError("evidence_sha256 does not match the empirical evidence file")
 
     decisions = decision_document.get("decisions")
@@ -1014,7 +1027,8 @@ def apply_empirical_source_semantics_adjudications(
             decision.get("previous_status"), "decision.previous_status"
         )
         previous_resolution = _non_empty_string(
-            decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+            decision.get("previous_status_resolution"),
+            "decision.previous_status_resolution",
         )
         if previous_status not in {"unverified", "candidate", "verified", "conflict"}:
             raise ValueError("empirical decisions cannot override disproved fields")
@@ -1267,7 +1281,8 @@ def _prepare_derived_relation_decision(
             "derived-relation verification only accepts unverified or candidate fields"
         )
     previous_resolution = _non_empty_string(
-        decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+        decision.get("previous_status_resolution"),
+        "decision.previous_status_resolution",
     )
     previous_metadata = _metadata_snapshot(decision.get("previous"), "decision.previous")
     after_metadata = {
@@ -1284,7 +1299,12 @@ def _prepare_derived_relation_decision(
     if any(marker in rationale.casefold() for marker in ("填写", "占位", "待确认", "待验证")):
         raise ValueError("decision.rationale must replace the template placeholder")
     formula_evidence = dre.validate_derived_relation(
-        decision.get("formula_evidence"), target, by_identity, lineage, VERIFY_DIR, reviewed_on
+        decision.get("formula_evidence"),
+        target,
+        by_identity,
+        lineage,
+        VERIFY_DIR,
+        reviewed_on,
     )
     section = (
         f"derived relation: {formula_evidence['expression']} · {formula_evidence['sample_file']}"

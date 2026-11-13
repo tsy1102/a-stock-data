@@ -4,7 +4,7 @@
   "reviewer": "Codex evidence review",
   "reviewed_on": "2026-11-13",
   "evidence_file": "docs/field_verification/adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-  "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+  "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
   "decisions": [
     {
       "id": "20261113-mid-flow-push2-f144-e3",

@@ -24,7 +24,7 @@ Push2 原始样本来自 [`20261110/raw_push2.json`](../20261110/raw_push2.json)
 - 农业银行资产负债表 `RPT_F10_FINANCE_BBALANCE`，2026-09-30 和 2026-06-30 两个报告期。
 - 20 股主要财务指标 `RPT_F10_FINANCE_MAINFINADATA`，重点字段 `MGWFPLR`。
 
-通用资产负债表未返回农业银行行，故单独按其银行专用资产负债表查询；各 response 行 `REPORT_DATE` 均与筛选报告期一致。请求口径、样本代码、返回条数、文件哈希见 [`20261113_push2_f190_capture_manifest.json`](20261113_push2_f190_capture_manifest.json)。完整 20 股比较 CSV 的 SHA-256：`6A92C5D2C0B2E75AE270894EB5F256F0E82553DC1C8130581A0535B42F6784F8`。
+通用资产负债表未返回农业银行行，故单独按其银行专用资产负债表查询；各 response 行 `REPORT_DATE` 均与筛选报告期一致。请求口径、样本代码、返回条数、文件哈希见 [`20261113_push2_f190_capture_manifest.json`](20261113_push2_f190_capture_manifest.json)。完整 20 股比较 CSV 的 SHA-256：`E46B2FE6F04E4E4092740F39B856274B2D2634BC9F8CCED6671FD3D5F3B97EFC`。
 
 ## 农业银行的报告与时点证据
 

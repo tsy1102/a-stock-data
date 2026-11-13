@@ -85994,7 +85994,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-        "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+        "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
         "sample": {
           "scope": "2026-11-12 保留 TDX finance_info 样本；逐股比较 ipodate 与同一记录的已验证 ipo_date。",
           "comparison_count": 20,
@@ -86016,7 +86016,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "metadata_change": {
             "before": {
               "canonical": "",
@@ -86061,7 +86061,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_tdx_finance_aliases.json",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -92048,7 +92048,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-        "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+        "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
         "sample": {
           "scope": "2026-11-12 保留 TDX finance_info 样本；逐股比较 updateddate 与同一记录的已验证 updated_date。",
           "comparison_count": 20,
@@ -92070,7 +92070,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "metadata_change": {
             "before": {
               "canonical": "",
@@ -92115,7 +92115,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_tdx_finance_aliases.json",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -93528,7 +93528,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-        "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+        "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
         "sample": {
           "scope": "4 家发行人 2026Q3 合并报表营业成本样本；另用 data_date=20261112 的 20 股保留采集确认 TDX finance_info.zhuyinglyrun 等于 ELTDX finance_batch[].zhu_ying_li_run_raw_float×10,000。",
           "comparison_count": 4,
@@ -93551,7 +93551,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "metadata_change": {
             "before": {
               "canonical": "",
@@ -93597,7 +93597,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_tdx_finance_aliases.json",
           "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-          "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+          "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -143649,7 +143649,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261112_reports_indv_is_new_evidence.md",
-        "evidence_sha256": "ed3ee7a342c404005a7b004980e93524f19fe5453bfb29a23d586335e64fd964",
+        "evidence_sha256": "63fe78a9266e24f7b1ac1984d0296f7110546dec273614d1a28df7a15c2e5ae6",
         "sample": {
           "scope": "2026-10-15 至 2026-11-10 的 16 个 docs/field_verification/YYYYMMDD/raw_reports.json；6,051 条重复/非重复观察按 443 个唯一 infoCode 去重；比较同条记录 indvIsNew 与 column，排除 13 个空标记报告。",
           "comparison_count": 430,
@@ -143680,7 +143680,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261112_reports_indv_is_new_evidence.md",
-          "evidence_sha256": "ed3ee7a342c404005a7b004980e93524f19fe5453bfb29a23d586335e64fd964",
+          "evidence_sha256": "63fe78a9266e24f7b1ac1984d0296f7110546dec273614d1a28df7a15c2e5ae6",
           "metadata_change": {
             "before": {
               "canonical": "indvIsNew",
@@ -143726,7 +143726,7 @@
           "reviewed_on": "2026-11-12",
           "decision_file": "adjudications/20261112_reports_indv_is_new.json",
           "evidence_file": "adjudications/20261112_reports_indv_is_new_evidence.md",
-          "evidence_sha256": "ed3ee7a342c404005a7b004980e93524f19fe5453bfb29a23d586335e64fd964",
+          "evidence_sha256": "63fe78a9266e24f7b1ac1984d0296f7110546dec273614d1a28df7a15c2e5ae6",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -157998,7 +157998,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff144` 和 em_fund_flow `ff144` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -158037,7 +158037,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f144",
@@ -158085,7 +158085,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -158160,7 +158160,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff145` 和 em_fund_flow `ff145` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -158199,7 +158199,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f145",
@@ -158247,7 +158247,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -158322,7 +158322,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff146` 和 em_fund_flow `ff146` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -158361,7 +158361,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f146",
@@ -158409,7 +158409,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -161530,7 +161530,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_push2_f190_denominator_evidence.md",
-        "evidence_sha256": "2bd66115492ed7914529293aa0c73afb841b785a21eaa0de8277ef87051b2af3",
+        "evidence_sha256": "458fa924ab38831a70f2f2ff16bc6dc73f184cf9913261ecea618ce90138bac6",
         "sample": {
           "scope": "东财-push2(stock/get)::f190；2026-11-10 收盘、2026-09-30 最新报告期、20 股。分母可区分样本 12 股；f84/f85 相同的 8 股不计入分母裁决。",
           "comparison_count": 12,
@@ -161595,7 +161595,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_push2_f190_denominator_evidence.md",
-          "evidence_sha256": "2bd66115492ed7914529293aa0c73afb841b785a21eaa0de8277ef87051b2af3",
+          "evidence_sha256": "458fa924ab38831a70f2f2ff16bc6dc73f184cf9913261ecea618ce90138bac6",
           "metadata_change": {
             "before": {
               "canonical": "f190",
@@ -161684,7 +161684,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_push2_f190_denominator.json",
           "evidence_file": "adjudications/20261113_push2_f190_denominator_evidence.md",
-          "evidence_sha256": "2bd66115492ed7914529293aa0c73afb841b785a21eaa0de8277ef87051b2af3",
+          "evidence_sha256": "458fa924ab38831a70f2f2ff16bc6dc73f184cf9913261ecea618ce90138bac6",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -181888,7 +181888,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff76` 和 em_fund_flow `ff76` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -181919,7 +181919,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f76",
@@ -181966,7 +181966,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -182038,7 +182038,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff77` 和 em_fund_flow `ff77` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -182069,7 +182069,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f77",
@@ -182116,7 +182116,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -182190,7 +182190,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff78` 和 em_fund_flow `ff78` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -182221,7 +182221,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f78",
@@ -182270,7 +182270,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -185917,7 +185917,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 138,
@@ -185948,7 +185948,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f135",
@@ -185996,7 +185996,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "conflict",
@@ -186070,7 +186070,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 134,
@@ -186101,7 +186101,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f136",
@@ -186150,7 +186150,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "conflict",
@@ -186223,7 +186223,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 140,
@@ -186254,7 +186254,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f137",
@@ -186302,7 +186302,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -186375,7 +186375,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 113,
@@ -186406,7 +186406,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f138",
@@ -186454,7 +186454,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "conflict",
@@ -186527,7 +186527,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 118,
@@ -186558,7 +186558,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f139",
@@ -186606,7 +186606,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "conflict",
@@ -186681,7 +186681,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 140,
@@ -186712,7 +186712,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f140",
@@ -186762,7 +186762,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -186836,7 +186836,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 138,
@@ -186867,7 +186867,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f141",
@@ -186916,7 +186916,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -186989,7 +186989,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 134,
@@ -187020,7 +187020,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f142",
@@ -187068,7 +187068,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187141,7 +187141,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 140,
@@ -187172,7 +187172,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f143",
@@ -187220,7 +187220,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187293,7 +187293,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff144` 和 em_fund_flow `ff144` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -187324,7 +187324,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f144",
@@ -187372,7 +187372,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187445,7 +187445,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff145` 和 em_fund_flow `ff145` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -187476,7 +187476,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f145",
@@ -187524,7 +187524,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187597,7 +187597,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-        "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+        "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff146` 和 em_fund_flow `ff146` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
           "comparison_count": 140,
@@ -187628,7 +187628,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "metadata_change": {
             "before": {
               "canonical": "f146",
@@ -187676,7 +187676,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_eastmoney_mid_flow_semantics.json",
           "evidence_file": "adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
-          "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+          "evidence_sha256": "ca7abd33e3b8e52270dba94c4cbe612319195c901ee3be2d599b1112d023450e",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187749,7 +187749,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 134,
@@ -187780,7 +187780,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f147",
@@ -187828,7 +187828,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -187901,7 +187901,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 140,
@@ -187932,7 +187932,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f148",
@@ -187980,7 +187980,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "verified",
@@ -188053,7 +188053,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-        "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+        "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
         "sample": {
           "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
           "comparison_count": 140,
@@ -188084,7 +188084,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "metadata_change": {
             "before": {
               "canonical": "f149",
@@ -188132,7 +188132,7 @@
           "reviewed_on": "2026-11-13",
           "decision_file": "adjudications/20261113_em_fund_flow_semantics.json",
           "evidence_file": "adjudications/20261113_em_fund_flow_semantics_evidence.md",
-          "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+          "evidence_sha256": "cfa1ff63e2283770dc07d48d0cc5c169d8cbec528cb9463e7720443a569b9a98",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "conflict",

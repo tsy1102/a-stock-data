@@ -8,9 +8,9 @@ verify_data_access.py — 公理 A1 数据访问收口闸门（离线，零网�
 
 目的:
     防止「生产脚本直连原始客户端」违反公理 A1。
-    对应文档规则: AGENTS.md §8.4 统一层与数据访问收口。
+    对应文档规则: AGENTS.md §4 统一层与数据访问收口。
 
-公理 A1 收口模型（AGENTS.md §8.4）:
+公理 A1 收口模型（AGENTS.md §4）:
     统一层 = 两层网关:
       - Tier1 门面  : core/data_provider.get_canonical_stock_data()
       - Tier2 适配器: sc_datasource.get_* / sc_fuyao.get_fuyao_* / tdx_client.tdx_get_*
@@ -175,8 +175,8 @@ def _scan_file(path, rel):
 
 
 def main():
-    # Windows PowerShell 5.1 may expose a GBK console stream; the report uses
-    # Unicode symbols, so reconfigure CLI output when the stream supports it.
+    # A Windows console may expose a legacy code page; the report uses Unicode
+    # symbols, so reconfigure CLI output when the stream supports it.
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")

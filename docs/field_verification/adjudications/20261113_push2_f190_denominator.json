@@ -4,7 +4,7 @@
   "reviewer": "Codex",
   "reviewed_on": "2026-11-13",
   "evidence_file": "docs/field_verification/adjudications/20261113_push2_f190_denominator_evidence.md",
-  "evidence_sha256": "2bd66115492ed7914529293aa0c73afb841b785a21eaa0de8277ef87051b2af3",
+  "evidence_sha256": "458fa924ab38831a70f2f2ff16bc6dc73f184cf9913261ecea618ce90138bac6",
   "decisions": [
     {
       "id": "20261113-push2-f190-total-share-denominator-followup-e3",

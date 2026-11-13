@@ -825,7 +825,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             # V16.3 O19: 0x0010 金额字段单位=角（field_dict §零 O 实测）——/10 得元
             # （此前直接 /1e8 显示亿 → 现金流/净利偏大 10 倍）
             # V17.0.26(2026-09-03): 改用 tdx_client 适配器 tdx_get_finance_info（返回归一化 dict, nan→None），
-            #   不再直连裸 _get_tdx_client().get_finance_info()，符合"统一层收口"规范（见 AGENTS.md §8.3）。
+            #   不再直连裸 _get_tdx_client().get_finance_info()，符合统一层规范（见 AGENTS.md §4）。
             _tdx_ocf = _safe_float(fi.get('jingyingxianjinliu', 0)) / 10.0
             _tdx_np = _safe_float(fi.get('jinglirun', 0)) / 10.0
     except Exception as _e:

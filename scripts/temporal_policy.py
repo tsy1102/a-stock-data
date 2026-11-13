@@ -9,7 +9,6 @@ before their samples can contribute to L1 evidence.
 from __future__ import annotations
 
 import json
-import hashlib
 import math
 import re
 from collections import Counter, defaultdict
@@ -20,6 +19,7 @@ from typing import Any, cast
 
 from scripts import field_registry_api as FRA
 from scripts import source_lineage_api as SLA
+from scripts.evidence_hash import text_file_sha256_candidates
 
 POLICY_PATH = (
     Path(__file__).resolve().parents[1] / "docs" / "field_verification" / "temporal_policy.json"
@@ -401,12 +401,12 @@ def _cross_source_value_witness_index(
                     )
         evidence_path = policy_dir / witness["evidence_file"]
         try:
-            evidence_sha256 = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+            evidence_hash_candidates = text_file_sha256_candidates(evidence_path)
         except OSError as exc:
             raise TemporalPolicyError(
                 f"跨源值日期见证证据文件无法读取: {evidence_path}: {exc}"
             ) from exc
-        if evidence_sha256 != witness["evidence_sha256"]:
+        if witness["evidence_sha256"] not in evidence_hash_candidates:
             raise TemporalPolicyError(f"跨源值日期见证证据哈希变化: {witness['evidence_file']}")
         for target_alias in target_aliases:
             expected_target_code = SLA.normalize_runtime_field_code(target_alias, code)

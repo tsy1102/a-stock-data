@@ -600,7 +600,7 @@ def select_collision_fields(
         for fid, info in store.items()
         if not info["is_identifier"]
         and not info["is_constant"]
-        and info["type"] in ("num", "enum")
+        and info["type"] in ("num", "enum", "date")
         and not is_disproved(fid, disproved, lineage)
     ]
     left = [fid for fid in eligible if not is_verified(fid, verified, lineage)]

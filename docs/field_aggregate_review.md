@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 129 个 code；聚合定义不完整 212 个 code；疑似合并文本 405 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 211 个 code；疑似合并文本 406 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3316,13 +3316,13 @@
 | TDX(双命名源) · `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | 股 | `verified` |
 | 开盘啦(kpl) · `total_shares` | — | — | — | `unverified` |
 
-### `trade_date` — incomplete
+### `trade_date` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `trade_date` | — | — | — | `unverified` |
+| TDX-eltdx(适配层) · `trade_date` | trade_date | 连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期 | 日期 | `verified` |
 | 市场源(market_sources) · `trade_date` | — | — | — | `unverified` |
 | 财联社(cls) · `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | `unverified` |
 
@@ -3544,6 +3544,7 @@
 | TDX-eltdx(适配层) | `status_raw` | status_raw | 成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展 | `verified` |
 | TDX-eltdx(适配层) | `time` | time | 日K时间戳；按上海时区记录，本批样本时间为15:00 | `verified` |
 | TDX-eltdx(适配层) | `tou_zi_shou_yu_raw_float` | tou_zi_shou_yu_raw_float | 投资收益；样本值对应报告期累计金额 | `verified` |
+| TDX-eltdx(适配层) | `trade_date` | trade_date | 连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期 | `verified` |
 | TDX-eltdx(适配层) | `updated_date_raw` | updated_date_raw | 财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
 | TDX-eltdx(适配层) | `volume_wire_value` | volume_wire_value | 协议解码后的成交量值；普通A股单位为股，已验证的可转债品种单位为手 | `verified` |
 | TDX-eltdx(适配层) | `zhu_ying_li_run_raw_float` | zhu_ying_li_run_raw_float | 营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突） | `verified` |

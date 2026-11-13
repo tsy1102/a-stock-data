@@ -382,7 +382,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 71
+    assert len(pairs) == 72
     assert ("TDX(双命名源)", "bid2") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.target_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.previous_trade_date") in pairs

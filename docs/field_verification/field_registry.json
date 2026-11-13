@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 377,
+      "aggregate_status_scope_unresolved": 376,
       "candidate": 1,
       "conflict": 42,
       "disproved": 26,
@@ -29,12 +29,12 @@
       "status_conflict": 36,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1098,
-      "verified": 1449,
+      "unverified": 1097,
+      "verified": 1450,
       "verified_by_empirical_addendum": 147,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 362
+      "verified_by_source_contract": 363
     },
     "updated_at": "2026-11-07"
   },
@@ -37514,17 +37514,21 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "FTShare": "unverified",
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "verified",
         "市场源(market_sources)": "unverified",
         "财联社(cls)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -43534,6 +43538,7 @@
     ],
     "trade_date": [
       "AxData",
+      "TDX-eltdx(适配层)",
       "财联社"
     ],
     "trade_datetime": [
@@ -117325,13 +117330,15 @@
       "code": "trade_date",
       "identity": "TDX-eltdx(适配层)::trade_date",
       "path": "trade_date",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "trade_date",
+      "meaning": "连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期",
+      "unit": "日期",
+      "section": "source contract: ELTDX v3.3.2 官方 Helper API 与字段手册 · src/eltdx/helpers/core.py: HelperApi.limit_ladder, theme_strength_rank, stock_theme_strength_rank#LimitLadderTable.trade_date 取自 ShortlineIndicatorTable.target_trade_date；ThemeStrengthTable.trade_date 继承 ladder.trade_date；FIELD_REFERENCE.md §ShortlineIndicatorTable 定义 target_trade_date 为当前行情对应的目标交易日 @ eltdx==3.3.2（项目 requirements 固定版本；2026-11-14 核验）",
+      "sections": [
+        "source contract: ELTDX v3.3.2 官方 Helper API 与字段手册 · src/eltdx/helpers/core.py: HelperApi.limit_ladder, theme_strength_rank, stock_theme_strength_rank#LimitLadderTable.trade_date 取自 ShortlineIndicatorTable.target_trade_date；ThemeStrengthTable.trade_date 继承 ladder.trade_date；FIELD_REFERENCE.md §ShortlineIndicatorTable 定义 target_trade_date 为当前行情对应的目标交易日 @ eltdx==3.3.2（项目 requirements 固定版本；2026-11-14 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -117343,9 +117350,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-helper-trade-date-target-day"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-helper-trade-date-target-day"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: ELTDX v3.3.2 官方 Helper API 与字段手册 · src/eltdx/helpers/core.py: HelperApi.limit_ladder, theme_strength_rank, stock_theme_strength_rank#LimitLadderTable.trade_date 取自 ShortlineIndicatorTable.target_trade_date；ThemeStrengthTable.trade_date 继承 ladder.trade_date；FIELD_REFERENCE.md §ShortlineIndicatorTable 定义 target_trade_date 为当前行情对应的目标交易日 @ eltdx==3.3.2（项目 requirements 固定版本；2026-11-14 核验）",
+          "canonical": "trade_date",
+          "meaning": "连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期",
+          "unit": "日期",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-helper-trade-date-target-day",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-helper-trade-date-target-day",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 官方 Helper API 与字段手册",
+            "revision": "eltdx==3.3.2（项目 requirements 固定版本；2026-11-14 核验）",
+            "path": "src/eltdx/helpers/core.py: HelperApi.limit_ladder, theme_strength_rank, stock_theme_strength_rank",
+            "locator": "LimitLadderTable.trade_date 取自 ShortlineIndicatorTable.target_trade_date；ThemeStrengthTable.trade_date 继承 ladder.trade_date；FIELD_REFERENCE.md §ShortlineIndicatorTable 定义 target_trade_date 为当前行情对应的目标交易日",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "trade_date",
+              "meaning": "连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期",
+              "unit": "日期"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "trade_date",
@@ -117360,7 +117403,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-helper-trade-date-target-day",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_trade_date_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "trade_date",
+              "meaning": "连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期",
+              "unit": "日期"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 的 Helper 返回类型和赋值链明确：limit_ladder 将 ShortlineIndicatorTable.target_trade_date 写入 LimitLadderTable.trade_date；theme_strength_rank 继承 ladder.trade_date；stock_theme_strength_rank 委托给 theme_strength_rank。项目采集器将三者分别序列化到对应 global_helpers 路径。2026-10-15 起的 18 个保留目标数据日共有 54 条路径观察，全部非空且与目录数据日一致；同日三路径只计一个日期样本。10 个有榜单行的日期共 13 行，其 target_trade_date 均与表级日期一致。ELTDX 未在 source_as_of_dates 中提供独立来源日期，因此样本仅作运行一致性佐证，不冒称来源级 as_of_date。本决定只覆盖 TDX-eltdx(适配层)::trade_date，不影响其他来源同名字段，且不登记跨源映射。逐条审计及 raw/meta 哈希见 docs/field_verification/research/20261114_eltdx_trade_date_samples.csv。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 官方 Helper API 与字段手册",
+            "revision": "eltdx==3.3.2（项目 requirements 固定版本；2026-11-14 核验）",
+            "path": "src/eltdx/helpers/core.py: HelperApi.limit_ladder, theme_strength_rank, stock_theme_strength_rank",
+            "locator": "LimitLadderTable.trade_date 取自 ShortlineIndicatorTable.target_trade_date；ThemeStrengthTable.trade_date 继承 ladder.trade_date；FIELD_REFERENCE.md §ShortlineIndicatorTable 定义 target_trade_date 为当前行情对应的目标交易日",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

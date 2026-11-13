@@ -24,6 +24,59 @@ def test_field_matrix_treats_eltdx_adapter_as_the_same_source_family(monkeypatch
     assert problems == []
 
 
+def test_field_matrix_accepts_a_reviewed_historical_projection_removal(monkeypatch):
+    monkeypatch.setattr(
+        registry_parity.gm,
+        "build_matrix_from_md",
+        lambda: (
+            {
+                "eps_deduct_ttm(f108)": {"同花顺-fuyao"},
+                "eps_ttm(f108)": {"东财-push2(stock/get)"},
+            },
+            2,
+        ),
+    )
+
+    problems = registry_parity.check_field_matrix(
+        {"field_matrix": {"eps_ttm(f108)": ["东财-push2(stock/get)"]}},
+        removals={"eps_deduct_ttm(f108)": {"同花顺-fuyao"}},
+        source_records=[{"source": "东财-push2(stock/get)", "canonical": "eps_ttm(f108)"}],
+    )
+
+    assert problems == []
+
+
+def test_field_matrix_rejects_a_removal_with_an_active_source_field(monkeypatch):
+    monkeypatch.setattr(
+        registry_parity.gm,
+        "build_matrix_from_md",
+        lambda: ({"eps_deduct_ttm(f108)": {"同花顺-fuyao"}}, 1),
+    )
+
+    problems = registry_parity.check_field_matrix(
+        {"field_matrix": {}},
+        removals={"eps_deduct_ttm(f108)": {"同花顺-fuyao"}},
+        source_records=[{"source": "同花顺-fuyao", "canonical": "eps_deduct_ttm(f108)"}],
+    )
+
+    assert any("仍有活动源字段支持" in problem for problem in problems)
+
+
+def test_field_matrix_rejects_a_removal_outside_the_historical_baseline(monkeypatch):
+    monkeypatch.setattr(
+        registry_parity.gm,
+        "build_matrix_from_md",
+        lambda: ({"known.value": {"source-a"}}, 1),
+    )
+
+    problems = registry_parity.check_field_matrix(
+        {"field_matrix": {"known.value": ["source-a"]}},
+        removals={"unknown.value": {"source-b"}},
+    )
+
+    assert any("不在历史基线" in problem for problem in problems)
+
+
 def test_strict_parity_count_target_keeps_missing_pairs_visible():
     expected = {("source-a", "field-a"), ("source-b", "field-b")}
     missing = {("source-a", "field-a")}

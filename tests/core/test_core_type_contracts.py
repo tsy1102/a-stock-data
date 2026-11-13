@@ -86,6 +86,7 @@ def test_sync_state_non_object_json_uses_defaults(
         "consecutive_failures": 0,
         "total_syncs": 0,
         "total_failures": 0,
+        "calendar_cache_invalidation_pending": False,
     }
 
 

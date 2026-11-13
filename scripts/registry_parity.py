@@ -98,9 +98,12 @@ def main(argv=None):
         reg, source_records, base_pairs
     )
     declared_pairs = e3_pairs | contract_pairs | observation_pairs
-    empirical_pairs, empirical_matrix, empirical_problems = (
-        _validated_empirical_source_semantics_adjudications(reg, source_records)
-    )
+    (
+        empirical_pairs,
+        empirical_matrix,
+        empirical_matrix_removals,
+        empirical_problems,
+    ) = _validated_empirical_source_semantics_adjudications(reg, source_records)
     declared_pairs |= empirical_pairs
     source_contract_pairs, source_contract_matrix, source_contract_problems = (
         _validated_source_contract_adjudications(reg, source_records, base_pairs, declared_pairs)
@@ -277,7 +280,12 @@ def main(argv=None):
         print("  aggregate semantics PASS: fields 的定义、状态和歧义标记与 source_fields 一致")
 
     # ---- field_matrix 投影 parity（§零·B 生成一致性，G3 闸门）----
-    fm_problems = check_field_matrix(reg, matrix_addenda)
+    fm_problems = check_field_matrix(
+        reg,
+        matrix_addenda,
+        empirical_matrix_removals,
+        source_records=source_records,
+    )
     print(f"parity[field_matrix]: {'PASS' if not fm_problems else 'FAIL'}")
     for p in fm_problems:
         print("   -", p)
@@ -1352,13 +1360,14 @@ def _validate_adjudication_evidence(
 
 def _validated_empirical_source_semantics_adjudications(
     reg: dict, source_records: list[dict]
-) -> tuple[set[tuple[str, str]], dict[str, set[str]], list[str]]:
+) -> tuple[set[tuple[str, str]], dict[str, set[str]], dict[str, set[str]], list[str]]:
     """Validate active E3 semantics, including legacy Markdown decisions."""
     verification_root = Path(REPO_ROOT, "docs", "field_verification").resolve()
     rows = {(row["source"], row["code"]): row for row in source_records}
     decision_files: dict[str, tuple[Path, dict[str, Any]]] = {}
     declared: set[tuple[str, str]] = set()
     matrix_addenda: dict[str, set[str]] = {}
+    matrix_removals: dict[str, set[str]] = {}
     problems: list[str] = []
     seen_ids: set[str] = set()
 
@@ -1614,8 +1623,19 @@ def _validated_empirical_source_semantics_adjudications(
             continue
         if replayed != reg:
             problems.append(f"E3 决策重放会改动当前 registry: {decision_rel}")
+            continue
+        decisions = document.get("decisions", [])
+        for decision in decisions:
+            if not isinstance(decision, dict):
+                continue
+            for removal in decision.get("matrix_projection_removals", []):
+                if not isinstance(removal, dict):
+                    continue
+                canonical, source = removal.get("canonical"), removal.get("source")
+                if isinstance(canonical, str) and isinstance(source, str):
+                    matrix_removals.setdefault(canonical, set()).add(matrix_source_label(source))
 
-    return declared, matrix_addenda, problems
+    return declared, matrix_addenda, matrix_removals, problems
 
 
 def _validated_capture_path_addenda(
@@ -1855,18 +1875,56 @@ def _safe_repo_path(repo_root: Path, relative_path: str) -> Path | None:
     return candidate
 
 
-def check_field_matrix(reg: dict, addenda: dict | None = None) -> list:
+def check_field_matrix(
+    reg: dict,
+    addenda: dict | None = None,
+    removals: dict | None = None,
+    *,
+    source_records: list[dict] | None = None,
+) -> list:
     """§零·B 投影 parity：registry.field_matrix 须与 gen_field_matrix.build_matrix_from_md 同构。
 
-    field_matrix 必须与只读历史来源文档 field_source_reference.md 解析结果一致。
+    历史投影可按已验证裁决显式增补或删除；删除项须存在于历史基线，且不得有活动源字段支持。
     """
     if "field_matrix" not in reg:
         return ["registry 缺少 field_matrix 投影（请重跑 extract_registry.py）"]
     fm = reg["field_matrix"]
     ns, _ = gm.build_matrix_from_md()
     base_sets = {key: set(value) for key, value in ns.items()}
+    historical_sets = {key: set(value) for key, value in ns.items()}
     for field, sources in (addenda or {}).items():
         base_sets.setdefault(field, set()).update(sources)
+    problems = []
+
+    def normalize_source(source: str) -> str:
+        return "TDX-eltdx" if source == "TDX-eltdx(适配层)" else source
+
+    active_pairs = {
+        (row.get("canonical"), normalize_source(row.get("source", "")))
+        for row in (source_records or [])
+        if isinstance(row, dict)
+    }
+    for field, sources in (removals or {}).items():
+        if not isinstance(field, str) or not field or not isinstance(sources, (set, list, tuple)):
+            problems.append("field_matrix 裁决删除项必须是 canonical -> source 集合")
+            continue
+        for source in sources:
+            if not isinstance(source, str) or not source:
+                problems.append(f"field_matrix 裁决删除项来源无效: {field!r}")
+                continue
+            if source not in historical_sets.get(field, set()):
+                problems.append(f"field_matrix 裁决删除项不在历史基线: {field} <- {source}")
+                continue
+            if (field, normalize_source(source)) in active_pairs:
+                problems.append(f"field_matrix 裁决删除项仍有活动源字段支持: {field} <- {source}")
+                continue
+            current_sources = base_sets.get(field)
+            if current_sources is None or source not in current_sources:
+                problems.append(f"field_matrix 裁决删除项不存在于投影: {field} <- {source}")
+                continue
+            current_sources.remove(source)
+            if not current_sources:
+                del base_sets[field]
     base = {key: sorted(value) for key, value in base_sets.items()}
 
     def normalize_sources(sources: list[str] | set[str]) -> list[str]:
@@ -1877,7 +1935,6 @@ def check_field_matrix(reg: dict, addenda: dict | None = None) -> list:
         }
         return sorted(normalized)
 
-    problems = []
     if set(fm) != set(base):
         problems.append(
             f"field_matrix 字段集 != 基线 {len(fm)} vs {len(base)}; "

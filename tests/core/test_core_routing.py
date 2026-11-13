@@ -274,6 +274,20 @@ class TestCanonicalDataAPI(unittest.TestCase):
         self.assertEqual(d["code"], "600519")
         self.assertIn("price", d)
 
+    def test_push2_eps_ttm_populates_canonical_and_legacy_alias(self):
+        value = 0.206361573
+        with _offline_canonical_sources():
+            with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+                with mock.patch.object(dp, "_PD_EXTRA_CACHE", {}):
+                    with mock.patch(
+                        "stock_common.sc_datasource.get_em_quote_full_delay",
+                        return_value={"eps_ttm": value},
+                    ):
+                        cdata = dp.get_canonical_stock_data("600519")
+
+        self.assertEqual(cdata.eps_ttm, value)
+        self.assertEqual(cdata.eps_deduct_ttm, value)
+
     def test_graceful_circuit_breaker_fallback(self):
         """当 TDX/腾讯/东财全部抛异常时，get_canonical_stock_data 不抛异常并降级为 ZHB。"""
         from unittest.mock import patch

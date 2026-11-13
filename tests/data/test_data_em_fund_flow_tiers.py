@@ -289,5 +289,21 @@ class TestFundFlowRobustness(unittest.TestCase):
         self.assertIsInstance(r, dict)
 
 
+class TestPush2EpsTtmMapping(unittest.TestCase):
+    def test_f108_uses_parent_profit_ttm_name_and_legacy_alias(self):
+        r, m = _call(f108=0.206361573)
+
+        self.assertEqual(r["eps_ttm"], 0.206361573)
+        self.assertEqual(r["eps_deduct_ttm"], r["eps_ttm"])
+        requested_fields = m.call_args.kwargs.get("params", {}).get("fields", "")
+        self.assertIn("f108", requested_fields)
+
+    def test_missing_f108_does_not_create_eps_values(self):
+        r, _ = _call()
+
+        self.assertNotIn("eps_ttm", r)
+        self.assertNotIn("eps_deduct_ttm", r)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -119,10 +119,12 @@ def earnings_quality_lines(cdata: Any) -> List[str]:
     """列示盈利质量字段；期间不一致或缺失时不计算虚假的质量比值。"""
     try:
         eps = _v(cdata, "eps")
-        eps_d = _v(cdata, "eps_deduct_ttm")
+        eps_ttm = _v(cdata, "eps_ttm")
+        if eps_ttm == 0:
+            eps_ttm = _v(cdata, "eps_deduct_ttm")
         roe = _v(cdata, "roe")
         roe_d = _v(cdata, "roe_deduct_ttm")
-        if eps == 0 and eps_d == 0 and roe == 0 and roe_d == 0:
+        if eps == 0 and eps_ttm == 0 and roe == 0 and roe_d == 0:
             return []
         out: List[str] = []
         report_period = _report_period_label(cdata)
@@ -131,12 +133,12 @@ def earnings_quality_lines(cdata: Any) -> List[str]:
             out.append(f"  - 归母EPS(统一层字段)={eps:.2f}元/股（报告期 {report_period}）")
         else:
             out.append("  - 归母EPS(统一层字段)未取到")
-        if eps_d != 0:
-            out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股")
+        if eps_ttm != 0:
+            out.append(f"  - 归母净利润 EPS(TTM)={eps_ttm:.2f}元/股")
         else:
-            out.append("  - 扣非EPS(TTM)未取到")
-        if eps != 0 or eps_d != 0:
-            out.append("  - ℹ️ 归母EPS字段与扣非EPS(TTM)期间未确认一致，不计算占比。")
+            out.append("  - 归母净利润 EPS(TTM)未取到")
+        if eps != 0 or eps_ttm != 0:
+            out.append("  - ℹ️ 报告期 EPS 与 TTM EPS 期间不同，不计算占比。")
         if roe != 0:
             out.append(f"  - ROE(报告期 {report_period})={roe:.1f}%")
         if roe_d != 0:
@@ -275,16 +277,18 @@ def long_term_return_lines(cdata: Any) -> List[str]:
     """长线股东回报质量：未分配利润可持续性 + 业绩连续性。"""
     try:
         udp = _v(cdata, "undist_profit_ps")
-        eps_d = _v(cdata, "eps_deduct_ttm")
-        if udp == 0 and eps_d == 0:
+        eps_ttm = _v(cdata, "eps_ttm")
+        if eps_ttm == 0:
+            eps_ttm = _v(cdata, "eps_deduct_ttm")
+        if udp == 0 and eps_ttm == 0:
             return []
         out: List[str] = []
         out.append("  🏦 **长效股东回报质量**")
         if udp != 0:
             tag = "分红底仓厚实" if udp > 3 else ("分红空间有限" if udp < 1 else "中性")
             out.append(f"  - 每股未分配利润={udp:.2f}元（{tag}，高未分配利润+稳定分红=可持续）")
-        if eps_d != 0:
-            out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股（长线看业绩连续性，扣非口径剔除噪音）")
+        if eps_ttm != 0:
+            out.append(f"  - 归母净利润 EPS(TTM)={eps_ttm:.2f}元/股（滚动12个月口径）")
         return out
     except Exception:
         return []

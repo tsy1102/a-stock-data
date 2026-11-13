@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_CANONICAL_FIELDS = 113
+EXPECTED_CANONICAL_FIELDS = 114
 EXPECTED_ELTDX_FIELDS = 12
 RETIRED_UNCONSUMED_FIELDS = {"avg_price", "bid_ask_net"}
 PRIVATE_CACHE_NAMES = {"_BATCH_QUOTE_CACHE", "_PD_EXTRA_CACHE", "_PD_EXTRA_CACHE_DATE"}
@@ -263,10 +263,10 @@ def main() -> int:
         return 1
 
     print("Canonical contract verification: PASS")
-    print("  - 113 attributes, including 12 ELTDX extensions")
+    print("  - 114 attributes, including 12 ELTDX extensions")
     print(
         "  - "
-        f"{consumer_field_count}/113 fields have report consumers; "
+        f"{consumer_field_count}/114 fields have report consumers; "
         "remaining fields have reviewed compatibility reasons"
     )
     print("  - date/source metadata and trading-calendar routing are explicit")

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 更正 Eastmoney Push2 `stock/get::f108` 的长期错标：三只股票的年报、上年同期三季报和本年三季报复算均支持“归母净利润 TTM ÷ 当前总股本”，不支持扣非 EPS；新增规范字段 `eps_ttm`，旧 `eps_deduct_ttm` 保留为相同数值兼容别名，并清理 Fuyao 的过期矩阵投影。
 - 移除主入口自动写入用户级 `PYTHONUTF8`、PowerShell Profile 和 `CurrentUser ExecutionPolicy` 的启动行为及无调用者修复代码；入口已有进程内 UTF-8 输出设置。
 - 修正深交所龙虎榜采集和东财被封后的深交所备用请求使用未验证 TLS 上下文的问题，改用系统信任库校验证书；移除运行时全局屏蔽 HTTPS 证书警告，并将仅供 real_network 测试直接导入的 urllib3 移入开发依赖。
 - 将深交所/上交所官方龙虎榜端点、直连 opener、TLS 和来源限流合并为一套实现；`dragon_tiger_backup` 保留原公开返回结构作为兼容包装，采集器不再维护重复请求代码。

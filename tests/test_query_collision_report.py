@@ -47,7 +47,10 @@ def _report() -> dict:
         "candidate_triage": {
             "summary": {"target_count": 1},
             "targets": [{"left": "unknown.turnover", "candidate_count": len(candidates)}],
+            "low_information_fields": [],
+            "date_value_candidates": [],
         },
+        "source_relation_review": {"rows": []},
         "formula_candidates": [],
         "diagnostics": [],
     }

@@ -79,8 +79,8 @@
 | **vol_ratio(量比)** | cdata | **腾讯 [49](现用, val 策略07 依赖) → push2 f50(V17.0.4 破解, 20/20 与腾讯同值, 可作等价源)** |
 | **market_type(市场类型)** | get_board_type(code 推算) | **push2 f182(V17.0.4 破解官方枚举: 主板2/创业5/科创32/北交80, 可交叉验证)** |
 | **industry_code_push2(东财板块代码)** | get_em_quote_full | **push2 f198(BKxxxx, 已解析使用)** |
-| **财务 TTM 族(V17.0.7)** | cdata ← _em_quote_full_impl +f103/f104/f105/f108/f109/f160/f190 | ocf_ttm=经营现金流净额(TTM 元)/revenue_ttm=营业总收入(TTM)/net_profit_period=归母净利(最新报告期)/net_profit_annual=归母净利(最新年报)/eps_annual=年报EPS/eps_deduct_ttm=扣非EPS(TTM)/undist_profit_ps=每股未分配——**口径经 fuyao 官方报表 5/5 终判**; 消费: lng 三章现金流双源对照+五章分红池、med 三章双源核验 |
-| **财务 TTM 族兜底链(V17.0.7 层级定案)** | get_canonical_stock_data | **fuyao 三大报表 quarterly 聚合(主源, 同花顺官方 REST 独立风控域+盘后可查) → push2delay f103 族(兜底, 仅补缺失)**: ocf_ttm/revenue_ttm/net_profit_period/net_profit_annual + eps_annual(净利年报÷股本缓存折算); revenue 兜底为营业收入口径差~1.8%需注记; eps_deduct_ttm/undist_profit_ps 无 fuyao 字段仍 push 独有; 进程缓存按(code,report_period); **thsdk(TCP) 盘后关闸 → 定位盘中专属特殊层不进通用链**(用户决策: 运行时段多为盘后) |
+| **财务字段透传** | cdata ← _em_quote_full_impl +f103/f104/f105/f108/f109/f160/f190 | `ocf_ttm`、`revenue_ttm`、`net_profit_period`、`net_profit_annual`、`eps_annual`、`eps_ttm`、`undist_profit_ps`；其中 `f108 → eps_ttm` 是归母净利润 TTM ÷ 当前总股本，不是扣非 EPS。旧 `eps_deduct_ttm` 仅作为相同数值的兼容别名。证据：[2026-11-14 f108 实证](field_verification/adjudications/20261114_push2_f108_eps_ttm_evidence.md)。 |
+| **财务字段回退链** | get_canonical_stock_data | Fuyao 三张报表仍为报告期财务值主源；Push2 `f103` 族仅补缺失值，`eps_ttm` 由 Push2 `f108` 提供。`eps_ttm` 与 Fuyao `basic_eps` 的统计期间和分母口径不同，不映射为同义字段；旧别名 `eps_deduct_ttm` 只为调用兼容保留。 |
 | **FTShare 历史字段（已退役）** | 旧私有托管 MCP；运行时会话客户端已删除 | 15 条旧来源路径及 `raw_ftshare.json` 仅保留作审计和显式历史研究；默认不采集、不碰撞。其底层来源无法从公开材料核实。 |
 | **FTShare REST 契约锚** | `capture_field_probe.py` → `stock_common.sc_ftshare.get_a_share_quote_snapshot` | `ftshare_rest` 每日采集 `A股行情列表` 并输出 `raw_ftshare_rest.json`。官方返回字段定义登记为语义锚并参与默认碰撞；强多日匹配标 `L1-C`，不表示底层来源独立，也不自动定案。 |
 | **Fuyao 官方字段契约** | `capture_field_probe.py` → `stock_common.sc_fuyao` | 逐字段审定的 Fuyao 上游契约证据会列入来源覆盖报告；Fuyao 来源独立性已确认，合格字段按普通独立锚参与 L1/L1-U，不标为 L1-C。 |

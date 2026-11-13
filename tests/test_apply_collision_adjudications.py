@@ -241,7 +241,13 @@ def _prepare_schema5_report(report, review_disposition=None):
             "method_candidate_frontier": [],
             "formula_candidates": [],
             "diagnostics": [],
-            "candidate_triage": {"summary": {"target_count": 0}, "targets": []},
+            "source_relation_review": {"rows": []},
+            "candidate_triage": {
+                "summary": {"target_count": 0},
+                "targets": [],
+                "low_information_fields": [],
+                "date_value_candidates": [],
+            },
         }
     )
     state = candidate_reviews.empty_state()
@@ -1394,6 +1400,41 @@ def test_empirical_source_semantics_accepts_one_complete_sample_and_corrects_met
     assert repeat_stats["already_applied"] == 1
     assert repaired["field_matrix"]["prior_year_profit"] == ["target-source"]
     assert repaired["field_matrix"]["legacy_verified_metric"] == ["target-source"]
+
+
+def test_empirical_source_semantics_removes_explicit_stale_matrix_projection(tmp_path, monkeypatch):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    registry["field_matrix"] = {"eps_deduct_ttm(f108)": ["stale-fuyao"]}
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "canonical": "eps_ttm(f108)",
+            "meaning": "归母净利润 TTM 按总股本折算的每股收益",
+            "unit": "元/股",
+            "matrix_projection_removals": [
+                {"canonical": "eps_deduct_ttm(f108)", "source": "stale-fuyao"}
+            ],
+        }
+    )
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+
+    updated, stats = apply_empirical_source_semantics_adjudications(
+        registry, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    assert stats["empirical_source_semantics_verified"] == 1
+    assert "eps_deduct_ttm(f108)" not in updated["field_matrix"]
+    assert updated["field_matrix"]["eps_ttm(f108)"] == ["target-source"]
+    assert updated["source_fields"][0]["adjudications"][0]["matrix_projection_removals"] == [
+        {"canonical": "eps_deduct_ttm(f108)", "source": "stale-fuyao"}
+    ]
+
+    replayed, replay_stats = apply_empirical_source_semantics_adjudications(
+        updated, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    assert replay_stats["already_applied"] == 1
+    assert replayed["field_matrix"] == updated["field_matrix"]
 
 
 def test_empirical_source_evidence_followup_preserves_verified_metadata(tmp_path, monkeypatch):

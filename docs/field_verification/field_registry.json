@@ -1,13 +1,13 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-13",
+    "updated": "2026-11-14",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 378,
+      "aggregate_status_scope_unresolved": 377,
       "candidate": 1,
       "conflict": 43,
       "disproved": 26,
@@ -29,9 +29,9 @@
       "status_conflict": 37,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1099,
-      "verified": 1443,
-      "verified_by_empirical_addendum": 144,
+      "unverified": 1098,
+      "verified": 1444,
+      "verified_by_empirical_addendum": 145,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 359
@@ -14527,15 +14527,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -41280,9 +41282,6 @@
       "东财-push2(stock/get)",
       "同花顺-fuyao"
     ],
-    "eps_deduct_ttm(f108)": [
-      "同花顺-fuyao"
-    ],
     "eps_raw": [
       "TDX(双命名源)",
       "TDX-eltdx",
@@ -45491,6 +45490,9 @@
     ],
     "ulist239_parent_net_profit_yoy_growth_pct": [
       "东财-ulist239(np/get)"
+    ],
+    "eps_ttm(f108)": [
+      "东财-push2(stock/get)"
     ]
   },
   "mappings": [
@@ -154720,13 +154722,15 @@
       "code": "f108",
       "identity": "东财-push2(stock/get)::f108",
       "path": "f108",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "eps_ttm(f108)",
+      "meaning": "归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。",
+      "unit": "元/股",
+      "section": "Push2 stock/get::f108 归母净利润 EPS(TTM) 实证（2026-11-14）",
+      "sections": [
+        "Push2 stock/get::f108 归母净利润 EPS(TTM) 实证（2026-11-14）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -154737,9 +154741,60 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261114-push2-f108-parent-profit-eps-ttm"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_push2_f108_eps_ttm_evidence.md",
+        "evidence_sha256": "fea2ee6c5c7d01ae66dcd1ce93fa34a91c3cfda6b88162924a8b07b968a667d3",
+        "sample": {
+          "scope": "2026-11-10 21:01:45 收盘采集；raw_push2 中 20 只股票，选取 688553、688327、000678 三只且各有 2025 年报、2025Q3、2026Q3 发行人报告；使用同日 Push2 f84 与 f108。其余 17 只因本次未逐一核验三份报告而排除。",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 9,
+          "excluded_count": 17,
+          "stock_count": 3
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "Push2 stock/get::f108 归母净利润 EPS(TTM) 实证（2026-11-14）",
+          "canonical": "eps_ttm(f108)",
+          "meaning": "归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。",
+          "unit": "元/股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-push2-f108-parent-profit-eps-ttm",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_push2_f108_eps_ttm_evidence.md",
+          "evidence_sha256": "fea2ee6c5c7d01ae66dcd1ce93fa34a91c3cfda6b88162924a8b07b968a667d3",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eps_ttm(f108)",
+              "meaning": "归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。",
+              "unit": "元/股"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-10 21:01:45 收盘采集；raw_push2 中 20 只股票，选取 688553、688327、000678 三只且各有 2025 年报、2025Q3、2026Q3 发行人报告；使用同日 Push2 f84 与 f108。其余 17 只因本次未逐一核验三份报告而排除。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 9,
+            "excluded_count": 17,
+            "stock_count": 3
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f108",
@@ -154753,7 +154808,57 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-push2-f108-parent-profit-eps-ttm",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_push2_f108_eps_ttm.json",
+          "evidence_file": "adjudications/20261114_push2_f108_eps_ttm_evidence.md",
+          "evidence_sha256": "fea2ee6c5c7d01ae66dcd1ce93fa34a91c3cfda6b88162924a8b07b968a667d3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eps_ttm(f108)",
+              "meaning": "归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。",
+              "unit": "元/股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目将 stock/get 原始 data 对象直接保存，f108 没有经采集器重命名或计算；未找到东方财富公开的 f108 代码级字段表，故本决定不冒称官方代码定义。对 2026-11-10 收盘 raw 中三只具有完整发行人年报、2025Q3 和 2026Q3 的股票，用公开报告按上年度全年 + 本年累计 - 上年同期重算，并除以同日已验证总股本 f84。三条普通归母 TTM 结果都在 f108 九位小数的半个显示刻度内；三条扣非 TTM 结果均明显偏离，最小差 0.01068 元/股。样本覆盖正负值和不同量级，反例为零。其余 17 只 raw 股票未逐一核验三份对应发行人报告，明确作为排除样本。只确认精确 Push2 路径，不修改 Ulist239 同编号字段，也不创建跨源 mapping。另移除没有相应 Fuyao 来源字段记录的旧矩阵投影 eps_deduct_ttm(f108) <- 同花顺-fuyao；该来源已有的 basic_eps 是报告期基本每股收益，不能支持此滚动 TTM 扣非映射。",
+          "sample": {
+            "scope": "2026-11-10 21:01:45 收盘采集；raw_push2 中 20 只股票，选取 688553、688327、000678 三只且各有 2025 年报、2025Q3、2026Q3 发行人报告；使用同日 Push2 f84 与 f108。其余 17 只因本次未逐一核验三份报告而排除。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 9,
+            "excluded_count": 17,
+            "stock_count": 3
+          },
+          "matrix_projection_removals": [
+            {
+              "canonical": "eps_deduct_ttm(f108)",
+              "source": "同花顺-fuyao"
+            }
+          ]
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",

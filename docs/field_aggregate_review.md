@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 128 个 code；聚合定义不完整 213 个 code；疑似合并文本 404 条逐源记录。
+> 聚合歧义 129 个 code；聚合定义不完整 212 个 code；疑似合并文本 405 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -939,13 +939,13 @@
 | 东财-push2(stock/get) · `f107` | f107 | 市场标记（布尔 0/1，北交=0） | - | `verified` |
 | 东财-ulist239(np/get) · `f107` | f107 | — | — | `unverified` |
 
-### `f108` — incomplete
+### `f108` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f108` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f108` | f108 | — | — | `unverified` |
 
 ### `f109` — ambiguous
@@ -3671,6 +3671,7 @@
 | 东财-datacenter(英文键) | `SELL_AMT` | BILLBOARD_BUY_AMT / SELL_AMT | 买入/卖出资 | `verified` |
 | 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | `verified` |
 | 东财-push2(stock/get) | `f107` | f107 | 市场标记（布尔 0/1，北交=0） | `verified` |
+| 东财-push2(stock/get) | `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | `verified` |
 | 东财-push2(stock/get) | `f110` | f110 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f118` | f118 | 市场/板块状态标记（≡ ulist:f107） | `verified` |
 | 东财-push2(stock/get) | `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |

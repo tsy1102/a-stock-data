@@ -867,7 +867,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # **进程缓存(当天)**: sht 35 只批量每只 1 次 → 缓存命中免重复
     # **V17.0.7 层级**: 本块降为财务 TTM 族**兜底**——pe_dynamic/fund_* 维持无条件覆盖
     # (push2delay 唯一源), 财务四键仅在 fuyao 未填时补(不再覆盖 fuyao 主源值);
-    # eps_deduct_ttm/undist_profit_ps 无 fuyao 对应, 仍由本块提供(push 独有字段)
+    # eps_ttm/undist_profit_ps 无同口径 Fuyao 字段, 仍由本块提供(push 独有字段)
     if not rt_quote.get("pe_dynamic") or rt_quote.get("fund_main_today") is None:
         _ed = _PD_EXTRA_CACHE.get(code_str)
         if _ed is None:
@@ -923,20 +923,31 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                         field_sources[_mk] = "realtime:push2delay-ulist"
             except Exception as _e2:
                 _debug_log(f"get_canonical_stock_data multiday fallback ({code_str}): {_e2}")
-        # 财务族兜底——仅补缺失(fuyao 主源已填的键不覆盖); eps_deduct_ttm/
+        # 财务族兜底——仅补缺失(fuyao 主源已填的键不覆盖); eps_ttm/
         # undist_profit_ps 为 push 独有, 直接补
         for _fk in (
             "ocf_ttm",
             "revenue_ttm",
             "net_profit_period",
             "net_profit_annual",
-            "eps_deduct_ttm",
             "eps_annual",
             "undist_profit_ps",
         ):
             if not rt_quote.get(_fk) and _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
+        _eps_ttm_source = _ed.get("eps_ttm")
+        if _eps_ttm_source is None or _eps_ttm_source == "":
+            _eps_ttm_source = _ed.get("eps_deduct_ttm")
+        if _eps_ttm_source is not None and _eps_ttm_source != "":
+            if rt_quote.get("eps_ttm") in (None, ""):
+                rt_quote["eps_ttm"] = _eps_ttm_source
+                field_sources["eps_ttm"] = "realtime:push2delay"
+            if rt_quote.get("eps_deduct_ttm") in (None, ""):
+                rt_quote["eps_deduct_ttm"] = rt_quote["eps_ttm"]
+                field_sources["eps_deduct_ttm"] = field_sources.get(
+                    "eps_ttm", "realtime:push2delay"
+                )
 
     # 3. 实时/收盘资金流
     rt_fund: Dict[str, Any] = {}
@@ -1757,6 +1768,20 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     time_anchor_tag = quote_time_anchor(quote_date, collected_at_time)
     collected_at = collected_at_time.isoformat(timespec="seconds")
 
+    eps_ttm_value = next(
+        (
+            value
+            for value in (
+                rt_quote.get("eps_ttm"),
+                em_quote_raw.get("eps_ttm"),
+                rt_quote.get("eps_deduct_ttm"),
+                em_quote_raw.get("eps_deduct_ttm"),
+            )
+            if value is not None and value != ""
+        ),
+        0,
+    )
+
     return CanonicalStockData(
         code=code_str,
         name=name,
@@ -1912,8 +1937,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         fund_main_5d_pct=_safe_float(
             rt_quote.get("fund_main_5d_pct") or em_quote_raw.get("fund_main_5d_pct") or 0
         ),
-        # V17.0.7: 财务 TTM 族(push2 f103-f190, fuyao 官方报表终判口径)——
-        # 从 rt_quote/em_quote_raw 透传(get_em_quote_full* 已解析规范键)
+        # 财务值按完整来源路径各自核验；从 rt_quote/em_quote_raw 透传(get_em_quote_full* 已解析键)
         ocf_ttm=_safe_float(rt_quote.get("ocf_ttm") or em_quote_raw.get("ocf_ttm") or 0),
         revenue_ttm=_safe_float(
             rt_quote.get("revenue_ttm") or em_quote_raw.get("revenue_ttm") or 0
@@ -1925,9 +1949,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             rt_quote.get("net_profit_annual") or em_quote_raw.get("net_profit_annual") or 0
         ),
         eps_annual=_safe_float(rt_quote.get("eps_annual") or em_quote_raw.get("eps_annual") or 0),
-        eps_deduct_ttm=_safe_float(
-            rt_quote.get("eps_deduct_ttm") or em_quote_raw.get("eps_deduct_ttm") or 0
-        ),
+        eps_ttm=_safe_float(eps_ttm_value),
+        eps_deduct_ttm=_safe_float(eps_ttm_value),
         undist_profit_ps=_safe_float(
             rt_quote.get("undist_profit_ps") or em_quote_raw.get("undist_profit_ps") or 0
         ),

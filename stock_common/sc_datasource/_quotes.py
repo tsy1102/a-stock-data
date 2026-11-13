@@ -501,7 +501,8 @@ def _em_quote_full_impl(
             "ocf_ttm": float,           # f103 经营活动现金流量净额 TTM (元)
             "revenue_ttm": float,       # f104 营业总收入 TTM (元)
             "net_profit_period": float, # f105 归母净利润 最新报告期 (元)
-            "eps_deduct_ttm": float,    # f108 扣非每股收益 TTM (元/股)
+            "eps_ttm": float,          # f108 归母净利润 TTM 按总股本折算 (元/股)
+            "eps_deduct_ttm": float,   # deprecated compatibility alias of eps_ttm
             "net_profit_annual": float, # f109 归母净利润 最新年报 (元)
             "eps_annual": float,        # f160 年报EPS (=f109/f84) (元/股)
             "undist_profit_ps": float,  # f190 每股未分配利润 (元/股)
@@ -530,8 +531,8 @@ def _em_quote_full_impl(
             # 导致四档占比之和不足 100%（大盘股缺 ~3%，小盘股缺 ~38%）。
             "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,f149,"
             "f178,"
-            # V17.0.7(2026-08-25 字典终破): 财务 TTM 族——f103 经营现金流净额(TTM 元)/
-            # f104 营业总收入(TTM 元)/f105 归母净利(最新报告期 元)/f108 扣非EPS(TTM)/
+            # 财务字段族：f103 经营现金流净额(TTM 元)/f104 营业总收入(TTM 元)/
+            # f105 归母净利(最新报告期 元)/f108 归母净利润 EPS(TTM)/
             # f109 归母净利(最新年报 元)/f160 年报EPS/f190 每股未分配利润
             "f103,f104,f105,f108,f109,f160,f190"
         ),
@@ -803,14 +804,13 @@ def _em_quote_full_impl(
             except (TypeError, ValueError, json.JSONDecodeError):
                 pass
 
-        # V17.0.7(2026-08-25 字典终破): 财务 TTM 族(单位见键注释; 口径经
-        # fuyao 官方三大报表 5/5 终判 + 报告期切换动态双证——详见
-        # docs/field_verification/20260825_cross_analysis.md)
+        # Push2 财务字段按完整来源路径分别映射；f108 的当前实证见
+        # docs/field_verification/adjudications/20261114_push2_f108_eps_ttm_evidence.md。
         for src, dst in [
             ("f103", "ocf_ttm"),  # 经营活动现金流量净额 TTM (元)
             ("f104", "revenue_ttm"),  # 营业总收入 TTM (元)
             ("f105", "net_profit_period"),  # 归母净利润 最新报告期 (元)
-            ("f108", "eps_deduct_ttm"),  # 扣非每股收益 TTM (元/股)
+            ("f108", "eps_ttm"),  # 归母净利润 TTM ÷ 总股本 (元/股)
             ("f109", "net_profit_annual"),  # 归母净利润 最新年报 (元)
             ("f160", "eps_annual"),  # 年报EPS (=f109/f84) (元/股)
             ("f190", "undist_profit_ps"),  # 每股未分配利润 (元/股, ≡ulist f48)
@@ -821,6 +821,10 @@ def _em_quote_full_impl(
                     result[dst] = float(v)
                 except (TypeError, ValueError):
                     pass
+
+        if "eps_ttm" in result:
+            # Preserve the old public key while correcting its historical mislabel.
+            result["eps_deduct_ttm"] = result["eps_ttm"]
 
         # stock/get 没有返回行情日期字段；本机组装时间不能冒充来源有效日期。
         result["data_date"] = ""

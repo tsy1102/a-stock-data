@@ -1193,7 +1193,12 @@ def test_exploratory_selection_includes_unknowns_but_does_not_promote_matches():
     assert left == ["tdx.unknown", "sina.unknown"]
     assert right == ["tdx.unknown", "sina.unknown"]
     assert collide.mark_exploratory_candidate(result, right_is_anchor=False)
-    assert result == {"level": "L4", "exploratory": True}
+    assert result == {
+        "level": "L4",
+        "exploratory": True,
+        "adjudication_progress": "diagnostic_only",
+        "match_class": "exploratory_non_anchor_match",
+    }
 
 
 def test_verified_anchor_candidate_is_not_downgraded():
@@ -1628,7 +1633,13 @@ def test_report_completeness_reconciles_full_candidate_inventory_and_markdown_ca
         "method_candidate_count": 501,
         "method_candidate_inventory": inventory,
         "method_candidate_frontier": [],
-        "candidate_triage": {"summary": {"target_count": 51}, "targets": targets},
+        "candidate_triage": {
+            "summary": {"target_count": 51},
+            "targets": targets,
+            "low_information_fields": [],
+            "date_value_candidates": [],
+        },
+        "source_relation_review": {"rows": []},
         "formula_candidates": [{} for _ in range(51)],
         "diagnostics": ["warning"] * 101,
         "source_identity_reconciliation": {"status": "ok", "endpoints": {"ep": {}}},
@@ -1740,7 +1751,10 @@ def test_schema5_report_separates_machine_completeness_from_pending_human_review
         "candidate_triage": {
             "summary": {"target_count": 1},
             "targets": [{"left": "unknown.a", "candidate_count": 1}],
+            "low_information_fields": [],
+            "date_value_candidates": [],
         },
+        "source_relation_review": {"rows": []},
         "formula_candidates": [],
         "diagnostics": [],
     }

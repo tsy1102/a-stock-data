@@ -744,14 +744,15 @@ class CanonicalStockData:
         default_factory=tuple
     )  # 近5日主力净流入数组 — push2 f178
 
-    # V17.0.7 财务 TTM 族(push2 f103-f190, 口径经 fuyao 官方三大报表 5/5 终判;
-    # 详见 docs/field_verification/20260825_cross_analysis.md)
+    # Push2 财务字段按完整来源路径分别裁决；f108 的当前实证见
+    # docs/field_verification/adjudications/20261114_push2_f108_eps_ttm_evidence.md。
     ocf_ttm: float = 0.0  # 经营活动现金流量净额 TTM (元) — push2 f103
     revenue_ttm: float = 0.0  # 营业总收入 TTM (元) — push2 f104
     net_profit_period: float = 0.0  # 归母净利润 最新报告期 (元) — push2 f105
     net_profit_annual: float = 0.0  # 归母净利润 最新年报 (元) — push2 f109
     eps_annual: float = 0.0  # 年报EPS =f109/f84 (元/股) — push2 f160
-    eps_deduct_ttm: float = 0.0  # 扣非每股收益 TTM (元/股) — push2 f108
+    eps_ttm: float = 0.0  # 归母净利润 TTM ÷ 总股本 (元/股) — push2 f108
+    eps_deduct_ttm: float = 0.0  # Deprecated alias of eps_ttm; kept for compatibility
     undist_profit_ps: float = 0.0  # 每股未分配利润 (元/股, ≡ulist f48) — push2 f190
 
     # 板块与概念

@@ -942,6 +942,35 @@ def _sync_empirical_field_matrix(
         new_sources.sort()
 
 
+def _remove_stale_field_matrix_projection(
+    registry: dict[str, Any], canonical: str, source: str, *, must_exist: bool
+) -> bool:
+    """Remove one explicitly reviewed projection that has no matching source field."""
+    field_matrix = registry.get("field_matrix")
+    if not isinstance(field_matrix, dict):
+        raise TypeError("registry.field_matrix must be an object")
+    sources = field_matrix.get(canonical)
+    if sources is None:
+        if must_exist:
+            raise ValueError(f"stale field-matrix projection not found: {canonical} <- {source}")
+        return False
+    if not isinstance(sources, list) or any(not isinstance(item, str) for item in sources):
+        raise TypeError(f"registry.field_matrix[{canonical!r}] must be a string list")
+    if source not in sources:
+        if must_exist:
+            raise ValueError(f"stale field-matrix projection not found: {canonical} <- {source}")
+        return False
+    if any(
+        row.get("source") == source and row.get("canonical") == canonical
+        for row in fra.source_field_records(registry)
+    ):
+        raise ValueError(f"cannot remove active field-matrix projection: {canonical} <- {source}")
+    sources.remove(source)
+    if not sources:
+        del field_matrix[canonical]
+    return True
+
+
 def apply_empirical_source_semantics_adjudications(
     registry: dict[str, Any],
     decision_document: dict[str, Any],
@@ -1054,6 +1083,27 @@ def apply_empirical_source_semantics_adjudications(
                 "verified metadata correction requires previous_status_resolution='matched'"
             )
         previous = _metadata_snapshot(decision.get("previous"), "decision.previous")
+        matrix_projection_removals = decision.get("matrix_projection_removals", [])
+        if not isinstance(matrix_projection_removals, list):
+            raise TypeError("decision.matrix_projection_removals must be a list")
+        normalized_matrix_removals: list[dict[str, str]] = []
+        seen_matrix_removals: set[tuple[str, str]] = set()
+        for index, raw_removal in enumerate(matrix_projection_removals):
+            removal = _require_object(raw_removal, f"decision.matrix_projection_removals[{index}]")
+            pair = (
+                _non_empty_string(removal.get("canonical"), "matrix removal canonical"),
+                _non_empty_string(removal.get("source"), "matrix removal source"),
+            )
+            if pair in seen_matrix_removals:
+                raise ValueError(f"duplicate field-matrix projection removal: {pair}")
+            seen_matrix_removals.add(pair)
+            normalized_matrix_removals.append({"canonical": pair[0], "source": pair[1]})
+        if normalized_matrix_removals and (
+            action != "verify_empirical_source_semantics" or evidence_followup
+        ):
+            raise ValueError(
+                "matrix projection removals require a new empirical source-semantics decision"
+            )
         after = {
             "canonical": _non_empty_string(decision.get("canonical"), "decision.canonical"),
             "meaning": _non_empty_string(decision.get("meaning"), "decision.meaning"),
@@ -1089,6 +1139,8 @@ def apply_empirical_source_semantics_adjudications(
             "rationale": rationale,
             "sample": sample,
         }
+        if normalized_matrix_removals:
+            adjudication["matrix_projection_removals"] = copy.deepcopy(normalized_matrix_removals)
         history = row.get("adjudications", [])
         if not isinstance(history, list):
             raise TypeError("source field adjudications must be a list")
@@ -1109,6 +1161,13 @@ def apply_empirical_source_semantics_adjudications(
             _sync_empirical_field_matrix(
                 updated, target[0], previous["canonical"], after["canonical"]
             )
+            for removal in normalized_matrix_removals:
+                _remove_stale_field_matrix_projection(
+                    updated,
+                    removal["canonical"],
+                    removal["source"],
+                    must_exist=False,
+                )
             stats["already_applied"] += 1
             continue
 
@@ -1135,6 +1194,13 @@ def apply_empirical_source_semantics_adjudications(
 
         row.update(after)
         _sync_empirical_field_matrix(updated, target[0], previous["canonical"], after["canonical"])
+        for removal in normalized_matrix_removals:
+            _remove_stale_field_matrix_projection(
+                updated,
+                removal["canonical"],
+                removal["source"],
+                must_exist=True,
+            )
         row["status"] = "verified"
         if not evidence_followup:
             row["status_resolution"] = "verified_by_empirical_addendum"

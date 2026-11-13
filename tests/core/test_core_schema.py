@@ -52,9 +52,9 @@ class TestFieldSpecTable(unittest.TestCase):
         contract_names = {item.name for item in fields(schema.CanonicalStockData)}
         extension_names = {name for name in contract_names if name.startswith("eltdx_")}
 
-        self.assertEqual(len(contract_names), 113, "update schema inventory documentation")
+        self.assertEqual(len(contract_names), 114, "update schema inventory documentation")
         self.assertEqual(len(extension_names), 12, "update ELTDX extension documentation")
-        self.assertEqual(len(contract_names - extension_names), 101)
+        self.assertEqual(len(contract_names - extension_names), 102)
         self.assertNotIn("avg_price", contract_names)
         self.assertNotIn("bid_ask_net", contract_names)
         serialized = schema.CanonicalStockData(code="000001").to_dict()

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_push2_f108_eps_ttm_evidence.md",
+  "evidence_sha256": "fea2ee6c5c7d01ae66dcd1ce93fa34a91c3cfda6b88162924a8b07b968a667d3",
+  "decisions": [
+    {
+      "id": "20261114-push2-f108-parent-profit-eps-ttm",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f108"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eps_ttm(f108)",
+      "meaning": "归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。",
+      "unit": "元/股",
+      "section": "Push2 stock/get::f108 归母净利润 EPS(TTM) 实证（2026-11-14）",
+      "rationale": "项目将 stock/get 原始 data 对象直接保存，f108 没有经采集器重命名或计算；未找到东方财富公开的 f108 代码级字段表，故本决定不冒称官方代码定义。对 2026-11-10 收盘 raw 中三只具有完整发行人年报、2025Q3 和 2026Q3 的股票，用公开报告按上年度全年 + 本年累计 - 上年同期重算，并除以同日已验证总股本 f84。三条普通归母 TTM 结果都在 f108 九位小数的半个显示刻度内；三条扣非 TTM 结果均明显偏离，最小差 0.01068 元/股。样本覆盖正负值和不同量级，反例为零。其余 17 只 raw 股票未逐一核验三份对应发行人报告，明确作为排除样本。只确认精确 Push2 路径，不修改 Ulist239 同编号字段，也不创建跨源 mapping。另移除没有相应 Fuyao 来源字段记录的旧矩阵投影 eps_deduct_ttm(f108) <- 同花顺-fuyao；该来源已有的 basic_eps 是报告期基本每股收益，不能支持此滚动 TTM 扣非映射。",
+      "sample": {
+        "scope": "2026-11-10 21:01:45 收盘采集；raw_push2 中 20 只股票，选取 688553、688327、000678 三只且各有 2025 年报、2025Q3、2026Q3 发行人报告；使用同日 Push2 f84 与 f108。其余 17 只因本次未逐一核验三份报告而排除。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "official_report_count": 9,
+        "excluded_count": 17,
+        "stock_count": 3
+      },
+      "matrix_projection_removals": [
+        {
+          "canonical": "eps_deduct_ttm(f108)",
+          "source": "同花顺-fuyao"
+        }
+      ]
+    }
+  ]
+}

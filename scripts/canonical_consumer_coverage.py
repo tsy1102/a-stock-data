@@ -24,7 +24,7 @@ CANONICAL_CONSUMER_EXEMPTIONS = {
     "data_source": "Reports display per-field field_sources; no current report consumes this aggregate source label.",
     "eltdx_seal_amount": "Reports render normalized ELTDX ratios and board state; the raw seal amount has no report read site.",
     "employee_count": "Long report reads employee count from its ZHB company profile payload, not this Tier 1 field.",
-    "eps_annual": "Current report helpers render eps and eps_deduct_ttm; annual EPS has no report read site.",
+    "eps_annual": "Current report helpers render eps and eps_ttm (with a legacy alias fallback); annual EPS has no report read site.",
     "fund_5d_array": "Current report helpers render selected daily fund-flow amounts; the five-day array has no report read site.",
     "fund_large_today": "Current report helpers read large-order buy and sell amounts separately, not this aggregate.",
     "fund_main_5d": "Current fund-flow section is daily; the five-day aggregate has no report read site.",

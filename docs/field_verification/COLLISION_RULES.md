@@ -1,6 +1,6 @@
 # 对撞数值证据规则与结果类别（运行时规则真相源）
 
-> 本文件由 `scripts/collision_rules.py` 自动派生（`.\scripts\run_with_system_python.ps1 scripts\collision_rules.py --emit`），生成日 2026-11-13。
+> 本文件由 `scripts/collision_rules.py` 自动派生（`.\scripts\run_with_system_python.ps1 scripts\collision_rules.py --emit`），生成日 2026-11-14。
 
 > 对撞脚本运行时自动 `print_active_rules()` 查询本规则；以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。
 

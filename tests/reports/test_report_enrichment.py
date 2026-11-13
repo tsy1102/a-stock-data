@@ -55,6 +55,7 @@ def test_earnings_quality_does_not_infer_from_missing_or_mismatched_periods():
     cdata = SimpleNamespace(
         report_period="20260630",
         eps=0,
+        eps_ttm=0,
         eps_deduct_ttm=0,
         roe=9.92,
         roe_deduct_ttm=12.12,
@@ -63,7 +64,38 @@ def test_earnings_quality_does_not_infer_from_missing_or_mismatched_periods():
     text = "\n".join(earnings_quality_lines(cdata))
 
     assert "归母EPS(统一层字段)未取到" in text
-    assert "扣非EPS(TTM)未取到" in text
+    assert "归母净利润 EPS(TTM)未取到" in text
     assert "ROE(报告期 2026-06-30)=9.9%" in text
     assert "扣非ROE(TTM)=12.1%" in text
     assert "不以差额推断非经常性损益影响" in text
+
+
+def test_earnings_quality_labels_push2_eps_as_parent_profit_ttm():
+    cdata = SimpleNamespace(
+        report_period="20260930",
+        eps=0.17,
+        eps_ttm=0.206361573,
+        eps_deduct_ttm=0.206361573,
+        roe=0,
+        roe_deduct_ttm=0,
+    )
+
+    text = "\n".join(earnings_quality_lines(cdata))
+
+    assert "归母净利润 EPS(TTM)=0.21元/股" in text
+    assert "扣非EPS" not in text
+    assert "报告期 EPS 与 TTM EPS 期间不同" in text
+
+
+def test_earnings_quality_keeps_legacy_eps_alias_readable():
+    cdata = SimpleNamespace(
+        report_period="20260930",
+        eps=0,
+        eps_deduct_ttm=0.75,
+        roe=0,
+        roe_deduct_ttm=0,
+    )
+
+    text = "\n".join(earnings_quality_lines(cdata))
+
+    assert "归母净利润 EPS(TTM)=0.75元/股" in text

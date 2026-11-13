@@ -204,10 +204,12 @@ def runtime_aliases_for_source(source: str, lineage: dict[str, Any]) -> list[str
 def normalize_runtime_field_code(alias: str, code: str) -> str:
     """Remove known runtime-only wrappers while preserving nested field paths.
 
-    ZHB ``full`` is a merged view of ``stat`` and ``stat2``. Its field names
-    correspond to the underlying endpoint code, so ``zhb.full.amount`` maps to
-    registry code ``amount``. The dedicated ``stat``, ``stat2`` and ``tipinfo``
-    paths remain intact. TDX finance and raw quote snapshots wrap protocol
+    ZHB ``full`` is a merged view of ``stat`` and ``stat2``. This normalizer
+    removes the runtime wrapper but cannot establish which branch owns a leaf;
+    callers that need registry identity must resolve the owner against the
+    source-aware registry and reject duplicate ``stat``/``stat2`` leaves. The
+    dedicated ``stat``, ``stat2`` and ``tipinfo`` paths remain intact. TDX
+    finance and raw quote snapshots wrap protocol
     field names in ``finance_info`` and ``quote_raw``; the registry records
     those protocol names directly. The known ``quote_full.bid1_vol``,
     ``quote_full.ask1_vol``, ``quote_full.b_vol`` and ``quote_full.s_vol``
@@ -242,3 +244,26 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
         }
         return kpl_raw_field_codes.get(code, code)
     return code
+
+
+def zhb_full_view_field_code(source: str, code: str) -> str | None:
+    """Return the leaf exposed by ZHB's merged ``full`` snapshot.
+
+    ``full`` combines the ``stat`` and ``stat2`` records. Callers must check
+    that the resulting leaf has a unique registry owner before treating it as
+    the same field identity. Unqualified historical paths remain possible
+    owners; ``tipinfo`` is not part of this merged view.
+    """
+    branch_prefixes = {
+        "ZHB-tdxstat": "stat",
+        "ZHB-tdxstat2": "stat2",
+    }
+    prefix = branch_prefixes.get(source)
+    if prefix is None or not isinstance(code, str) or not code:
+        return None
+    qualified_prefix = f"{prefix}."
+    if code.startswith(qualified_prefix):
+        return code[len(qualified_prefix) :]
+    if "." not in code:
+        return code
+    return None

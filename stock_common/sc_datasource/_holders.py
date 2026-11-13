@@ -802,9 +802,8 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         d1 = r1.json().get("data") or []
         if not d1:
             return []
-        # P0 修复(#440): 键盘查询为模糊搜索, 首条命中不一定是请求 code
-        # (沪市代码可能命中他司, 历史 601360 曾错连合金投资等)。按 stockCode 精确匹配;
-        # 多结果且无精确匹配视为跨公司错连, 返回空; 单结果沿用原 d1[0] 行为(不退步)。
+        # P0 修复(#440): 键盘查询为模糊搜索, 返回结果必须精确匹配请求代码。
+        # 即使只有一个模糊结果也不能沿用, 否则可能把其他公司的问答写进请求股票名下。
         _matched = None
         for _it in d1:
             if str(_it.get("stockCode") or "") == str(code) or str(_it.get("code") or "") == str(
@@ -813,10 +812,12 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
                 _matched = _it
                 break
         if _matched is None:
-            _matched = d1[0] if len(d1) == 1 else None
-        if _matched is None:
+            _debug_log(f"datasource cninfo_irm ({code}): keyword lookup has no exact stock code")
             return []
         org_id = _matched.get("secid")
+        if not org_id:
+            _debug_log(f"datasource cninfo_irm ({code}): exact keyword result has no secid")
+            return []
 
         params = {
             "_t": 1,
@@ -839,6 +840,12 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
 
         out = []
         for it in rows:
+            if str(it.get("stockCode") or "") != str(code):
+                _debug_log(
+                    f"datasource cninfo_irm ({code}): skipped response row for "
+                    f"stockCode={it.get('stockCode')}"
+                )
+                continue
             pd = it.get("pubDate")
             out.append(
                 {

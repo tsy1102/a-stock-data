@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_zhb_kbar_semantics_evidence.md",
+  "evidence_sha256": "f4038eae3ed71b430e4c3952c938620ec50fd24cf3c7a846ed0ec710b912caf4",
+  "decisions": [
+    {
+      "id": "20261112-zhb-stat-change-20k-bar-correction",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_20k_bar"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "stat.change_20k_bar",
+        "meaning": "20分钟K线涨跌",
+        "unit": "-"
+      },
+      "canonical": "stat.change_20k_bar",
+      "meaning": "近20根日K线涨跌幅（含当日，按交易日口径）",
+      "unit": "%",
+      "section": "2026-11-12 ZHB 20/60 根 K 线字段语义更正",
+      "rationale": "项目解析器将 tdxstat.cfg 第[17]列映射到此精确路径，配套测试核验列号；公开协议解析资料将该列解释为含当日的近20根K线涨跌幅，并与截至前一交易日的相邻字段区分。该资料不是通达信官方字段字典，故只作独立语义佐证。2026-10-15至2026-11-10全部17个保留目录、20只股票的full/stat配对共340条完全相同，stat2同名值均为空，确认合并叶字段唯一回连至本路径。原注册表“20分钟”是对K线根数的误释。",
+      "sample": {
+        "scope": "2026-10-15至2026-11-10的17个保留raw_zhb.json目录；20只股票；精确比较zhb.full.change_20k_bar与zhb.stat.change_20k_bar，并排除stat2同名字段；语义列号由项目解析器及公开协议解析资料核实",
+        "comparison_count": 340,
+        "matched_count": 340,
+        "counterexample_count": 0,
+        "stock_count": 20,
+        "capture_directory_count": 17,
+        "stat2_same_name_value_count": 0
+      }
+    },
+    {
+      "id": "20261112-zhb-stat-change-60k-bar-correction",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_60k_bar"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "stat.change_60k_bar",
+        "meaning": "60分钟K线涨跌",
+        "unit": "-"
+      },
+      "canonical": "stat.change_60k_bar",
+      "meaning": "近60根日K线涨跌幅（含当日，按交易日口径）",
+      "unit": "%",
+      "section": "2026-11-12 ZHB 20/60 根 K 线字段语义更正",
+      "rationale": "项目解析器将 tdxstat.cfg 第[19]列映射到此精确路径，配套测试核验列号；公开协议解析资料将该列解释为含当日的近60根K线涨跌幅，并与截至前一交易日的相邻字段区分。该资料不是通达信官方字段字典，故只作独立语义佐证。2026-10-15至2026-11-10全部17个保留目录、20只股票的full/stat配对共340条完全相同，stat2同名值均为空，确认合并叶字段唯一回连至本路径。原注册表“60分钟”是对K线根数的误释。",
+      "sample": {
+        "scope": "2026-10-15至2026-11-10的17个保留raw_zhb.json目录；20只股票；精确比较zhb.full.change_60k_bar与zhb.stat.change_60k_bar，并排除stat2同名字段；语义列号由项目解析器及公开协议解析资料核实",
+        "comparison_count": 340,
+        "matched_count": 340,
+        "counterexample_count": 0,
+        "stock_count": 20,
+        "capture_directory_count": 17,
+        "stat2_same_name_value_count": 0
+      }
+    }
+  ]
+}

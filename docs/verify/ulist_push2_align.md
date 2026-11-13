@@ -2,6 +2,7 @@
 
 > 来源: 20260815/raw_ulist239.json + raw_push2_full.json 全字段同值匹配(20 股全一致)
 > 用途: ulist239 索引定位(ulist 索引≠push2 索引, 此为权威映射)
+> 2026-11-13 复核：保留期 7 个交易日、20 股共 140 条股票日样本确认资金流路径配对；修正 f62/f66/f72/f78 四条净额语义标签错移，并将“特大单”统一为东方财富页面名称“超大单”。字段路径配对不变；逐值证据见 [中单与资金流复核](../field_verification/adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md)。
 
 | ulist | push2 | push2 语义 | | ulist | push2 | push2 语义 |
 |---|---|---|---|---|---|---|
@@ -44,18 +45,18 @@
 | ulist f48 | f190 | 每股未分配利润，同义字段；此处 Push2 f190 不代表 Ulist f190 |
 | ulist f49 | f186 | 毛利率 |
 | ulist f57 | f188 | 资产负债率 |
-| ulist f62 | f137 | 特大单净流入 |
-| ulist f64 | f138 | 特大单买入 |
-| ulist f65 | f139 | 特大单卖出 |
-| ulist f66 | f140 | 大单净流入 |
+| ulist f62 | f137 | 主力净流入 |
+| ulist f64 | f138 | 超大单买入 |
+| ulist f65 | f139 | 超大单卖出 |
+| ulist f66 | f140 | 超大单净流入 |
 | ulist f69 | f194 | 衍生指标2 |
 | ulist f70 | f141 | 大单买入 |
 | ulist f71 | f142 | 大单卖出 |
-| ulist f72 | f143 | 中单净流入 |
+| ulist f72 | f143 | 大单净流入 |
 | ulist f75 | f195 | 衍生指标3 |
 | ulist f76 | f144 | 中单买入 |
 | ulist f77 | f145 | 中单卖出 |
-| ulist f78 | f146 | 小单净流入 |
+| ulist f78 | f146 | 中单净流入 |
 | ulist f81 | f196 | 衍生指标4 |
 | ulist f82 | f147 | 小单买入 |
 | ulist f83 | f148 | 小单卖出 |

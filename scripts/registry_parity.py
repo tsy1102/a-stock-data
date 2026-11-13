@@ -16,13 +16,13 @@ audit_field_completeness.registered_field_sets() 抽取。字段注册表还包�
 
 from __future__ import annotations
 
+import argparse
 import copy
 import io
 import json
 import os
-import sys
-import argparse
 import re
+import sys
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -98,6 +98,10 @@ def main(argv=None):
         reg, source_records, base_pairs
     )
     declared_pairs = e3_pairs | contract_pairs | observation_pairs
+    empirical_pairs, empirical_matrix, empirical_problems = (
+        _validated_empirical_source_semantics_adjudications(reg, source_records)
+    )
+    declared_pairs |= empirical_pairs
     source_contract_pairs, source_contract_matrix, source_contract_problems = (
         _validated_source_contract_adjudications(reg, source_records, base_pairs, declared_pairs)
     )
@@ -116,13 +120,18 @@ def main(argv=None):
     for additional_matrix in (
         contract_matrix,
         observation_matrix,
+        empirical_matrix,
         source_contract_matrix,
         adjudication_matrix,
     ):
         for key, value in additional_matrix.items():
             matrix_addenda.setdefault(key, set()).update(value)
     addenda_problems = (
-        e3_problems + contract_problems + observation_problems + source_contract_problems
+        e3_problems
+        + contract_problems
+        + observation_problems
+        + empirical_problems
+        + source_contract_problems
     )
     actual_pairs = {(record["source"], record["code"]) for record in source_records}
     scope_entries, scope_problems = _load_scope_manifest(args.scope_manifest)
@@ -151,7 +160,9 @@ def main(argv=None):
     candidate_pairs, candidate_problems = _validated_unverified_candidates(
         expected_pairs, actual_pairs, source_records, UNKNOWN_FIELDS
     )
-    non_field_pairs, non_field_problems = _validated_non_field_schema_pairs(source_records)
+    non_field_pairs, non_field_problems = _validated_non_field_schema_pairs(
+        source_records, expected_pairs
+    )
     parity_pairs = actual_pairs - candidate_pairs - non_field_pairs
     parity_field_sources = _pairs_to_field_sources(parity_pairs)
     reg_fields = len(parity_field_sources)
@@ -187,7 +198,8 @@ def main(argv=None):
 
     expected_label = (
         "baseline-scope-adjusted+E3+official-contract+observation+public-web+"
-        "source-contract-adjudications+adjudication+capture-path-addenda"
+        "source-contract-adjudications+empirical-source-semantics+"
+        "adjudication+capture-path-addenda"
     )
     if accepted_missing_pairs is not None:
         expected_label += "-accepted-debt-adjusted"
@@ -204,12 +216,16 @@ def main(argv=None):
     )
     print(
         f"parity[adjudicated-non-fields]: {'PASS' if not non_field_problems else 'FAIL'} "
-        f"{len(non_field_pairs)} 条类型/格式说明不是独立返回路径；"
+        f"{len(non_field_pairs)} 条类型/格式说明或基线外退役旧路径不是独立返回路径；"
         "YYYYMMDD 保留为日期值格式元数据，对应字段见裁决文档"
     )
     print(
         f"parity[source-contract-adjudications]: "
         f"{'PASS' if not source_contract_problems else 'FAIL'} {len(source_contract_pairs)} 条"
+    )
+    print(
+        f"parity[empirical-source-semantics]: "
+        f"{'PASS' if not empirical_problems else 'FAIL'} {len(empirical_pairs)} 条"
     )
     print(
         f"parity[adjudication-addenda]: "
@@ -281,20 +297,49 @@ def _pairs_to_field_sources(pairs: set[tuple[str, str]]) -> dict[str, set[str]]:
 
 def _validated_non_field_schema_pairs(
     source_records: list[dict],
+    expected_pairs: set[tuple[str, str]],
 ) -> tuple[set[tuple[str, str]], list[str]]:
-    """Exclude adjudicated schema/type tokens as paths while preserving their evidence."""
+    """Exclude schema tokens and evidenced retired aliases outside the active baseline."""
     pairs: set[tuple[str, str]] = set()
     problems: list[str] = []
     for row in source_records:
-        if row.get("status_resolution") != "not_field_schema_token":
+        resolution = row.get("status_resolution")
+        if resolution not in {"not_field_schema_token", "retired_legacy_path"}:
             continue
         source, code = row.get("source"), row.get("code")
         if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
-            problems.append("not_field_schema_token 记录缺少 source/code")
+            problems.append(f"{resolution} 记录缺少 source/code")
             continue
         if row.get("status") != "disproved":
-            problems.append(f"{source}::{code} 类型/格式 token 路径必须保持 disproved")
+            problems.append(f"{source}::{code} {resolution} 路径必须保持 disproved")
             continue
+        if resolution == "retired_legacy_path":
+            pair = (source, code)
+            # A retired path already in the baseline remains part of historical parity.
+            if pair in expected_pairs:
+                continue
+            evidence = row.get("adjudication_evidence")
+            evidence_files = evidence.get("evidence_files") if isinstance(evidence, dict) else None
+            if (
+                not isinstance(evidence, dict)
+                or evidence.get("decision") != "disproved"
+                or not isinstance(evidence.get("decision_note"), str)
+                or not evidence["decision_note"].strip()
+                or not isinstance(evidence.get("reason"), str)
+                or not evidence["reason"].strip()
+                or not isinstance(evidence_files, list)
+                or not evidence_files
+                or any(
+                    not isinstance(path, str) or not _repo_file_exists(path)
+                    for path in evidence_files
+                )
+                or not _repo_file_exists(evidence["decision_note"])
+                or not isinstance(row.get("superseded_status_evidence"), dict)
+            ):
+                problems.append(
+                    f"{source}::{code} 基线外退役路径缺少决定、理由、证据文件或原状态快照"
+                )
+                continue
         pairs.add((source, code))
     return pairs, problems
 
@@ -1304,6 +1349,274 @@ def _validate_adjudication_evidence(
     return bool(candidate)
 
 
+def _validated_empirical_source_semantics_adjudications(
+    reg: dict, source_records: list[dict]
+) -> tuple[set[tuple[str, str]], dict[str, set[str]], list[str]]:
+    """Validate active E3 semantics, including legacy Markdown decisions."""
+    verification_root = Path(REPO_ROOT, "docs", "field_verification").resolve()
+    rows = {(row["source"], row["code"]): row for row in source_records}
+    decision_files: dict[str, tuple[Path, dict[str, Any]]] = {}
+    declared: set[tuple[str, str]] = set()
+    matrix_addenda: dict[str, set[str]] = {}
+    problems: list[str] = []
+    seen_ids: set[str] = set()
+
+    def normalize_verification_path(value: object) -> str | None:
+        if not isinstance(value, str) or not value.strip():
+            return None
+        normalized = value.strip().replace("\\", "/")
+        prefix = "docs/field_verification/"
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix) :]
+        return normalized
+
+    def matrix_source_label(source: str) -> str:
+        # Registry keeps the adapter identity; the shared matrix presents its
+        # underlying ELTDX source family, matching the reference document.
+        return "TDX-eltdx" if source == "TDX-eltdx(适配层)" else source
+
+    for pair, row in rows.items():
+        history = row.get("adjudications", [])
+        if not isinstance(history, list):
+            continue
+        empirical_history = [
+            item
+            for item in history
+            if isinstance(item, dict)
+            and item.get("action")
+            in {
+                "verify_empirical_source_semantics",
+                "append_empirical_source_evidence",
+                "empirical_semantic_adjudication",
+            }
+        ]
+        status_evidence = row.get("status_evidence")
+        active_empirical = (
+            row.get("status") == "verified"
+            and row.get("status_resolution") == "verified_by_empirical_addendum"
+            and isinstance(status_evidence, dict)
+            and status_evidence.get("evidence_basis") == "empirical_source_field_semantics"
+            and status_evidence.get("evidence_level") == "E3"
+        )
+        if not active_empirical or not isinstance(status_evidence, dict):
+            continue
+        if not empirical_history:
+            # Pre-workflow E3 rows are covered by source_field_addenda or the
+            # existing adjudication validator. The replayable route applies to
+            # records that explicitly carry this action.
+            continue
+
+        # Earlier E3 actions may have been superseded. The active status
+        # evidence identifies the document that supports the current meaning.
+        adjudication = empirical_history[-1]
+        if adjudication.get("action") == "empirical_semantic_adjudication":
+            legacy_evidence = adjudication.get("evidence")
+            if (
+                adjudication.get("status") != "verified"
+                or adjudication.get("level") != "E3"
+                or not isinstance(legacy_evidence, dict)
+            ):
+                problems.append(f"{pair[0]}::{pair[1]} 旧格式 E3 定案状态不完整")
+                continue
+            evidence_rel = normalize_verification_path(status_evidence.get("evidence_file"))
+            if evidence_rel is None:
+                problems.append(f"{pair[0]}::{pair[1]} 旧格式 E3 缺少活动证据路径")
+                continue
+            evidence_path = _safe_repo_path(verification_root, evidence_rel)
+            supplemental_evidence_rel = normalize_verification_path(
+                legacy_evidence.get("evidence_file")
+            )
+            supplemental_evidence_path = (
+                _safe_repo_path(verification_root, supplemental_evidence_rel)
+                if supplemental_evidence_rel is not None
+                else None
+            )
+            report_rel = normalize_verification_path(adjudication.get("report"))
+            report_path = (
+                _safe_repo_path(verification_root, report_rel) if report_rel is not None else None
+            )
+            report_digest = legacy_evidence.get("report_sha256") or status_evidence.get(
+                "report_sha256"
+            )
+            try:
+                evidence_text = evidence_path.read_text(encoding="utf-8") if evidence_path else ""
+                if (
+                    supplemental_evidence_path is not None
+                    and not supplemental_evidence_path.is_file()
+                ):
+                    raise OSError(
+                        f"supplemental evidence does not exist: {supplemental_evidence_rel}"
+                    )
+                report_bytes = report_path.read_bytes() if report_path else b""
+                report_text = report_bytes.decode("utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                problems.append(f"{pair[0]}::{pair[1]} 旧格式 E3 证据无法读取: {exc}")
+                continue
+            candidate_ids = adjudication.get("candidate_ids")
+            if (
+                evidence_path is None
+                or report_path is None
+                or not isinstance(report_digest, str)
+                or (
+                    isinstance(legacy_evidence.get("report_sha256"), str)
+                    and legacy_evidence.get("report_sha256") != status_evidence.get("report_sha256")
+                )
+                or pair[1] not in evidence_text
+                or (evidence_path.suffix.lower() == ".md" and "定案" not in evidence_text)
+                or (
+                    isinstance(candidate_ids, list)
+                    and any(
+                        not isinstance(candidate_id, str) or candidate_id not in report_text
+                        for candidate_id in candidate_ids
+                    )
+                )
+                or (
+                    (not isinstance(candidate_ids, list) or not candidate_ids)
+                    and pair[1] not in report_text
+                )
+            ):
+                problems.append(f"{pair[0]}::{pair[1]} 旧格式 E3 报告哈希、候选或精确字段证据无效")
+                continue
+            canonical = row.get("canonical")
+            if not isinstance(canonical, str) or not canonical:
+                problems.append(f"{pair[0]}::{pair[1]} E3 已验证字段缺少 canonical")
+                continue
+            decision_id = adjudication.get("id")
+            if not isinstance(decision_id, str) or not decision_id or decision_id in seen_ids:
+                problems.append(f"{pair[0]}::{pair[1]} 旧格式 E3 决定 id 缺失或重复")
+                continue
+            seen_ids.add(decision_id)
+            declared.add(pair)
+            matrix_addenda.setdefault(canonical, set()).add(matrix_source_label(pair[0]))
+            continue
+
+        if (
+            adjudication.get("status") != "verified"
+            or adjudication.get("evidence_basis") != "empirical_source_field_semantics"
+        ):
+            problems.append(f"{pair[0]}::{pair[1]} E3 定案状态或证据基础不一致")
+            continue
+        if adjudication.get("evidence_level", "E3") != "E3":
+            problems.append(f"{pair[0]}::{pair[1]} E3 定案证据等级不一致")
+            continue
+        metadata_change = adjudication.get("metadata_change")
+        after = metadata_change.get("after") if isinstance(metadata_change, dict) else None
+        if not isinstance(after, dict) or any(
+            row.get(key, "") != after.get(key, "") for key in ("canonical", "meaning", "unit")
+        ):
+            problems.append(f"{pair[0]}::{pair[1]} E3 当前语义与注册表元数据不一致")
+            continue
+
+        decision_id = adjudication.get("id")
+        if not isinstance(decision_id, str) or not decision_id:
+            problems.append(f"{pair[0]}::{pair[1]} E3 定案缺少 id")
+            continue
+        if decision_id in seen_ids:
+            problems.append(f"E3 来源内定案 id 重复: {decision_id}")
+            continue
+        seen_ids.add(decision_id)
+
+        decision_reference = adjudication.get("decision_file")
+        decision_rel = normalize_verification_path(decision_reference)
+        if decision_rel is None:
+            problems.append(f"{pair[0]}::{pair[1]} E3 定案缺少决策文件")
+            continue
+        decision_path = _safe_repo_path(verification_root, decision_rel)
+        if decision_path is None or not decision_path.is_file():
+            problems.append(f"{pair[0]}::{pair[1]} E3 决策文件不存在或越界: {decision_rel}")
+            continue
+
+        expected_evidence = normalize_verification_path(status_evidence.get("evidence_file"))
+        adjudication_evidence = normalize_verification_path(adjudication.get("evidence_file"))
+        if expected_evidence is None or (
+            adjudication_evidence is not None and adjudication_evidence != expected_evidence
+        ):
+            problems.append(f"{pair[0]}::{pair[1]} E3 证据路径与当前状态快照不一致")
+            continue
+        evidence_path = _safe_repo_path(verification_root, expected_evidence)
+        if evidence_path is None or not evidence_path.is_file():
+            problems.append(f"{pair[0]}::{pair[1]} E3 证据文件不存在或越界: {expected_evidence}")
+            continue
+
+        if decision_path.suffix.lower() == ".json":
+            key = decision_path.as_posix()
+            cached = decision_files.get(key)
+            if cached is None:
+                try:
+                    with decision_path.open(encoding="utf-8") as handle:
+                        document = json.load(handle)
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    problems.append(f"E3 决策文件无法读取 {decision_rel}: {exc}")
+                    continue
+                if not isinstance(document, dict):
+                    problems.append(f"E3 决策文件必须是对象: {decision_rel}")
+                    continue
+                cached = (decision_path, document)
+                decision_files[key] = cached
+
+            document = cached[1]
+            decisions = document.get("decisions")
+            matches = (
+                [
+                    item
+                    for item in decisions or []
+                    if isinstance(item, dict) and item.get("id") == decision_id
+                ]
+                if isinstance(decisions, list)
+                else []
+            )
+            if len(matches) != 1:
+                problems.append(f"{pair[0]}::{pair[1]} E3 决策文件未唯一包含 id {decision_id}")
+                continue
+            target = matches[0].get("target")
+            if not isinstance(target, dict) or (target.get("source"), target.get("code")) != pair:
+                problems.append(f"{pair[0]}::{pair[1]} E3 决策目标身份不一致: {decision_id}")
+                continue
+            document_evidence = normalize_verification_path(document.get("evidence_file"))
+            adjudication_evidence_sha = adjudication.get("evidence_sha256")
+            if (
+                document_evidence != expected_evidence
+                or not isinstance(adjudication_evidence_sha, str)
+                or adjudication_evidence_sha != document.get("evidence_sha256")
+                or adjudication_evidence_sha != status_evidence.get("evidence_sha256")
+            ):
+                problems.append(f"{pair[0]}::{pair[1]} E3 证据路径或 SHA-256 与决策文件不一致")
+                continue
+        else:
+            # Earlier reviews used Markdown as their decision record. Preserve
+            # those records while still requiring the exact field and a live
+            # evidence path referenced by the active registry status.
+            try:
+                evidence_text = decision_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                problems.append(f"E3 Markdown 决策文件无法读取 {decision_rel}: {exc}")
+                continue
+            if f"`{pair[1]}`" not in evidence_text or "定案" not in evidence_text:
+                problems.append(f"{pair[0]}::{pair[1]} E3 Markdown 决策未标明精确字段与定案")
+                continue
+
+        canonical = row.get("canonical")
+        if not isinstance(canonical, str) or not canonical:
+            problems.append(f"{pair[0]}::{pair[1]} E3 已验证字段缺少 canonical")
+            continue
+        declared.add(pair)
+        matrix_addenda.setdefault(canonical, set()).add(matrix_source_label(pair[0]))
+
+    for path, document in decision_files.values():
+        decision_rel = path.relative_to(verification_root).as_posix()
+        try:
+            replayed, _ = aca.apply_empirical_source_semantics_adjudications(
+                reg, document, decision_rel, repo_root=Path(REPO_ROOT)
+            )
+        except (OSError, TypeError, ValueError, KeyError) as exc:
+            problems.append(f"E3 决策重放失败 {decision_rel}: {exc}")
+            continue
+        if replayed != reg:
+            problems.append(f"E3 决策重放会改动当前 registry: {decision_rel}")
+
+    return declared, matrix_addenda, problems
+
+
 def _validated_capture_path_addenda(
     reg: dict,
     source_records: list[dict],
@@ -1554,6 +1867,15 @@ def check_field_matrix(reg: dict, addenda: dict | None = None) -> list:
     for field, sources in (addenda or {}).items():
         base_sets.setdefault(field, set()).update(sources)
     base = {key: sorted(value) for key, value in base_sets.items()}
+
+    def normalize_sources(sources: list[str] | set[str]) -> list[str]:
+        # ELTDX adapter paths and the ELTDX source are one source family in
+        # the field matrix; keep exact adapter identities in source_fields.
+        normalized = {
+            "TDX-eltdx" if source == "TDX-eltdx(适配层)" else source for source in sources
+        }
+        return sorted(normalized)
+
     problems = []
     if set(fm) != set(base):
         problems.append(
@@ -1562,7 +1884,7 @@ def check_field_matrix(reg: dict, addenda: dict | None = None) -> list:
         )
     bad = []
     for k in set(fm) & set(base):
-        if sorted(fm[k]) != base[k]:
+        if normalize_sources(fm[k]) != normalize_sources(base[k]):
             bad.append(k)
             if len(bad) >= 10:
                 break

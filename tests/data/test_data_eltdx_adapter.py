@@ -62,6 +62,41 @@ def test_eltdx_xdxr_normalizes_per_ten_values_to_mootdx_columns():
     assert frame.loc[0, "peigu"] == 1.0
 
 
+def test_eltdx_finance_normalizes_share_and_reclassified_finance_slots():
+    record = SimpleNamespace(
+        liu_tong_gu_ben_raw_float=125008.15625,
+        zong_gu_ben_raw_float=125008.15625,
+        guo_jia_gu_raw_float=1215.0,
+        fa_qi_ren_fa_ren_gu_raw_float=64626744.0,
+        fa_ren_gu_raw_float=128453712.0,
+        b_gu_raw_float=2.5,
+        h_gu_raw_float=3.5,
+        zong_zi_chan_raw_float=318304896.0,
+        gu_dong_ren_shu_raw_float=567189.0,
+        updated_date="2026-10-31",
+        ipo_date="2001-08-27",
+    )
+    calls = []
+
+    def finance_batch(symbol, *, include_raw):
+        calls.append((symbol, include_raw))
+        return SimpleNamespace(records=[record])
+
+    client = SimpleNamespace(corporate=SimpleNamespace(finance_batch=finance_batch))
+    row = _EltdxAdapter(client).finance("600519").iloc[0]
+
+    assert calls == [("600519", False)]
+    assert row["liutongguben"] == 1250081562.5
+    assert row["zhongguben"] == 1250081562.5
+    assert row["guojiagu"] == 12150000.0
+    assert row["bgu"] == 25000.0
+    assert row["hgu"] == 35000.0
+    assert row["fajirenfarengu"] == 646267440000.0
+    assert row["farengu"] == 1284537120000.0
+    assert row["zongzichan"] == 3183048960000.0
+    assert row["gudongrenshu"] == 567189.0
+
+
 def test_tdx_dividend_history_uses_eltdx_mapping_and_throttle(monkeypatch):
     record = SimpleNamespace(
         date="2026-10-30",

@@ -160,6 +160,16 @@ def test_runtime_field_code_normalization_maps_only_known_wrappers(alias, code, 
     assert lineage_api.normalize_runtime_field_code(alias, code) == expected
 
 
+def test_zhb_full_view_leaf_requires_a_known_stat_branch():
+    assert (
+        lineage_api.zhb_full_view_field_code("ZHB-tdxstat", "stat.change_20k_bar")
+        == "change_20k_bar"
+    )
+    assert lineage_api.zhb_full_view_field_code("ZHB-tdxstat2", "amount") == "amount"
+    assert lineage_api.zhb_full_view_field_code("ZHB-tipinfo", "amount") is None
+    assert lineage_api.zhb_full_view_field_code("other", "stat.amount") is None
+
+
 def test_load_lineage_rejects_non_object_json_root(tmp_path):
     malformed = tmp_path / "lineage.json"
     malformed.write_text("[]", encoding="utf-8")

@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_tdx_finance_fallback_alias_semantics_evidence.md",
+  "evidence_sha256": "7568f4237f6920b4d826446a2a8b89305edc094604c2f1eccd2a6d2d612d6b79",
+  "decisions": [
+    {
+      "id": "20261113-tdx-faqiren_faren_gu-fallback-alias-finance-semantics-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "faqiren_faren_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "prior_year_parent_net_profit",
+      "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
+      "unit": "角",
+      "section": "TDX 0x0010 Easy-TDX 兜底别名财务语义实证（2026-11-13）",
+      "rationale": "同一保留期 2026-11-10 的 20 条 0x0010 record_hex 经 Easy-TDX 1.20.8 离线重解码后，原始字段与 wrapper 无下划线别名逐条相等，并与 ELTDX 主路径按角口径逐条 20/20 精确相等。前序 20 只股票与同一 2025Q3 报告期数据 20/20 符合，另有五份发行人 2026Q3 正式报告逐值复核、零反例。旧解析标签是客户端字段名，不代表当前槽位的实际数值语义。",
+      "sample": {
+        "scope": "data_date=2026-11-10 的 20 只股票同次 0x0010 record_hex；来源 updated_date=2026-10-28 至 2026-10-31；对应 2025-09-30 比较期；同源 Easy-TDX/ELTDX 路径别名逐条离线解码；5 份发行人 2026Q3 报告复核。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 5,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-tdx-faqirenfarengu-fallback-alias-finance-semantics-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "faqirenfarengu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "faqirenfarengu",
+        "meaning": "发起人法人股",
+        "unit": "万股"
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "prior_year_parent_net_profit",
+      "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
+      "unit": "角",
+      "section": "TDX 0x0010 Easy-TDX 兜底别名财务语义实证（2026-11-13）",
+      "rationale": "同一保留期 2026-11-10 的 20 条 0x0010 record_hex 经 Easy-TDX 1.20.8 离线重解码后，原始字段与 wrapper 无下划线别名逐条相等，并与 ELTDX 主路径按角口径逐条 20/20 精确相等。前序 20 只股票与同一 2025Q3 报告期数据 20/20 符合，另有五份发行人 2026Q3 正式报告逐值复核、零反例。旧解析标签是客户端字段名，不代表当前槽位的实际数值语义。",
+      "sample": {
+        "scope": "data_date=2026-11-10 的 20 只股票同次 0x0010 record_hex；来源 updated_date=2026-10-28 至 2026-10-31；对应 2025-09-30 比较期；同源 Easy-TDX/ELTDX 路径别名逐条离线解码；5 份发行人 2026Q3 报告复核。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 5,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-tdx-faren_gu-fallback-alias-finance-semantics-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "faren_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "prior_year_operating_revenue",
+      "meaning": "上年同期营业收入（报告比较数）",
+      "unit": "角",
+      "section": "TDX 0x0010 Easy-TDX 兜底别名财务语义实证（2026-11-13）",
+      "rationale": "同一保留期 2026-11-10 的 20 条 0x0010 record_hex 经 Easy-TDX 1.20.8 离线重解码后，原始字段与 wrapper 无下划线别名逐条相等，并与 ELTDX 主路径按角口径逐条 20/20 精确相等。前序 20 只股票与同一 2025Q3 报告期数据 20/20 符合，另有五份发行人 2026Q3 正式报告逐值复核、零反例。旧解析标签是客户端字段名，不代表当前槽位的实际数值语义。",
+      "sample": {
+        "scope": "data_date=2026-11-10 的 20 只股票同次 0x0010 record_hex；来源 updated_date=2026-10-28 至 2026-10-31；对应 2025-09-30 比较期；同源 Easy-TDX/ELTDX 路径别名逐条离线解码；5 份发行人 2026Q3 报告复核。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 5,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

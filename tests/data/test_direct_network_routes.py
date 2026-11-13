@@ -101,6 +101,47 @@ def test_cninfo_irm_uses_direct_shared_session_and_source_slots(monkeypatch):
     assert sc_network._HTTP_SESSION.trust_env is False
 
 
+def test_cninfo_irm_rejects_fuzzy_lookup_without_exact_code(monkeypatch):
+    calls = []
+    waits = []
+    payloads = [{"data": [{"stockCode": "300657", "secid": "org-wrong"}]}]
+    monkeypatch.setattr(sc_network, "_source_rate_limit_wait", waits.append)
+    monkeypatch.setattr(
+        sc_network._HTTP_SESSION,
+        "post",
+        lambda *args, **kwargs: calls.append((args, kwargs))
+        or SimpleNamespace(json=lambda: payloads.pop(0)),
+    )
+
+    assert _holders.cninfo_irm("920508") == []
+    assert len(calls) == 1
+    assert waits == ["https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo"]
+
+
+def test_cninfo_irm_discards_question_rows_for_other_codes(monkeypatch):
+    payloads = [
+        {"data": [{"stockCode": "000001", "secid": "org-1"}]},
+        {
+            "rows": [
+                {"stockCode": "000001", "mainContent": "matching"},
+                {"stockCode": "300657", "mainContent": "misattributed"},
+            ]
+        },
+    ]
+    monkeypatch.setattr(sc_network, "_source_rate_limit_wait", lambda _url: None)
+    monkeypatch.setattr(
+        sc_network._HTTP_SESSION,
+        "post",
+        lambda *_args, **_kwargs: SimpleNamespace(json=lambda: payloads.pop(0)),
+    )
+
+    result = _holders.cninfo_irm("000001")
+
+    assert len(result) == 1
+    assert result[0]["code"] == "000001"
+    assert result[0]["question"] == "matching"
+
+
 def test_kpl_uses_explicit_direct_urllib_opener(monkeypatch):
     calls = []
     monkeypatch.setattr(sc_network, "_source_rate_limit_wait", lambda _url: None)

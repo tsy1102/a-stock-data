@@ -41,9 +41,21 @@ def _snapshot(source, document, *, domain="trading", origin="source_as_of", stat
     )
 
 
-def test_zhb_branches_map_exactly_and_merged_full_view_is_excluded():
+def test_zhb_full_view_maps_only_when_its_branch_owner_is_unique():
     registry = {
         "source_fields": [
+            {
+                "source": "ZHB-tdxstat",
+                "code": "stat.change_20k_bar",
+                "status": "unverified",
+            },
+            {
+                "source": "ZHB-tdxstat2",
+                "code": "stat2.low_52w",
+                "status": "unverified",
+            },
+            {"source": "ZHB-tdxstat", "code": "stat.code", "status": "unverified"},
+            {"source": "ZHB-tdxstat2", "code": "stat2.code", "status": "unverified"},
             {"source": "ZHB-tdxstat", "code": "[0]", "status": "unverified"},
             {"source": "ZHB-tdxstat2", "code": "[0]", "status": "unverified"},
             {"source": "ZHB-tipinfo", "code": "[0]", "status": "unverified"},
@@ -64,14 +76,24 @@ def test_zhb_branches_map_exactly_and_merged_full_view_is_excluded():
     identity, reason = coverage._resolve_runtime_identity(
         "zhb.stat.[0]", owners, source_records, lineage
     )
+    full_unique_identity, full_unique_reason = coverage._resolve_runtime_identity(
+        "zhb.full.change_20k_bar", owners, source_records, lineage
+    )
+    full_ambiguous_identity, full_ambiguous_reason = coverage._resolve_runtime_identity(
+        "zhb.full.code", owners, source_records, lineage
+    )
     merged_identity, merged_reason = coverage._resolve_runtime_identity(
         "zhb.full.[0]", owners, source_records, lineage
     )
 
     assert identity == ("ZHB-tdxstat", "[0]")
     assert reason == "mapped_by_explicit_branch"
+    assert full_unique_identity == ("ZHB-tdxstat", "stat.change_20k_bar")
+    assert full_unique_reason == "mapped_by_unique_full_view_owner"
+    assert full_ambiguous_identity is None
+    assert full_ambiguous_reason == "ambiguous_merged_zhb_full_view"
     assert merged_identity is None
-    assert merged_reason == "merged_zhb_full_view"
+    assert merged_reason == "ambiguous_merged_zhb_full_view"
 
 
 def test_same_runtime_code_owned_by_two_identities_is_not_counted():

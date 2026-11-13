@@ -1489,21 +1489,39 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917"
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
         "tdx"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261018",
-      "in_registry": true,
+      "last_seen": "20261113",
+      "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
     },
@@ -1563,12 +1581,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.9,
-      "n_days": 3,
-      "n_pairs": 60,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20261102",
         "T:20261103",
-        "T:20261104"
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
@@ -1580,19 +1600,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 60
+            "source_as_of": 100
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "record.timestamp": 60
+            "record.timestamp": 100
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261106",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -2455,12 +2475,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 3,
-      "n_pairs": 60,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20261102",
         "T:20261103",
-        "T:20261104"
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
@@ -2472,19 +2494,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 60
+            "source_as_of": 100
           }
         },
         "right": {
-          "temporal_class": "unclassified",
+          "temporal_class": "intraday_sensitive",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "record.timestamp": 60
+            "record.timestamp": 100
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261106",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -8763,8 +8785,8 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 9,
-      "n_pairs": 180,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
         "T:20261016",
         "T:20261019",
@@ -8774,7 +8796,9 @@
         "T:20261030",
         "T:20261102",
         "T:20261103",
-        "T:20261104"
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
@@ -8786,19 +8810,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 180
+            "source_as_of": 220
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 180
+            "source_as_of": 220
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261106",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -8852,12 +8876,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 3,
-      "n_pairs": 60,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20261102",
         "T:20261103",
-        "T:20261104"
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
@@ -8869,19 +8895,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 60
+            "source_as_of": 100
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "record.timestamp": 60
+            "record.timestamp": 100
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261106",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -9481,38 +9507,38 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 22,
-      "n_pairs": 440,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260930"
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
         "tdx"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -9789,38 +9815,38 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 22,
-      "n_pairs": 440,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260930"
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
         "tdx"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -10131,22 +10157,45 @@
       "right": "tencent[39]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.97,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.95,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20261009",
-        "T:20261012",
-        "T:20261013",
-        "T:20261014",
-        "T:20261016"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261018",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "repeated"
@@ -10156,23 +10205,46 @@
       "right": "tencent[70]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 1.0,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.9773,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20261009",
-        "T:20261012",
-        "T:20261013",
-        "T:20261014",
-        "T:20261015"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261017",
-      "in_registry": true,
+      "last_seen": "20261113",
+      "in_registry": false,
       "first_seen": "20261008",
       "status": "confirmed"
     },
@@ -10181,23 +10253,46 @@
       "right": "tencent[70]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 1.0,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.9773,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20261009",
-        "T:20261012",
-        "T:20261013",
-        "T:20261014",
-        "T:20261015"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261016",
-      "in_registry": true,
+      "last_seen": "20261113",
+      "in_registry": false,
       "first_seen": "20261008",
       "status": "confirmed"
     },
@@ -10206,41 +10301,45 @@
       "right": "tencent[63]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9937,
-      "n_days": 24,
-      "n_pairs": 477,
+      "overall_hit": 0.9862,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260929",
-        "T:20260930",
-        "T:20261009"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "repeated"
@@ -10250,41 +10349,45 @@
       "right": "tencent[69]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9895,
-      "n_days": 24,
-      "n_pairs": 477,
+      "overall_hit": 0.9773,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260929",
-        "T:20260930",
-        "T:20261009"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "repeated"
@@ -10339,8 +10442,8 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.95,
-      "n_days": 9,
-      "n_pairs": 180,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
         "T:20261016",
         "T:20261019",
@@ -10350,7 +10453,57 @@
         "T:20261030",
         "T:20261102",
         "T:20261103",
-        "T:20261104"
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261113",
+      "in_registry": false,
+      "first_seen": "20261008",
+      "status": "confirmed"
+    },
+    "tencent[68]||zhb.full.low_52w": {
+      "left": "zhb.full.low_52w",
+      "right": "tencent[68]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 11,
+      "n_pairs": 220,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
@@ -10362,63 +10515,19 @@
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 180
+            "source_as_of": 220
           }
         },
         "right": {
           "temporal_class": "unclassified",
           "date_status": "source_date_confirmed",
           "date_origin_counts": {
-            "source_as_of": 180
+            "source_as_of": 220
           }
         }
       },
       "hub_flag": false,
-      "last_seen": "20261106",
-      "in_registry": false,
-      "first_seen": "20261008",
-      "status": "confirmed"
-    },
-    "tencent[68]||zhb.full.low_52w": {
-      "left": "zhb.full.low_52w",
-      "right": "tencent[68]",
-      "level": "L1",
-      "ratio": null,
-      "overall_hit": 1.0,
-      "n_days": 24,
-      "n_pairs": 477,
-      "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260929",
-        "T:20260930",
-        "T:20261009"
-      ],
-      "evidence_sources": [
-        "tdx",
-        "tencent"
-      ],
-      "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "repeated"
@@ -11817,41 +11926,41 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 22,
-      "n_pairs": 440,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260930"
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
         "tdx"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "ulist239.f110||zhb.full.change_30d": {
       "left": "zhb.full.change_30d",
@@ -11859,41 +11968,41 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 22,
-      "n_pairs": 440,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
-        "T:20260812",
-        "T:20260819",
-        "T:20260821",
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260930"
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "eastmoney",
         "tdx"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "fuyao.snapshot.turnover||zhb.full.amount": {
       "left": "zhb.full.amount",
@@ -11901,39 +12010,47 @@
       "level": "L1-U",
       "ratio": 10000,
       "overall_hit": 1.0,
-      "n_days": 20,
-      "n_pairs": 400,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20260824",
-        "T:20260825",
-        "T:20260826",
-        "T:20260827",
-        "T:20260828",
-        "T:20260831",
-        "T:20260902",
-        "T:20260903",
-        "T:20260904",
-        "T:20260907",
-        "T:20260908",
-        "T:20260909",
-        "T:20260910",
-        "T:20260914",
-        "T:20260915",
-        "T:20260916",
-        "T:20260917",
-        "T:20260923",
-        "T:20260930",
-        "T:20261009"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tonghuashun"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "sina[9]||zhb.full.amount": {
       "left": "zhb.full.amount",
@@ -12036,22 +12153,45 @@
       "right": "tencent[71]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.9227,
+      "n_days": 11,
+      "n_pairs": 220,
       "sample_dates": [
-        "T:20261009",
-        "T:20261012",
-        "T:20261013",
-        "T:20261014",
-        "T:20261016"
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261023",
+        "T:20261028",
+        "T:20261030",
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 220
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261018",
+      "last_seen": "20261113",
       "in_registry": false,
       "first_seen": "20261016",
       "status": "repeated"
@@ -13014,6 +13154,132 @@
       "last_seen": "20261107",
       "in_registry": false,
       "first_seen": "20261107",
+      "status": "repeated"
+    },
+    "ulist239.f115||zhb.full.pe_ttm": {
+      "left": "zhb.full.pe_ttm",
+      "right": "ulist239.f115",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261113",
+      "in_registry": false,
+      "first_seen": "20261112",
+      "status": "repeated"
+    },
+    "push2.f48||zhb.full.amount": {
+      "left": "zhb.full.amount",
+      "right": "push2.f48",
+      "level": "L1-U",
+      "ratio": 10000,
+      "overall_hit": 1.0,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261113",
+      "in_registry": false,
+      "first_seen": "20261112",
+      "status": "repeated"
+    },
+    "ulist239.f6||zhb.full.amount": {
+      "left": "zhb.full.amount",
+      "right": "ulist239.f6",
+      "level": "L1-U",
+      "ratio": 10000,
+      "overall_hit": 1.0,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261102",
+        "T:20261103",
+        "T:20261104",
+        "T:20261106",
+        "T:20261109"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "tdx"
+      ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "daily_market",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 100
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "record.timestamp": 100
+          }
+        }
+      },
+      "hub_flag": false,
+      "last_seen": "20261113",
+      "in_registry": false,
+      "first_seen": "20261112",
       "status": "repeated"
     }
   },
@@ -23002,5 +23268,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261111"
+  "updated": "20261113"
 }

@@ -317,6 +317,7 @@ class TestAdapterFinance:
         f = a.finance(symbol="600519")
         cols = set(f.columns)
         assert "zongguben" in cols and "jinglirun" in cols and "liutongguben" in cols
+        assert "net_profit" not in cols
 
     def test_empty_finance(self):
         a = tc._EasyTdxAdapter(_MockClient(finance_df=pd.DataFrame()))

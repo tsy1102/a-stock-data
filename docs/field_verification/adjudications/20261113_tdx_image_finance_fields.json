@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_tdx_image_finance_fields_evidence.md",
+  "evidence_sha256": "6313e9b742929b3083e1a2d5fcfdc5d488bb05ac8239bab3b6eec209d93e9448",
+  "decisions": [
+    {
+      "id": "20261113-tdx-gudongrenshu-q3-official-report-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "gudongrenshu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "股东户数",
+        "unit": "户"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu",
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry"
+        ]
+      },
+      "canonical": "gudongrenshu",
+      "meaning": "股东户数；样本对应发行人报告期末普通股股东总数，按来源计数口径记录。",
+      "unit": "户",
+      "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
+      "rationale": "2026-11-10 保留 TDX 样本的来源 updated_date 为 2026-10-31；茅台与农行同为 2026-09-30 报告期末，来源户数与两份发行人第三季度报告的普通股股东总数分别精确相等。当前 ELTDX 主适配器路径由 core/eltdx_adapter.py::_FIN_MAP 映射到 finance_info.gudongrenshu；报告口径不支持把它解释为自然人唯一数。",
+      "sample": {
+        "scope": "2026-11-10 保留采集目录；finance_info.gudongrenshu 与同一请求 finance_batch[].gu_dong_ren_shu_raw_float；两个股票；来源 updated_date=2026-10-31；发行人 2026Q3 报告期末 2026-09-30。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261113-tdx-zhuyingshouru-q3-official-report-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhuyingshouru"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "主营业务收入",
+        "unit": "角"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "zhuyingshouru"
+        ]
+      },
+      "canonical": "zhuyingshouru",
+      "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+      "unit": "角",
+      "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
+      "rationale": "两个 2026Q3 发行人合并利润表样本均对应“营业收入”行。茅台报告明确区分营业总收入 133,283,652,508.95 元与营业收入 130,970,743,649.04 元；来源值归一化后为 130,970,736,000 元，靠近营业收入而非营业总收入。农行来源值与报告 618,812 百万元营业收入相差 32,000 元。保留原始 float32 步长及报告精度残差，不宣称逐元相等。",
+      "sample": {
+        "scope": "2026-11-10 保留采集目录；finance_info.zhuyingshouru 与同一请求 finance_batch[].zhu_ying_shou_ru_raw_float；两个股票；来源 updated_date=2026-10-31；发行人 2026Q3 报告期末 2026-09-30。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261113-tdx-yingyelirun-q3-official-report-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "yingyelirun"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "yingyelirun",
+        "meaning": "营业利润",
+        "unit": "角"
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "yingyelirun",
+      "meaning": "合并利润表“营业利润”行。",
+      "unit": "角",
+      "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
+      "rationale": "来源值按千元到元换算后，与茅台和农行 2026Q3 合并利润表“营业利润”行分别相差 1,742.21 元和 16,000 元；差异在原始 float32 步长/农行百万元展示舍入范围内，并显著区分营业利润与利润总额、净利润等候选。",
+      "sample": {
+        "scope": "2026-11-10 保留采集目录；finance_info.yingyelirun 与同一请求 finance_batch[].ying_ye_li_run_raw_float；两个股票；来源 updated_date=2026-10-31；发行人 2026Q3 报告期末 2026-09-30。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261113-tdx-zongxianjinliu-q3-official-report-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zongxianjinliu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "zongxianjinliu",
+        "meaning": "总现金流",
+        "unit": "角"
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "zongxianjinliu",
+      "meaning": "经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。",
+      "unit": "角",
+      "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
+      "rationale": "茅台来源值为 69,567,976,000 元，和三类活动现金流净额之和 69,567,977,156.41 元仅差 -1,156.41 元；报告现金净增加额 69,565,494,580.54 元与三类活动净额之和相差汇率影响 -2,482,575.87 元。农行三类活动净额按报告百万元精度合计 -231,015 百万元，与来源 -231,014.88 百万元吻合；报告现金净变动 -263,488 百万元另含汇率影响 -32,473 百万元。",
+      "sample": {
+        "scope": "2026-11-10 保留采集目录；finance_info.zongxianjinliu 与同一请求 finance_batch[].zong_xian_jin_liu_raw_float；两个股票；来源 updated_date=2026-10-31；发行人 2026Q3 报告期末 2026-09-30。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    }
+  ]
+}

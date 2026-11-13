@@ -50,6 +50,13 @@ _STATUS_RESOLUTION_NOTES = {
 
 def _meaning_annotation_state(record: dict[str, Any]) -> str:
     """Describe whether a meaning annotation exists; this is not a truth claim."""
+    resolution = _status_resolution(record)
+    if resolution == "retired_legacy_path":
+        return "已退役路径身份（不进入默认破解）"
+    if resolution == "not_field_schema_token":
+        return "格式/类型标记（不是字段路径）"
+    if record.get("status") == "disproved":
+        return "已证伪记录（退出默认破解）"
     if "meaning_missing" in fra.source_field_semantic_issues(record):
         return "含义栏为空/占位"
     return "含义栏有文本（仍未验证）"

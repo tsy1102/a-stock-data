@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_ipo_fields_evidence.md",
+  "evidence_sha256": "576de2749263c555b45ac4f429ba24cc1853e9322a5598a9b50fe6709977d900",
+  "decisions": [
+    {
+      "id": "20261112-reports-newissueprice-ipo-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "newIssuePrice"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "newIssuePrice",
+          "newIssuePrice / newListingDate / newPeIssueA"
+        ],
+        "meaning": [
+          "IPO 价/上市日/IPO PE",
+          "发行价"
+        ]
+      },
+      "canonical": "首次公开发行价格",
+      "meaning": "该股票首次公开发行（IPO）的发行价格；逐值对应东方财富 F10 ISSUE_PRICE。",
+      "unit": "元/股",
+      "section": "东方财富 F10 IPO 公开字段与保留样本实证（2026-11-12）",
+      "rationale": "项目采集直接保留 report/list 原始路径 newIssuePrice。东方财富公开新股详情页将发行价格标为“发行价格(元/股)”，同页字段 ISSUE_PRICE；对 15 只留存股票的唯一非空值与 F10 比较，15/15 完全相同，无反例。",
+      "sample": {
+        "scope": "保留期内 reports::newIssuePrice 按股票去重后与东方财富 F10 fxxg.ISSUE_PRICE 比较；15 只股票有值，15/15 一致。",
+        "comparison_count": 15,
+        "matched_count": 15,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 15,
+        "unique_info_code_count": 443,
+        "observation_count": 6051,
+        "raw_capture_file_count": 16
+      }
+    },
+    {
+      "id": "20261112-reports-newlistingdate-ipo-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "newListingDate"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "newIssuePrice / newListingDate / newPeIssueA",
+          "newListingDate"
+        ],
+        "meaning": [
+          "IPO 价/上市日/IPO PE",
+          "上市日期"
+        ]
+      },
+      "canonical": "上市日期",
+      "meaning": "该股票在交易所上市交易的日期；逐值对应东方财富 F10 LISTING_DATE。空值表示 reportapi 记录未返回日期，不表示股票没有上市。",
+      "unit": "日期，YYYY-MM-DD",
+      "section": "东方财富 F10 IPO 公开字段与保留样本实证（2026-11-12）",
+      "rationale": "项目采集直接保留 report/list 原始路径 newListingDate。东方财富公开新股详情页将对应字段标为“上市日期”，同页字段 LISTING_DATE；14 只 reportapi 有非空值的股票与 F10 逐日一致。920508 在 reportapi 样本中为空而 F10 为 2020-07-27，登记为单独的源字段缺失，不是含义反例。",
+      "sample": {
+        "scope": "保留期内 reports::newListingDate 按股票去重后与东方财富 F10 fxxg.LISTING_DATE 比较；15 只中 14 只 reportapi 有值且 14/14 一致，920508 的 reportapi 字段为空而 F10 有日期。",
+        "comparison_count": 14,
+        "matched_count": 14,
+        "counterexample_count": 0,
+        "excluded_count": 1,
+        "stock_count": 15,
+        "unique_info_code_count": 443,
+        "observation_count": 6051,
+        "raw_capture_file_count": 16
+      }
+    },
+    {
+      "id": "20261112-reports-newpeissuea-ipo-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "newPeIssueA"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "newIssuePrice / newListingDate / newPeIssueA",
+          "newPeIssueA"
+        ],
+        "meaning": [
+          "IPO 价/上市日/IPO PE",
+          "发行市盈率"
+        ]
+      },
+      "canonical": "首次公开发行市盈率",
+      "meaning": "该股票首次公开发行时的发行市盈率；逐值对应东方财富 F10 AFTER_ISSUE_PE。",
+      "unit": "倍",
+      "section": "东方财富 F10 IPO 公开字段与保留样本实证（2026-11-12）",
+      "rationale": "项目采集直接保留 report/list 原始路径 newPeIssueA。东方财富公开新股详情页将对应值标为“发行市盈率”，同页字段 AFTER_ISSUE_PE；13 只有值的留存股票与 F10 完全相同。000568 和 688327 两边均为空，仅作为缺失排除，不外推其他口径。",
+      "sample": {
+        "scope": "保留期内 reports::newPeIssueA 按股票去重后与东方财富 F10 fxxg.AFTER_ISSUE_PE 比较；15 只中 13 只有值且 13/13 一致；000568 与 688327 两侧均为空。",
+        "comparison_count": 13,
+        "matched_count": 13,
+        "counterexample_count": 0,
+        "excluded_count": 2,
+        "stock_count": 15,
+        "unique_info_code_count": 443,
+        "observation_count": 6051,
+        "raw_capture_file_count": 16
+      }
+    }
+  ]
+}

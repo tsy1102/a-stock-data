@@ -38,7 +38,14 @@ def _lineage_aliases(source, lineage):
     return [alias for alias in aliases if alias in runtime_sources]
 
 
-def _runtime_codes_for_source_identity(source, alias, code, explicit_runtime_owners=None):
+def _runtime_codes_for_source_identity(
+    source,
+    alias,
+    code,
+    explicit_runtime_owners=None,
+    full_view_owners=None,
+    adjudicated_full_view_owners=None,
+):
     """Map a registry identity to its merged and endpoint-specific runtime paths."""
 
     normalized_code = SLA.normalize_runtime_field_code(alias, code)
@@ -50,6 +57,20 @@ def _runtime_codes_for_source_identity(source, alias, code, explicit_runtime_own
         explicit_owners = (explicit_runtime_owners or {}).get((alias, qualified_code), set())
         if qualified_code not in codes and (not explicit_owners or identity in explicit_owners):
             codes.append(qualified_code)
+    if alias == "zhb":
+        full_view_code = SLA.zhb_full_view_field_code(source, code)
+        identity = (source, code)
+        owners = (full_view_owners or {}).get((alias, full_view_code), set())
+        adjudicated_owners = (adjudicated_full_view_owners or {}).get(
+            (alias, full_view_code), set()
+        )
+        runtime_full_code = f"full.{full_view_code}" if full_view_code else None
+        if (
+            runtime_full_code
+            and (owners == {identity} or adjudicated_owners == {identity})
+            and runtime_full_code not in codes
+        ):
+            codes.append(runtime_full_code)
     return tuple(codes)
 
 
@@ -226,6 +247,8 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             if isinstance(record, dict) and isinstance(record.get("id"), str):
                 adjudications[record["id"]] = record
     explicit_runtime_owners = defaultdict(set)
+    full_view_owners = defaultdict(set)
+    adjudicated_full_view_owners = defaultdict(set)
     for candidate in source_fields:
         if not isinstance(candidate, dict):
             continue
@@ -238,6 +261,29 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             explicit_runtime_owners[(alias, normalized_code)].add(
                 (candidate_source, candidate_code)
             )
+            if alias == "zhb":
+                full_view_code = SLA.zhb_full_view_field_code(candidate_source, candidate_code)
+                if full_view_code:
+                    identity = (candidate_source, candidate_code)
+                    full_view_owners[(alias, full_view_code)].add(identity)
+                    runtime_full_code = f"zhb.full.{full_view_code}"
+                    linked_records = candidate.get("adjudications")
+                    if not isinstance(linked_records, list):
+                        linked_records = []
+                    for record_ref in linked_records:
+                        if not isinstance(record_ref, dict):
+                            continue
+                        record = adjudications.get(record_ref.get("id"), record_ref)
+                        if not isinstance(record, dict) or record.get("status") != "verified":
+                            continue
+                        adjudicated_candidate = record.get("candidate")
+                        if not isinstance(adjudicated_candidate, dict):
+                            continue
+                        if runtime_full_code in {
+                            adjudicated_candidate.get("left"),
+                            adjudicated_candidate.get("right"),
+                        }:
+                            adjudicated_full_view_owners[(alias, full_view_code)].add(identity)
 
     alias_identity_owners = defaultdict(set)
     for candidate in source_fields:
@@ -249,7 +295,12 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             continue
         for alias in _lineage_aliases(candidate_source, lineage):
             for runtime_code in _runtime_codes_for_source_identity(
-                candidate_source, alias, candidate_code, explicit_runtime_owners
+                candidate_source,
+                alias,
+                candidate_code,
+                explicit_runtime_owners,
+                full_view_owners,
+                adjudicated_full_view_owners,
             ):
                 alias_identity_owners[(alias, runtime_code)].add((candidate_source, candidate_code))
 
@@ -292,7 +343,12 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         if field.get("status") == "disproved":
             for alias in aliases:
                 for runtime_code in _runtime_codes_for_source_identity(
-                    source, alias, code, explicit_runtime_owners
+                    source,
+                    alias,
+                    code,
+                    explicit_runtime_owners,
+                    full_view_owners,
+                    adjudicated_full_view_owners,
                 ):
                     runtime_identity = (alias, runtime_code)
                     if alias != "zhb" or len(alias_identity_owners[runtime_identity]) == 1:
@@ -304,7 +360,12 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         has_ambiguous_identity = False
         for alias in aliases:
             for runtime_code in _runtime_codes_for_source_identity(
-                source, alias, code, explicit_runtime_owners
+                source,
+                alias,
+                code,
+                explicit_runtime_owners,
+                full_view_owners,
+                adjudicated_full_view_owners,
             ):
                 runtime_identity = (alias, runtime_code)
                 context["verified_target_exclusions"].add(runtime_identity)
@@ -377,7 +438,12 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             continue
         for left_alias in left_aliases:
             left_codes = _runtime_codes_for_source_identity(
-                left.get("source"), left_alias, left_code, explicit_runtime_owners
+                left.get("source"),
+                left_alias,
+                left_code,
+                explicit_runtime_owners,
+                full_view_owners,
+                adjudicated_full_view_owners,
             )
             for right_alias in right_aliases:
                 right_codes = _runtime_codes_for_source_identity(
@@ -385,6 +451,8 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
                     right_alias,
                     right_code,
                     explicit_runtime_owners,
+                    full_view_owners,
+                    adjudicated_full_view_owners,
                 )
                 for normalized_left_code in left_codes:
                     for normalized_right_code in right_codes:
@@ -490,6 +558,11 @@ def code_of(fid, normalize_runtime_field_code):
         code = fid.split(".", 1)[1]
     else:
         return fid
+    if norm_src_of(fid) == "zhb" and code.startswith("full."):
+        # Keep the merged-view namespace explicit. Registry loading adds this
+        # alias only for a unique stat/stat2 owner; stripping it here could
+        # conflate a merged field with an unrelated unqualified registry path.
+        return code
     return normalize_runtime_field_code(norm_src_of(fid), code)
 
 

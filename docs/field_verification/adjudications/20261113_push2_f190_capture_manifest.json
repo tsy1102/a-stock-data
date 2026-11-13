@@ -1,0 +1,80 @@
+{
+  "captured_on": "2026-11-13",
+  "provider": "Eastmoney F10 public data API",
+  "base_endpoint": "https://datacenter.eastmoney.com/securities/api/data/get",
+  "parameters_shared": {
+    "source": "HSF10",
+    "client": "PC",
+    "page": 1,
+    "page_size": 100,
+    "sort": "REPORT_DATE descending",
+    "columns": "ALL"
+  },
+  "push2_sample": {
+    "directory": "docs/field_verification/20261110",
+    "data_date": "2026-11-10",
+    "stock_count": 20,
+    "f86_beijing_date_match": "20/20",
+    "raw_file": "docs/field_verification/20261110/raw_push2.json",
+    "raw_sha256": "C1AC4B3A6CF05082054880038E4857AEE7B2F851F21E4CF5D9AE22CED8D84F6C",
+    "meta_file": "docs/field_verification/20261110/meta.json",
+    "meta_sha256": "904A33F00BB0A672D0F1F316835AF8D4597CFF23857E0D25E40D8959EA5CFA58"
+  },
+  "requests": [
+    {
+      "report": "RPT_F10_FINANCE_GBALANCE",
+      "sty": "F10_FINANCE_GBALANCE",
+      "report_date": "2026-09-30",
+      "filter_key": "SECUCODE",
+      "codes": ["000007.SZ", "000011.SZ", "000037.SZ", "000568.SZ", "000678.SZ", "002034.SZ", "002242.SZ", "300031.SZ", "300788.SZ", "301190.SZ", "600309.SH", "600519.SH", "600675.SH", "600825.SH", "688327.SH", "688553.SH", "688589.SH", "920118.BJ", "920508.BJ"],
+      "rows": 19,
+      "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_general_20260930.json",
+      "sha256": "85C70D4B3B6ED2ADE5D203EC800C89CEE101590E41DA35B1828CF4FC09D7FEE9"
+    },
+    {
+      "report": "RPT_F10_FINANCE_BBALANCE",
+      "sty": "F10_FINANCE_BBALANCE",
+      "report_date": "2026-09-30",
+      "filter": "SECUCODE=601288.SH",
+      "rows": 1,
+      "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_bank_20260930.json",
+      "sha256": "79E3269AF4D13579B387E4FEB61D07C0B1558363F44CD73C951502FE8E19870F"
+    },
+    {
+      "report": "RPT_F10_FINANCE_BBALANCE",
+      "sty": "F10_FINANCE_BBALANCE",
+      "report_date": "2026-06-30",
+      "filter": "SECUCODE=601288.SH",
+      "rows": 1,
+      "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_balance_bank_20260630.json",
+      "sha256": "68965CF52B37B65A3D26848352CD7AEC4B658CB13CCFC850B8B50764648B82DF"
+    },
+    {
+      "report": "RPT_F10_FINANCE_MAINFINADATA",
+      "sty": "APP_F10_MAINFINADATA",
+      "report_date": "2026-09-30",
+      "filter_key": "SECUCODE",
+      "codes": ["000007.SZ", "000011.SZ", "000037.SZ", "000568.SZ", "000678.SZ", "002034.SZ", "002242.SZ", "300031.SZ", "300788.SZ", "301190.SZ", "600309.SH", "600519.SH", "600675.SH", "600825.SH", "601288.SH", "688327.SH", "688553.SH", "688589.SH", "920118.BJ", "920508.BJ"],
+      "fields_checked": ["MGWFPLR"],
+      "rows": 20,
+      "file": "docs/field_verification/adjudications/20261113_push2_f190_f10_main_indicators_20260930.json",
+      "sha256": "1C41593674BAA899A041A40F914AC3C2B7A3E70B48534753E820C46D86847E15"
+    }
+  ],
+  "comparison_file": "docs/field_verification/adjudications/20261113_push2_f190_denominator_samples.csv",
+  "comparison_rows": 20,
+  "comparison_sha256": "6A92C5D2C0B2E75AE270894EB5F256F0E82553DC1C8130581A0535B42F6784F8",
+  "history_file": "docs/field_verification/adjudications/20261113_push2_f190_601288_history.csv",
+  "history_rows": 11,
+  "history_sha256": "6AF5CB3139D55A0F2FC5D550E0E008E29B4530007C61ACB6215EC28AFA3264E2",
+  "results": {
+    "f190_times_f84_matches_report_unassign": "19/20",
+    "f190_times_f84_plus_bank_dividend_payable_matches": "20/20",
+    "distinct_f84_f85_samples": 12,
+    "f84_direct_matches_among_distinct_samples": "11/12",
+    "f84_plus_bank_payable_match_among_distinct_samples": "12/12",
+    "f190_times_f85_matches_report_unassign_among_distinct_samples": "0/12",
+    "f10_MGWFPLR_matches_push2_f190_at_output_precision": "19/20",
+    "bank_f190_difference_equals_dividend_payable_per_share_with_rounding": true
+  }
+}

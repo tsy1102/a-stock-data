@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_tdx_finance_slots_semantic_alignment.md",
+  "evidence_sha256": "e010c93d955ea4bef3f89ef14d2bdea626b43df5eb5d2634cfe975d22c191c7f",
+  "decisions": [
+    {
+      "id": "20261112-tdx-fajirenfarengu-prior-year-parent-net-profit",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "fajirenfarengu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "发起人法人股（项目输出键拼写为 fajirenfarengu）",
+        "unit": ""
+      },
+      "canonical": "prior_year_parent_net_profit",
+      "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
+      "unit": "角",
+      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "rationale": "精确路径 finance_info.fajirenfarengu 的保留样本与同报告期发行人正式报告对应；20 只股票全部与 2025Q3 比较期归母净利润吻合，五份发行人正式报告逐值复核，339 组同 updated_date TDX/ELTDX 样本也完全一致。负利润样本排除股数解释。旧解析标签不构成阻止 E3 的理由。归档快照单位为千元；当前适配器乘 10000 输出角，金额与报告比较前除以 10 转为元。",
+      "sample": {
+        "scope": "2026-11-10 TDX finance_info.fajirenfarengu，对照 Fuyao 2025-09-30 income_q；五份发行人 2026Q3 报告逐项复核；补充 2026-10-15 至 2026-11-10 同 updated_date TDX/ELTDX 配对审计",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 5,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "observation_count": 339,
+        "capture_directory_count": 17
+      }
+    },
+    {
+      "id": "20261112-tdx-farengu-prior-year-operating-revenue",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "farengu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "farengu",
+        "meaning": "法人股",
+        "unit": "万股"
+      },
+      "canonical": "prior_year_operating_revenue",
+      "meaning": "上年同期营业收入（报告比较数）",
+      "unit": "角",
+      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "rationale": "精确路径 finance_info.farengu 的保留样本与同报告期发行人正式报告对应；20 只股票全部与 2025Q3 比较期营业收入吻合，五份发行人正式报告逐值复核，339 组同 updated_date TDX/ELTDX 样本也完全一致。金额量级与跨股票吻合排除股份解释。归档快照单位为千元；当前适配器乘 10000 输出角，金额与报告比较前除以 10 转为元。",
+      "sample": {
+        "scope": "2026-11-10 TDX finance_info.farengu，对照 Fuyao 2025-09-30 income_q；五份发行人 2026Q3 报告逐项复核；补充 2026-10-15 至 2026-11-10 同 updated_date TDX/ELTDX 配对审计",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 5,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "observation_count": 339,
+        "capture_directory_count": 17
+      }
+    }
+  ]
+}

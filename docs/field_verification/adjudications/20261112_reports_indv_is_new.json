@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs\\field_verification\\adjudications\\20261112_reports_indv_is_new_evidence.md",
+  "evidence_sha256": "ed3ee7a342c404005a7b004980e93524f19fe5453bfb29a23d586335e64fd964",
+  "decisions": [
+    {
+      "id": "20261112-reports-indvisnew",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "indvIsNew"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "indvIsNew",
+        "meaning": "新研报标记",
+        "unit": ""
+      },
+      "canonical": "indvIsNew",
+      "meaning": "东财个股研报的新股研报栏目标记；观测到 002=新股研报（column=002004003）、001=其他个股研报栏目；空值保持缺失，不外推未观察的代码。",
+      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-12）",
+      "rationale": "项目 get_reports 直接保留东财 report/list 同一行的 indvIsNew 与 column。2026-10-15 至 2026-11-10 的 16 个保留 raw 文件按 infoCode 去重后，430 条非空分类记录中 424 条 001 均不属于 column=002004003，6 条 002 均属于该栏目，零反例；13 条空值排除。东方财富官网有独立的新股研报栏目，且云从科技 688327 的 002 新股专题覆盖和 001 常规研报详情与上述对应关系一致。故确认该完整来源路径的已观测分类语义；不解释空值或其他未观察代码，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-10 的 16 个 docs/field_verification/YYYYMMDD/raw_reports.json；6,051 条重复/非重复观察按 443 个唯一 infoCode 去重；比较同条记录 indvIsNew 与 column，排除 13 个空标记报告。",
+        "comparison_count": 430,
+        "matched_count": 430,
+        "counterexample_count": 0,
+        "excluded_count": 13,
+        "stock_count": 15,
+        "observation_count": 6051
+      }
+    }
+  ]
+}

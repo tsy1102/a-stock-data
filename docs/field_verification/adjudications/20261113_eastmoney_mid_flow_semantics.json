@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md",
+  "evidence_sha256": "2ae220c30567600c7144857c4c47ef09c3d8b30cc0ce16792a18b723f83049b8",
+  "decisions": [
+    {
+      "id": "20261113-mid-flow-push2-f144-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f144"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f144",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_buy",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f76 直接标为“中单流入”；保留期新样本中，Ulist f76、Push2 f144、em_fund_flow f144 在 140/140 个同股同日数值行完全相等，覆盖 20 股、7 个数据日。故精确路径为中单流入/买入金额；不依字段号相同推断，依据明确异号路径及逐值关系。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff144` 和 em_fund_flow `ff144` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-em-fund-flow-f144-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f144"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f144",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_buy",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f76 直接标为“中单流入”；保留期新样本中，Ulist f76、Push2 f144、em_fund_flow f144 在 140/140 个同股同日数值行完全相等，覆盖 20 股、7 个数据日。故精确路径为中单流入/买入金额；不依字段号相同推断，依据明确异号路径及逐值关系。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff144` 和 em_fund_flow `ff144` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-push2-f145-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f145"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f145",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f77 直接标为“中单流出”；保留期新样本中，Ulist f77、Push2 f145、em_fund_flow f145 在 140/140 个同股同日数值行完全相等，覆盖 20 股、7 个数据日。故精确路径为中单流出/卖出金额；不依字段号相同推断。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff145` 和 em_fund_flow `ff145` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-em-fund-flow-f145-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f145"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f145",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f77 直接标为“中单流出”；保留期新样本中，Ulist f77、Push2 f145、em_fund_flow f145 在 140/140 个同股同日数值行完全相等，覆盖 20 股、7 个数据日。故精确路径为中单流出/卖出金额；不依字段号相同推断。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff145` 和 em_fund_flow `ff145` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-push2-f146-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f146"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f146",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_today",
+      "meaning": "东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f78 直接标为“中单净流入”；保留期新样本中，Ulist f78、Push2 f146、em_fund_flow f146 在 140/140 个同股同日数值行完全相等。公式 f146=f144-f145 与 ulist f78=f76-f77 在 140/140 条可比较样本中均精确成立，反例为 0。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff146` 和 em_fund_flow `ff146` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-em-fund-flow-f146-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f146"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f146",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_mid_today",
+      "meaning": "东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富 Ulist 个股资金流官方页面既有观察将 ulist f78 直接标为“中单净流入”；保留期新样本中，Ulist f78、Push2 f146、em_fund_flow f146 在 140/140 个同股同日数值行完全相等。公式 f146=f144-f145 与 ulist f78=f76-f77 在 140/140 条可比较样本中均精确成立，反例为 0。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff146` 和 em_fund_flow `ff146` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-ulist-f76-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f76"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f76",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fund_mid_buy",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富官方个股资金流页面既有逐项观察将该 Ulist 路径标为“中单流入”；保留期新样本中，ulist f76 与 stock/get f144 在 140/140 个可比较股票日上精确相等，且同一路径的 em_fund_flow f144 亦逐值一致。此处确认 Ulist 精确来源字段的角色，不建立新映射。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff76`、Push2 `ff76` 和 em_fund_flow `ff76` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-ulist-f77-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f77"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f77",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fund_mid_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富官方个股资金流页面既有逐项观察将该 Ulist 路径标为“中单流出”；保留期新样本中，ulist f77 与 stock/get f145 在 140/140 个可比较股票日上精确相等，且同一路径的 em_fund_flow f145 亦逐值一致。此处确认 Ulist 精确来源字段的角色，不建立新映射。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff77`、Push2 `ff77` 和 em_fund_flow `ff77` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-mid-flow-ulist-f78-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f78"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f78",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fund_mid_today",
+      "meaning": "东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney 中单资金流字段来源内语义复核",
+      "rationale": "东方财富官方个股资金流页面既有逐项观察将该 Ulist 路径标为“中单净流入”；保留期新样本中，ulist f78 与 stock/get f146 在 140/140 个可比较股票日上精确相等，且同一路径的 em_fund_flow f146 亦逐值一致。ulist f78=f76-f77 在 140/140 条可比较样本中成立。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；Ulist `ff78`、Push2 `ff78` 和 em_fund_flow `ff78` 同股同日逐值对照。三个端点按不同接口处理，不计作不同提供方。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

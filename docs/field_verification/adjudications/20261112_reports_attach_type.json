@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_attach_type_evidence.md",
+  "evidence_sha256": "fff1e55677fbc6fb9552daf6eb6bd89ce0628c2c7dc4f91cf182de71e1eda4eb",
+  "decisions": [
+    {
+      "id": "20261112-reports-attach-type-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "attachType"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "attachType",
+        "meaning": "附件类型",
+        "unit": ""
+      },
+      "canonical": "研报附件类型代码",
+      "meaning": "东方财富 report/list 研报记录中的附件类型代码。保留样本只观察到代码 0；三条按股票和 infoCode 精确绑定的东方财富详情页均链接至 PDF 原文，支持本样本中 0 对应 PDF 附件。其他未观察或未解码的代码不作推断。",
+      "unit": "",
+      "section": "Eastmoney report/list 附件类型代码实证（2026-11-12）",
+      "rationale": "项目 get_reports() 保留东方财富 report/list 原始记录，注册表完整路径 reports::attachType 与原始键 attachType 逐字一致。仅扫描 2026-10-15 起 16 个 raw_reports 归档，共 6,051 条观察、443 个唯一股票/infoCode 研报记录；全部 6,051 条观察均为非空代码 0。三条不同股票和 infoCode 的保留记录分别对应东方财富官方详情页；每个详情页“查看 PDF 原文”实际打开 application/pdf 文件，Chrome PDF 阅读器分别显示 4、3、32 页。由此确认该路径是附件类型代码，并将观测代码 0 限定映射为 PDF。该证据不定义未观察代码，不推断 attachType 在其他接口中的含义，也不把 443 条记录覆盖检查说成 443 次 PDF 核验。",
+      "sample": {
+        "scope": "仅使用 2026-10-15 起保留的 reports::attachType 原始值。16 个 raw_reports 文件的 6,051 条观察及去重后的 443 个唯一股票/infoCode 研报均为代码 0；三条不同股票、不同 infoCode 的官方详情页链接原文 PDF，逐条验证其 application/pdf 类型和 Chrome 阅读器页数。只裁决观测代码 0，不推断未观察代码。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "stock_count": 3,
+        "observation_count": 6051,
+        "unique_info_code_count": 443,
+        "raw_capture_file_count": 16,
+        "nonempty_observation_count": 6051,
+        "unique_nonempty_report_count": 443,
+        "observed_code_count": 1,
+        "official_pdf_check_count": 3
+      }
+    }
+  ]
+}

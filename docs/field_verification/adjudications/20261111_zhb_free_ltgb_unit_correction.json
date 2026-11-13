@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-zhb-free-ltgb-unit-correction",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.free_ltgb"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "stat.free_ltgb",
+        "meaning": "自由流通股本",
+        "unit": "股"
+      },
+      "canonical": "stat.free_ltgb",
+      "meaning": "自由流通股本",
+      "unit": "万股",
+      "rationale": "通达信官方 get_more_info_batch 字段表将 FreeLtgb 定义为自由流通股本(万)，FINANCE(46) 官方说明给出扣除持股比例 5% 以上部分的业务口径。项目 core/zhb_client.py 将 tdxstat.cfg 第[11]列直接解析为 stat.free_ltgb，解析器注释同样标为万股。三家发行人 2026 年第三季度报告按同一报告期和 A 股主体口径复算后，ZHB 2026-11-09 数据日原值换算残差分别为 -22、+12、+21 股，均落在各原始值可见小数位对应的半格显示分辨率内；不据此推断具体取整算法。完整证据见 docs/field_verification/adjudications/20261111_zhb_free_ltgb_contract_and_filings.md。仅更正单位，不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "stat.free_ltgb",
+          "meaning": "自由流通股本",
+          "unit": "股"
+        },
+        "updated": {
+          "canonical": "stat.free_ltgb",
+          "meaning": "自由流通股本",
+          "unit": "万股"
+        },
+        "rationale": "通达信官方接口表直接标注 FreeLtgb 的单位为万；项目解析器同列注释一致。茅台、农业银行、万华化学三家发行人同一报告期复算的残差分别落在原始值可见小数位对应的半格内，支持单位判断；不推断具体取整算法。"
+      },
+      "source_contract": {
+        "authority": "通达信量化平台官方接口与函数说明",
+        "revision": "官方网页于 2026-11-11 核验",
+        "path": "get_more_info_batch -> FreeLtgb; 项目 tdxstat.cfg[11] -> ZHB-tdxstat::stat.free_ltgb",
+        "locator": "FreeLtgb | 自由流通股本(万)；FINANCE(46) 自由流通股的定义",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html"
+      }
+    }
+  ]
+}

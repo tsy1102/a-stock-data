@@ -56,6 +56,10 @@ def _identity_index(
         for alias in sla.runtime_aliases_for_source(record["source"], lineage):
             normalized = sla.normalize_runtime_field_code(alias, record["code"])
             owners[(alias, normalized)].add(identity)
+            if alias == "zhb":
+                full_view_code = sla.zhb_full_view_field_code(record["source"], record["code"])
+                if full_view_code:
+                    owners[(alias, full_view_code)].add(identity)
     return owners, records
 
 
@@ -100,11 +104,18 @@ def _resolve_runtime_identity(
         branch_path = fid[len(prefix) :]
         branch, separator, branch_code = branch_path.partition(".")
         if branch == "full":
-            return None, "merged_zhb_full_view"
+            matches = owners.get(("zhb", branch_code), set())
+            if len(matches) == 1:
+                owner_identity = next(iter(matches))
+                if owner_identity in source_records:
+                    return owner_identity, "mapped_by_unique_full_view_owner"
+            if len(matches) > 1:
+                return None, "ambiguous_merged_zhb_full_view"
+            return None, "unmapped_merged_zhb_full_view"
         source = ZHB_BRANCH_SOURCES.get(branch)
-        identity = (source, branch_code) if source and separator else None
-        if identity in source_records:
-            return identity, "mapped_by_explicit_branch"
+        branch_identity = (source, branch_code) if source and separator else None
+        if branch_identity is not None and branch_identity in source_records:
+            return branch_identity, "mapped_by_explicit_branch"
         return None, "unmapped_zhb_branch_or_code"
 
     if not code:

@@ -203,8 +203,8 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
 
         fin = tdx_get_finance_info(code)
         if fin:
-            # V16.2.3 修正: 0x0010 协议 zongguben/liutongguben 实为**股**（easy_tdx 源码
-            # 注释"万股"错误，_SCALE=10000 乘出股）；本缓存统一输出**万股**（与 push2 f84 路径一致）。
+            # 0x0010 原始股本槽位为万股；TDX 适配器将其统一换算为股后，
+            # 本缓存再除以 10000，统一输出万股（与 push2 f84 路径一致）。
             # 参考 docs/field_dict.md 第 7.1 节
             total = float(fin.get("zongguben", 0) or 0) / 10000.0
             float_shares = float(fin.get("liutongguben", 0) or 0) / 10000.0

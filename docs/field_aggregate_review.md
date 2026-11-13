@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 125 个 code；聚合定义不完整 222 个 code；疑似合并文本 347 条逐源记录。
+> 聚合歧义 128 个 code；聚合定义不完整 213 个 code；疑似合并文本 404 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -671,22 +671,6 @@
 | TDX(双命名源) · `ask1` | ask1 | 卖一价 | 元 | `verified` |
 | TDX-eltdx(适配层) · `ask1` | ask1 | 卖一价格 | — | `verified` |
 
-### `attachPages` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `attachPages` | — | — | — | `conflict` |
-
-### `attachSize` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `attachSize` | — | — | — | `conflict` |
-
 ### `bid` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -789,7 +773,7 @@
 | ZHB-tipinfo · `code` | code | 股票代码 | 6位字符串 | `verified` |
 | 东财-push2ex · `code` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `code` | — | — | — | `verified` |
-| 巨潮(cninfo) · `code` | — | — | — | `unverified` |
+| 巨潮(cninfo) · `code` | code | 问答所属的六位股票代码 | 6位字符串 | `verified` |
 | 市场源(market_sources) · `code` | code | 股票代码 | — | `verified` |
 | 开盘啦(kpl) · `code` | code | 股票代码 | — | `unverified` |
 | 财联社(cls) · `code` | — | — | — | `unverified` |
@@ -837,14 +821,6 @@
 | 开盘啦(kpl) · `date` | — | — | — | `unverified` |
 | 新浪(扩展API) · `date` | — | — | — | `unverified` |
 
-### `emRatingValue` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `emRatingValue` | — | — | — | `conflict` |
-
 ### `encodeUrl` — incomplete
 
 聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -853,13 +829,13 @@
 |:--|:--|:--|:--|:--|
 | reports · `encodeUrl` | encodeUrl | — | — | `conflict` |
 
-### `eps` — incomplete
+### `eps` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `eps` | — | — | — | `unverified` |
+| TDX(双命名源) · `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | 元/股 | `verified` |
 | ZHB-tipinfo · `eps` | eps | 报告期累计每股收益（基本/稀释/扣非口径未区分） | 元/股 | `verified` |
 
 ### `eps_raw` — ambiguous
@@ -918,11 +894,11 @@
 
 ### `f103` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM | 元 | `unverified` |
+| 东财-push2(stock/get) · `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f103` | f103 | 所属概念列表 | — | `verified` |
 
 ### `f104` — ambiguous
@@ -1230,56 +1206,56 @@
 | 东财-push2(stock/get) · `f134` | f134 | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f134` | f134 | — | — | `unverified` |
 
-### `f135` — incomplete
+### `f135` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f135` | f135 | — | 元 | `conflict` |
-| 东财-ulist239(np/get) · `f135` | — | 净资产 | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f135` | f135 | — | 元 | `conflict` |
+| 东财-push2(stock/get) · `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
+| 东财-ulist239(np/get) · `f135` | ulist239_total_equity_consolidated | 所有者权益合计（合并口径，含少数股东权益） | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
 
 ### `f136` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f136` | f136 | 板块领涨股涨跌幅 | % | `verified` |
-| 东财-push2(stock/get) · `f136` | f136 | — | 元 | `conflict` |
+| 东财-push2(stock/get) · `f136` | fund_main_sell | 东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f136` | — | — | — | `unverified` |
-| 东财-资金流(em_fund_flow) · `f136` | f136 | — | 元 | `conflict` |
+| 东财-资金流(em_fund_flow) · `f136` | fund_main_sell | 东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
 
-### `f137` — ambiguous
+### `f137` — incomplete
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f137` | fund_main_today | 主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f137` | — | — | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f137` | f137 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f137` | fund_main_today | 主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。 | 元 | `verified` |
 
-### `f138` — ambiguous
+### `f138` — incomplete
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f138` | fund_super_buy | 东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f138` | — | — | — | `unverified` |
-| 东财-资金流(em_fund_flow) · `f138` | f138 | — | 元 | `conflict` |
+| 东财-资金流(em_fund_flow) · `f138` | fund_super_buy | 东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 
-### `f139` — ambiguous
+### `f139` — incomplete
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f139` | — | — | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f139` | f139 | — | 元 | `conflict` |
+| 东财-资金流(em_fund_flow) · `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 
 ### `f14` — ambiguous
 
@@ -1301,48 +1277,48 @@
 | 东财-push2(stock/get) · `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | 元 | `verified` |
 | 东财-slist · `f140` | f140 | 板块龙头股代码 | — | `verified` |
 | 东财-ulist239(np/get) · `f140` | — | — | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f140` | f140 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | 元 | `verified` |
 
-### `f141` — ambiguous
+### `f141` — incomplete
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f141` | — | — | — | `unverified` |
 | 东财-push2(stock/get) · `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f141` | — | — | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f141` | f141 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 
-### `f142` — incomplete
+### `f142` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f142` | f142 | — | 元 | `verified` |
+| 东财-push2(stock/get) · `f142` | fund_large_sell | 东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f142` | f142 | 买二价 | 元 | `verified` |
-| 东财-资金流(em_fund_flow) · `f142` | f142 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f142` | fund_large_sell | 东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | 元 | `verified` |
 
-### `f143` — incomplete
+### `f143` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f143` | f143 | — | 元 | `verified` |
+| 东财-push2(stock/get) · `f143` | fund_large_today | 东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f143` | f143 | 卖二价 | 元 | `verified` |
-| 东财-资金流(em_fund_flow) · `f143` | f143 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f143` | fund_large_today | 东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。 | 元 | `verified` |
 
-### `f144` — incomplete
+### `f144` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f144` | f144 | — | 元 | `verified` |
+| 东财-push2(stock/get) · `f144` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f144` | f144 | 最新价/现价 | 元 | `verified` |
-| 东财-资金流(em_fund_flow) · `f144` | f144 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f144` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f145` — incomplete
 
@@ -1350,49 +1326,49 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f145` | f145 | — | 元 | `verified` |
+| 东财-push2(stock/get) · `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f145` | — | — | — | `conflict` |
-| 东财-资金流(em_fund_flow) · `f145` | f145 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f146` — ambiguous
 
-聚合问题：meaning_incomplete；unit_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f146` | f146 | — | 元 | `verified` |
+| 东财-push2(stock/get) · `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f146` | f146 | 所属行业领涨股代码 | - | `verified` |
-| 东财-资金流(em_fund_flow) · `f146` | f146 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f147` — ambiguous
 
-聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f147` | fund_small_buy | 小单类别的资金流入金额，不表示投资者账户身份 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f147` | f147 | — | — | `verified` |
-| 东财-资金流(em_fund_flow) · `f147` | f147 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f147` | fund_small_buy | 小单类别的资金流入金额，不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f148` — ambiguous
 
-聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f148` | fund_small_sell | 小单类别的资金流出金额，不表示投资者账户身份 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f148` | f148 | — | — | `unverified` |
-| 东财-资金流(em_fund_flow) · `f148` | f148 | — | 元 | `verified` |
+| 东财-资金流(em_fund_flow) · `f148` | fund_small_sell | 小单类别的资金流出金额，不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f149` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f149` | fund_small_today | 小单类别资金净流入金额，等于流入金额减流出金额 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f149` | — | — | — | `unverified` |
-| 东财-资金流(em_fund_flow) · `f149` | f149 | — | 元 | `conflict` |
+| 东财-资金流(em_fund_flow) · `f149` | fund_small_today | 小单类别资金净流入金额，等于流入金额减流出金额。 | 元 | `verified` |
 
 ### `f15` — incomplete
 
@@ -1432,12 +1408,12 @@
 
 ### `f160` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f160` | f109 / f160 | 涨跌幅 | % | `verified` |
-| 东财-push2(stock/get) · `f160` | eps_annual(f160) | 待破解 | 元/股 | `unverified` |
+| 东财-push2(stock/get) · `f160` | eps_annual(f160) | 上年度归母净利润按最新总股本折算的每股金额（不同于年报披露基本每股收益） | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f160` | change_10d | 10日涨跌幅 | % | `verified` |
 
 ### `f161` — incomplete
@@ -1461,11 +1437,11 @@
 
 ### `f163` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f163` | f163 | — | — | `verified` |
+| 东财-push2(stock/get) · `f163` | f163 | 静态市盈率（总市值/上年度净利润） | 倍 | `verified` |
 | 东财-ulist239(np/get) · `f163` | f163 | — | — | `verified` |
 | 开盘啦(kpl) · `f163` | — | — | — | `unverified` |
 
@@ -1737,11 +1713,11 @@
 
 ### `f190` — incomplete
 
-聚合问题：meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f190` | f190 | — | — | `verified` |
+| 东财-push2(stock/get) · `f190` | f190 | 每股未分配利润 | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f190` | f190 | — | — | `unverified` |
 
 ### `f191` — incomplete
@@ -2000,14 +1976,14 @@
 | 东财-push2(stock/get) · `f45` | f45 | 最低价 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f45` | latest_report_parent_net_profit_ytd | 最新已披露定期报告中归属于上市公司股东的净利润，按年初至报告期末累计。 | 元 | `verified` |
 
-### `f46` — incomplete
+### `f46` — ambiguous
 
-聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f46` | f46 | 开盘价 | 元 | `verified` |
-| 东财-ulist239(np/get) · `f46` | f46 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f46` | ulist239_parent_net_profit_yoy_growth_pct | 归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留） | % | `verified` |
 
 ### `f47` — ambiguous
 
@@ -2097,7 +2073,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-em_kline_f61 · `f55` | f55 | 最低价 | 元 | `verified` |
-| 东财-push2(stock/get) · `f55` | f55 | 基本每股收益（最新报告期） | 元/股 | `verified` |
+| 东财-push2(stock/get) · `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f55` | liudongfuzhai | 流动负债 | 元 | `verified` |
 | 东财-资金流(em_fund_flow) · `f55` | — | — | — | `unverified` |
 
@@ -2290,31 +2266,31 @@
 
 ### `f76` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f76` | — | — | — | `unverified` |
-| 东财-ulist239(np/get) · `f76` | f76 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f76` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f77` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f77` | — | — | — | `unverified` |
-| 东财-ulist239(np/get) · `f77` | f77 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f77` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f78` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f78` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | 元 | `verified` |
 | 东财-push2(stock/get) · `f78` | f78 | — | — | `verified` |
-| 东财-ulist239(np/get) · `f78` | f78 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f78` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | 元 | `verified` |
 | 东财-资金流(em_fund_flow) · `f78` | — | — | — | `unverified` |
 
 ### `f8` — incomplete
@@ -2411,11 +2387,11 @@
 
 ### `f92` — incomplete
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f92` | f92 | — | — | `verified` |
+| 东财-push2(stock/get) · `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f92` | f92 | — | — | `verified` |
 
 ### `first_limit_time` — incomplete
@@ -2851,38 +2827,14 @@
 | 开盘红 · `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `net_inflow` | net_inflow / market_cap | 待破解 | — | `unverified` |
 
-### `net_profit` — incomplete
+### `net_profit` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| TDX(双命名源) · `net_profit` | — | — | — | `unverified` |
-| 同花顺-fuyao · `net_profit` | net_profit | 净利润 | JLY（净利润） | `conflict` |
-
-### `newIssuePrice` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| reports · `newIssuePrice` | — | — | — | `conflict` |
-
-### `newListingDate` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `newListingDate` | — | — | — | `conflict` |
-
-### `newPeIssueA` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `newPeIssueA` | — | — | — | `conflict` |
+| TDX(双命名源) · `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | — | `disproved` |
+| 同花顺-fuyao · `net_profit` | net_profit | 合并净利润（含少数股东损益） | 原币元 | `verified` |
 
 ### `northbound_hold.change_ratio` — consistent
 
@@ -3537,16 +3489,27 @@
 | TDX(双命名源) | `Outside` | Outside | 外盘；板块指数时表示涨停家数 | `verified` |
 | TDX(双命名源) | `ShapeValue` | ShapeValue | 短期形态+中期形态+长期形态编号 | `verified` |
 | TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
+| TDX(双命名源) | `amount_wan` | amount_wan | TDX 行情快照成交金额；由原始 amount 以元计值除以 10000 得到，输出单位为万元。 | `verified` |
 | TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
+| TDX(双命名源) | `baoliu2` | report_period_end_month | 财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证 | `verified` |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
+| TDX(双命名源) | `change_amt` | change_amt | TDX 行情快照涨跌额，即最新价减昨收价；价格单位为元/股。 | `verified` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares | 流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | `unverified` |
+| TDX(双命名源) | `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | `verified` |
+| TDX(双命名源) | `gudongrenshu` | gudongrenshu | 股东户数；样本对应发行人报告期末普通股股东总数，按来源计数口径记录。 | `verified` |
+| TDX(双命名源) | `ipodate` | ipodate | ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。 | `verified` |
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
+| TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | `disproved` |
 | TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
+| TDX(双命名源) | `updateddate` | updateddate | updated_date 的无下划线兼容别名，表示该证券财务记录的更新日期；不等同报告期末、公告披露日、采集日或来源级数据日期。 | `verified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
+| TDX(双命名源) | `zhuyinglyrun` | zhuyinglyrun | 财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。 | `verified` |
+| TDX(双命名源) | `zhuyingshouru` | zhuyingshouru | 主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。 | `verified` |
+| TDX(双命名源) | `zongxianjinliu` | zongxianjinliu | 经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。 | `verified` |
 | TDX-eltdx(适配层) | `auction_matched_volume` | auction_matched_volume | 成交明细模型中的竞价匹配量占位字段，固定为 None；实际竞价匹配量由 auctions.series 的 AuctionPoint.matched_volume 提供 | `verified` |
 | TDX-eltdx(适配层) | `auction_unmatched_signed_volume` | auction_unmatched_signed_volume | 成交明细模型中的带符号竞价未匹配量占位字段，固定为 None；实际未匹配量由 auctions.series 返回 | `verified` |
 | TDX-eltdx(适配层) | `bao_liu_2_raw_float` | bao_liu_2_raw_float | 上游保留字段 2；未公开业务语义 | `verified` |
@@ -3556,6 +3519,9 @@
 | TDX-eltdx(适配层) | `eltdx_seal_to_float_ratio` | eltdx_seal_to_float_ratio | 当前买一金额占自由流通市值Z比；仅已封板时解释为封板强度 | `verified` |
 | TDX-eltdx(适配层) | `eps_raw` | eps_raw | 每股收益原始值；样本对应最近已披露报告期的年初至报告期末累计值，接口未区分基本与稀释口径 | `verified` |
 | TDX-eltdx(适配层) | `event_kind` | event_kind | 成交记录事件分类标签：trade、auction_snapshot 或 opening_match | `verified` |
+| TDX-eltdx(适配层) | `fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_qi_ren_fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | `disproved` |
+| TDX-eltdx(适配层) | `fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | `disproved` |
+| TDX-eltdx(适配层) | `finance_batch[].zhu_ying_li_run_raw_float` | finance_batch[].zhu_ying_li_run_raw_float | 营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突） | `verified` |
 | TDX-eltdx(适配层) | `finance_batch[].zong_xian_jin_liu_raw_float` | finance_batch[].zong_xian_jin_liu_raw_float | 总现金流（经营、投资、筹资活动净额之和，不含汇率影响） | `verified` |
 | TDX-eltdx(适配层) | `finance_info_raw` | finance_info_raw | 0x0010 财务基础信息记录的原始主体；解码后为 136 字节，JSON 中以十六进制字符串保存 | `verified` |
 | TDX-eltdx(适配层) | `gu_dong_ren_shu_raw_float` | gu_dong_ren_shu_raw_float | 股东人数（按股东账户计；具体有效报告期以来源记录为准） | `verified` |
@@ -3588,6 +3554,7 @@
 | TDX-eltdx(适配层) | `tou_zi_shou_yu_raw_float` | tou_zi_shou_yu_raw_float | 投资收益；样本值对应报告期累计金额 | `verified` |
 | TDX-eltdx(适配层) | `updated_date_raw` | updated_date_raw | 财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
 | TDX-eltdx(适配层) | `volume_wire_value` | volume_wire_value | 协议解码后的成交量值；普通A股单位为股，已验证的可转债品种单位为手 | `verified` |
+| TDX-eltdx(适配层) | `zhu_ying_li_run_raw_float` | zhu_ying_li_run_raw_float | 营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突） | `verified` |
 | TDX-eltdx(适配层) | `zong_xian_jin_liu_raw_float` | zong_xian_jin_liu_raw_float | 总现金流；样本中对应经营、投资、筹资三类活动净现金流量之和，不含汇率变动影响 | `verified` |
 | TDX-eltdx(适配层) | `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值；样本对应季报资产总计 | `verified` |
 | ZHB-tdxstat | `[22]` | [22] | 形态/板块代码 ShapeValue | `verified` |
@@ -3651,12 +3618,24 @@
 | reports | `RZJME` | RZJME / RQJMG | 融资净买入 / 融券净卖出 | `unverified` |
 | reports | `SELL_RATIO` | BUY_RATIO / SELL_RATIO | 买入/卖出占比 | `unverified` |
 | reports | `SELL_SEAT` | BUY_SEAT / SELL_SEAT | 买入/卖出前5席位数 | `unverified` |
+| reports | `actualLastTwoYearEps` | actualLastYearEps | 保留期内全部非空样本与同条 actualLastYearEps 完全重复；不能作为独立的前两年实际 EPS 字段（当前接口响应行为） | `disproved` |
+| reports | `actualLastYearEps` | 上一年度实际每股收益 | 东方财富 report/list 研报记录中对应报告发布日期之前一完整会计年度的实际 EPS，单位元/股。该字段为东方财富研报口径；不等同发行人按加权平均普通股数披露的法定基本/稀释 EPS。股本变化可能导致历史每股值采用不同分母；本裁决不确认统一分母算法。 | `verified` |
 | reports | `adjunctSize` | adjunctSize / adjunctType | 附件大小/类型 | `unverified` |
 | reports | `adjunctType` | adjunctSize / adjunctType | 附件大小/类型 | `unverified` |
 | reports | `analyse` | analyse / analyse_title | 待破解 | `unverified` |
 | reports | `analyse_title` | analyse / analyse_title | 待破解 | `unverified` |
+| reports | `attachSize` | 研报 PDF 附件大小 | 东方财富研报记录所链接 PDF 附件的大小；当前接口整数值等于所测 PDF Content-Length 字节数除以 1,024 后向下取整。 | `verified` |
+| reports | `attachType` | 研报附件类型代码 | 东方财富 report/list 研报记录中的附件类型代码。保留样本只观察到代码 0；三条按股票和 infoCode 精确绑定的东方财富详情页均链接至 PDF 原文，支持本样本中 0 对应 PDF 附件。其他未观察或未解码的代码不作推断。 | `verified` |
 | reports | `author` | report_author_id_name_list | 研报作者列表；每项由作者 ID 和姓名组成，原始格式为“ID.姓名”。 | `verified` |
+| reports | `column` | column | 东方财富个股研报栏目代码；保留样本观测 11 个代码，其中 002004003 对应新股研报栏目；其余代码释义未扩展。 | `verified` |
 | reports | `emRatingCode` | emRatingCode | 东财统一评级类别代码；与同记录 emRatingName 关联，完整代码表未知。 | `verified` |
+| reports | `emRatingValue` | emRatingValue | 东财研报 API 统一评级的数值档位；本次留存样本观察到 1=持有、2=增持、3=买入，不推断未观察到的其他数值。 | `verified` |
+| reports | `indvAimPriceL` | 研报目标价区间下限 | 东方财富 report/list 研报记录中目标价或合理估值区间的下端点；若报告仅给出单一目标价，接口可表现为 L=T。该字段不代表当前股价或分析师目标价共识。 | `verified` |
+| reports | `indvAimPriceT` | 研报目标价区间上限 | 东方财富 report/list 研报记录中目标价或合理估值区间的上端点；若报告仅给出单一目标价，接口可表现为 L=T。该字段不代表当前股价或分析师目标价共识。 | `verified` |
+| reports | `indvIsNew` | indvIsNew | 东财个股研报的新股研报栏目标记；观测到 002=新股研报（column=002004003）、001=其他个股研报栏目；空值保持缺失，不外推未观察的代码。 | `verified` |
+| reports | `newIssuePrice` | 首次公开发行价格 | 该股票首次公开发行（IPO）的发行价格；逐值对应东方财富 F10 ISSUE_PRICE。 | `verified` |
+| reports | `newListingDate` | 上市日期 | 该股票在交易所上市交易的日期；逐值对应东方财富 F10 LISTING_DATE。空值表示 reportapi 记录未返回日期，不表示股票没有上市。 | `verified` |
+| reports | `newPeIssueA` | 首次公开发行市盈率 | 该股票首次公开发行时的发行市盈率；逐值对应东方财富 F10 AFTER_ISSUE_PE。 | `verified` |
 | reports | `orgId` | secName / orgId | 证券名 / 机构ID | `unverified` |
 | reports | `reading_num` | reading_num / share_num | 阅读数/分享数 | `unverified` |
 | reports | `sRatingCode` | sRatingCode | 机构原始评级类别代码；须结合机构和同记录 sRatingName 解释，未确立跨机构代码表。 | `verified` |
@@ -3690,16 +3669,27 @@
 | 东财-datacenter(英文键) | `SELL` | BUY / SELL | 买入额 / 卖出额 | `verified` |
 | 东财-datacenter(英文键) | `SELLER_NAME` | BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | `verified` |
 | 东财-datacenter(英文键) | `SELL_AMT` | BILLBOARD_BUY_AMT / SELL_AMT | 买入/卖出资 | `verified` |
+| 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | `verified` |
 | 东财-push2(stock/get) | `f107` | f107 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f110` | f110 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f118` | f118 | 市场/板块状态标记（≡ ulist:f107） | `verified` |
+| 东财-push2(stock/get) | `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-push2(stock/get) | `f136` | fund_main_sell | 东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
 | 东财-push2(stock/get) | `f137` | fund_main_today | 主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。 | `verified` |
 | 东财-push2(stock/get) | `f138` | fund_super_buy | 东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
 | 东财-push2(stock/get) | `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
 | 东财-push2(stock/get) | `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | `verified` |
 | 东财-push2(stock/get) | `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
+| 东财-push2(stock/get) | `f142` | fund_large_sell | 东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-push2(stock/get) | `f143` | fund_large_today | 东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-push2(stock/get) | `f144` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-push2(stock/get) | `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-push2(stock/get) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
+| 东财-push2(stock/get) | `f163` | f163 | 静态市盈率（总市值/上年度净利润） | `verified` |
+| 东财-push2(stock/get) | `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | `verified` |
 | 东财-push2(stock/get) | `f62` | f62 | 最新已发布报告期的季度序号（如 2=中报、3=三季报；不含年份） | `verified` |
 | 东财-push2(stock/get) | `f86` | f86 | 当日收盘/最后行情时间戳 | `verified` |
+| 东财-push2(stock/get) | `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | `verified` |
 | 东财-push2ex | `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | `verified` |
 | 东财-push2ex | `limit_count` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；与同数据日 KPL col_15 的三个有效日期 271 组对照逐值相等。11 月 5 日次日回查存在集合和值差异，已单独记录且不计入正证据。 | `verified` |
 | 东财-push2ex | `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | `verified` |
@@ -3714,6 +3704,10 @@
 | 东财-ulist239(np/get) | `f144` | f144 | 最新价/现价 | `verified` |
 | 东财-ulist239(np/get) | `f231` | f231 | 有转债标志（0=无/3=有） | `verified` |
 | 东财-ulist239(np/get) | `f27` | f27 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；与同源 f13 为实证别名。 | `verified` |
+| 东财-ulist239(np/get) | `f46` | ulist239_parent_net_profit_yoy_growth_pct | 归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留） | `verified` |
+| 东财-ulist239(np/get) | `f76` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-ulist239(np/get) | `f77` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-ulist239(np/get) | `f78` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 东财-ulist239(np/get) | `f9` | f9 | 市盈率（动态/最新报告期年化） | `verified` |
 | 东财-热榜(em_hot) | `change_rate` | latest / change_rate | 现价 / 涨跌幅 | `verified` |
 | 东财-热榜(em_hot) | `chengjiaoe` | chengjiaoe / chengjiaoliang | 成交额 | `verified` |
@@ -3726,6 +3720,18 @@
 | 东财-热榜(em_hot) | `sgt` | hgt / sgt | 沪/深股通累计净买入 | `verified` |
 | 东财-热榜(em_hot) | `zhangdie` | close / zhangdie | 收盘价 / 涨跌额 | `verified` |
 | 东财-热榜(em_hot) | `zhangfu` | zhangfu / huanshou | 涨跌幅% / 换手率% | `verified` |
+| 东财-资金流(em_fund_flow) | `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f136` | fund_main_sell | 东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f137` | fund_main_today | 主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f138` | fund_super_buy | 东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f142` | fund_large_sell | 东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f143` | fund_large_today | 东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f144` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |
+| 东财-资金流(em_fund_flow) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 同花顺-fuyao | `basic_eps` | basic_eps | 基本每股收益（元/股）。 | `verified` |
 | 同花顺-fuyao | `calendar` | a-share/calendar/trading-days | — | `unverified` |
 | 同花顺-fuyao | `catalog` | a-share-index/catalog/ths-index-list | — | `unverified` |
@@ -3751,6 +3757,9 @@
 | 同花顺-fuyao | `search` | meta/tickers/search | — | `unverified` |
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | `unverified` |
+| 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
+| 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
+| 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |
 | 市场源(market_sources) | `dt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 市场源(market_sources) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
 | 市场源(market_sources) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |

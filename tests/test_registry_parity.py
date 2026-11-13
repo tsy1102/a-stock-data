@@ -6,12 +6,100 @@ from pathlib import Path
 from scripts import registry_parity
 
 
+def test_financial_comparison_group_label_is_not_a_field_matrix_key():
+    assert registry_parity.gm.clean_field("**上年同期财务比较值**") == ""
+
+
+def test_field_matrix_treats_eltdx_adapter_as_the_same_source_family(monkeypatch):
+    monkeypatch.setattr(
+        registry_parity.gm,
+        "build_matrix_from_md",
+        lambda: ({"finance.value": {"TDX-eltdx"}}, 1),
+    )
+
+    problems = registry_parity.check_field_matrix(
+        {"field_matrix": {"finance.value": ["TDX-eltdx", "TDX-eltdx(适配层)"]}}
+    )
+
+    assert problems == []
+
+
 def test_strict_parity_count_target_keeps_missing_pairs_visible():
     expected = {("source-a", "field-a"), ("source-b", "field-b")}
     missing = {("source-a", "field-a")}
 
     assert registry_parity._pairs_for_count_check(expected, missing, None) == expected
     assert registry_parity._pairs_for_count_check(expected, missing, missing) == expected - missing
+
+
+def test_unscoped_retired_path_outside_baseline_requires_audit_and_is_excluded(monkeypatch):
+    evidence_paths = {
+        "docs/field_verification/path_retirement.md",
+        "core/adapter.py",
+    }
+    monkeypatch.setattr(
+        registry_parity,
+        "_repo_file_exists",
+        lambda path: path in evidence_paths,
+    )
+    row = {
+        "source": "source-a",
+        "code": "legacy-leaf",
+        "status": "disproved",
+        "status_resolution": "retired_legacy_path",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/path_retirement.md",
+            "reason": "The current serializer emits only the fully qualified path.",
+            "evidence_files": ["core/adapter.py", "docs/field_verification/path_retirement.md"],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    pairs, problems = registry_parity._validated_non_field_schema_pairs(
+        [row], {("source-a", "historical-field")}
+    )
+
+    assert pairs == {("source-a", "legacy-leaf")}
+    assert problems == []
+
+
+def test_unscoped_retired_path_rejects_missing_evidence_file(monkeypatch):
+    monkeypatch.setattr(registry_parity, "_repo_file_exists", lambda _: False)
+    row = {
+        "source": "source-a",
+        "code": "legacy-leaf",
+        "status": "disproved",
+        "status_resolution": "retired_legacy_path",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/missing.md",
+            "reason": "The current serializer emits only the fully qualified path.",
+            "evidence_files": ["core/adapter.py"],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    pairs, problems = registry_parity._validated_non_field_schema_pairs([row], set())
+
+    assert pairs == set()
+    assert any("证据文件" in problem for problem in problems)
+
+
+def test_retired_path_in_baseline_remains_in_historical_parity():
+    row = {
+        "source": "source-a",
+        "code": "historical-field",
+        "status": "disproved",
+        "status_resolution": "retired_legacy_path",
+    }
+
+    pairs, problems = registry_parity._validated_non_field_schema_pairs(
+        [row], {("source-a", "historical-field")}
+    )
+
+    assert pairs == set()
+    assert problems == []
 
 
 def test_native_parity_remains_strict_without_accepted_debt():
@@ -211,11 +299,14 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1812/2405/340)" in output
-    assert "parity[unverified-candidates]: PASS 191" in output
-    assert "parity[source-contract-adjudications]: PASS 69" in output
-    assert "parity[adjudication-addenda]: PASS 8" in output
-    assert "parity[capture-path-addenda]: PASS 2" in output
+    # Counts change as current fields are adjudicated; main() verifies them
+    # against the registry-derived baseline and projections.
+    assert "parity[native]: registry-core(" in output
+    assert "parity[unverified-candidates]: PASS " in output
+    assert "parity[adjudicated-non-fields]: PASS " in output
+    assert "parity[source-contract-adjudications]: PASS " in output
+    assert "parity[adjudication-addenda]: PASS " in output
+    assert "parity[capture-path-addenda]: PASS " in output
     assert "parity[field_matrix]: PASS" in output
 
 
@@ -238,7 +329,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 69
+    assert len(pairs) == 68
     assert ("TDX(双命名源)", "bid2") in pairs
     assert matrix["finance_batch[].gu_dong_ren_shu_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].zhu_ying_shou_ru_raw_float"] == {"TDX-eltdx(适配层)"}

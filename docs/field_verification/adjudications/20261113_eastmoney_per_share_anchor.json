@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_eastmoney_per_share_anchor_evidence.md",
+  "evidence_sha256": "7c02a1a417772687fa9c89df3191897982170450925260d8d56b480a5e93de41",
+  "decisions": [
+    {
+      "id": "20261113-push2-f55-basic-eps-calculated-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f55"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f55",
+        "meaning": "基本每股收益（最新报告期）",
+        "unit": "元/股"
+      },
+      "canonical": "f55",
+      "meaning": "基本每股收益计算值（最新报告期归母净利润/最新总股本）",
+      "unit": "元/股",
+      "section": "官方基本每股收益计算定义与 2026Q3 样本实证",
+      "rationale": "项目归档路径为 raw_push2.json:stocks[code].data.f55，2026-11-10 的 meta.data_date 与逐股 f86 均确认该收盘数据日。20 股完整 Push2 样本中，f55×f84 对 f105 全部在九位小数输出步长半步内，最大残差/半步容差 0.981381。东方财富官方 F10 明确区分计算值与披露值，并定义计算值为最新报告期归母净利润/最新总股本。旺能环境 2026Q3 报告列示归母净利润 647,492,349.76 元、披露基本 EPS 1.32；同日 f55=1.253127235、f84=516,701,203、f105=647,492,349.76，区分了计算值和披露值。半步界限只表示与九位小数表示相容，不推断服务端舍入模式。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f55；2026-11-10 收盘、2026Q3 最新报告期、20 只股票；逐股核对 f55×f84 与 f105，并以旺能环境 2026Q3 发行人报告核对 disclosed EPS 的区分。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 1,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-push2-f92-bps-calculated-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f92"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f92",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f92",
+      "meaning": "每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本）",
+      "unit": "元/股",
+      "section": "官方每股净资产计算定义与 2026Q3 发行人报告实证",
+      "rationale": "项目归档路径为 raw_push2.json:stocks[code].data.f92。东方财富官方 F10 定义每股净资产计算值为最新公告归母权益剔除其他权益工具后除以最新总股本。2026Q3 旺能环境的 (9,119,329,257.98−0)/516,701,203=17.6491349450…，Push2 f92=17.6491349；力合微的 (1,053,713,410.83−93,079,299.25)/145,328,518=6.6100867524…，Push2 f92=6.6100868。两项均在七位小数输出半步内，且报告期、主体口径、股本单位一致。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f92；2026-11-10 快照对应 2026-09-30 报告期；旺能环境与力合微两份发行人 2026Q3 报告，逐项比较归母权益扣除其他权益工具后除以期末总股本。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261113-push2-f160-annual-eps-calculated-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f160"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "eps_annual(f160)",
+        "meaning": "待破解",
+        "unit": "元/股"
+      },
+      "canonical": "eps_annual(f160)",
+      "meaning": "上年度归母净利润按最新总股本折算的每股金额（不同于年报披露基本每股收益）",
+      "unit": "元/股",
+      "section": "官方静态市盈率公式与保留期历史样本闭合实证",
+      "rationale": "项目归档路径为 raw_push2.json:stocks[code].data.f160。仅纳入目录日、meta.data_date 与逐股 f86 北京时间日期相符且 f84/f109/f160 齐全的收盘观察：300 条原始股票观察中 106 条没有可用 payload，194 条合格，覆盖 11 个行情日、20 只股票。194/194 的 f160×f84 均落在九位小数输出步长半步内而与 f109 相符；最大残差/半步容差 0.857829。官方 F10 将静态 PE 定义为总市值/上年度净利润；同样本 f163 与 f116/f109 及 f43/f160 四舍五入至两位小数均 194/194 相同，形成闭合关系。旺能环境 2025 年年报归母净利润 721,188,109.54 元、披露基本 EPS 1.69，而 Push2 f160=1.395754655 且 f160×f84≈f109，证明其不是年报披露基本 EPS。定义限定为该来源路径的样本支持派生语义，不冒称上游公开代码表原文；194 行重复年度分子不计作独立财报。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f160；保留期 2026-10-15 至 2026-11-10；逐股 f86 日期资格通过后，11 个行情日、20 只股票、194 条股票日观察；比较 f160×f84 与 f109，并用 f163/f116/f43 的静态 PE 关系及旺能环境 2025 年报区分披露 EPS。",
+        "comparison_count": 194,
+        "matched_count": 194,
+        "counterexample_count": 0,
+        "official_report_count": 1,
+        "excluded_count": 106,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-push2-f163-static-pe-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f163"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f163",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f163",
+      "meaning": "静态市盈率（总市值/上年度净利润）",
+      "unit": "倍",
+      "section": "官方静态市盈率定义与 194 条历史样本闭合实证",
+      "rationale": "项目归档路径为 raw_push2.json:stocks[code].data.f163。东方财富官方 F10 明确给出静态市盈率=总市值/上年度净利润、总市值=最新股价×总股本。经来源日期筛选的 194 条股票日样本中，f163 与 f116/f109 四舍五入至两位小数 194/194 相同，也与 f43/f160 四舍五入至两位小数 194/194 相同。结论确认静态市盈率类别及倍数单位；不外推到其他同编号端点，不推断服务端舍入细节。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f163；2026-10-15 至 2026-11-10 的日期合格收盘数据，11 个行情日、20 只股票、194 条股票日观察；比较 f163 与 f116/f109、f43/f160 的两位小数结果。",
+        "comparison_count": 194,
+        "matched_count": 194,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 106,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-push2-f190-undistributed-profit-ps-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f190"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f190",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f190",
+      "meaning": "每股未分配利润",
+      "unit": "元/股",
+      "section": "官方每股未分配利润指标定义与 2026Q3 发行人报告实证",
+      "rationale": "项目归档路径为 raw_push2.json:stocks[code].data.f190。东方财富官方 F10 将该指标明确命名为“每股未分配利润”。2026Q3 旺能环境和力合微发行人报告的未分配利润分别为 4,189,182,208.70 元和 287,897,325.55 元；两股原始 f190 乘 f84 总股本后均与报告金额相符，支持字段类别及元/股单位。官方说明页将分母表述为期末流通普通股数，但旺能环境的 f85 流通股本与 f84 总股本不同，且原始 f190 乘 f84 才与报告金额相符；力合微 f84=f85，无法区分。故本决定只确认每股未分配利润语义和单位，不裁决实际分母；该公式差异已在证据中明确保留，不作为概念语义的反例。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f190；2026-11-10 快照对应 2026-09-30 报告期；旺能环境与力合微两份 2026Q3 发行人报告，核对每股未分配利润指标和元/股单位；分母差异单独保留为未决。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    }
+  ]
+}

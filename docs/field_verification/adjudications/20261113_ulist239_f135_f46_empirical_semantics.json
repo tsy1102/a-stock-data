@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_ulist239_f135_f46_empirical_semantics_evidence.md",
+  "evidence_sha256": "6e524dd5c52688506a02d1a9c6c75faeb1f06d7db0c0964d416a6055fd0f48bc",
+  "decisions": [
+    {
+      "id": "20261113-ulist239-f135-consolidated-equity",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f135"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "净资产",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "f135",
+          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)"
+        ]
+      },
+      "canonical": "ulist239_total_equity_consolidated",
+      "meaning": "所有者权益合计（合并口径，含少数股东权益）",
+      "unit": "元",
+      "section": "12.3.2.3 ulist239 全字段清单；2026-11-13 来源内财务实证附录",
+      "rationale": "精确来源路径东财-ulist239(np/get)::f135 在 2026-09-30 报告期的 20 只保留样本中，与东方财富 RPT_DMSK_FN_BALANCE.TOTAL_EQUITY 按人民币分位精度 20/20 匹配，最大未舍入残差为 0.00004 元；万华、贵州茅台、云从三份发行人三季报均显示 f135 对应含少数股东权益的合并所有者权益合计，f58 对应归母所有者权益合计，且云从负少数股东权益样本排除了母公司口径。该决定解除当前 reference_status_conflict 和 canonical 属性冲突，只确认此 Ulist239 路径，不新增跨源映射。",
+      "sample": {
+        "scope": "Ulist239 raw 20261109; f221=20260930 report period; 20 unique stocks; f135 compared with Eastmoney RPT_DMSK_FN_BALANCE.TOTAL_EQUITY at 0.01 CNY precision; three issuer Q3 reports checked",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-ulist239-f46-parent-profit-yoy",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f46"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "f46",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ulist239_parent_net_profit_yoy_growth_pct",
+      "meaning": "归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留）",
+      "unit": "%",
+      "section": "12.3.2.3 ulist239 全字段清单；2026-11-13 来源内财务实证附录",
+      "rationale": "精确来源路径东财-ulist239(np/get)::f46 在 2026-09-30 报告期的 20 只保留样本中，与东方财富 RPT_LICO_FN_CPD.SJLTZ 按官方页面两位小数精度 20/20 匹配，最大未舍入残差为 0.004302770145 个百分点；配对 f45 与 PARENT_NETPROFIT 20/20 精确匹配，邻接 f41 与营业收入同比指标 YSTZ 20/20 在两位小数下匹配。官方页标签确认净利润同比指标角色。云从样本的东方财富指标为 67.00，而发行人报告列示不适用，故定义限定为东方财富展示口径；不把发行人披露百分比或亏损基期算法写成已证明事实。只确认该 Ulist239 路径，不新增跨源映射。",
+      "sample": {
+        "scope": "Ulist239 raw 20261109; f221=20260930 report period; 20 unique stocks; f46 compared with Eastmoney RPT_LICO_FN_CPD.SJLTZ at 0.01 percentage-point display precision; three issuer Q3 reports checked",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

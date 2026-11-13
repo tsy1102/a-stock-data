@@ -1587,6 +1587,71 @@ def test_default_repeat_supplements_missing_source_without_recollecting_complete
     assert "source_capture_started_at" not in saved_meta["sources"]["push2"]
 
 
+def test_failed_missing_source_supplement_preserves_better_existing_raw_snapshot(
+    tmp_path, monkeypatch
+):
+    from types import ModuleType
+
+    out_dir = tmp_path / "20260929"
+    out_dir.mkdir()
+    prior_raw = json.dumps(
+        {"stocks": {"600000": {"data": {"f1": "previous-success"}}}, "scheme": "em.stock_get"}
+    )
+    (out_dir / "raw_push2.json").write_text(prior_raw, encoding="utf-8")
+    (out_dir / "meta.json").write_text(
+        '{"date":"20260929","data_date":"20260929","market_phase":"closed",'
+        '"capture_date":"20260930","run_date":"20260930",'
+        '"run_datetime":"2026-09-30 00:12:00",'
+        '"sources":{"push2":{"ok":false,"status":"partial",'
+        '"source_capture_date":"20260930",'
+        '"source_capture_started_at":"2026-09-30 00:11:00",'
+        '"data_market_phase":"closed"}}}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(capture_probe, "_refresh_field_evidence_coverage", lambda *_args: None)
+    monkeypatch.setattr(capture_probe, "load_pool", lambda: [{"code": "600000"}])
+    monkeypatch.setattr(
+        capture_probe,
+        "build_collectors",
+        lambda: {"push2": lambda _pool: {"stocks": {"600000": {"__error__": "ip_banned"}}}},
+    )
+    monkeypatch.setattr(capture_probe, "_source_required_paths", lambda *_args: None)
+    monkeypatch.setattr(sys, "argv", ["capture_field_probe.py", "--date", "20260929"])
+    monkeypatch.setattr(
+        capture_probe, "_validate_capture_data_date", lambda *_args: (date(2026, 9, 29), "trading")
+    )
+    monkeypatch.setattr(capture_probe, "_is_closed_phase_now", lambda *_args: True)
+    monkeypatch.setattr(capture_probe, "_capture_market_phase", lambda *_args: "closed")
+    monkeypatch.setattr(capture_probe, "_last_trading_day_str", lambda: "20260929")
+    monkeypatch.setattr(capture_probe, "_zhb_collection_policy", lambda *_args: "defer")
+
+    axdata_validation = ModuleType("axdata_daily_validation")
+    axdata_validation.run_axdata_daily_validation = lambda **_kwargs: {"status": "not_eligible"}
+    monkeypatch.setitem(sys.modules, "axdata_daily_validation", axdata_validation)
+    monkeypatch.setitem(sys.modules, "scripts.axdata_daily_validation", axdata_validation)
+    levistock_validation = ModuleType("levistock_daily_validation")
+    levistock_validation.run_levistock_daily_validation = lambda **_kwargs: {
+        "status": "not_eligible",
+        "methods": {},
+        "network_requests_added": 0,
+    }
+    monkeypatch.setitem(sys.modules, "levistock_daily_validation", levistock_validation)
+    monkeypatch.setitem(sys.modules, "scripts.levistock_daily_validation", levistock_validation)
+
+    capture_probe.main()
+
+    assert (out_dir / "raw_push2.json").read_text(encoding="utf-8") == prior_raw
+    saved_meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+    entry = saved_meta["sources"]["push2"]
+    assert entry["ok"] is False
+    assert entry["status"] == "failed"
+    assert entry["previous_probe_snapshot_preserved"] is True
+    assert entry["source_capture_date"] == "20260930"
+    assert entry["preserved_snapshot"]["status"] == "partial"
+    assert entry["last_attempt"]["status"] == "failed"
+
+
 def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch):
     out_dir = tmp_path / "20260929"
     out_dir.mkdir()

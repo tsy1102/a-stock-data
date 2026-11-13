@@ -25,7 +25,7 @@ enables it automatically. A successful collection is evidence, not a field
 definition or registry decision.
 """
 
-import sys, os, json, time, argparse, glob, math, re
+import sys, os, json, time, argparse, glob, math, re, tempfile
 from datetime import date, datetime, time as dt_time, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, cast
 
@@ -1466,6 +1466,35 @@ def _clear_existing_raw_files(existing_raws: List[str], clear_raw_paths: set[str
             ) from exc
 
 
+def _capture_result_quality(ok: bool, info: Dict[str, Any]) -> tuple[int, ...]:
+    """Rank source snapshots so a failed supplement cannot replace better evidence."""
+    return (
+        int(bool(ok)),
+        -int(info.get("n_dead", 0) or 0),
+        -int(info.get("n_error", 0) or 0),
+        -int(info.get("n_missing_stocks", 0) or 0),
+        -int(info.get("n_missing_contracts", 0) or 0),
+        -int(info.get("n_deferred", 0) or 0),
+        int(info.get("n_received", 0) or 0),
+    )
+
+
+def _write_raw_snapshot(path: str, data: Any) -> None:
+    """Atomically replace one raw snapshot using a temporary file under .tmp/."""
+    temp_dir = os.path.join(_ROOT, ".tmp")
+    os.makedirs(temp_dir, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(
+        prefix="capture-raw-", suffix=".json.tmp", dir=temp_dir
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            json.dump(data, stream, ensure_ascii=False, indent=1, default=str)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.remove(temporary)
+
+
 def _remove_unusable_meta(meta_path: str, update_error: Exception) -> None:
     """Remove metadata that could not be updated, or abort if stale state remains."""
     try:
@@ -1850,9 +1879,12 @@ def main() -> None:
         source_capture_meta = _source_capture_metadata(
             source_capture_started_at, args.date, data_date_domain
         )
+        previous_source_entry = meta.get("sources", {}).get(name)
+        if not isinstance(previous_source_entry, dict):
+            previous_source_entry = {}
+        previous_as_of_date = meta.get("source_as_of_dates", {}).get(name)
         try:
             t1 = time.time()
-            meta["source_as_of_dates"].pop(name, None)
             # V17.2.28: eltdx 瘦身开关——仅 eltdx 支持 lite(跳过冗余/能力登记载荷)
             if name == "eltdx":
                 data = fn(pool, lite=args.eltdx_lite)
@@ -1988,9 +2020,6 @@ def main() -> None:
                         for key in source_capture_meta:
                             if previous_entry.get(key):
                                 source_capture_meta[key] = previous_entry[key]
-            if _write_raw:
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, ensure_ascii=False, indent=1, default=str)
             # 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位，预期跳过用 __skipped__ 标记，
             # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
             # 现按 __error__ 判定 status，并在元数据/日志中单独报告 __skipped__。
@@ -2003,7 +2032,35 @@ def main() -> None:
                 _ok, _info = _apply_zhb_freshness(_ok, _info, data, args.date)
                 if _zhb_refresh_note is not None:
                     _info["refresh_attempt"] = _zhb_refresh_note
-            _as_of_date = _source_as_of_date(name, data)
+            preserve_previous_snapshot = False
+            if (
+                not _ok
+                and name in set(meta.get("supplemented_sources", []))
+                and os.path.isfile(path)
+            ):
+                try:
+                    with open(path, encoding="utf-8") as previous_file:
+                        previous_data = json.load(previous_file)
+                    previous_ok, previous_info = assess_result(
+                        previous_data,
+                        expected_symbols=_source_expected_codes(name, pool),
+                        required_paths=_source_required_paths(name, include_context),
+                    )
+                    preserve_previous_snapshot = _capture_result_quality(
+                        previous_ok, previous_info
+                    ) > _capture_result_quality(_ok, _info)
+                except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+                    print(
+                        f"  ⚠ {name}: 无法评估旧样本，保留本次响应用于诊断: {exc}",
+                        flush=True,
+                    )
+            if preserve_previous_snapshot:
+                _as_of_date = (previous_source_entry or {}).get("as_of_date") or previous_as_of_date
+            else:
+                meta["source_as_of_dates"].pop(name, None)
+                _as_of_date = _source_as_of_date(name, data)
+            if _write_raw and not preserve_previous_snapshot:
+                _write_raw_snapshot(path, data)
             _entry = {
                 "scheme": _scheme,
                 "ok": _ok,
@@ -2012,6 +2069,25 @@ def main() -> None:
                 "file": path,
                 **source_capture_meta,
             }
+            if preserve_previous_snapshot:
+                if isinstance(previous_source_entry, dict):
+                    for key in source_capture_meta:
+                        if previous_source_entry.get(key):
+                            _entry[key] = previous_source_entry[key]
+                _entry["previous_probe_snapshot_preserved"] = True
+                _entry["preserved_snapshot"] = {
+                    "status": (previous_source_entry or {}).get("status"),
+                    "ok": (previous_source_entry or {}).get("ok"),
+                    "source_capture_date": _entry.get("source_capture_date"),
+                    "source_capture_started_at": _entry.get("source_capture_started_at"),
+                    "data_market_phase": _entry.get("data_market_phase"),
+                    "as_of_date": _as_of_date,
+                }
+                _entry["last_attempt"] = {
+                    **source_capture_meta,
+                    "ok": _ok,
+                    **_info,
+                }
             if _as_of_date:
                 _entry["as_of_date"] = _as_of_date
                 meta["source_as_of_dates"][name] = _as_of_date
@@ -2066,12 +2142,34 @@ def main() -> None:
                     flush=True,
                 )
         except Exception as e:
-            meta["sources"][name] = {
+            _failed_entry = {
                 "scheme": SOURCE_SCHEME.get(name, "unknown"),
                 "ok": False,
+                "status": "failed",
                 "error": str(e)[:300],
                 **source_capture_meta,
             }
+            _raw_path = os.path.join(out_dir, f"raw_{name}.json")
+            if name in set(meta.get("supplemented_sources", [])) and os.path.isfile(_raw_path):
+                for key in source_capture_meta:
+                    if previous_source_entry.get(key):
+                        _failed_entry[key] = previous_source_entry[key]
+                _failed_entry["previous_probe_snapshot_preserved"] = True
+                _failed_entry["preserved_snapshot"] = {
+                    "status": previous_source_entry.get("status"),
+                    "ok": previous_source_entry.get("ok"),
+                    "source_capture_date": _failed_entry.get("source_capture_date"),
+                    "source_capture_started_at": _failed_entry.get("source_capture_started_at"),
+                    "data_market_phase": _failed_entry.get("data_market_phase"),
+                    "as_of_date": previous_source_entry.get("as_of_date") or previous_as_of_date,
+                }
+                _failed_entry["last_attempt"] = {
+                    **source_capture_meta,
+                    "ok": False,
+                    "status": "failed",
+                    "error": str(e)[:300],
+                }
+            meta["sources"][name] = _failed_entry
             print(f"  ✖ {name}: {e}", flush=True)
 
     # Persist AxData route bans independently of the daily validation eligibility

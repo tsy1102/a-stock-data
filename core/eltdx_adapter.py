@@ -96,18 +96,22 @@ _FREQ_TO_ELTDX = {
 }
 
 # eltdx FinanceRecord 字段 → (mootdx 列名, 单位换算)
-#   scale: 'qy2jiao' = 千元→角 ×10000; 'yuan' = 元 ×1; 'raw' = 原样(股/户/字符串)
+#   scale: 'qy2jiao' = 千元→角 ×10000; 'shares' = 万股→股 ×10000;
+#          'yuan' = 元 ×1; 'raw' = 原样(户/字符串/日期)
 #   实测反推(eltdx zong_zi_chan_raw_float=6.029e9 → 平安银行总资产~6万亿 元):
 #   eltdx 聚合字段为**千元**口径(非万元)，千元→角=×10000；data_provider 对 zongzichan/
 #   jingzichan/jinglirun 按角处理 /10 得元，故 ×10000 后链路口径闭合。
+#   股本类 eltdx 槽位为万股；TDX 兼容接口及消费者约定使用股，故转换 ×10000。
+#   两个历史命名为“法人股”的槽位已由保留样本和发行人财报确认实际为上年同期净利润、收入，
+#   原始值为千元，须按金额转换为角；不能按名称当作股数透传。
 _FIN_MAP = [
-    ("liu_tong_gu_ben_raw_float", "liutongguben", "raw"),
-    ("zong_gu_ben_raw_float", "zhongguben", "raw"),
-    ("guo_jia_gu_raw_float", "guojiagu", "raw"),
-    ("fa_qi_ren_fa_ren_gu_raw_float", "fajirenfarengu", "raw"),
-    ("fa_ren_gu_raw_float", "farengu", "raw"),
-    ("b_gu_raw_float", "bgu", "raw"),
-    ("h_gu_raw_float", "hgu", "raw"),
+    ("liu_tong_gu_ben_raw_float", "liutongguben", "shares"),
+    ("zong_gu_ben_raw_float", "zhongguben", "shares"),
+    ("guo_jia_gu_raw_float", "guojiagu", "shares"),
+    ("fa_qi_ren_fa_ren_gu_raw_float", "fajirenfarengu", "qy2jiao"),
+    ("fa_ren_gu_raw_float", "farengu", "qy2jiao"),
+    ("b_gu_raw_float", "bgu", "shares"),
+    ("h_gu_raw_float", "hgu", "shares"),
     ("zong_zi_chan_raw_float", "zongzichan", "qy2jiao"),
     ("liu_dong_zi_chan_raw_float", "liudongzichan", "qy2jiao"),
     ("gu_ding_zi_chan_raw_float", "gudingzichan", "qy2jiao"),
@@ -265,6 +269,8 @@ class _EltdxAdapter:
                 continue
             if scale == "qy2jiao":
                 v = v * 10000.0  # 千元 → 角（对齐 mootdx 角口径）
+            elif scale == "shares":
+                v = v * 10000.0  # 万股 → 股（对齐 easy_tdx 与下游股本契约）
             out[col] = v
         out["updated_date"] = str(getattr(r, "updated_date", ""))
         out["ipo_date"] = str(getattr(r, "ipo_date", ""))

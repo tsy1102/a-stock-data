@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_target_price_bounds_evidence.md",
+  "evidence_sha256": "19bd47394eadd2569dfa4dd11f1b220c60c7d625d3842648b99e1a507eac9310",
+  "decisions": [
+    {
+      "id": "20261112-reports-indv-aim-price-l-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "indvAimPriceL"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "indvAimPriceL",
+        "meaning": "目标价 L",
+        "unit": ""
+      },
+      "canonical": "研报目标价区间下限",
+      "meaning": "东方财富 report/list 研报记录中目标价或合理估值区间的下端点；若报告仅给出单一目标价，接口可表现为 L=T。该字段不代表当前股价或分析师目标价共识。",
+      "unit": "元/股",
+      "section": "Eastmoney report/list 研报目标价区间端点实证（2026-11-12）",
+      "rationale": "项目采集器原样保留东方财富 report/list 响应，注册表精确路径 reports::indvAimPriceL 对应原始键 indvAimPriceL。对保留期全部 16 个 raw_reports 文件中的非空目标价记录按股票和 infoCode 去重；36 份同时具有 L/T 的唯一研报均满足 L≤T。30 份 L=T 的点值无法区分端点方向，因此单独排除方向比较；其余六份来自六只股票和六个不同 infoCode，全部与东方财富详情摘要或详情页链接的原始 PDF 中的目标价/合理估值区间逐值吻合，L 均为下限（6/6），无反例。证据支持来源字段在报告记录中的端点语义及元/股单位，不扩展为当前市价、目标价共识或日频数据，也不创建跨来源映射。",
+      "sample": {
+        "scope": "仅使用 2026-10-15 起保留的 reports::indvAimPriceL/T 原始 report/list 记录。16 个 raw_reports 捕获文件共 6,051 条观察、443 个唯一研报；36 份唯一研报同时含 L/T，其中 6 份 L≠T 作为端点方向比较样本，30 份 L=T 点值只统计并排除于方向判断。六个非等值报告按股票及 infoCode 去重后分别核对东方财富详情摘要或该详情页链接的原始 PDF。",
+        "comparison_count": 6,
+        "matched_count": 6,
+        "counterexample_count": 0,
+        "official_report_count": 6,
+        "excluded_count": 30,
+        "observation_count": 6051,
+        "stock_count": 6,
+        "unique_info_code_count": 443,
+        "raw_capture_file_count": 16,
+        "nonempty_observation_count": 498,
+        "unique_nonempty_report_count": 36,
+        "interval_count": 6,
+        "point_estimate_count": 30
+      }
+    },
+    {
+      "id": "20261112-reports-indv-aim-price-t-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "indvAimPriceT"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "indvAimPriceT",
+        "meaning": "目标价 T",
+        "unit": ""
+      },
+      "canonical": "研报目标价区间上限",
+      "meaning": "东方财富 report/list 研报记录中目标价或合理估值区间的上端点；若报告仅给出单一目标价，接口可表现为 L=T。该字段不代表当前股价或分析师目标价共识。",
+      "unit": "元/股",
+      "section": "Eastmoney report/list 研报目标价区间端点实证（2026-11-12）",
+      "rationale": "项目采集器原样保留东方财富 report/list 响应，注册表精确路径 reports::indvAimPriceT 对应原始键 indvAimPriceT。对保留期全部 16 个 raw_reports 文件中的非空目标价记录按股票和 infoCode 去重；36 份同时具有 L/T 的唯一研报均满足 L≤T。30 份 L=T 的点值无法区分端点方向，因此单独排除方向比较；其余六份来自六只股票和六个不同 infoCode，全部与东方财富详情摘要或详情页链接的原始 PDF 中的目标价/合理估值区间逐值吻合，T 均为上限（6/6），无反例。证据支持来源字段在报告记录中的端点语义及元/股单位，不扩展为当前市价、目标价共识或日频数据，也不创建跨来源映射。",
+      "sample": {
+        "scope": "仅使用 2026-10-15 起保留的 reports::indvAimPriceL/T 原始 report/list 记录。16 个 raw_reports 捕获文件共 6,051 条观察、443 个唯一研报；36 份唯一研报同时含 L/T，其中 6 份 L≠T 作为端点方向比较样本，30 份 L=T 点值只统计并排除于方向判断。六个非等值报告按股票及 infoCode 去重后分别核对东方财富详情摘要或该详情页链接的原始 PDF。",
+        "comparison_count": 6,
+        "matched_count": 6,
+        "counterexample_count": 0,
+        "official_report_count": 6,
+        "excluded_count": 30,
+        "observation_count": 6051,
+        "stock_count": 6,
+        "unique_info_code_count": 443,
+        "raw_capture_file_count": 16,
+        "nonempty_observation_count": 498,
+        "unique_nonempty_report_count": 36,
+        "interval_count": 6,
+        "point_estimate_count": 30
+      }
+    }
+  ]
+}

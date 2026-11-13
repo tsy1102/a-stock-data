@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 
 import pytest
@@ -12,6 +13,7 @@ from scripts.apply_collision_adjudications import (
     VERIFY_DIR,
     _inside_verification_dir,
     apply_adjudications,
+    apply_empirical_source_semantics_adjudications,
     apply_source_contract_adjudications,
 )
 
@@ -1273,6 +1275,330 @@ def test_source_contract_cannot_overwrite_an_existing_meaning():
     with pytest.raises(ValueError, match="cannot overwrite established meaning"):
         apply_source_contract_adjudications(
             registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def _empirical_source_semantics_inputs(tmp_path, *, verified=False):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    evidence_path = verify_dir / "adjudications" / "e3_evidence.md"
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text("已逐项对照来源样本与公开财报。\n", encoding="utf-8")
+    record = {
+        "source": "target-source",
+        "code": "finance.value",
+        "identity": "target-source::finance.value",
+        "canonical": "old_metric" if verified else "",
+        "meaning": "旧释义" if verified else "",
+        "unit": "万元" if verified else "",
+        "section": "old reference" if verified else "",
+        "sections": ["old reference"] if verified else [],
+        "status": "verified" if verified else "unverified",
+        "status_resolution": "matched" if verified else "registry_status_only_single_source",
+        "status_evidence": {"values": ["verified" if verified else "unverified"]},
+        "reference_evidence": [],
+        "attribute_conflicts": {},
+    }
+    registry = {
+        "meta": {},
+        "sources": [],
+        "mappings": [],
+        "fields": [{"code": "finance.value"}],
+        "source_fields": [record],
+    }
+    evidence_rel = "docs/field_verification/adjudications/e3_evidence.md"
+    document = {
+        "schema_version": 1,
+        "evidence_basis": "empirical_source_field_semantics",
+        "reviewer": "reviewer",
+        "reviewed_on": "2026-11-11",
+        "evidence_file": evidence_rel,
+        "evidence_sha256": hashlib.sha256(evidence_path.read_bytes()).hexdigest(),
+        "decisions": [
+            {
+                "id": "20261111-e3-source-field",
+                "action": "verify_empirical_source_semantics",
+                "target": {"source": "target-source", "code": "finance.value"},
+                "previous_status": record["status"],
+                "previous_status_resolution": record["status_resolution"],
+                "previous": {
+                    "canonical": record["canonical"],
+                    "meaning": record["meaning"],
+                    "unit": record["unit"],
+                },
+                "canonical": "prior_year_profit",
+                "meaning": "上年同期归母净利润",
+                "unit": "元",
+                "section": "E3 来源内实证定案",
+                "rationale": "同一报告期的全部可比样本均吻合，且无反例。",
+                "sample": {
+                    "scope": "一个报告期内全部可比股票",
+                    "comparison_count": 1,
+                    "matched_count": 1,
+                    "counterexample_count": 0,
+                    "official_report_count": 1,
+                },
+            }
+        ],
+    }
+    return registry, document, verify_dir
+
+
+def test_empirical_source_semantics_accepts_one_complete_sample_and_corrects_metadata(
+    tmp_path, monkeypatch
+):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path, verified=True)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+
+    updated, stats = apply_empirical_source_semantics_adjudications(
+        registry, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    row = updated["source_fields"][0]
+    assert stats["empirical_source_semantics_verified"] == 1
+    assert stats["empirical_metadata_corrected"] == 1
+    assert row["status"] == "verified"
+    assert row["status_resolution"] == "verified_by_empirical_addendum"
+    assert row["meaning"] == "上年同期归母净利润"
+    assert row["unit"] == "元"
+    assert row["adjudications"][0]["evidence_level"] == "E3"
+    assert updated["mappings"] == []
+
+    legacy_row = copy.deepcopy(row)
+    legacy_row.update(
+        {
+            "code": "legacy.finance.value",
+            "identity": "target-source::legacy.finance.value",
+            "canonical": "legacy_verified_metric",
+            "meaning": "已有 E3 定案释义",
+            "adjudications": [
+                {
+                    "id": "legacy-e3-decision",
+                    "action": "empirical_semantic_adjudication",
+                    "status": "verified",
+                    "level": "E3",
+                }
+            ],
+            "status_evidence": {
+                "evidence_basis": "empirical_source_field_semantics",
+                "evidence_level": "E3",
+            },
+        }
+    )
+    updated["source_fields"].append(legacy_row)
+    updated["field_matrix"].pop("legacy_verified_metric", None)
+
+    repaired, repeat_stats = apply_empirical_source_semantics_adjudications(
+        updated, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    assert repeat_stats["already_applied"] == 1
+    assert repaired["field_matrix"]["prior_year_profit"] == ["target-source"]
+    assert repaired["field_matrix"]["legacy_verified_metric"] == ["target-source"]
+
+
+def test_empirical_source_evidence_followup_preserves_verified_metadata(tmp_path, monkeypatch):
+    registry, first_document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+
+    updated, _ = apply_empirical_source_semantics_adjudications(
+        registry, first_document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    evidence_path = verify_dir / "adjudications" / "e3_followup.md"
+    evidence_path.write_text(
+        "补充 E3 证据支持既有来源内释义，不改变字段元数据。\n", encoding="utf-8"
+    )
+    evidence_rel = "docs/field_verification/adjudications/e3_followup.md"
+    followup = copy.deepcopy(first_document)
+    followup["evidence_file"] = evidence_rel
+    followup["evidence_sha256"] = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+    followup["decisions"][0].update(
+        {
+            "id": "20261111-e3-source-field-followup",
+            "action": "append_empirical_source_evidence",
+            "previous_status": "verified",
+            "previous_status_resolution": "verified_by_empirical_addendum",
+            "previous": {
+                "canonical": "prior_year_profit",
+                "meaning": "上年同期归母净利润",
+                "unit": "元",
+            },
+            "canonical": "prior_year_profit",
+            "meaning": "上年同期归母净利润",
+            "unit": "元",
+            "section": "E3 补充证据",
+            "rationale": "新增的完整样本支持既有释义，不改变规范名、含义或单位。",
+            "sample": {
+                "scope": "同一报告期内新增的两个可比样本",
+                "comparison_count": 2,
+                "matched_count": 2,
+                "counterexample_count": 0,
+                "official_report_count": 1,
+            },
+        }
+    )
+
+    applied, stats = apply_empirical_source_semantics_adjudications(
+        updated, followup, "adjudications/e3_followup.json", repo_root=tmp_path
+    )
+
+    row = applied["source_fields"][0]
+    assert stats["empirical_source_evidence_appended"] == 1
+    assert row["status"] == "verified"
+    assert row["status_resolution"] == "verified_by_empirical_addendum"
+    assert (row["canonical"], row["meaning"], row["unit"]) == (
+        "prior_year_profit",
+        "上年同期归母净利润",
+        "元",
+    )
+    assert [item["action"] for item in row["adjudications"]] == [
+        "verify_empirical_source_semantics",
+        "append_empirical_source_evidence",
+    ]
+    assert row["status_evidence"]["evidence_file"] == "adjudications/e3_followup.md"
+    assert row["status_evidence"]["adjudication_ids"] == [
+        "20261111-e3-source-field",
+        "20261111-e3-source-field-followup",
+    ]
+
+    replayed, replay_stats = apply_empirical_source_semantics_adjudications(
+        applied, followup, "adjudications/e3_followup.json", repo_root=tmp_path
+    )
+    assert replay_stats["already_applied"] == 1
+    assert replayed == applied
+
+
+def test_empirical_source_evidence_followup_rejects_metadata_changes(tmp_path, monkeypatch):
+    registry, first_document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    updated, _ = apply_empirical_source_semantics_adjudications(
+        registry, first_document, "adjudications/e3.json", repo_root=tmp_path
+    )
+    followup = copy.deepcopy(first_document)
+    followup["decisions"][0].update(
+        {
+            "id": "20261111-e3-source-field-invalid-followup",
+            "action": "append_empirical_source_evidence",
+            "previous_status": "verified",
+            "previous_status_resolution": "verified_by_empirical_addendum",
+            "previous": {
+                "canonical": "prior_year_profit",
+                "meaning": "上年同期归母净利润",
+                "unit": "元",
+            },
+            "canonical": "prior_year_profit",
+            "meaning": "上年同期净利润",
+            "unit": "元",
+        }
+    )
+
+    with pytest.raises(ValueError, match="must preserve canonical, meaning, and unit"):
+        apply_empirical_source_semantics_adjudications(
+            updated, followup, "adjudications/e3_followup.json", repo_root=tmp_path
+        )
+
+
+def test_empirical_source_semantics_rejects_counterexamples(tmp_path, monkeypatch):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    decision = document["decisions"][0]
+    decision["sample"].update(comparison_count=2, matched_count=1, counterexample_count=1)
+
+    with pytest.raises(ValueError, match="matched_count must equal comparison_count"):
+        apply_empirical_source_semantics_adjudications(
+            registry, document, "adjudications/e3.json", repo_root=tmp_path
+        )
+
+
+def test_empirical_source_semantics_resolves_snapshotted_reference_conflicts(tmp_path, monkeypatch):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    row = registry["source_fields"][0]
+    conflicts = {"meaning": ["旧参考释义", "报告实测候选释义"]}
+    row.update(
+        {
+            "status": "conflict",
+            "status_resolution": "reference_semantic_attribute_conflict",
+            "attribute_conflicts": conflicts,
+            "status_evidence": {"values": ["verified"]},
+        }
+    )
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "previous_status": "conflict",
+            "previous_status_resolution": "reference_semantic_attribute_conflict",
+            "previous_attribute_conflicts": copy.deepcopy(conflicts),
+        }
+    )
+
+    updated, stats = apply_empirical_source_semantics_adjudications(
+        registry, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    resolved = updated["source_fields"][0]
+    assert stats["empirical_source_semantics_verified"] == 1
+    assert resolved["status"] == "verified"
+    assert resolved["status_resolution"] == "verified_by_empirical_addendum"
+    assert resolved["attribute_conflicts"] == {}
+    assert resolved["adjudications"][0]["previous_attribute_conflicts"] == conflicts
+
+
+def test_empirical_source_semantics_records_empty_attribute_conflict_snapshot(
+    tmp_path, monkeypatch
+):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    row = registry["source_fields"][0]
+    row.update(
+        {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "status_evidence": {"values": ["verified", "unverified"]},
+            "attribute_conflicts": {},
+        }
+    )
+    document["decisions"][0].update(
+        {
+            "previous_status": "conflict",
+            "previous_status_resolution": "status_conflict",
+            "previous_attribute_conflicts": {},
+        }
+    )
+
+    updated, stats = apply_empirical_source_semantics_adjudications(
+        registry, document, "adjudications/e3.json", repo_root=tmp_path
+    )
+
+    resolved = updated["source_fields"][0]
+    assert stats["empirical_source_semantics_verified"] == 1
+    assert resolved["status"] == "verified"
+    assert resolved["attribute_conflicts"] == {}
+    assert resolved["adjudications"][0]["previous_attribute_conflicts"] == {}
+
+
+def test_empirical_source_semantics_rejects_unrecognized_conflict_resolution(tmp_path, monkeypatch):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    row = registry["source_fields"][0]
+    row.update(
+        {
+            "status": "conflict",
+            "status_resolution": "source_identity_unresolved",
+            "attribute_conflicts": {},
+        }
+    )
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "previous_status": "conflict",
+            "previous_status_resolution": "source_identity_unresolved",
+        }
+    )
+
+    with pytest.raises(ValueError, match="only reference-status or reference-semantic conflicts"):
+        apply_empirical_source_semantics_adjudications(
+            registry, document, "adjudications/e3.json", repo_root=tmp_path
         )
 
 

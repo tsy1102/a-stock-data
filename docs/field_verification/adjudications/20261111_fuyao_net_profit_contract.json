@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-11",
+  "decisions": [
+    {
+      "id": "20261111-fuyao-net-profit-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "net_profit"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "net_profit",
+        "meaning": "净利润",
+        "unit": "JLY（净利润）"
+      },
+      "canonical": "net_profit",
+      "meaning": "合并净利润（含少数股东损益）",
+      "unit": "原币元",
+      "rationale": "同花顺 Fuyao 官方利润表契约把 net_profit 定义为净利润（原币元），并单独定义 parent_holder_net_profit 为归属于母公司股东的净利润。20 只股票的 2026Q3 保留样本中，Fuyao net_profit 与 parent_holder_net_profit 可分别和发行人合并利润表中的两个项目区分；贵州茅台、万华化学、泸州老窖三份 2026Q3 巨潮季报均直接核实两项数值。此裁决仅修复同花顺-fuyao::net_profit 来源身份的聚合状态冲突，不新增跨源 mappings。详细逐股样本、报告期、对比和差值见 docs/field_verification/adjudications/20261111_tdx_jinglirun_empirical_semantics.md。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "net_profit",
+          "meaning": "净利润",
+          "unit": "JLY（净利润）"
+        },
+        "updated": {
+          "canonical": "net_profit",
+          "meaning": "合并净利润（含少数股东损益）",
+          "unit": "原币元"
+        },
+        "rationale": "官方接口当前将 A 股利润表说明为整体合并利润表，字段表注明 net_profit 单位为原币元，并将归母净利润作为另一个字段。三个发行人 2026Q3 合并利润表的正式披露验证了这一口径。"
+      },
+      "source_contract": {
+        "authority": "同花顺金融数据 API · A 股利润表",
+        "revision": "官方 llms-full.txt 在线版本核验于 2026-11-11；本地完整镜像为 2026-08-22 快照",
+        "path": "GET /api/a-share/financials/income-statements · response fields",
+        "locator": "利润表说明及返回字段 net_profit、parent_holder_net_profit；在线聚合文档约第 1160-1238 行，本地镜像第 314-315 行",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    }
+  ]
+}

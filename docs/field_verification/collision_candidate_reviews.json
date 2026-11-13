@@ -25919,6 +25919,248 @@
         "schema_version": 1
       }
     },
+    "cc1_ccea9411ad89d89dc47ad3153dba8aad550977767ab9344779ca3d9c3e832ab1": {
+      "current": {
+        "candidate_id": "cc1_ccea9411ad89d89dc47ad3153dba8aad550977767ab9344779ca3d9c3e832ab1",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "8ff33de61309b3996ed8dc1f63f4310276aafa610df897d3788c9f5d2490f340",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261112/exploratory/20261112/historical_exhaustive_20261112_aliasfix1/20261112_collision_report.json",
+            "sha256": "d2a61e943c9b3cd5b6e935c7b7307b235366bfe216f16885025334768f133fa4"
+          },
+          {
+            "path": "adjudications/20261112_sina36_push2f62_candidate_review.md",
+            "sha256": "d0c52ff2769b3becad9ea00cb59769fc9d764e25975fa433ff686ced85c70cab"
+          },
+          {
+            "path": "20261023/raw_sina.json",
+            "sha256": "b475bfbed6f0e74146a28596e547123e9a22cac9187df8c1114d5baee99916ea"
+          },
+          {
+            "path": "20261023/raw_push2.json",
+            "sha256": "f5740cd56dfba8a1457c9eea3ef1cefc59aa9c6be6d68caabe0c2738d3814e60"
+          },
+          {
+            "path": "20261026/raw_sina.json",
+            "sha256": "a5e18bff21af30dc488ff54ceba2c003a7c0f7b1282b4b668244d7f157c36d76"
+          },
+          {
+            "path": "20261026/raw_push2.json",
+            "sha256": "6ac5c01ee876bd704ac392bdb792b1306a2a34d17ac3f6c23c27325d4bc0f214"
+          },
+          {
+            "path": "20261029/raw_sina.json",
+            "sha256": "4d3af3f661b2ba5884a98729da0393e420a120a30bb30a62201eb5582099ffad"
+          },
+          {
+            "path": "20261029/raw_push2.json",
+            "sha256": "ca4bae33d6991146dc12b1ba53b38946ae4e29ce4ad58f46f485025f8a57a565"
+          },
+          {
+            "path": "20261102/raw_sina.json",
+            "sha256": "657e860dc68fcc6b24b0b7d26bde8616946995ff195cb1829ef44820eb442c30"
+          },
+          {
+            "path": "20261102/raw_push2.json",
+            "sha256": "eb50ad62fdfb6a73df04e255361667e9cd96ac1ae0629ddb90535ec467978c50"
+          },
+          {
+            "path": "20261103/raw_sina.json",
+            "sha256": "1c5ebc16b47951e178a4272caaee9999c5643ae3ce5ca820a1e2d348939658ca"
+          },
+          {
+            "path": "20261103/raw_push2.json",
+            "sha256": "84a72f45234115c340dbebd312c16e6c0168d556ab529127972574839de7f818"
+          },
+          {
+            "path": "20261104/raw_sina.json",
+            "sha256": "87e745f5126e779ca7839311165c2c32e52e17bc1cfb607080ac3308b97093cf"
+          },
+          {
+            "path": "20261104/raw_push2.json",
+            "sha256": "7284ed49b42de10f93df2dc76a95f31b136db427b1185edb35535b06ebb8c2d6"
+          },
+          {
+            "path": "20261105/raw_sina.json",
+            "sha256": "69474de5b98bf6fede8c8e9ad0c98121ff15ec77f2b475170db0033412d0c0de"
+          },
+          {
+            "path": "20261105/raw_push2.json",
+            "sha256": "560f841eea483d6ea9485bf5ca324f78e00ab12f1708728fc05fc6d8a8aaf235"
+          },
+          {
+            "path": "20261106/raw_sina.json",
+            "sha256": "261da9fd9a7d7b571cc5a72aeb5a6bc72bd46789d80cc37b8d4a141edb5b6aff"
+          },
+          {
+            "path": "20261106/raw_push2.json",
+            "sha256": "a9dcb85dfb36e3413f6e2f5b25d88770047848999d45f0121ed386e35f75a293"
+          },
+          {
+            "path": "20261109/raw_sina.json",
+            "sha256": "74e62fdb8d4c9d63f85b9a32c73fc88c25139b339b1c93ecc8244402b4b03198"
+          },
+          {
+            "path": "20261109/raw_push2.json",
+            "sha256": "e3cd1504635b48176bd6eeefdce313923a05871ad03735bf90db9a85d173c3fc"
+          },
+          {
+            "path": "20261110/raw_sina.json",
+            "sha256": "b15850169a386edf7a1b0b5822c42dbbea8c0197b0bd4eba567c81a1893cc898"
+          },
+          {
+            "path": "20261110/raw_push2.json",
+            "sha256": "c1ac4b3a6cf05082054880038e4857aee7b2f851f21e4cf5d9ae22ced8d84f6c"
+          }
+        ],
+        "rationale": "拒绝新浪 [36] 与东财 push2.f62 的跨源等价候选：17 组样本只覆盖两只北交所股票，新浪值为 8300000 或 11040300，而东财 f62 仅为 2/3；无逐值等价或可解释的单位关系。该相关性不构成字段身份，且本决定不解释新浪 [36] 本身。",
+        "reviewed_at": "2026-11-12T10:03:53+08:00",
+        "reviewer": "OpenAI Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_ccea9411ad89d89dc47ad3153dba8aad550977767ab9344779ca3d9c3e832ab1",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "8ff33de61309b3996ed8dc1f63f4310276aafa610df897d3788c9f5d2490f340",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261112/exploratory/20261112/historical_exhaustive_20261112_aliasfix1/20261112_collision_report.json",
+              "sha256": "d2a61e943c9b3cd5b6e935c7b7307b235366bfe216f16885025334768f133fa4"
+            },
+            {
+              "path": "adjudications/20261112_sina36_push2f62_candidate_review.md",
+              "sha256": "d0c52ff2769b3becad9ea00cb59769fc9d764e25975fa433ff686ced85c70cab"
+            },
+            {
+              "path": "20261023/raw_sina.json",
+              "sha256": "b475bfbed6f0e74146a28596e547123e9a22cac9187df8c1114d5baee99916ea"
+            },
+            {
+              "path": "20261023/raw_push2.json",
+              "sha256": "f5740cd56dfba8a1457c9eea3ef1cefc59aa9c6be6d68caabe0c2738d3814e60"
+            },
+            {
+              "path": "20261026/raw_sina.json",
+              "sha256": "a5e18bff21af30dc488ff54ceba2c003a7c0f7b1282b4b668244d7f157c36d76"
+            },
+            {
+              "path": "20261026/raw_push2.json",
+              "sha256": "6ac5c01ee876bd704ac392bdb792b1306a2a34d17ac3f6c23c27325d4bc0f214"
+            },
+            {
+              "path": "20261029/raw_sina.json",
+              "sha256": "4d3af3f661b2ba5884a98729da0393e420a120a30bb30a62201eb5582099ffad"
+            },
+            {
+              "path": "20261029/raw_push2.json",
+              "sha256": "ca4bae33d6991146dc12b1ba53b38946ae4e29ce4ad58f46f485025f8a57a565"
+            },
+            {
+              "path": "20261102/raw_sina.json",
+              "sha256": "657e860dc68fcc6b24b0b7d26bde8616946995ff195cb1829ef44820eb442c30"
+            },
+            {
+              "path": "20261102/raw_push2.json",
+              "sha256": "eb50ad62fdfb6a73df04e255361667e9cd96ac1ae0629ddb90535ec467978c50"
+            },
+            {
+              "path": "20261103/raw_sina.json",
+              "sha256": "1c5ebc16b47951e178a4272caaee9999c5643ae3ce5ca820a1e2d348939658ca"
+            },
+            {
+              "path": "20261103/raw_push2.json",
+              "sha256": "84a72f45234115c340dbebd312c16e6c0168d556ab529127972574839de7f818"
+            },
+            {
+              "path": "20261104/raw_sina.json",
+              "sha256": "87e745f5126e779ca7839311165c2c32e52e17bc1cfb607080ac3308b97093cf"
+            },
+            {
+              "path": "20261104/raw_push2.json",
+              "sha256": "7284ed49b42de10f93df2dc76a95f31b136db427b1185edb35535b06ebb8c2d6"
+            },
+            {
+              "path": "20261105/raw_sina.json",
+              "sha256": "69474de5b98bf6fede8c8e9ad0c98121ff15ec77f2b475170db0033412d0c0de"
+            },
+            {
+              "path": "20261105/raw_push2.json",
+              "sha256": "560f841eea483d6ea9485bf5ca324f78e00ab12f1708728fc05fc6d8a8aaf235"
+            },
+            {
+              "path": "20261106/raw_sina.json",
+              "sha256": "261da9fd9a7d7b571cc5a72aeb5a6bc72bd46789d80cc37b8d4a141edb5b6aff"
+            },
+            {
+              "path": "20261106/raw_push2.json",
+              "sha256": "a9dcb85dfb36e3413f6e2f5b25d88770047848999d45f0121ed386e35f75a293"
+            },
+            {
+              "path": "20261109/raw_sina.json",
+              "sha256": "74e62fdb8d4c9d63f85b9a32c73fc88c25139b339b1c93ecc8244402b4b03198"
+            },
+            {
+              "path": "20261109/raw_push2.json",
+              "sha256": "e3cd1504635b48176bd6eeefdce313923a05871ad03735bf90db9a85d173c3fc"
+            },
+            {
+              "path": "20261110/raw_sina.json",
+              "sha256": "b15850169a386edf7a1b0b5822c42dbbea8c0197b0bd4eba567c81a1893cc898"
+            },
+            {
+              "path": "20261110/raw_push2.json",
+              "sha256": "c1ac4b3a6cf05082054880038e4857aee7b2f851f21e4cf5d9ae22ced8d84f6c"
+            }
+          ],
+          "rationale": "拒绝新浪 [36] 与东财 push2.f62 的跨源等价候选：17 组样本只覆盖两只北交所股票，新浪值为 8300000 或 11040300，而东财 f62 仅为 2/3；无逐值等价或可解释的单位关系。该相关性不构成字段身份，且本决定不解释新浪 [36] 本身。",
+          "reviewed_at": "2026-11-12T10:03:53+08:00",
+          "reviewer": "OpenAI Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "sina"
+          ],
+          "left": "sina[36]",
+          "methods": [
+            {
+              "leave_one_out_max": -0.0,
+              "leave_one_out_min": -1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": -0.6847,
+              "spearman": -0.6847
+            }
+          ],
+          "right": "push2.f62",
+          "sample_codes": [
+            "920118",
+            "920508"
+          ],
+          "sample_count": 17,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261029",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
     "cc1_cd4cbea8396838fe6f5b0441227b10584c64dabb5d5529ad1b68740be8780017": {
       "current": {
         "candidate_id": "cc1_cd4cbea8396838fe6f5b0441227b10584c64dabb5d5529ad1b68740be8780017",
@@ -32160,5 +32402,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-07T18:06:26+08:00"
+  "updated_at": "2026-11-12T10:03:53+08:00"
 }

@@ -1,0 +1,51 @@
+{
+  "captured_at_local": "2026-11-13T14:37:20+08:00",
+  "official_provider": "Eastmoney Data Center",
+  "original_capture": {
+    "file": "docs/field_verification/20261109/raw_ulist239.json",
+    "sha256": "7d8bfc4b6d12e4d8bce1aa1cb1e93b5fbe6abbf4b3b05126887775c9838afa4c",
+    "collection_manifest_capture_date": "20261110",
+    "data_date": "20261109",
+    "run_date": "20261110",
+    "source_capture_date": "20261109",
+    "source_capture_started_at": "2026-11-09 19:58:58",
+    "source_status": "ok",
+    "expected": 20,
+    "received": 20,
+    "reporting_period_field": "f221=20260930",
+    "provider_snapshot_field": "f297=20261109"
+  },
+  "requests": [
+    {
+      "report": "RPT_DMSK_FN_BALANCE",
+      "path": "TOTAL_EQUITY",
+      "file": "docs/field_verification/adjudications/20261113_ulist239_rpt_dmsk_fn_balance_response.json",
+      "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_DMSK_FN_BALANCE&columns=ALL&filter=%28REPORT_DATE%3D%272026-09-30%27%29%28SECURITY_CODE%20in%20%28%22000007%22%2C%22000011%22%2C%22000037%22%2C%22000568%22%2C%22000678%22%2C%22002034%22%2C%22002242%22%2C%22300031%22%2C%22300788%22%2C%22301190%22%2C%22600309%22%2C%22600519%22%2C%22600675%22%2C%22600825%22%2C%22601288%22%2C%22688327%22%2C%22688553%22%2C%22688589%22%2C%22920118%22%2C%22920508%22%29%29&pageSize=100&pageNumber=1&sortColumns=SECURITY_CODE&sortTypes=1&source=WEB&client=WEB",
+      "sha256": "1280e67241568243d25dac25550b2e585ceae8d8aae6bf0210b6d44fbc396202"
+    },
+    {
+      "report": "RPT_LICO_FN_CPD",
+      "paths": [
+        "PARENT_NETPROFIT",
+        "SJLTZ",
+        "YSTZ"
+      ],
+      "file": "docs/field_verification/adjudications/20261113_ulist239_rpt_lico_fn_cpd_response.json",
+      "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_LICO_FN_CPD&columns=ALL&filter=%28REPORTDATE%3D%272026-09-30%27%29%28SECURITY_CODE%20in%20%28%22000007%22%2C%22000011%22%2C%22000037%22%2C%22000568%22%2C%22000678%22%2C%22002034%22%2C%22002242%22%2C%22300031%22%2C%22300788%22%2C%22301190%22%2C%22600309%22%2C%22600519%22%2C%22600675%22%2C%22600825%22%2C%22601288%22%2C%22688327%22%2C%22688553%22%2C%22688589%22%2C%22920118%22%2C%22920508%22%29%29&pageSize=100&pageNumber=1&sortColumns=SECURITY_CODE&sortTypes=1&source=WEB&client=WEB",
+      "sha256": "1a2702a10e4e2793e06860df65ba3c1b11f0de19a104b3d08c38039324ba6dd2"
+    }
+  ],
+  "sample_csv": {
+    "file": "docs/field_verification/adjudications/20261113_ulist239_f135_f46_samples.csv",
+    "sha256": "a47731207029b606db32cf03aa3c4c0b342106b11457d7af0c265107fc146a25",
+    "rows": 20
+  },
+  "results": {
+    "f135_TOTAL_EQUITY_two_decimal": "20/20",
+    "f45_PARENT_NETPROFIT_exact": "20/20",
+    "f46_SJLTZ_two_decimal": "20/20",
+    "f41_YSTZ_two_decimal_discriminator": "20/20",
+    "maximum_f46_absolute_residual": "0.0043027701449999998864481831617",
+    "maximum_f135_absolute_residual": "4.0000000000000003272122156561E-05"
+  }
+}

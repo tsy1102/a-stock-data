@@ -1,0 +1,4 @@
+﻿data_date,stock_code,source_path,raw_file,raw_f86,raw_value_yuan,page_url,page_section,page_display_text,page_display_value_yuan,display_increment_yuan,half_increment_tolerance_yuan,raw_minus_display_yuan,within_display_rounding,missing_as_zero
+20261106,600519,东财-push2(stock/get)::f143,20261106/raw_push2.json,1793952699,-133286896.0,https://data.eastmoney.com/zjlx/600519.html,历史资金流向一览｜大单净流入｜净额,-1.33亿,-133000000,1000000,500000.0,-286896.0,True,False
+20261106,601288,东财-push2(stock/get)::f143,20261106/raw_push2.json,1793952691,49252880.0,https://data.eastmoney.com/zjlx/601288.html,历史资金流向一览｜大单净流入｜净额,4925.29万,49252900,100,50.0,-20.0,True,False
+20261106,600309,东财-push2(stock/get)::f143,20261106/raw_push2.json,1793952708,-44972288.0,https://data.eastmoney.com/zjlx/600309.html,历史资金流向一览｜大单净流入｜净额,-4497.23万,-44972300,100,50.0,12.0,True,False

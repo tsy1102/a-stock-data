@@ -1,6 +1,6 @@
 # ELTDX 相邻财务字段候选复核（2026-11-11）
 
-> 后续定案：本文第 26 行列出的 `fa_qi_ren_fa_ren_gu_raw_float` 与 `fa_ren_gu_raw_float` 已于同日按 E3 来源内实证定案；当前含义和边界见[裁决记录](adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。`zhu_ying_li_run_raw_float` 仍待独立核验。
+> 后续定案：本文第 26 行列出的两条 `finance_batch[]` 股本槽位已按 E3 来源内实证定案，见[裁决记录](adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。`zhu_ying_li_run_raw_float` 后经四家公司 2026Q3 报表核对，确认该 ELTDX 路径的实测值对应“营业成本”；来源标签冲突与边界见[独立裁决记录](adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md)。
 
 ## 方法与范围
 
@@ -19,14 +19,14 @@
 | `cun_huo_raw_float` | 存货 | 存货期末余额；千元 | 600309 raw 33,527,662 千元，对照 33,527,663,132.86 元；000568 raw 15,679,404 千元，对照 15,679,403,351.42 元；920508 raw 21,131.699219 千元，对照母公司报表 21,131,792.18 元。范围限制同应收账款。 |
 | `tou_zi_shou_yu_raw_float` | 投资收益 | 投资收益；千元 | 600519 raw 230.899994 千元，对照 230,947.61 元；600309 raw 787,728 千元，对照 787,727,962.47 元；920508 raw 353.300018 千元，对照 353,345.33 元。差值约 -47.62、+37.53、-45.31 元，均小于 raw 值对应的 0.1 千元或 1 千元显示刻度；仅作为近似佐证，不称精确命中。 |
 | `mei_gu_jing_zi_chan_raw_float` | 每股净资产 | 每股净资产；元/股 | 600519 raw 216.949997；报告归母权益 271,204,740,541.63 元 ÷ 股本 1,250,081,601 股 ≈ 216.94963 元/股，按报告显示精度为 216.95。920508 raw 3.1889999；报告归母权益 191,324,142.79 元 ÷ 股本 60,000,000 股 ≈ 3.188736 元/股，按三位小数为 3.189。只验证这两个样本，不外推所有来源计算规则。 |
+| `zhu_ying_li_run_raw_float` | 主营利润 | 营业成本原始值；千元 | 600519、600309、000568、920508 四只股票的 2026Q3 `raw × 1,000` 分别与 2026 年 1—9 月利润表“营业成本”差 +67.10、−7,413.52、−162.33、−81.37 元；最大相对差值 3.36×10⁻⁶。ELTDX 字段表仍标“主营利润”，该标签冲突保留，详见[独立裁决记录](adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md)。 |
 | `bao_liu_2_raw_float` | 保留字段 2 | 上游保留字段 2；未公开业务语义 | ELTDX 字段表直接标为保留字段 2、无单位；20 条保留样本全为 9.0。确认的是保留槽位身份，不把常量解释成业务指标。 |
 
 上述精度差额均如实保留。利润表按 2026 年 1—9 月累计值核验，资产负债表按 2026-09-30 期末余额核验；raw 的 `updated_date` 不等于报告期。所用 ELTDX 表是来源适配器的字段/单位契约，不证明其他来源同名字段等价，也不是通达信服务器自带的中文标签。
 
-## 仍未闭合的相邻路径
+## 仍未闭合的独立叶路径
 
-- `fa_qi_ren_fa_ren_gu_raw_float` 的拼音候选仍为“发起人法人股”，`fa_ren_gu_raw_float` 仍为“法人股”；这两项与保留样本数值和 ELTDX 文档标签之间存在冲突，继续保持未验证，不按数值改名。
-- `zhu_ying_li_run_raw_float` 的拼音候选仍为“主营利润”；留存样本有数值冲突，继续按冲突项调查，不因本轮其他利润字段命中而推断它的语义。
+- 不带 `finance_batch[]` 前缀的两个旧叶名已按路径审计标为 `retired_legacy_path`：它们不是当前 raw JSON 中独立的输出路径；字段语义只登记在完整 `finance_batch[]` 路径。完整审计见[无前缀候选路径退役记录](adjudications/20261111_eltdx_bare_finance_model_fields.md)。
 - 相关字段裁决见 [`20261111_eltdx_finance_extended_source_contract.json`](adjudications/20261111_eltdx_finance_extended_source_contract.json)；截图所列六项的候选、前两项冲突及其边界见 [`20261111_finance_candidate_crosscheck.md`](20261111_finance_candidate_crosscheck.md)。
 
 ## 官方证据

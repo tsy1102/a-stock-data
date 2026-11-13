@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_attachment_fields_evidence.md",
+  "evidence_sha256": "deb24ed7f7ed4b9d70b7dac3c7bb32da0247aedfd6746d5e28e5eed10d168fa2",
+  "decisions": [
+    {
+      "id": "20261112-reports-attachpages-pdf-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "attachPages"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "attachPages",
+          "attachSize / attachPages",
+          "reportType / attachPages / attachSize"
+        ],
+        "meaning": [
+          "PDF 大小/页数",
+          "PDF 页数",
+          "报告类型 / PDF 页数 / 大小"
+        ]
+      },
+      "canonical": "研报 PDF 附件页数",
+      "meaning": "东方财富研报记录所链接 PDF 附件的页数。",
+      "unit": "页",
+      "section": "东方财富研报详情页 PDF 附件核对（2026-11-12）",
+      "rationale": "项目采集直接保留 report/list 的 reports.attachPages 原始键。保留期内 16 个 raw_reports.json 文件、6,051 条观察和 443 条唯一研报记录中，该字段均非空且为正整数；另将 3 条不同股票/报告的采集记录与东方财富详情页链接的 PDF 逐条绑定，Chrome PDF 阅读器总页数与该字段 3/3 完全一致。参考材料中的组合别名冲突由逐源精确路径和实际 PDF 证据消解。结论只覆盖所核页数语义，不推断未打开 PDF 的逐条内容。",
+      "sample": {
+        "scope": "样本 CSV 中 3 个不同股票、3 个 infoCode 的官方详情页链接 PDF；逐个比较 reports.attachPages 与 Chrome PDF 阅读器总页数。完整保留语料覆盖检查为 2026-10-15 起 16 个 raw_reports.json、6,051 条观察和 443 个唯一研报记录。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 3,
+        "unique_info_code_count": 443,
+        "observation_count": 6051,
+        "raw_capture_file_count": 16
+      }
+    },
+    {
+      "id": "20261112-reports-attachsize-pdf-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "attachSize"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "attachSize",
+          "attachSize / attachPages",
+          "reportType / attachPages / attachSize"
+        ],
+        "meaning": [
+          "PDF 大小",
+          "PDF 大小/页数",
+          "报告类型 / PDF 页数 / 大小"
+        ]
+      },
+      "canonical": "研报 PDF 附件大小",
+      "meaning": "东方财富研报记录所链接 PDF 附件的大小；当前接口整数值等于所测 PDF Content-Length 字节数除以 1,024 后向下取整。",
+      "unit": "KiB（1 KiB = 1,024 B；接口返回整数）",
+      "section": "东方财富研报详情页 PDF 附件核对（2026-11-12）",
+      "rationale": "项目采集直接保留 report/list 的 reports.attachSize 原始键。保留期内 16 个 raw_reports.json 文件、6,051 条观察和 443 条唯一研报记录中，该字段均非空且为正整数；另将 3 条不同股票/报告的采集记录与东方财富详情页链接的 PDF 逐条绑定，原始整数值分别等于 Content-Length / 1,024 向下取整所得 KiB（3/3）。参考材料中的组合别名冲突由逐源精确路径和实际 PDF 字节数消解。单位和计算式仅限本次所测东方财富当前 PDF 链接的服务端口径，不推断原始发布文件大小或后续重新托管后的稳定性。",
+      "sample": {
+        "scope": "样本 CSV 中 3 个不同股票、3 个 infoCode 的官方详情页链接 PDF；逐个比较 reports.attachSize 与 floor(Content-Length / 1024)。完整保留语料覆盖检查为 2026-10-15 起 16 个 raw_reports.json、6,051 条观察和 443 个唯一研报记录。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 3,
+        "unique_info_code_count": 443,
+        "observation_count": 6051,
+        "raw_capture_file_count": 16
+      }
+    }
+  ]
+}

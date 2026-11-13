@@ -8,16 +8,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修复缺失来源补采时低质量响应覆盖较完整旧 raw 的问题：补采失败或有效样本覆盖下降时保留旧文件，并在 `meta.json` 分开记录保留快照来源时间与本次失败尝试。
+- 修正 ZHB `full` 合并视图与逐源注册路径的身份回连：唯一注册叶字段可复用注册状态；有重复叶名时，只有唯一且已生效的精确裁决明确指向该 `full` 路径，才恢复其唯一所有者，其他重复叶名仍保留歧义。已验证的 `stat.change_20k_bar`、`stat.change_60k_bar` 与 `change_pct` 不再重复进入未知目标；同步更正近 20/60 根日 K 线涨跌幅释义（%）。
 - 修正 Fuyao 财务回退把披露日 `report_date_ms` 当作报告期末的错误：“报告日”现在读取 `period_end_ms` 并按 `Asia/Shanghai` 转换，缺少报告期末时留空；已加入披露日与报告期末不同的回归覆盖。
+- 修正巨潮互动易关键词模糊查询仅返回一个结果时仍错误接受该结果的问题；查询和问答响应都必须精确匹配请求股票代码，防止错股问答落入其他股票采集桶。
+- 依据 17 个保留目录、340 条 ELTDX 股票记录及 `dataclasses.asdict` 序列化路径，退役两个没有独立输出位置的无前缀旧字段身份；其 `finance_batch[]` 完整路径维持已定案状态，并让 parity 单独核验带证据的基线外退役路径。
+- 修正 `unknown_fields.md` 对已退役旧路径和类型/格式标记仍提示“含义未验证”的误导；两者现在明确显示为不进入默认破解的治理记录。
+- 修正 `unknown_fields.md` 对已证伪业务字段仍提示“含义未验证”的误导；其状态标注明确为退出默认破解，且保留在已证伪参考分组中。
+
+### Changed
+
+- 明确来源内定案与跨源 L1 对撞分开：精确官方字段契约可直接定案；财报实证核验全部可比采集样本且无反例即可按 E3 定案，不设机械股票数、采集日数或报告期数下限。达到条件后须在同一轮完成注册表裁决；冲突标签的根因可另行调查，不阻止已证实语义入库。
+- 明确来源内 E3 也适用于官方接口明确配对标签的评级、枚举等非财务字段；须核准精确原始路径、完整可比样本和空值范围，且无反例，不外推未观察取值。
+- 为 E3 来源内财报定案增加可预览、可重放的决策入口；将仍未决或旧标签错误的 TDX 两个精确输出路径定为上年同期归母净利润、上年同期营业收入，并按修复后的适配器输出单位记为角。完整路径与逐样本残差见 `20261112_tdx_finance_slots_semantic_alignment.md`。
+- 为已由 E3 定案的来源字段增加 `append_empirical_source_evidence` 入口：仅追加新证据、强制规范名/含义/单位完全不变，并保留原验证状态；裁决重放与 registry parity 会核对最新证据快照。
+- 定案 TDX `zhuyinglyrun` 精确输出路径为营业成本（角），并确认 `ipodate`、`updateddate` 是上市日期、财报更新日期的无下划线兼容别名；保留主/兜底适配器的日期格式差异，不创建跨源映射。
+- 统一 ELTDX 与 Easy-TDX 财务适配器输出单位：0x0010 股本槽位由万股转为股，金额槽位由千元转为角；同步修正股本缓存注释与协议说明，明确第三方解析器命名不等同通达信官方业务字段定义。
 
 ### Added
+- 按 20 只股票的 2026-11-10 收盘 Push2 样本、2026-09-30 财报及东方财富 F10 数据，确认精确路径 `东财-push2(stock/get)::f190` 为每股未分配利润（元/股），实测基础分母为总股本 `f84`；12 只可区分样本中 11 只直接吻合，农业银行计入已披露应付股利后吻合。通用 F10 帮助仍描述流通股口径，且单股调整不外推；Ulist239 同号 `f190` 维持独立未验证。详见[分母实证记录](docs/field_verification/adjudications/20261113_push2_f190_denominator_evidence.md)。
 
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
+
+- 按东方财富资金流官方标签/FAQ、既有同源锚点、2026-11-06 页面历史值和 2026-10-15 起 194 条日期合格 Push2 原始观察，将 `东财-push2(stock/get)::f135/f136/f142/f143` 来源内定案为主力买入、主力卖出、大单卖出、大单净流入；所有可比较恒等式均零反例，缺失值不补零。释义与证据界限同步到注册表和字段参考；不建立跨源映射，不把东方财富分类称作交易所公布或账户身份数据。
+- 依据 ELTDX v3.3.2 的 TDX `0x0010` `eps_raw` 契约、18 个合格日期的 360/360 同源精确配对、20 只股票的 2026Q3 财务记录及两份发行人报告，将 `TDX(双命名源)::eps` 来源内定案为每股收益原始值（元/股）。明确保留基本/稀释子口径、报告期选择和舍入规则未知，不建立跨源映射。
+- 按同花顺金融数据 API 的现金流项目释义、旺能环境年报/季报及 2026-10-20 至 2026-11-10 的 166 条日期合格 Push2 样本，将 `东财-push2(stock/get)::f103` 来源内定案为经营活动现金流量净额 TTM（元）；保留 Eastmoney 字段码定义和服务端刷新/追溯规则未确认的边界，不建立跨源映射。
+- 按东财 `report/list` 原始路径、350 条有效评级样本和两条研报详情页，将 `reports::emRatingValue` 定案为已观测的统一评级数值档位（1=持有、2=增持、3=买入）；排除 23 条空评级，不外推未观察值。
+- 按互动易官方页面、`cninfo_irm` 逐项映射及 1,059 条有效保留样本，定案巨潮问答的 `code/company/question/answer/answerer/ask_time` 六个来源内字段；排除 160 条请求键与响应股票代码不符的错桶记录，不建立跨源映射。
 - 定案 `同花顺-fuyao::report_date_ms` 为财务报表披露日，并与报告期末 `period_end_ms` 区分；依据官方 Fuyao 契约、来源日期合格的 2026-11-10 样本和三份 2026Q3 公告交叉核实。
+- 按 2026-11-10 同源 TDX 留存响应、ELTDX 到 `finance_info` 的适配映射及贵州茅台/农业银行 2026Q3 官方合并报表，为 `gudongrenshu`、`zhuyingshouru`、`yingyelirun`、`zongxianjinliu` 增加 E3 实证；解除两条旧聚合元数据冲突，确认总现金流不含汇率影响。补齐截图六个拼音字段的逐项释义，同时明确 Easy-TDX 兜底键与 ELTDX 主键是不同路径，不新增跨源映射。
+- 依据 20 只股票的保留期 TDX 0x0010 响应离线重解码、ELTDX 主路径逐值配对及五份发行人财报，将 Easy-TDX `faqiren_faren_gu`、`faqirenfarengu` 定案为上年同期归母净利润，将 `faren_gu` 定案为上年同期营业收入（单位均为角）；修正旧股数标签的误释，按精确路径分别登记，不新增跨源映射。
 - 明确区分 `YYYYMMDD` 日期格式标记与实际返回字段：按 TDX 0x0010 权威表定案 `updated_date` 为财报更新日期、`ipo_date` 为上市日期，关闭两个字段由弱聚合描述造成的元数据冲突；ZHB 裁决补充格式标记到实际日期字段的逐源对应关系。来源契约元数据更正现可在决策文件精确提供属性冲突快照时解除冲突，并把快照保留到定案历史。
+- 按通达信官方 `FreeLtgb` 定义和贵州茅台、农业银行、万华化学 2026Q3 财报复算，将 `ZHB-tdxstat::stat.free_ltgb` 的错误单位从“股”更正为“万股”；三家公司残差均落在各自原始值可见精度内，未推断具体取整算法或建立跨源映射。
+- 依据 17 个保留采集目录、20 只股票的 340 条 TDX 财务记录及三家发行人半年报/三季报，将 `TDX(双命名源)::baoliu2` 来源内定案为报告期末月份（本轮仅验证 6=2026-06、9=2026-09）；保留旧“保留字段2”协议资料标签，不冒称通达信官方字段契约，不建立跨源映射。
 - 按项目映射 `RPT_MUTUAL_HOLDSTOCKNORTH_STA.TRADE_DATE → northbound_hold.date` 和东财官方个股持股页，明确该日期表示港交所中央结算系统参与者日终持仓快照日期，不是采集运行日；补记 `YYYY-MM-DD` 格式并解除聚合状态造成的单源冲突。
-- ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突，其中四项来源内确认、两项继续待核。报告和注册表不再把这些财务字段当作无路径叶名。
-- 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。`fa_qi_ren_fa_ren_gu`、`fa_ren_gu` 与 `zhu_ying_li_run` 仍保留冲突，详见 [`20261111_finance_extended_candidate_crosscheck.md`](docs/field_verification/20261111_finance_extended_candidate_crosscheck.md)。
-- 随后依据 17 个保留采集目录、20 只股票、21 次成对更新及 2026Q3 发行人比较报表，将 ELTDX 两条完整财务路径来源内经验定案为上年同期归母净利润和上年同期营业收入，单位千元；旧“发起人法人股/法人股”标签仍保留为冲突证据，不建立跨源映射。`zhu_ying_li_run_raw_float` 继续待核，详见 [`20261111_eltdx_share_slots_empirical_semantics.md`](docs/field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
+- ELTDX 完整性审计改为保留端点及数组元素路径；将六个 `FinanceRecord` 字段登记在 `finance_batch[]` 下，先列中英文拼音候选并独立记录数值冲突。两项初始冲突候选后来已按 E3 来源内实证定案，完整路径语义见下方裁决记录；报告和注册表不再把这些财务字段当作无路径叶名。
+- 按拼音候选先行、ELTDX v3.3.2 `FinanceRecord` 契约及 2026Q3 公开报表复核，来源内确认 `li_run_zong_he`、`shui_hou_li_run`、`wei_fen_li_run`、`ying_shou_zhang_kuan`、`cun_huo`、`tou_zi_shou_yu`、`mei_gu_jing_zi_chan` 七条适配层字段，并将 `bao_liu_2` 明确为无业务语义的上游保留槽位；保留原始精度差异，不建立跨源映射。随后按 17 个保留采集目录和 20 只股票的转移审计，将两条完整股本槽位路径定案为上年同期归母净利润、上年同期营业收入，单位千元；旧标签保留为冲突证据，详见 [`20261111_eltdx_share_slots_empirical_semantics.md`](docs/field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
+- 对照 2026-11-10 的全部 20 只同报告期样本和三家发行人 2026Q3 合并利润表，将 `TDX(双命名源)::jinglirun` 定案为归母净利润（原值角，统一层 `/10` 转元）；20/20 与归母净利润相符，17 家可区分口径的样本全部更接近归母，最大绝对相对差 0.005114%。同时依据 Fuyao 官方利润表契约及同批报告，将 `同花顺-fuyao::net_profit` 定为含少数股东损益的合并净利润（原币元），解除该逐源项被旧聚合状态标为冲突的问题；并依据 17 个保留采集目录退役不曾作为原始列输出的 `TDX(双命名源)::net_profit` 旧别名。未新增跨源映射。详见 [`20261111_tdx_jinglirun_empirical_semantics.md`](docs/field_verification/adjudications/20261111_tdx_jinglirun_empirical_semantics.md) 和 [`20261111_tdx_net_profit_alias_retirement.md`](docs/field_verification/adjudications/20261111_tdx_net_profit_alias_retirement.md)。
+- 依据 2026-11-10 保留采集和四家发行人的 2026Q3 利润表，将 `TDX-eltdx(适配层)::zhu_ying_li_run_raw_float` 实测语义定案为营业成本（千元）；相对差值最大 3.36×10⁻⁶。保留 ELTDX v3.3.2“主营利润”标签冲突，结论仅适用于该适配路径；登记实际 `finance_batch[]` 完整路径，不建立跨源映射。详见 [`20261111_eltdx_zhu_ying_li_run_empirical_semantics.md`](docs/field_verification/adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md)。
 - 更正 `ZHB-tipinfo::[6]`：通达信官方 `TopDate_Recent` 指近 2 年最近龙虎榜日期；三只股票的留存 ZHB 原始值与东方财富官方页面日期一致。保留路径身份、verified 状态和空单位。
 - 为 ZHB 采集增加北京时间 08:00 闸门：默认早间采集跳过 ZHB，过早的显式 `--only zhb` 在请求前拒绝；文档说明使用同一数据日单源补采，碰撞仍按 ZHB 实际 `zhb_date` 归位。
 - 基于同花顺金融数据 API 估值契约，确认 Fuyao `valuation.ps_ttm` 为 TTM 市销率（倍）；保留来源数据日期未确认和 Ulist `f130` 数值映射未复核状态。
@@ -187,6 +215,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.6] - 2026-10-21
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 将碰撞计算、快照选择、候选排序、状态读写和报告序列化拆分为独立模块，保留 `collide.py` CLI 与兼容门面。
 - 将采集器目录、诊断和归档逻辑拆出；新增网络限流等待辅助模块，但限流/熔断状态仍由 `sc_network.py` 单一持有。
@@ -219,6 +248,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.11] - 2026-10-21
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 日采集源状态新增 `error_diagnostics` 计数，分别记录请求前熔断/封禁跳过、客户端尝试失败和未分类错误；原始错误标记继续保留。
 - 东方财富健康探测现在按主机/接口记录 HTTP 状态、响应大小、JSON 结构、日期线索和耗时；通过共享限流单次请求，封禁或传输失败后停止同风险族剩余探测，结果写入被忽略的 `.tmp/`。
@@ -243,6 +273,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.9] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 碰撞报告新增逐来源统计：区分逐字段审定的官方契约定义、可用锚、窗口实际观察覆盖、参与比较次数及 L1/L1-C/L4 结果，并纳入报告完整性对账。
 
@@ -259,6 +290,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.8] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 将 FTShare 公开 REST `A股行情列表` 接入日常字段采集，写入 `raw_ftshare_rest.json`；31 个官方文档返回字段登记为 `official_contract` 语义锚并进入默认碰撞。强多日匹配单列 `L1-C`，与独立来源 `L1/L1-U` 分开，不自动定案；未文档化的 `symbol_id` 保持未确认。
 
@@ -279,6 +311,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.7] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 登记 FTShare 官方 REST 网关的 241 个套餐接口位次，并详细记录 `A股行情列表` 的字段、类型、单位和分页契约；新增独立限量手动探针，认证仅从本地忽略凭证读取，快照写入 `.tmp/`，不接入五大脚本、日常采集或碰撞定案。单股实测还记录了文档示例未覆盖的 `.SH` 返回后缀和额外 `symbol_id` 字段，均只作单样本契约差异观察。
 
@@ -300,6 +333,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.5] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 采集并碰撞任务现在按用户的持续授权闭环处理达标候选；2026-10-19 的两条 L1/L1-U 结论已完成定案并同步主注册表与派生字典页。
 - 每日采集新增瞬时故障恢复规则：对符合条件的单源失败按限流约束串行补采一次，并在替换归档前核对覆盖与保留原有成功样本；封禁/限流最终返回后不再叠加采集器级补采。
@@ -310,6 +344,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.4] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 碰撞 JSON 保存所有主动方法候选及证伪护栏命中；新增 `report_completeness`，核对候选生成、保存、重复/缺失与 Markdown Top-N 截断数量。完整性异常时报告显式阻断结论。
 - 每日碰撞流程和破解方法论新增全量报告审阅门槛；旧版缺少全量候选明细的报告按未完成审阅处理。
@@ -321,6 +356,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.3] - 2026-10-20
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 碰撞报告按未知目标逐字段展示来源覆盖、可比较对、血缘阻断与方法候选；保留全局候选上限之外的字段前沿，避免高频字段挤掉其他目标。
 - 新增按股票代码留出的双输入乘积、比值、和差公式候选；输出验证指标但保持候选状态，不改变 L1/L1-U 定案和主字典。
@@ -342,6 +378,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5.1] - 2026-10-19
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 在碰撞与上游契约两条路径基础上，新增第 3 条公式关系定案路径：要求目标与输入来源族独立、输入字段已有明确验证、引用固定到具体版本/日期，并从仓库内 CSV 逐行用 Decimal 复算；记录日期覆盖、命中率、误差和引用，不创建跨字段映射。补充可复制模板与单位/时间对齐说明。
 
@@ -352,6 +389,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [17.5] - 2026-10-19
 
 ### Added
+- 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。
 
 - 统一层按 ZHB 字段的 ABCD 等级和有效交易日筛除过期快照；新增 Canonical 的 `quote_date`、`collected_at`、逐字段有效日期与可信来源标签，TDX 休市/盘前缓存日期改用项目交易日历。VAL 批量行情预热改走统一层公开 API，避免报告脚本直接写私有缓存；新增离线契约闸门及对应回归覆盖。版本升至 17.4.64。
 - KPL 每日采集补入板块强度接口，并将涨停明细扩为 `PidType=1…5` 五个梯队；保留各接口完整原始字段、行列值及 pid_type 身份。字段覆盖审计增加 Levistock 候选 raw 的独立观察组，只读有效 payload，记录 candidate_id/provider_family 且不作为独立碰撞锚。版本升至 17.4.61。

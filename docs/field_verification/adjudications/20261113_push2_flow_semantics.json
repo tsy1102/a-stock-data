@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_push2_flow_semantics_evidence.md",
+  "evidence_sha256": "fd657b99dcd254216f65600109bf933ff6e6afcb7397cccf9b082ac2488bf93a",
+  "decisions": [
+    {
+      "id": "20261113-push2-f135-main-buy-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f135"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f135",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_main_buy",
+      "meaning": "东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 东方财富 Push2 资金流 f135/f136/f142/f143 来源内实证",
+      "rationale": "精确目标为东财-push2(stock/get)::f135；本次只裁决该来源路径，不扩展至其他接口同号字段。东方财富页面既有来源内观察已确认同一数据日 f138 为超大单流入、f141 为大单流入；东方财富 FAQ 问 36 给出主力净流入由超大单和大单各自流入减流出构成。2026-10-15 起日期合格留存样本中，194 条股票日观察有 159 条 f135、f138、f141 均可比较，159/159 精确满足 f135=f138+f141，35 条含缺值或 '-' 的样本保持不可比较、未补零，反例为 0；此外 f137=f135-f136 与 f137=f140+f143 的来源内净额结构一致。官网未提供 stock/get f 编号逐字段字典，因此这是由官方分类/公式、已核实页面锚点和全部可比较同源样本共同支持的实证语义，不声称直接 API 代码定义，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-20 至 2026-11-10 的 194 条日期合格 Push2 股票日观察、20 只股票、11 个数据日；比较所有 f135/f138/f141 均为数值的行，缺值与 '-' 不按 0 处理。",
+        "comparison_count": 159,
+        "matched_count": 159,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 35,
+        "stock_count": 19
+      }
+    },
+    {
+      "id": "20261113-push2-f136-main-sell-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f136"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f136",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_main_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 东方财富 Push2 资金流 f135/f136/f142/f143 来源内实证",
+      "rationale": "精确目标为东财-push2(stock/get)::f136；本次只裁决该来源路径，不扩展至其他接口同号字段。东方财富页面既有来源内观察已确认同一数据日 f139 为超大单流出；f142 由官方页面直接锚定的大单净流入 f143、已核实大单流入 f141 及其全部可比较同源值独立复算。东方财富 FAQ 问 36 给出主力净流入由超大单和大单各自流入减流出构成。2026-10-15 起日期合格留存样本中，194 条股票日观察有 162 条 f136、f139、f142 均可比较，162/162 精确满足 f136=f139+f142，32 条含缺值或 '-' 的样本保持不可比较、未补零，反例为 0；另有 187 条可比较观察满足 f137=f135-f136。官网未提供 stock/get f 编号逐字段字典，因此这是由官方分类/公式、已核实页面锚点及全部可比较同源样本共同支持的实证语义，不声称直接 API 代码定义，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-20 至 2026-11-10 的 194 条日期合格 Push2 股票日观察、20 只股票、11 个数据日；比较所有 f136/f139/f142 均为数值的行，缺值与 '-' 不按 0 处理。",
+        "comparison_count": 162,
+        "matched_count": 162,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 32,
+        "stock_count": 18
+      }
+    },
+    {
+      "id": "20261113-push2-f142-large-sell-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f142"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f142",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_large_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 东方财富 Push2 资金流 f135/f136/f142/f143 来源内实证",
+      "rationale": "精确目标为东财-push2(stock/get)::f142。官方东方财富个股资金流页面将 f143 对应指标标为“大单净流入/净额”；同一数据日既有官方页面证据将 f141 确认为“大单”流入。若净额按流入减流出，则 f142=f141-f143。2026-10-15 起日期合格留存样本中 194 条观察有 187 条 f141、f142、f143 均可比较，187/187 精确成立、最大绝对残差 0，另 7 条因缺值或 '-' 不可比较且未按 0 补齐，反例为 0。随后 f136=f139+f142 在 162/162 条可比较行成立，进一步闭合其卖出角色。没有将官网页面标签误写成 stock/get f142 的直接字段文档；结论是精确路径上的来源内实证语义，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-20 至 2026-11-10 的 194 条日期合格 Push2 股票日观察、20 只股票、11 个数据日；比较所有 f141/f142/f143 均为数值的行，缺值与 '-' 不按 0 处理。",
+        "comparison_count": 187,
+        "matched_count": 187,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 7,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-push2-f143-large-net-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f143"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f143",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_large_today",
+      "meaning": "东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 东方财富 Push2 资金流 f135/f136/f142/f143 来源内实证",
+      "rationale": "精确目标为东财-push2(stock/get)::f143。2026-11-06 三只股票的日期合格 Push2 原始值与东方财富官方个股资金流页面“大单净流入/净额”历史值逐项核对：600519 原值 -133,286,896 元、页面显示 -1.33 亿；601288 原值 49,252,880 元、页面显示 4925.29 万；600309 原值 -44,972,288 元、页面显示 -4497.23 万。三个差值均在页面最后展示位对应的半步长范围内；没有对任何 '-' 缺值补零。另在 2026-10-15 起全部日期合格历史样本中，187/187 条 f141/f142/f143 数值行满足 f143=f141-f142，反例为 0。页面直接标签、展示精度和同源关系复算共同确认大单净额角色；仅记录东方财富来源内含义，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-11-06 贵州茅台 600519、农业银行 601288、万华化学 600309 的 Push2 f143 原值，对照 2026-11-13 Chrome 读取的东方财富个股资金流历史页面“大单净流入/净额”列；按页面最小显示位的半步长容差比较。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 3
+      }
+    }
+  ]
+}

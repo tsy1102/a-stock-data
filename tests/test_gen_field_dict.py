@@ -111,6 +111,63 @@ def test_unknown_queue_separates_meaning_annotations_from_status_resolution():
     assert "field.verified" not in rendered
 
 
+def test_unknown_queue_does_not_label_retired_paths_or_schema_tokens_unverified():
+    registry = {
+        "source_fields": [
+            {
+                "source": "source-a",
+                "code": "legacy.leaf",
+                "canonical": "finance_batch[].legacy.leaf",
+                "meaning": "未限定旧叶名；不是独立输出字段。",
+                "unit": "千元",
+                "status": "disproved",
+                "status_resolution": "retired_legacy_path",
+            },
+            {
+                "source": "source-a",
+                "code": "YYYYMMDD",
+                "canonical": "",
+                "meaning": "",
+                "unit": "",
+                "status": "disproved",
+                "status_resolution": "not_field_schema_token",
+            },
+        ]
+    }
+
+    rendered = render_unknown_fields(registry)
+    retired_row = next(line for line in rendered.splitlines() if "`legacy.leaf`" in line)
+    token_row = next(line for line in rendered.splitlines() if "`YYYYMMDD`" in line)
+
+    assert "已退役路径身份（不进入默认破解）" in retired_row
+    assert "格式/类型标记（不是字段路径）" in token_row
+    assert "仍未验证" not in retired_row
+    assert "仍未验证" not in token_row
+
+
+def test_disproved_field_is_labeled_as_exited_from_default_cracking():
+    registry = {
+        "source_fields": [
+            {
+                "source": "reports",
+                "code": "actualLastTwoYearEps",
+                "canonical": "actualLastYearEps",
+                "meaning": "当前样本与上年实际 EPS 重复，不作为独立字段。",
+                "unit": "元/股",
+                "status": "disproved",
+                "status_resolution": "empirical_duplicate_alias",
+            }
+        ]
+    }
+
+    rendered = render_unknown_fields(registry)
+    row = next(line for line in rendered.splitlines() if "`actualLastTwoYearEps`" in line)
+
+    assert "## 四、已证伪（默认不重复破解）（1）" in rendered
+    assert "已证伪记录（退出默认破解）" in row
+    assert "仍未验证" not in row
+
+
 def test_source_map_displays_project_evidence_separately_from_dialog_confirmation():
     registry = {"sources": [{"name": "source-a"}]}
     lineage = {

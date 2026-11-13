@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_tdx_finance_aliases_evidence.md",
+  "evidence_sha256": "2dbfb8ab97b284ad75bacda0d8a1d55797c100d4ec09a2b82536e05f0b82316b",
+  "decisions": [
+    {
+      "id": "20261113-tdx-zhuyinglyrun-operating-cost-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhuyinglyrun"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zhuyinglyrun",
+      "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+      "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。",
+      "section": "TDX 双命名源 zhuyinglyrun 营业成本实证定案（2026-11-13）",
+      "rationale": "项目 collect_tdx 将 tdx_get_finance_info 的适配器结果写入 finance_info；_FIN_MAP 精确映射 zhu_ying_li_run_raw_float→zhuyinglyrun，并按 qy2jiao 将千元值乘 10,000。保留期 2026-11-12 样本中 20/20 股票的 TDX 输出与 raw ELTDX 值换算精确一致。原始槽位对照四家发行人 2026Q3 报告中的合并利润表营业成本，四项均符合既有 1e-5 判读上界，且与相邻营业利润字段有明确区分。该路径不同于已验证为主营业务利润的 zhuyinglirun；保留 ELTDX 上游“主营利润”标签冲突，不建立跨源映射。",
+      "sample": {
+        "scope": "4 家发行人 2026Q3 合并报表营业成本样本；另用 data_date=20261112 的 20 股保留采集确认 TDX finance_info.zhuyinglyrun 等于 ELTDX finance_batch[].zhu_ying_li_run_raw_float×10,000。",
+        "comparison_count": 4,
+        "matched_count": 4,
+        "counterexample_count": 0,
+        "official_report_count": 4,
+        "excluded_count": 0,
+        "stock_count": 4
+      }
+    },
+    {
+      "id": "20261113-tdx-ipodate-alias-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ipodate"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipodate",
+      "meaning": "ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。",
+      "unit": "日期值（ELTDX 主适配器序列化为 YYYY-MM-DD；Easy-TDX 兜底为 YYYYMMDD 整数）。",
+      "section": "TDX 双命名源财务日期兼容别名定案（2026-11-13）",
+      "rationale": "core/eltdx_adapter.py 将已验证的 FinanceRecord.ipo_date 写入 ipo_date 后按代码规则移除下划线生成 ipodate；core/tdx_client.py 的 Easy-TDX 兜底对其 FinanceInfo.ipo_date 同样生成无下划线别名。两适配器的表示形式不同但值语义继承同一精确上市日期字段。2026-11-12 保留样本的 20/20 TDX 记录中，finance_info.ipodate 与同记录已验证的 finance_info.ipo_date 完全相同；没有将该别名当作独立日期或新跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 保留 TDX finance_info 样本；逐股比较 ipodate 与同一记录的已验证 ipo_date。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-tdx-updateddate-alias-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "updateddate"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "updateddate",
+      "meaning": "updated_date 的无下划线兼容别名，表示该证券财务记录的更新日期；不等同报告期末、公告披露日、采集日或来源级数据日期。",
+      "unit": "日期值（ELTDX 主适配器序列化为 YYYY-MM-DD；Easy-TDX 兜底为 YYYYMMDD 整数）。",
+      "section": "TDX 双命名源财务日期兼容别名定案（2026-11-13）",
+      "rationale": "core/eltdx_adapter.py 将已验证的 FinanceRecord.updated_date 写入 updated_date 后按代码规则移除下划线生成 updateddate；core/tdx_client.py 的 Easy-TDX 兜底对其 FinanceInfo.updated_date 同样生成无下划线别名。含义沿用已验证的财报更新日期定义，适配器表示形式按来源分别保留。2026-11-12 保留样本中，20/20 TDX 记录的 finance_info.updateddate 与同记录已验证的 finance_info.updated_date 完全相同。股票间更新时间不同，故不将其解释为采集目录目标日期。",
+      "sample": {
+        "scope": "2026-11-12 保留 TDX finance_info 样本；逐股比较 updateddate 与同一记录的已验证 updated_date。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

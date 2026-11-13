@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_em_fund_flow_semantics_evidence.md",
+  "evidence_sha256": "94414e852da8e4dc8b7d7db1ed4ed35ff6fa73f4eba2c917b7cafcb7b9769ef5",
+  "decisions": [
+    {
+      "id": "20261113-em-fund-flow-f135-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f135"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f135",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_main_buy",
+      "meaning": "东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；在 138 条可比较同路径观察中，em_fund_flow 与 push2 原值 138/138 完全相等。既有同接口族页面锚点和公式证据支持其为主力类别买入，且本批 113/113 个可比较样本满足 f135=f138+f141。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 138,
+        "matched_count": 138,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 2,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f136-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f136"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f136",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_main_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；在 134 条可比较同路径观察中，em_fund_flow 与 push2 原值 134/134 完全相等。既有同接口族页面锚点和公式证据支持其为主力类别卖出，且本批 118/118 个可比较样本满足 f136=f139+f142。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 134,
+        "matched_count": 134,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 6,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f137-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f137"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f137",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_main_today",
+      "meaning": "主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；140/140 条日期合格的同路径数值观察与 push2 完全相等。既有东方财富页面观察将该路径直接对应“今日主力净流入”；本批 f137=f140+f143 在 140/140 条、f137=f135-f136 在 133/133 条可比较样本中精确成立。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f138-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f138"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f138",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_super_buy",
+      "meaning": "东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；113/113 条可比较的同路径观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“超大单/流入”；缺值和“-”不填零。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 113,
+        "matched_count": 113,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 27,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f139-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f139"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f139",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_super_sell",
+      "meaning": "东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；118/118 条可比较的同路径观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“超大单/流出”；缺值和“-”不填零。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 118,
+        "matched_count": 118,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 22,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f140-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f140"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f140",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_super_today",
+      "meaning": "东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；140/140 条日期合格的同路径数值观察与 push2 完全相等。既有东方财富页面观察将其对应“今日超大单净流入”；本批 109/109 条可比较样本满足 f140=f138-f139。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f141-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f141"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f141",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_large_buy",
+      "meaning": "东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；138/138 条可比较的同路径观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“大单/流入”；缺值和“-”不填零。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 138,
+        "matched_count": 138,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 2,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f142-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f142"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f142",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_large_sell",
+      "meaning": "东方财富个股资金流分类口径下，当日大单类别卖出金额；由大单买入 f141 减大单净流入 f143 反推，并经留存可比较样本逐项复算。该值描述东方财富分类结果，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；134/134 条可比较的同路径观察与 push2 完全相等。既有官方页面已直接锚定大单净流入 f143、且 f141 对应大单流入；本批 133/133 条可比较样本满足 f142=f141-f143，支持 f142 为大单卖出。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 134,
+        "matched_count": 134,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 6,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f143-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f143"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f143",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_large_today",
+      "meaning": "东方财富个股资金流历史表“大单净流入/净额”对应的当日金额；按东方财富资金分类口径解释，不代表特定账户或真实机构身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；140/140 条日期合格的同路径数值观察与 push2 完全相等。既有东方财富历史页同日观察将同一接口族路径对应“大单净流入/净额”；本批 133/133 条可比较样本满足 f143=f141-f142。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f147-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f147"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f147",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_small_buy",
+      "meaning": "小单类别的资金流入金额，不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；134/134 条可比较的同路径观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“小单/流入”；“-”仍作为原始缺失哨兵保留。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 134,
+        "matched_count": 134,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 6,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f148-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f148"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f148",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_small_sell",
+      "meaning": "小单类别的资金流出金额，不表示投资者账户身份。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；140/140 条日期合格的同路径数值观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“小单/流出”。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261113-em-fund-flow-f149-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-资金流(em_fund_flow)",
+        "code": "f149"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "f149",
+        "meaning": "",
+        "unit": "元"
+      },
+      "canonical": "fund_small_today",
+      "meaning": "小单类别资金净流入金额，等于流入金额减流出金额。",
+      "unit": "元",
+      "section": "2026-11-13 Eastmoney em_fund_flow stock/get 来源族实证补全",
+      "rationale": "来源路径配置明确将该采集项归入 em.stock_get；140/140 条日期合格的同路径数值观察与 push2 完全相等。既有东方财富页面观察将同一接口族路径对应“今日小单净流入”；本批 134/134 条可比较样本满足 f149=f147-f148。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 个日期合格数据日、20 只股票；同一 em.stock_get 字段路径与 push2 采集视图的可比较原始值对照。两者为同一接口族，不视为独立来源。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

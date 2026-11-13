@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_column_evidence.md",
+  "evidence_sha256": "a7bec315867e58a8d9e208aa1df2cb41a6fe91a3393bd4b0a6a11aef1778731e",
+  "decisions": [
+    {
+      "id": "20261112-reports-column",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "column"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "column",
+        "meaning": "栏目代码",
+        "unit": ""
+      },
+      "canonical": "column",
+      "meaning": "东方财富个股研报栏目代码；保留样本观测 11 个代码，其中 002004003 对应新股研报栏目；其余代码释义未扩展。",
+      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-12）",
+      "rationale": "精确路径 reports::column 由 get_reports 直接保留东财 report/list 的响应键，并写入 raw_reports.json。仅依据 2026-10-15 起的保留样本，按 infoCode 去重；443 条唯一记录均有稳定栏目码。对 430 条 indvIsNew 非空记录逐条比较，全部 6 条 002 均为 column=002004003，424 条 001 均不属于该代码，零反例；13 条空标记不用于栏目分类。东方财富官网将新股研报列为独立栏目，云从科技官方详情页标题与同记录代码一致。故定案字段角色并只确认已观测的 002004003 标签；不外推其余代码，不要求跨源 L1 或更多采集日。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-10 的 16 份保留 raw_reports.json；6,051 次观察按 infoCode 去重为 443 条唯一研报记录、11 个栏目代码；比较 430 条非空 indvIsNew 记录与同条 column。",
+        "comparison_count": 430,
+        "matched_count": 430,
+        "counterexample_count": 0,
+        "excluded_count": 13,
+        "stock_count": 15,
+        "observation_count": 6051
+      }
+    }
+  ]
+}

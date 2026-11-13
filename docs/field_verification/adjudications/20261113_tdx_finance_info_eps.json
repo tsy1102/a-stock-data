@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_tdx_finance_info_eps_evidence.md",
+  "evidence_sha256": "fbc331db250a432129fccc525331a543331a2769a75bc2a7c450490c19acfe58",
+  "decisions": [
+    {
+      "id": "20261113-tdx-finance-info-eps-source-meaning-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "eps"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eps_raw",
+      "meaning": "每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则）",
+      "unit": "元/股",
+      "section": "TDX finance_info.eps 来源内语义定案（2026-11-13）",
+      "rationale": "精确采集路径是 raw_tdx.json:stocks[code].finance_info.eps；collect_tdx 将 tdx_get_finance_info 返回值直接保存。当前 ELTDX 适配器 `_FIN_MAP` 将 0x0010 FinanceRecord.eps_raw 直接映射到兼容列 eps，`yuan` 分支不作换算。ELTDX v3.3.2 的 FinanceRecord API 契约将 eps_raw 定义为每股收益原始值；该契约不区分基本/稀释、报告期选择或精度规则。保留期内 18 个合格数据日的 TDX finance_info.eps 与同源 ELTDX finance_batch[].eps_raw 在 360/360 条记录中完全相同；重复快照不当作独立来源。2026-11-10 和 2026-11-12 的 40 条股票日记录均可配对到已于目标日之前披露的 2026Q3 Fuyao basic_eps，绝对差 40/40 不超过 0.005 元/股，20 个股票报告配对无超界反例。发行人报告独立确认旺能环境 002034 的 TDX 1.320000052 与基本/稀释披露值 1.32 相符，并确认深南电 A 000037 的报告值 0.0050 与 TDX 0 处于半分边界；后者保留为精度/舍入未决项，不作为字段类别反例。东方财富 F10 将其计算值与财报披露值区分，002034 的 Push2 f55 计算值 1.2531 与披露 EPS 1.32 不同，故不把 TDX eps 误映射到 f55。本决定只核验 TDX(双命名源)::eps 的来源内类别和单位，不创建任何跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个合格 TDX/ELTDX 数据日，核对 finance_info.eps 与 finance_batch[].eps_raw 的同源数值；并用 2026-11-10、2026-11-12 两个目标数据日的 20 只股票、2026Q3/CNY 报告行验证 TDX finance_info.eps 与报告 EPS 的半分精度界限。40 条观察对应 20 份不同股票报告，两个数据日的重复报告不当作独立财报样本。",
+        "comparison_count": 40,
+        "matched_count": 40,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "observation_count": 40
+      }
+    }
+  ]
+}

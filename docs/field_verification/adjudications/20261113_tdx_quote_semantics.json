@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_tdx_quote_semantics_evidence.md",
+  "evidence_sha256": "e154b289f56300548e406753d0bfd21df3384cee319d122ca17b06fb21ca9818",
+  "decisions": [
+    {
+      "id": "20261113-tdx-amount-wan-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "amount_wan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "amount_wan",
+      "meaning": "TDX 行情快照成交金额；由原始 amount 以元计值除以 10000 得到，输出单位为万元。",
+      "unit": "万元",
+      "section": "TDX 行情快照规范化字段实证（2026-11-13）",
+      "rationale": "精确项目路径 (TDX(双命名源), amount_wan) 由 capture_field_probe._normalize_tdx_capture_quote 从 tdx_get_quote_raw 的 amount 字段生成，代码明确执行 amount / 10000；归档包装路径为 quote_full.amount_wan。2026-11-12 两只股票的 TDX 换算值分别为 45.36814592 亿和 9.53319808 亿，与同花顺官方行情表“成交额”45.37 亿和 9.53 亿在页面两位小数显示精度内一致。20 只同日样本中换算值乘 10000 与 TDX 原始 amount 全部精确相等；与 Fuyao 同日 turnover 比较的最大差为 100 元（0.142 ppm），该提供方差异未被擅自归因。结论只确认该精确输出路径与单位。",
+      "sample": {
+        "scope": "2026-11-12 收盘样本；精确目标为 TDX(双命名源)::amount_wan / change_amt。对照两只股票的同花顺官方行情表，并用 20 只重叠股票的同日 TDX/Fuyao 行情元组核实数据日；20/20 现价与涨跌额匹配。金额换算和逐行差值见证据 CSV。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261113-tdx-change-amt-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "change_amt"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_amt",
+      "meaning": "TDX 行情快照涨跌额，即最新价减昨收价；价格单位为元/股。",
+      "unit": "元",
+      "section": "TDX 行情快照规范化字段实证（2026-11-13）",
+      "rationale": "精确项目路径 (TDX(双命名源), change_amt) 由 capture_field_probe._normalize_tdx_capture_quote 从 TDX 原始最新价与昨收生成，代码明确执行 price - last_close（昨收缺失时取 pre_close）。2026-11-12 两只股票的结果 7.97 与 -0.25 分别与同花顺官方行情表“涨跌”列一致；20 只同日样本的现价和涨跌额均与 as_of_date=2026-11-12 的 Fuyao 行情完全一致。网页未显式标示行情日；日期资格由同日完整行情元组交叉锚定。结论只确认该精确输出路径，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 收盘样本；精确目标为 TDX(双命名源)::amount_wan / change_amt。对照两只股票的同花顺官方行情表，并用 20 只重叠股票的同日 TDX/Fuyao 行情元组核实数据日；20/20 现价与涨跌额匹配。金额换算和逐行差值见证据 CSV。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    }
+  ]
+}

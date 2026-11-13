@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "填写复核人",
+  "reviewed_on": "YYYY-MM-DD",
+  "evidence_file": "docs/field_verification/adjudications/YYYYMMDD_evidence.md",
+  "evidence_sha256": "证据文件的 SHA-256",
+  "decisions": [
+    {
+      "id": "YYYYMMDD-source-field-meaning",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "注册表中的精确来源名",
+        "code": "完整来源字段路径"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "从当前注册表复制",
+      "previous": {
+        "canonical": "从当前注册表复制",
+        "meaning": "从当前注册表复制",
+        "unit": "从当前注册表复制"
+      },
+      "canonical": "经证据确认的规范名",
+      "meaning": "经证据确认的来源内字段释义",
+      "unit": "经证据确认的原始或当前输出单位；注明采用哪一口径",
+      "section": "源文档中的字段章节或实证定案章节",
+      "rationale": "说明原始路径映射、报告期与主体口径、单位换算、精度容差、替代解释及为何可区分。",
+      "sample": {
+        "scope": "数据日期、报告期、字段路径及比较范围",
+        "comparison_count": 0,
+        "matched_count": 0,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 0
+      }
+    }
+  ]
+}

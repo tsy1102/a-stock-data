@@ -85,6 +85,11 @@ NON_FIELD_SEC = (
     "分字典索引",
 )
 
+# Overview groups are labels, not field identities. This label was formerly
+# used as a catch-all row for two TDX finance slots; those slots now have
+# distinct registry canonicals and must not leave a stale matrix key behind.
+NON_FIELD_ROW_LABELS = {"上年同期财务比较值"}
+
 
 def sec_to_source(sec: str) -> str:
     s = sec
@@ -195,7 +200,7 @@ def clean_field(name: str) -> str:
     s = re.sub(r"^【", "", s)
     s = re.sub(r"^[\d\]]+", "", s)  # markdown 链接截断残留：'8] 涨跌幅滑动对' → '涨跌幅滑动对'
     s = s.strip()
-    if not s or len(s) < 2:
+    if not s or len(s) < 2 or s in NON_FIELD_ROW_LABELS:
         return ""
     if re.fullmatch(r"[\*\-\s—–·]+", s):
         return ""

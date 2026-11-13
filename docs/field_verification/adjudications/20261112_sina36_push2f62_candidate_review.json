@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_ccea9411ad89d89dc47ad3153dba8aad550977767ab9344779ca3d9c3e832ab1",
+  "disposition": "rejected",
+  "reviewer": "OpenAI Codex",
+  "reviewed_at": "2026-11-12T10:03:53+08:00",
+  "rationale": "拒绝新浪 [36] 与东财 push2.f62 的跨源等价候选：17 组样本只覆盖两只北交所股票，新浪值为 8300000 或 11040300，而东财 f62 仅为 2/3；无逐值等价或可解释的单位关系。该相关性不构成字段身份，且本决定不解释新浪 [36] 本身。",
+  "evidence_refs": [
+    "collision_research_20261112/exploratory/20261112/historical_exhaustive_20261112_aliasfix1/20261112_collision_report.json",
+    "adjudications/20261112_sina36_push2f62_candidate_review.md",
+    "20261023/raw_sina.json",
+    "20261023/raw_push2.json",
+    "20261026/raw_sina.json",
+    "20261026/raw_push2.json",
+    "20261029/raw_sina.json",
+    "20261029/raw_push2.json",
+    "20261102/raw_sina.json",
+    "20261102/raw_push2.json",
+    "20261103/raw_sina.json",
+    "20261103/raw_push2.json",
+    "20261104/raw_sina.json",
+    "20261104/raw_push2.json",
+    "20261105/raw_sina.json",
+    "20261105/raw_push2.json",
+    "20261106/raw_sina.json",
+    "20261106/raw_push2.json",
+    "20261109/raw_sina.json",
+    "20261109/raw_push2.json",
+    "20261110/raw_sina.json",
+    "20261110/raw_push2.json"
+  ],
+  "duplicate_of": null
+}

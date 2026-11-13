@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2611；日常来源路径 2467：unverified 1008、candidate 1、conflict 58、disproved 22；历史来源路径 144。
-> 另有 169 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2612；日常来源路径 2468：unverified 979、candidate 1、conflict 43、disproved 26；历史来源路径 144。
+> 另有 148 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -15,32 +15,26 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 851 |
-| 含义栏有文本（仍未验证） | 157 |
+| 含义栏为空/占位 | 832 |
+| 含义栏有文本（仍未验证） | 147 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 345 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 339 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
-| `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
+| `matched` | 58 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 520 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 498 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（58）
+## 一、状态冲突（禁止作为锚点，优先复核）（43）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| reports | `attachPages` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| reports | `attachSize` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| reports | `emRatingValue` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `encodeUrl` | encodeUrl | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| reports | `newIssuePrice` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| reports | `newListingDate` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| reports | `newPeIssueA` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `predictNextTwoYearPe` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `predictNextYearPe` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
 | reports | `predictThisYearPe` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
@@ -58,25 +52,16 @@
 | 东财-datacenter(英文键) | `northbound_hold.hold_ratio` | northbound_hold.hold_ratio | 北向持股占流通股本比例(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `northbound_hold.hold_shares` | northbound_hold.hold_shares | 北向持股总数(股) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `northbound_hold.market_cap` | northbound_hold.market_cap | 北向持股市值(元) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-push2(stock/get) | `f135` | f135 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-push2(stock/get) | `f136` | f136 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-ulist239(np/get) | `f135` | — | 净资产 | — | 含义栏有文本（仍未验证） | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f137` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f139` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f141` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f145` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_conflict | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-资金流(em_fund_flow) | `f135` | f135 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-资金流(em_fund_flow) | `f136` | f136 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-资金流(em_fund_flow) | `f138` | f138 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-资金流(em_fund_flow) | `f139` | f139 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-资金流(em_fund_flow) | `f149` | f149 | — | 元 | 含义栏为空/占位 | status_conflict | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
 | 同花顺-fuyao | `growth` | growth | — | — | 含义栏为空/占位 | status_conflict | 12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕 |
 | 同花顺-fuyao | `growth.calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 同花顺-fuyao | `growth.calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 同花顺-fuyao | `last_price` | 派生 `last_price ÷ f92(BPS) | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
-| 同花顺-fuyao | `net_profit` | net_profit | 净利润 | JLY（净利润） | 含义栏有文本（仍未验证） | status_conflict | 12.8.12i fuyao 财务报表叶字段补录（V17.1.1 全量登记） |
 | 同花顺-fuyao | `prev_price` | 派生 `prev_price × 板块涨停幅度 | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
 | 同花顺-fuyao | `profitability` | profitability | — | — | 含义栏为空/占位 | status_conflict | 12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕 |
 | 同花顺-fuyao | `profitability.index_weighted_avg_roe` | profitability.index_weighted_avg_roe | — | — | 含义栏为空/占位 | status_conflict | 12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕 |
@@ -99,7 +84,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 
-## 三、待破解字段（1008）
+## 三、待破解字段（979）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -110,25 +95,18 @@
 | TDX(双命名源) | `Zgb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `amount_wan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `amplitude_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `average_price` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `b_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `baoliu2` | baoliu2 | 保留字段2 | - | 含义栏有文本（仍未验证） | matched | 2.1 协议完整 36 字段表（权威定义） |
 | TDX(双命名源) | `bvps` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `change` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `change_amt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `change_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `change_pct_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `change_pct_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `changqi_fuzhai` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `entrust_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `eps` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `fajirenfarengu` | — | 发起人法人股（项目输出键拼写为 fajirenfarengu） | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
-| TDX(双命名源) | `faqiren_faren_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `faren_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `float_capital` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `float_mcap_yi` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `gross_margin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -137,7 +115,6 @@
 | TDX(双命名源) | `h_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `huobi_zijin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `inside_volume` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ipodate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `jing_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `jing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `jingying_xianjinliu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -157,7 +134,6 @@
 | TDX(双命名源) | `meiguweifenpei` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `more_info` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `net_profit` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `outside_volume` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `pb` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `pe_lyr` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -173,7 +149,6 @@
 | TDX(双命名源) | `total_capital` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `touzi_shouyu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `turnover_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `updateddate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ushort` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `vol_ratio` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `volume` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -181,7 +156,6 @@
 | TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhigong_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `zhuyinglyrun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zong_guben` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `ColName` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `Content` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -209,8 +183,6 @@
 | TDX-eltdx(适配层) | `exchange` | exchange | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `extra_meta_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `extra_pair_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `fa_qi_ren_fa_ren_gu_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `fa_ren_gu_raw_float` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `full_code` | full_code | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `highest_ladder_level` | highest_ladder_level | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `hitCache` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -303,23 +275,16 @@
 | reports | `SHANGHAI` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | reports | `SHENZHEN` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | reports | `TRADE_MARKET` | TRADE_MARKET | 待破解 | — | 含义栏为空/占位 | matched | 12.9.2 其他接口实测发现 |
-| reports | `actualLastTwoYearEps` | actualLastTwoYearEps | 前年实际 EPS | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
-| reports | `actualLastYearEps` | actualLastYearEps | 去年实际 EPS | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `adjunctSize` | adjunctSize / adjunctType | 附件大小/类型 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `adjunctType` | adjunctSize / adjunctType | 附件大小/类型 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `adjunctUrl` | adjunctUrl | 待破解 | — | 含义栏为空/占位 | matched | 12.9.2 其他接口实测发现 |
 | reports | `analyse` | analyse / analyse_title | 待破解 | — | 含义栏为空/占位 | matched | 12.9.2 其他接口实测发现 |
 | reports | `analyse_title` | analyse / analyse_title | 待破解 | — | 含义栏为空/占位 | matched | 12.9.2 其他接口实测发现 |
 | reports | `announcementType` | announcementType | 公告类型代码 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
-| reports | `attachType` | attachType | 附件类型 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `audio_url` | audio_url | 音频链接 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
-| reports | `column` | column | 栏目代码 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `emIndustryCode` | emIndustryCode | 东财行业码 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `get_industry_reports` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | reports | `get_reports` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| reports | `indvAimPriceL` | indvAimPriceL | 目标价 L | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
-| reports | `indvAimPriceT` | indvAimPriceT | 目标价 T | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
-| reports | `indvIsNew` | indvIsNew | 新研报标记 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `level` | level | 待破解 | — | 含义栏为空/占位 | matched | 12.9.2 其他接口实测发现 |
 | reports | `orgId` | secName / orgId | 证券名 / 机构ID | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `orgType` | orgType | 机构类型标记 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
@@ -384,7 +349,6 @@
 | 东财-push2(stock/get) | `f10` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f100` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f102` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM | 元 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
 | 东财-push2(stock/get) | `f106` | f106 | 待破解 | - | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
 | 东财-push2(stock/get) | `f108` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f113` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -409,7 +373,6 @@
 | 东财-push2(stock/get) | `f154` | f154 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f155` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2(stock/get) | `f157` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-push2(stock/get) | `f160` | eps_annual(f160) | 待破解 | 元/股 | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
 | 东财-push2(stock/get) | `f161` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f17` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f172` | f172 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
@@ -545,7 +508,6 @@
 | 东财-ulist239(np/get) | `f250` | f250 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f28` | f28 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f30` | f30 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f46` | f46 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f49` | f49 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f63` | f63 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f93` | f93 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -689,13 +651,7 @@
 | 同花顺-fuyao | `weighted_roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `zt_seal_amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `zt_seal_amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `answer` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 巨潮(cninfo) | `answerer` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 巨潮(cninfo) | `ask_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 巨潮(cninfo) | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `company` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 巨潮(cninfo) | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `question` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 巨潮(cninfo) | `title` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 巨潮(cninfo) | `type` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 巨潮(cninfo) | `url` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -1112,32 +1068,36 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（22）
+## 四、已证伪（默认不重复破解）（26）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| TDX(双命名源) | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
-| TDX(双命名源) | `byte` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
-| TDX(双命名源) | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
-| TDX(双命名源) | `str` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
-| TDX(双命名源) | `uint` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
-| TDX-eltdx(适配层) | `bool` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
-| TDX-eltdx(适配层) | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
-| TDX-eltdx(适配层) | `int` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
-| TDX-eltdx(适配层) | `str` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
-| ZHB-tdxstat | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
-| ZHB-tdxstat | `change_60d_alt` | change_60d | 历史解析键；当前解析器将 tdxstat.cfg 第[20]列输出为 change_60d，change_60d_alt 不再是独立输出路径。 | % | 含义栏有文本（仍未验证） | retired_legacy_path | 2026-11-10 ZHB 历史解析路径退役审查 |
-| ZHB-tdxstat | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tdxstat | `int` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
-| ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tdxstat2 | `float` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tipinfo | `YYYYMMDD` | — | — | — | 含义栏为空/占位 | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
-| ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
-| ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
-| ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
-| ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 含义栏有文本（仍未验证） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| TDX(双命名源) | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `byte` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | — |
+| TDX(双命名源) | `str` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `uint` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX-eltdx(适配层) | `bool` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_qi_ren_fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | 千元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-11 ELTDX 无前缀候选路径退役审计 |
+| TDX-eltdx(适配层) | `fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | 千元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-11 ELTDX 无前缀候选路径退役审计 |
+| TDX-eltdx(适配层) | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `int` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `str` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| ZHB-tdxstat | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
+| ZHB-tdxstat | `change_60d_alt` | change_60d | 历史解析键；当前解析器将 tdxstat.cfg 第[20]列输出为 change_60d，change_60d_alt 不再是独立输出路径。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-10 ZHB 历史解析路径退役审查 |
+| ZHB-tdxstat | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat | `int` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
+| ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tdxstat2 | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tipinfo | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
+| ZHB-tipinfo | `div_amount` | shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `div_date` | shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
+| reports | `actualLastTwoYearEps` | actualLastYearEps | 保留期内全部非空样本与同条 actualLastYearEps 完全重复；不能作为独立的前两年实际 EPS 字段（当前接口响应行为） | 元/股 | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；2026-11-13 reports actualLastTwoYearEps 重复输出裁定 |
 
 ## 已退出来源字段（仅历史证据，不进入默认破解）
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Apply explicitly reviewed collision, source-contract, or formula decisions.
+"""Apply explicitly reviewed collision, source-contract, empirical, or formula decisions.
 
-Collision reports remain discovery-only. Source-contract and derived-relation
-decisions use separate evidence routes and never create cross-source mappings.
+Collision reports remain discovery-only. Source-contract, empirical source-semantic,
+and derived-relation decisions use separate evidence routes and never create
+cross-source mappings.
 This command defaults to preview and requires ``--apply`` before updating the
 registry and generated views.
 """
@@ -12,6 +13,7 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -79,6 +81,11 @@ from scripts.collision_adjudication_transformations import (
 )
 
 VALID_ACTIONS = {"verify", "enrich_metadata", "link_verified"}
+EMPIRICAL_RESOLVABLE_CONFLICT_RESOLUTIONS = {
+    "reference_status_conflict",
+    "reference_semantic_attribute_conflict",
+    "status_conflict",
+}
 
 
 def _inside_verification_dir(
@@ -859,6 +866,359 @@ def apply_source_contract_adjudications(
     return updated, stats
 
 
+def _validate_empirical_sample(value: Any, label: str = "sample") -> dict[str, Any]:
+    sample = _require_object(value, label)
+    scope = _non_empty_string(sample.get("scope"), f"{label}.scope")
+    counts = {}
+    for key in ("comparison_count", "matched_count", "counterexample_count"):
+        count = sample.get(key)
+        if type(count) is not int or count < 0:
+            raise ValueError(f"{label}.{key} must be a non-negative integer")
+        counts[key] = count
+    if counts["comparison_count"] == 0:
+        raise ValueError(f"{label}.comparison_count must be positive")
+    if counts["matched_count"] != counts["comparison_count"]:
+        raise ValueError(
+            f"{label} must account for every comparable sample; matched_count must equal comparison_count"
+        )
+    if counts["counterexample_count"] != 0:
+        raise ValueError(f"{label}.counterexample_count must be zero for an E3 adjudication")
+    normalized = copy.deepcopy(sample)
+    normalized["scope"] = scope
+    normalized.update(counts)
+    for key in ("official_report_count", "excluded_count", "observation_count", "stock_count"):
+        if key in normalized and (type(normalized[key]) is not int or normalized[key] < 0):
+            raise ValueError(f"{label}.{key} must be a non-negative integer")
+    return normalized
+
+
+def _sync_empirical_field_matrix(
+    registry: dict[str, Any], source: str, old_canonical: str, new_canonical: str
+) -> None:
+    matrix_source = "TDX-eltdx" if source == "TDX-eltdx(适配层)" else source
+    field_matrix = registry.get("field_matrix")
+    if field_matrix is None:
+        field_matrix = {}
+        registry["field_matrix"] = field_matrix
+    if not isinstance(field_matrix, dict):
+        raise TypeError("registry.field_matrix must be an object")
+
+    if old_canonical and old_canonical != new_canonical:
+        still_used = any(
+            row.get("source") == source and row.get("canonical") == old_canonical
+            for row in fra.source_field_records(registry)
+        )
+        old_sources = field_matrix.get(old_canonical)
+        if old_sources is not None:
+            if not isinstance(old_sources, list) or any(
+                not isinstance(item, str) for item in old_sources
+            ):
+                raise TypeError(f"registry.field_matrix[{old_canonical!r}] must be a string list")
+            if not still_used:
+                for stale_source in {source, matrix_source}:
+                    if stale_source in old_sources:
+                        old_sources.remove(stale_source)
+                if not old_sources:
+                    del field_matrix[old_canonical]
+
+    new_sources = field_matrix.setdefault(new_canonical, [])
+    if not isinstance(new_sources, list) or any(not isinstance(item, str) for item in new_sources):
+        raise TypeError(f"registry.field_matrix[{new_canonical!r}] must be a string list")
+    if source != matrix_source and source in new_sources:
+        new_sources.remove(source)
+    if matrix_source not in new_sources:
+        new_sources.append(matrix_source)
+        new_sources.sort()
+
+
+def apply_empirical_source_semantics_adjudications(
+    registry: dict[str, Any],
+    decision_document: dict[str, Any],
+    decision_path: str,
+    repo_root: Path = REPO_ROOT,
+) -> tuple[dict[str, Any], dict[str, int]]:
+    """Apply a source-internal E3 decision without requiring collision candidates.
+
+    The evidence file must document the exact source path, sample scope, exclusions,
+    comparison method, and counterexamples. The validator deliberately sets no
+    minimum number of stocks, capture dates, or report periods.
+    """
+    if decision_document.get("schema_version") != 1:
+        raise ValueError("unsupported empirical source-semantics schema_version")
+    if decision_document.get("evidence_basis") != "empirical_source_field_semantics":
+        raise ValueError(
+            "empirical decisions require evidence_basis='empirical_source_field_semantics'"
+        )
+    if decision_document.get("report"):
+        raise ValueError("empirical source-semantics decisions cannot include a collision report")
+    reviewer = _non_empty_string(decision_document.get("reviewer"), "reviewer")
+    reviewed_on = _validate_iso_date(decision_document.get("reviewed_on"), "reviewed_on")
+    evidence_path_value = _non_empty_string(decision_document.get("evidence_file"), "evidence_file")
+    evidence_path, evidence_relative = _inside_verification_dir(
+        evidence_path_value, "empirical evidence file", relative_base=repo_root
+    )
+    if not evidence_path.is_file():
+        raise FileNotFoundError(f"empirical evidence file does not exist: {evidence_relative}")
+    evidence_digest = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+    if decision_document.get("evidence_sha256") != evidence_digest:
+        raise ValueError("evidence_sha256 does not match the empirical evidence file")
+
+    decisions = decision_document.get("decisions")
+    if not isinstance(decisions, list) or not decisions:
+        raise ValueError("decisions must be a non-empty list")
+    updated = copy.deepcopy(registry)
+    records = fra.source_field_records(updated)
+    by_identity = {(row["source"], row["code"]): row for row in records}
+    seen_ids: set[str] = set()
+    seen_targets: set[tuple[str, str]] = set()
+    affected_codes: set[str] = set()
+    stats = {
+        "empirical_source_semantics_verified": 0,
+        "empirical_metadata_corrected": 0,
+        "empirical_source_evidence_appended": 0,
+        "already_applied": 0,
+        "mappings_added": 0,
+    }
+
+    for raw_decision in decisions:
+        decision = _require_object(raw_decision, "decision")
+        decision_id = _non_empty_string(decision.get("id"), "decision.id")
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{2,127}", decision_id):
+            raise ValueError(f"decision.id contains unsupported characters: {decision_id!r}")
+        if decision_id in seen_ids:
+            raise ValueError(f"duplicate decision id: {decision_id}")
+        seen_ids.add(decision_id)
+        action = decision.get("action")
+        evidence_followup = action == "append_empirical_source_evidence"
+        if action not in {
+            "verify_empirical_source_semantics",
+            "append_empirical_source_evidence",
+        }:
+            raise ValueError(
+                "empirical source-semantics decisions require action="
+                "'verify_empirical_source_semantics' or 'append_empirical_source_evidence'"
+            )
+        target_obj = _require_object(decision.get("target"), "decision.target")
+        target = (
+            _non_empty_string(target_obj.get("source"), "target.source"),
+            _non_empty_string(target_obj.get("code"), "target.code"),
+        )
+        if target in seen_targets:
+            raise ValueError(f"multiple decisions target the same field: {target}")
+        seen_targets.add(target)
+        row = by_identity.get(target)
+        if row is None:
+            raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
+
+        previous_status = _non_empty_string(
+            decision.get("previous_status"), "decision.previous_status"
+        )
+        previous_resolution = _non_empty_string(
+            decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+        )
+        if previous_status not in {"unverified", "candidate", "verified", "conflict"}:
+            raise ValueError("empirical decisions cannot override disproved fields")
+        if previous_status == "conflict" and previous_resolution not in (
+            EMPIRICAL_RESOLVABLE_CONFLICT_RESOLUTIONS
+        ):
+            raise ValueError(
+                "empirical decisions cannot resolve this conflict type; "
+                "only reference-status or reference-semantic conflicts are eligible"
+            )
+        if evidence_followup and (
+            previous_status != "verified" or previous_resolution != "verified_by_empirical_addendum"
+        ):
+            raise ValueError(
+                "empirical evidence follow-ups require a target already verified by E3"
+            )
+        if (
+            previous_status == "verified"
+            and not evidence_followup
+            and previous_resolution != "matched"
+        ):
+            raise ValueError(
+                "verified metadata correction requires previous_status_resolution='matched'"
+            )
+        previous = _metadata_snapshot(decision.get("previous"), "decision.previous")
+        after = {
+            "canonical": _non_empty_string(decision.get("canonical"), "decision.canonical"),
+            "meaning": _non_empty_string(decision.get("meaning"), "decision.meaning"),
+            "unit": decision.get("unit", ""),
+        }
+        if not isinstance(after["unit"], str):
+            raise TypeError("decision.unit must be a string")
+        after["unit"] = after["unit"].strip()
+        if evidence_followup and previous != after:
+            raise ValueError(
+                "empirical evidence follow-ups must preserve canonical, meaning, and unit"
+            )
+        rationale = _non_empty_string(decision.get("rationale"), "decision.rationale")
+        sample = _validate_empirical_sample(decision.get("sample"))
+        previous_conflicts = decision.get("previous_attribute_conflicts")
+        section = _non_empty_string(decision.get("section"), "decision.section")
+        adjudication = {
+            "id": decision_id,
+            "action": action,
+            "status": "verified",
+            "reviewer": reviewer,
+            "reviewed_on": reviewed_on,
+            "decision_file": decision_path.replace("\\", "/"),
+            "evidence_file": evidence_relative,
+            "evidence_sha256": evidence_digest,
+            "evidence_basis": "empirical_source_field_semantics",
+            "evidence_level": "E3",
+            "previous_status": previous_status,
+            "previous_status_resolution": previous_resolution,
+            "previous_metadata": previous,
+            "metadata_change": {"before": previous, "after": after},
+            "previous_attribute_conflicts": copy.deepcopy(previous_conflicts),
+            "rationale": rationale,
+            "sample": sample,
+        }
+        history = row.get("adjudications", [])
+        if not isinstance(history, list):
+            raise TypeError("source field adjudications must be a list")
+        prior = next(
+            (item for item in history if isinstance(item, dict) and item.get("id") == decision_id),
+            None,
+        )
+        if prior is not None:
+            if (
+                prior != adjudication
+                or row.get("status") != "verified"
+                or row.get("status_resolution") != "verified_by_empirical_addendum"
+                or _metadata(row) != after
+            ):
+                raise ValueError(
+                    f"decision id already exists with different content: {decision_id}"
+                )
+            _sync_empirical_field_matrix(
+                updated, target[0], previous["canonical"], after["canonical"]
+            )
+            stats["already_applied"] += 1
+            continue
+
+        if (
+            row.get("status") != previous_status
+            or (row.get("status_resolution") or "status_missing") != previous_resolution
+        ):
+            raise ValueError(f"target status changed since review: {target[0]}::{target[1]}")
+        if _metadata(row) != previous:
+            raise ValueError(f"target metadata changed since review: {target[0]}::{target[1]}")
+
+        current_conflicts = row.get("attribute_conflicts", {})
+        if evidence_followup and current_conflicts not in (None, {}, []):
+            raise ValueError(
+                "empirical evidence follow-ups cannot target active attribute conflicts"
+            )
+        if previous_conflicts is not None:
+            if not isinstance(previous_conflicts, dict) or previous_conflicts != current_conflicts:
+                raise ValueError("previous_attribute_conflicts must exactly match the target")
+        elif current_conflicts not in (None, {}, []):
+            raise ValueError(
+                "empirical decisions with active attribute conflicts must snapshot them"
+            )
+
+        row.update(after)
+        _sync_empirical_field_matrix(updated, target[0], previous["canonical"], after["canonical"])
+        row["status"] = "verified"
+        if not evidence_followup:
+            row["status_resolution"] = "verified_by_empirical_addendum"
+        if previous_conflicts is not None:
+            row["attribute_conflicts"] = {}
+        row.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
+        reference_evidence = row.setdefault("reference_evidence", [])
+        if not isinstance(reference_evidence, list):
+            raise TypeError("source field reference_evidence must be a list")
+        reference_evidence.append(
+            {
+                "section": section,
+                **after,
+                "status_raw": f"E3 empirical source-field semantic adjudication {reviewed_on}",
+                "status": "verified",
+                "adjudication_id": decision_id,
+                "evidence_basis": "empirical_source_field_semantics",
+                "evidence_level": "E3",
+                "evidence_file": evidence_relative,
+                "evidence_sha256": evidence_digest,
+                "metadata_change": {"before": previous, "after": after},
+                "sample": sample,
+            }
+        )
+        sections = row.setdefault("sections", [])
+        if not isinstance(sections, list):
+            raise TypeError("source field sections must be a list")
+        if section not in sections:
+            sections.append(section)
+            sections.sort()
+        if not row.get("section"):
+            row["section"] = section
+
+        status_evidence = row.setdefault("status_evidence", {})
+        if not isinstance(status_evidence, dict):
+            raise TypeError("source field status_evidence must be an object")
+        values = status_evidence.setdefault("values", [])
+        if not isinstance(values, list):
+            raise TypeError("source field status_evidence.values must be a list")
+        status_evidence["values"] = ["verified"]
+        adjudication_ids = status_evidence.setdefault("adjudication_ids", [])
+        if not isinstance(adjudication_ids, list):
+            raise TypeError("source field status_evidence.adjudication_ids must be a list")
+        if decision_id not in adjudication_ids:
+            adjudication_ids.append(decision_id)
+        status_evidence.update(
+            {
+                "evidence_basis": "empirical_source_field_semantics",
+                "evidence_level": "E3",
+                "evidence_file": evidence_relative,
+                "evidence_sha256": evidence_digest,
+                "sample": sample,
+            }
+        )
+        affected_codes.add(target[1])
+        if evidence_followup:
+            stats["empirical_source_evidence_appended"] += 1
+        else:
+            stats["empirical_source_semantics_verified"] += 1
+        if not evidence_followup and previous != after:
+            stats["empirical_metadata_corrected"] += 1
+
+    # Repair projections for older active E3 rows as well. Before this route
+    # existed, several evidence-complete decisions were entered manually and
+    # their field_matrix entries were left stale or absent.
+    for row in updated.get("source_fields", []):
+        if not isinstance(row, dict):
+            continue
+        history = row.get("adjudications", [])
+        has_empirical_history = isinstance(history, list) and any(
+            isinstance(item, dict)
+            and item.get("action")
+            in {
+                "verify_empirical_source_semantics",
+                "append_empirical_source_evidence",
+                "empirical_semantic_adjudication",
+            }
+            for item in history
+        )
+        status_evidence = row.get("status_evidence")
+        if (
+            has_empirical_history
+            and row.get("status") == "verified"
+            and row.get("status_resolution") == "verified_by_empirical_addendum"
+            and isinstance(status_evidence, dict)
+            and status_evidence.get("evidence_basis") == "empirical_source_field_semantics"
+            and status_evidence.get("evidence_level") == "E3"
+            and isinstance(row.get("source"), str)
+            and isinstance(row.get("canonical"), str)
+            and row.get("canonical")
+        ):
+            _sync_empirical_field_matrix(updated, row["source"], "", row["canonical"])
+
+    if affected_codes:
+        _refresh_aggregate_projection(updated, affected_codes)
+    return updated, stats
+
+
 def _add_source_contract_matrix_source(
     registry: dict[str, Any], source: str, canonical: str
 ) -> None:
@@ -1080,6 +1440,10 @@ def main(argv: list[str] | None = None) -> int:
         if evidence_basis == "source_contract":
             updated, stats = apply_source_contract_adjudications(
                 registry, decision_document, decision_rel
+            )
+        elif evidence_basis == "empirical_source_field_semantics":
+            updated, stats = apply_empirical_source_semantics_adjudications(
+                registry, decision_document, decision_rel, repo_root=REPO_ROOT
             )
         elif evidence_basis == "public_web_observation":
             updated, stats = pwa.apply_public_web_observation_adjudications(

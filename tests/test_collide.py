@@ -661,7 +661,8 @@ def test_registry_verified_identity_keeps_full_nested_code_path():
     assert ("tdx", "quote_full.amount_wan") in verified
     assert ("tdx", "quote_full.amount_wan") in anchors
     assert collide.is_verified("tdx.quote_full.amount_wan", verified)
-    assert not collide.is_verified("tdx.amount_wan", verified)
+    assert ("tdx", "amount_wan") in verified
+    assert collide.is_verified("tdx.amount_wan", verified)
     assert ("zhb", "stat.board_count") in verified
     assert collide.is_verified("zhb.stat.board_count", verified)
     assert ("zhb", "board_count") in verified
@@ -691,12 +692,12 @@ def test_code_of_preserves_full_nested_identity():
     assert collide.code_of("tdx.quote_full.amount_wan") == "quote_full.amount_wan"
     assert collide.code_of("zhb.stat.board_count") == "stat.board_count"
     assert collide.code_of("tencent[4]") == "[4]"
-    assert collide.code_of("zhb.full.change_5d") == "change_5d"
+    assert collide.code_of("zhb.full.change_5d") == "full.change_5d"
     assert collide.code_of("zhb.stat.change_5d") == "stat.change_5d"
     assert collide.code_of("zhb.stat2.low_52w") == "stat2.low_52w"
 
 
-def test_zhb_merged_field_paths_match_existing_registry_mappings():
+def test_zhb_merged_field_paths_do_not_bypass_duplicate_registry_owners():
     context = collide.load_registry_context()
 
     left = (
@@ -705,8 +706,13 @@ def test_zhb_merged_field_paths_match_existing_registry_mappings():
     )
     right = (collide.alias_src("ulist239.f109"), collide.code_of("ulist239.f109"))
 
-    assert left == ("zhb", "change_5d")
-    assert (left + right) in context["known_mappings"]
+    assert left == ("zhb", "full.change_5d")
+    assert (left + right) not in context["known_mappings"]
+
+    settled_left = ("zhb", "full.change_pct")
+    settled_right = ("tencent", "[32]")
+    assert settled_left in context["verified"]
+    assert settled_left + settled_right in context["known_mappings"]
 
 
 def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(monkeypatch, tmp_path):
@@ -955,6 +961,192 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert left_ids == []
     assert "zhb.stat.pe_lyr" not in right_ids
     assert "zhb.stat2.high_52w" in right_ids
+
+
+def test_unique_zhb_full_view_alias_exits_targets_but_duplicate_leaf_stays_unresolved(
+    monkeypatch, tmp_path
+):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "stat.change_20k_bar",
+                        "status": "verified",
+                        "canonical": "change_20k_bar",
+                        "meaning": "近20根K线涨跌幅",
+                        "unit": "%",
+                    },
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "stat.code",
+                        "status": "verified",
+                        "canonical": "stock_code",
+                        "meaning": "证券代码",
+                        "unit": "-",
+                    },
+                    {
+                        "source": "ZHB-tdxstat2",
+                        "code": "stat2.code",
+                        "status": "verified",
+                        "canonical": "stock_code",
+                        "meaning": "证券代码",
+                        "unit": "-",
+                    },
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            source: {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": False,
+                "independence_status": "unconfirmed",
+                "independence_family": None,
+            }
+            for source in ("ZHB-tdxstat", "ZHB-tdxstat2")
+        },
+        "runtime_sources": {"zhb": {"independence_status": "unconfirmed"}},
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+    target_exclusions = context["verified"] | context["verified_target_exclusions"]
+    assert collide.is_verified("zhb.full.change_20k_bar", context["verified"])
+    assert not collide.is_verified("zhb.full.code", context["verified"])
+
+    store = {
+        field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
+        for field_id in ("zhb.full.change_20k_bar", "zhb.full.code")
+    }
+    left_ids, _ = collide.select_collision_fields(
+        store,
+        target_exclusions,
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+
+    assert left_ids == ["zhb.full.code"]
+
+
+def test_verified_zhb_full_view_adjudication_resolves_duplicate_leaf_owner(monkeypatch, tmp_path):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "change_pct",
+                        "status": "verified",
+                        "canonical": "change_pct",
+                        "meaning": "当日涨跌幅",
+                        "unit": "%",
+                        "adjudications": [
+                            {
+                                "id": "verified-full-view-change-pct",
+                                "action": "verify",
+                                "status": "verified",
+                                "candidate": {
+                                    "left": "zhb.full.change_pct",
+                                    "right": "tencent[32]",
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "stat.change_pct",
+                        "status": "verified",
+                        "canonical": "stat.change_pct",
+                        "meaning": "涨跌幅",
+                        "unit": "%",
+                    },
+                    {
+                        "source": "腾讯(qt.gtimg)",
+                        "code": "[32]",
+                        "status": "verified",
+                        "canonical": "change_pct",
+                        "meaning": "涨跌幅",
+                        "unit": "%",
+                    },
+                ],
+                "mappings": [
+                    {
+                        "from": {"source": "ZHB-tdxstat", "code": "change_pct"},
+                        "to": {"source": "腾讯(qt.gtimg)", "code": "[32]"},
+                        "relation": "same_number_same_meaning",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            source: {
+                "runtime_aliases": [alias],
+                "anchor_eligible": False,
+                "independence_status": "unconfirmed",
+                "independence_family": None,
+            }
+            for source, alias in (
+                ("ZHB-tdxstat", "zhb"),
+                ("腾讯(qt.gtimg)", "tencent"),
+            )
+        },
+        "runtime_sources": {
+            "zhb": {"independence_status": "unconfirmed"},
+            "tencent": {"independence_status": "unconfirmed"},
+        },
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+
+    assert ("zhb", "full.change_pct") in context["verified"]
+    assert ("zhb", "stat.change_pct") in context["verified"]
+    assert (
+        "zhb",
+        "full.change_pct",
+        "tencent",
+        "[32]",
+    ) in context["known_mappings"]
+    assert (
+        "tencent",
+        "[32]",
+        "zhb",
+        "full.change_pct",
+    ) in context["known_mappings"]
+
+    store = {
+        field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
+        for field_id in (
+            "zhb.full.change_pct",
+            "zhb.stat.change_pct",
+            "tencent[32]",
+        )
+    }
+    left_ids, _ = collide.select_collision_fields(
+        store,
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+    assert "zhb.full.change_pct" not in left_ids
 
 
 def test_default_field_selection_uses_only_verified_independent_anchors():

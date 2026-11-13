@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_em_rating_value_evidence.md",
+  "evidence_sha256": "09057e9f8b1c849cdd99abbefe06c2a297e898cbf096b488f55f24e0bd6b9318",
+  "decisions": [
+    {
+      "id": "20261112-reports-em-rating-value",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "emRatingValue"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "emRatingCode / emRatingValue",
+          "emRatingValue"
+        ],
+        "meaning": [
+          "东财统一评级数值",
+          "评级代码/值"
+        ]
+      },
+      "canonical": "emRatingValue",
+      "meaning": "东财研报 API 统一评级的数值档位；本次留存样本观察到 1=持有、2=增持、3=买入，不推断未观察到的其他数值。",
+      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-12）",
+      "rationale": "项目 get_reports 适配器和 collect_reports 采集器原样保留东财 report/list 响应字段。2026-11-10 留存的 373 条记录中，350 条非空评级分布于 12 只股票；350/350 条均按 1=005=持有、2=006=增持、3=007=买入一致，零反例。23 条数值、代码、名称同时为空的未评级记录排除。东财公开接口的茅台与农业银行记录及对应研报详情页确认 API 标签与实际研报相符。因此可解决参考材料标签冲突并确认来源内释义；不推断未观察档位，不建立跨源映射。",
+      "sample": {
+        "scope": "docs/field_verification/20261110/raw_reports.json 中 20 只股票的 373 条 reports 原始记录；比较非空 emRatingValue 与同记录 emRatingCode、emRatingName。",
+        "comparison_count": 350,
+        "matched_count": 350,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 23,
+        "stock_count": 12
+      }
+    }
+  ]
+}

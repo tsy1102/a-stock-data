@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-12",
+  "evidence_file": "docs/field_verification/adjudications/20261112_reports_actual_last_year_eps_evidence.md",
+  "evidence_sha256": "08f56ad041192e676edd7bfca9ebc34cf8282bdd14c9d8371b1f10b634a3fec8",
+  "decisions": [
+    {
+      "id": "20261112-reports-actual-last-year-eps-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "reports",
+        "code": "actualLastYearEps"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "actualLastYearEps",
+        "meaning": "去年实际 EPS",
+        "unit": ""
+      },
+      "canonical": "上一年度实际每股收益",
+      "meaning": "东方财富 report/list 研报记录中对应报告发布日期之前一完整会计年度的实际 EPS，单位元/股。该字段为东方财富研报口径；不等同发行人按加权平均普通股数披露的法定基本/稀释 EPS。股本变化可能导致历史每股值采用不同分母；本裁决不确认统一分母算法。",
+      "unit": "元/股",
+      "section": "Eastmoney report/list 上年实际EPS 语义实证（2026-11-12）",
+      "rationale": "项目 get_reports() 原样保留 report/list 响应，注册表完整路径 actualLastYearEps 精确对应该响应键。对保留期全部 8 个非空 infoCode 按股票/上年财年去重得到 4 个独立发行人年度样本；四只股票分别指向 2024、2024、2022、2023 上年财务年度。对应发行人正式材料确认年度归母净利润、每股收益和股本变化；三个样本的 API 值由上年归母净利润除以公开股本口径精确复现，力合微样本反推股数处于已披露股本变动区间且仍指向 2022 上年业绩，但确切分母时点未确认。官方基本/稀释 EPS 的数值差异来自不同股本计算口径，不能单独作为期间反例。本裁决只确认 actualLastYearEps 的上一年度实际 EPS 角色及元/股单位，不确认统一分母/回溯公式，不建立跨源映射；实际观察到的 actualLastTwoYearEps 重复值另行保留未验证。",
+      "sample": {
+        "scope": "2026-11-12 对保留期 reports::actualLastYearEps 全部非空值与研报发布日期之前一完整会计年度发行人正式财务数据按股票和财年去重比较；8 个 infoCode/16 个 raw_reports 捕获文件归并为 4 个独立股票年度样本。",
+        "comparison_count": 4,
+        "matched_count": 4,
+        "counterexample_count": 0,
+        "official_report_count": 4,
+        "excluded_count": 0,
+        "stock_count": 4,
+        "unique_info_code_count": 8,
+        "raw_capture_file_count": 16
+      }
+    }
+  ]
+}

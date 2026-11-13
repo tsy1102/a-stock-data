@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_push2_f190_denominator_evidence.md",
+  "evidence_sha256": "2bd66115492ed7914529293aa0c73afb841b785a21eaa0de8277ef87051b2af3",
+  "decisions": [
+    {
+      "id": "20261113-push2-f190-total-share-denominator-followup-e3",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f190"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "f190",
+        "meaning": "每股未分配利润",
+        "unit": "元/股"
+      },
+      "canonical": "f190",
+      "meaning": "每股未分配利润",
+      "unit": "元/股",
+      "section": "2026-11-13 Push2 f190 股本分母实证补充",
+      "rationale": "2026-11-10 raw_push2 的 20 只股票逐股 f86 均确认同一收盘数据日，财报按 2026-09-30 报告期比对东方财富 F10 官方资产负债表和主要指标。12 只股票的 f84 总股本与 f85 流通股本不同：其中 11 只 f190×f84 在 f190 输出半步容差内匹配 UNASSIGN_RPOFIT；农业银行一只的 f190×f84 与 UNASSIGN_RPOFIT 差额为 47,041,000,000.033 元，与报表 DIVIDEND_PAYABLE 47,041,000,000 元一致，加回后残差 0.033 元，小于 0.175 元半步容差。12 只均不符合 f85 分母，8 只 f84=f85 的样本不用于区分分母。F10 MGWFPLR 与 Push2 f190 19/20 按输出精度一致，农业银行差异与该行应付股利相关。东方财富通用帮助文字称期末流通普通股数，与这一精确 Push2 路径的可区分样本不一致；注册表记录本路径实测行为，不将单股应付股利差异扩展为通用分子公式，也不创建跨源映射。",
+      "sample": {
+        "scope": "东财-push2(stock/get)::f190；2026-11-10 收盘、2026-09-30 最新报告期、20 股。分母可区分样本 12 股；f84/f85 相同的 8 股不计入分母裁决。",
+        "comparison_count": 12,
+        "matched_count": 12,
+        "counterexample_count": 0,
+        "official_report_count": 1,
+        "excluded_count": 8,
+        "stock_count": 20
+      }
+    }
+  ]
+}

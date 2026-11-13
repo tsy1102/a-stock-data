@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-13",
+  "evidence_file": "docs/field_verification/adjudications/20261113_push2_f103_evidence.md",
+  "evidence_sha256": "70f386212fd8face88282a22c7a155da65b7884f35a5158347b87713d3c66d67",
+  "decisions": [
+    {
+      "id": "20261113-push2-f103-cfo-ttm-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f103"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "ocf_ttm(f103)",
+        "meaning": "经营活动现金流量净额 TTM",
+        "unit": "元"
+      },
+      "canonical": "ocf_ttm(f103)",
+      "meaning": "经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。",
+      "unit": "元",
+      "section": "Push2 stock/get::f103 经营现金流 TTM 实证定案（2026-11-13）",
+      "rationale": "采集器将 Eastmoney stock/get 原始响应 data 对象直接保存到 stocks[code].data，f103 没有经过重命名或计算。东方财富公开字段码表的 f103 中文释义尚未找到，因此不声称拥有 Eastmoney 官方代码定义。同花顺金融数据 API 的现金流量表文档将 act_cash_flow_net 定义为经营活动产生的现金流量净额、原币元；项目保留的 9 个合格数据日中，166 条 Push2 原始 f103 均与上年全年 Q4 + 本年最新报告期年初至今 − 上年同期年初至今精确相等。核验使用 20 只股票、Q2/Q3 两个报告期、34 组去重股票-报告期输入；对每条样本重新检查 meta.data_date、Push2 f86、Fuyao as_of_date、CNY 币种和报表披露时间，反例 0，最大绝对残差 0 元。发行人 002034 的 2025 年报、2025 年三季报和 2026 年三季报公开值独立复算 TTM 为 1,741,779,975.12 元，与 2026-11-10 raw Push2 f103 完全相等；同一比较区分了本年累计和上年全年金额。只确认该精确来源路径的语义和单位，不推断服务端刷新/追溯策略，也不建立跨源 mapping。",
+      "sample": {
+        "scope": "2026-10-20 至 2026-11-10 的 9 个合格行情数据日；原始路径东财-push2(stock/get)::f103；20 只股票、Q2/Q3 报告期、34 组去重股票-报告期现金流输入。逐行核验 166 个有效股票日，另有 14 个因对应 Push2 个股原始响应不可用而排除。",
+        "comparison_count": 166,
+        "matched_count": 166,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 14,
+        "stock_count": 20
+      }
+    }
+  ]
+}

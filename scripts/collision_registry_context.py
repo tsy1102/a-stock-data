@@ -174,6 +174,8 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
     context = {
         "verified": set(),
         "verified_target_exclusions": set(),
+        "source_field_statuses": {},
+        "resolved_ambiguous_full_views": {},
         "disproved": set(),
         "anchors": set(),
         "contract_anchors": set(),
@@ -230,6 +232,13 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         return context
 
     context["source_fields"] = len(source_fields)
+    context["source_field_statuses"] = {
+        (field.get("source"), field.get("code")): field.get("status", "unverified")
+        for field in source_fields
+        if isinstance(field, dict)
+        and isinstance(field.get("source"), str)
+        and isinstance(field.get("code"), str)
+    }
     registry_sources = {
         item.get("name"): item
         for item in registry.get("sources", [])
@@ -303,6 +312,34 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
                 adjudicated_full_view_owners,
             ):
                 alias_identity_owners[(alias, runtime_code)].add((candidate_source, candidate_code))
+
+    # A merged ZHB full-view path can have multiple registry owners because the
+    # same endpoint field is registered both as a leaf and as a branch-qualified
+    # path. Such a path is not a safe anchor without a unique/adjudicated owner.
+    # It is also not an unknown target when every owner is already resolved:
+    # exclude all-verified and mixed verified/disproved paths, and retain an
+    # all-disproved path as a negative guardrail. Keep ambiguity in diagnostics.
+    source_field_by_identity = {
+        (field.get("source"), field.get("code")): field
+        for field in source_fields
+        if isinstance(field, dict)
+        and isinstance(field.get("source"), str)
+        and isinstance(field.get("code"), str)
+    }
+    for (alias, full_view_code), owners in full_view_owners.items():
+        if alias != "zhb" or not owners:
+            continue
+        owner_statuses = {
+            source_field_by_identity.get(owner, {}).get("status", "unverified") for owner in owners
+        }
+        if owner_statuses and owner_statuses.issubset({"verified", "disproved"}):
+            runtime_identity = ("zhb", f"full.{full_view_code}")
+            if len(owners) > 1:
+                context["resolved_ambiguous_full_views"][runtime_identity] = sorted(owner_statuses)
+            if owner_statuses == {"disproved"}:
+                context["disproved"].add(runtime_identity)
+            else:
+                context["verified_target_exclusions"].add(runtime_identity)
 
     seen_source_identities = set()
     for field in source_fields:
@@ -502,6 +539,11 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         context["diagnostics"].append(
             f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份；"
             "相关运行时路径已退出破解目标，但身份消歧前不作锚"
+        )
+    if context["resolved_ambiguous_full_views"]:
+        context["diagnostics"].append(
+            f"{len(context['resolved_ambiguous_full_views'])} 条 ZHB full-view 路径的所有注册 owner 均已 verified/disproved，"
+            "但归属不唯一；不作锚，且不作为未知目标重复破解"
         )
     if context["unresolved_verified_metadata"]:
         issue_labels = {

@@ -568,10 +568,17 @@ def select_method_candidate_frontier(method_candidates_by_left, global_candidate
     )
 
 
-def load_field_coverage_index(folder_paths, trading_dates, event_start, event_end):
+def load_field_coverage_index(
+    folder_paths, trading_dates, event_start, event_end, registry_statuses=None
+):
     coverage_root = os.path.join(ROOT, ".tmp", "field_evidence_coverage")
     return CCT.load_field_coverage_index(
-        folder_paths, trading_dates, event_start, event_end, coverage_root
+        folder_paths,
+        trading_dates,
+        event_start,
+        event_end,
+        coverage_root,
+        registry_statuses=registry_statuses,
     )
 
 
@@ -1311,6 +1318,7 @@ def run(args):
         folder_window.trading_dates,
         folder_window.event_start,
         folder_window.event_end,
+        registry_statuses=registry_context["source_field_statuses"],
     )
     diagnostics.extend(field_coverage_index["diagnostics"])
     candidate_triage = build_candidate_triage(

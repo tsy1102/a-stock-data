@@ -963,7 +963,7 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert "zhb.stat2.high_52w" in right_ids
 
 
-def test_unique_zhb_full_view_alias_exits_targets_but_duplicate_leaf_stays_unresolved(
+def test_verified_zhb_full_view_alias_exits_targets_even_with_duplicate_owners(
     monkeypatch, tmp_path
 ):
     registry_path = tmp_path / "registry.json"
@@ -1021,6 +1021,9 @@ def test_unique_zhb_full_view_alias_exits_targets_but_duplicate_leaf_stays_unres
     target_exclusions = context["verified"] | context["verified_target_exclusions"]
     assert collide.is_verified("zhb.full.change_20k_bar", context["verified"])
     assert not collide.is_verified("zhb.full.code", context["verified"])
+    assert ("zhb", "full.code") in context["verified_target_exclusions"]
+    assert ("zhb", "full.code") not in context["anchors"]
+    assert context["resolved_ambiguous_full_views"][("zhb", "full.code")] == ["verified"]
 
     store = {
         field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
@@ -1035,7 +1038,126 @@ def test_unique_zhb_full_view_alias_exits_targets_but_duplicate_leaf_stays_unres
         contract_anchors=context["contract_anchors"],
     )
 
-    assert left_ids == ["zhb.full.code"]
+    assert left_ids == []
+
+
+def test_zhb_full_view_remains_a_target_when_any_owner_is_unverified(monkeypatch, tmp_path):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "shared_value",
+                        "status": "verified",
+                        "canonical": "known_value",
+                        "meaning": "已确认值",
+                        "unit": "元",
+                    },
+                    {
+                        "source": "ZHB-tdxstat2",
+                        "code": "shared_value",
+                        "status": "unverified",
+                    },
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            source: {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": False,
+                "independence_status": "unconfirmed",
+                "independence_family": None,
+            }
+            for source in ("ZHB-tdxstat", "ZHB-tdxstat2")
+        },
+        "runtime_sources": {"zhb": {"independence_status": "unconfirmed"}},
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+    assert ("zhb", "full.shared_value") not in context["verified_target_exclusions"]
+    left_ids, _ = collide.select_collision_fields(
+        {
+            "zhb.full.shared_value": {
+                "is_identifier": False,
+                "is_constant": False,
+                "type": "num",
+            }
+        },
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+    assert left_ids == ["zhb.full.shared_value"]
+
+
+def test_disproved_zhb_full_view_stays_out_of_cracking_targets(monkeypatch, tmp_path):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "duplicate_value",
+                        "status": "disproved",
+                    },
+                    {
+                        "source": "ZHB-tdxstat",
+                        "code": "stat.duplicate_value",
+                        "status": "disproved",
+                    },
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            "ZHB-tdxstat": {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": False,
+                "independence_status": "unconfirmed",
+                "independence_family": None,
+            }
+        },
+        "runtime_sources": {"zhb": {"independence_status": "unconfirmed"}},
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+    assert ("zhb", "full.duplicate_value") in context["disproved"]
+    assert context["resolved_ambiguous_full_views"][("zhb", "full.duplicate_value")] == [
+        "disproved"
+    ]
+    left_ids, _ = collide.select_collision_fields(
+        {
+            "zhb.full.duplicate_value": {
+                "is_identifier": False,
+                "is_constant": False,
+                "type": "num",
+            }
+        },
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+    assert left_ids == []
 
 
 def test_verified_zhb_full_view_adjudication_resolves_duplicate_leaf_owner(monkeypatch, tmp_path):
@@ -1500,6 +1622,50 @@ def test_local_field_coverage_index_maps_status_and_date_evidence(tmp_path, monk
     assert target["source_count"] == 1
     assert "independent_anchor_families" not in target
     assert target["source_as_of_days"] == ["T:20261019"]
+
+
+def test_local_field_coverage_uses_current_registry_status_over_stale_cache(tmp_path, monkeypatch):
+    folder = tmp_path / "docs" / "field_verification" / "20261019"
+    folder.mkdir(parents=True)
+    coverage_dir = tmp_path / ".tmp" / "field_evidence_coverage"
+    coverage_dir.mkdir(parents=True)
+    meta = {
+        "data_date": "2026-10-19",
+        "field_evidence_coverage": {"report_date": "2026-10-19", "status": "ok"},
+    }
+    (folder / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    (coverage_dir / "coverage_20261019.json").write_text(
+        json.dumps(
+            {
+                "fields": [
+                    {
+                        "source": "Foo",
+                        "code": "bar",
+                        "registry_status": "unverified",
+                        "runtime_aliases": ["foo"],
+                        "source_as_of_days": ["T:20261019"],
+                        "candidate_days": ["T:20261019"],
+                        "source_as_of_sample_counts": {"T:20261019": 20},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(collide, "ROOT", str(tmp_path))
+
+    index = collide.load_field_coverage_index(
+        [str(folder)],
+        ["2026-10-19"],
+        date(2026, 10, 13),
+        date(2026, 10, 19),
+        registry_statuses={("Foo", "bar"): "verified"},
+    )
+    target = collide._coverage_records_for_target("foo.bar", index)
+
+    assert target["sources"][0]["registry_status"] == "verified"
+    assert index["summary"]["stale_registry_status_count"] == 1
+    assert any("已按当前逐源注册表状态校正" in item for item in index["diagnostics"])
 
 
 def test_candidate_triage_uses_actual_independent_anchor_comparisons():

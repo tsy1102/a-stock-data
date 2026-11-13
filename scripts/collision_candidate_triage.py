@@ -15,8 +15,15 @@ from datetime import date, timedelta
 from scripts.collision_dates import TRADING, parse_date
 
 
-def load_field_coverage_index(folder_paths, trading_dates, event_start, event_end, coverage_root):
-    """Read the ignored per-capture coverage indices without changing capture data."""
+def load_field_coverage_index(
+    folder_paths,
+    trading_dates,
+    event_start,
+    event_end,
+    coverage_root,
+    registry_statuses=None,
+):
+    """Read cached sample coverage while resolving field status from today's registry."""
     selected_day_keys = {f"T:{str(value).replace('-', '')}" for value in trading_dates}
     if isinstance(event_start, str):
         event_start = parse_date(event_start)
@@ -32,6 +39,7 @@ def load_field_coverage_index(folder_paths, trading_dates, event_start, event_en
     source_statuses = defaultdict(lambda: defaultdict(set))
     diagnostics = []
     coverage_paths = set()
+    stale_registry_statuses = set()
     metadata_count = 0
     metadata_errors = 0
     for folder in folder_paths:
@@ -100,12 +108,18 @@ def load_field_coverage_index(folder_paths, trading_dates, event_start, event_en
             if not isinstance(source, str) or not isinstance(code, str):
                 continue
             identity = (source, code)
+            cached_status = row.get("registry_status")
+            current_status = (registry_statuses or {}).get(identity)
+            if current_status is not None and cached_status != current_status:
+                stale_registry_statuses.add(identity)
             aggregate = coverage_records.setdefault(
                 identity,
                 {
                     "source": source,
                     "code": code,
-                    "registry_status": row.get("registry_status"),
+                    "registry_status": (
+                        current_status if current_status is not None else cached_status
+                    ),
                     "target_kind": row.get("target_kind"),
                     "identity_status": row.get("identity_status"),
                     "runtime_aliases": set(),
@@ -118,6 +132,8 @@ def load_field_coverage_index(folder_paths, trading_dates, event_start, event_en
                     "source_statuses": set(),
                 },
             )
+            if current_status is not None:
+                aggregate["registry_status"] = current_status
             aggregate["runtime_aliases"].update(
                 alias for alias in row.get("runtime_aliases", []) if isinstance(alias, str)
             )
@@ -156,8 +172,17 @@ def load_field_coverage_index(folder_paths, trading_dates, event_start, event_en
             "coverage_detail_files": len(coverage_paths),
             "coverage_identity_count": len(coverage_records),
             "detail_status": "available" if coverage_paths else "unavailable",
+            "stale_registry_status_count": len(stale_registry_statuses),
         },
-        "diagnostics": diagnostics,
+        "diagnostics": diagnostics
+        + (
+            [
+                f"{len(stale_registry_statuses)} 条本地字段覆盖快照的 registry 状态已过期；"
+                "候选展示已按当前逐源注册表状态校正。"
+            ]
+            if stale_registry_statuses
+            else []
+        ),
         "selected_day_keys": selected_day_keys,
     }
 

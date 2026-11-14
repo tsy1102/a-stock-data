@@ -811,7 +811,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `date` | date / category_name | 事件日期 / 类别名称 | — | `unverified` |
+| TDX(双命名源) · `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | - | `verified` |
 | ZHB-tdxstat · `date` | date | 统计日期 | - | `verified` |
 | ZHB-tdxstat2 · `date` | date | 统计日期 | - | `verified` |
 | 东财-datacenter(英文键) · `date` | — | — | — | `unverified` |
@@ -3445,10 +3445,10 @@
 | TDX(双命名源) | `amount_wan` | amount_wan | TDX 行情快照成交金额；由原始 amount 以元计值除以 10000 得到，输出单位为万元。 | `verified` |
 | TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
 | TDX(双命名源) | `baoliu2` | report_period_end_month | 财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证 | `verified` |
-| TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
+| TDX(双命名源) | `category_name` | category_name | ELTDX CapitalChangeRecord 中 XDXR 事件类别的可读名称；与 category_raw/category 类别编号区分。具体类别码表不在本次确认范围内。 | `verified` |
 | TDX(双命名源) | `change_amt` | change_amt | TDX 行情快照涨跌额，即最新价减昨收价；价格单位为元/股。 | `verified` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares | 流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
-| TDX(双命名源) | `date` | date / category_name | 事件日期 / 类别名称 | `unverified` |
+| TDX(双命名源) | `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | `verified` |
 | TDX(双命名源) | `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | `verified` |
 | TDX(双命名源) | `gudongrenshu` | gudongrenshu | 股东户数；样本对应发行人报告期末普通股股东总数，按来源计数口径记录。 | `verified` |
 | TDX(双命名源) | `ipodate` | ipodate | ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。 | `verified` |

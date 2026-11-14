@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-15",
+  "decisions": [
+    {
+      "id": "20261115-tdx-xdxr-event-date",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "date / category_name",
+        "meaning": "事件日期 / 类别名称",
+        "unit": ""
+      },
+      "canonical": "event_date",
+      "meaning": "TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。",
+      "unit": "-",
+      "rationale": "ELTDX v3.3.2 的 CapitalChangeRecord 字段参考将 date_raw / date 定义为事件日期；本项目 core.eltdx_adapter._EltdxAdapter.xdxr 读取 record.date（缺失时回退 date_raw）并输出为 date，tdx_get_dividend_history 再消费该日期。通达信官方公式 SPLITBARS 与 get_stock_info 的 TodayDRFlag 说明除权除息事件按发生日识别；贵州茅台 2025 年度权益分派公告另明确区分 2026-06-25 股权登记日与 2026-06-26 除权（息）日。后两项只解释日期业务域，不是与本项目 XDXR 原始值的逐值配对。保留期 18 个 raw_eltdx 样本均未包含 XDXR/capital_changes/category_name 路径，因此本裁决不声称完成历史逐值碰撞，也不推断该 date 必然等于公告日、登记日或除权除息日。该来源字段的语义结论不创建跨源映射。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "date / category_name",
+          "meaning": "事件日期 / 类别名称",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "event_date",
+          "meaning": "TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。",
+          "unit": "-"
+        },
+        "rationale": "将旧登记中误合并的 date 与 category_name 拆开；date 仅登记为事件日期，不把通用 YYYYMMDD 外形当作其业务含义，也不擅自细化为公告日或除权日。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 CapitalChangeRecord 返回模型契约（解析后的客户端模型，不声称是 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定版本；2026-11-15 核验）",
+        "path": "client.corporate.capital_changes(...).records[].date",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：date_raw / date = 事件日期原始值 / 日期；项目 core/eltdx_adapter.py::_EltdxAdapter.xdxr 将 record.date（回退 date_raw）写入输出 date。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261115-tdx-xdxr-category-name",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "category_name"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "date / category_name",
+        "meaning": "事件日期 / 类别名称",
+        "unit": ""
+      },
+      "canonical": "category_name",
+      "meaning": "ELTDX CapitalChangeRecord 中 XDXR 事件类别的可读名称；与 category_raw/category 类别编号区分。具体类别码表不在本次确认范围内。",
+      "unit": "-",
+      "rationale": "ELTDX v3.3.2 的 CapitalChangeRecord 字段参考明确将 category_raw / category / category_name 分别定义为事件类别原始编号、解析编号和类别名称，足以确认该客户端返回模型字段的角色。当前 core.eltdx_adapter.xdxr 使用 category/category_raw，但没有把 category_name 转发到规范化 DataFrame；因此本裁决确认上游模型字段语义，不声称当前采集器已经输出该路径。保留期 18 个 raw_eltdx 样本均未包含 XDXR/capital_changes/category_name 路径，没有样本码表或逐值验证；具体代码含义及跨源关系仍未确认。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "date / category_name",
+          "meaning": "事件日期 / 类别名称",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "category_name",
+          "meaning": "ELTDX CapitalChangeRecord 中 XDXR 事件类别的可读名称；与 category_raw/category 类别编号区分。具体类别码表不在本次确认范围内。",
+          "unit": "-"
+        },
+        "rationale": "从 date / category_name 的混合释义中拆出模型字段自身的名称语义；类别名称与类别码表是不同结论。"
+      },
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 CapitalChangeRecord 返回模型契约（解析后的客户端模型，不声称是 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定版本；2026-11-15 核验）",
+        "path": "client.corporate.capital_changes(...).records[].category_name",
+        "locator": "FIELD_REFERENCE.md §CapitalChangeRecord：category_raw / category / category_name = 事件类别编号 / 类别名称；项目 core/eltdx_adapter.py::_EltdxAdapter.xdxr 当前只读取 category/category_raw，未转发 category_name。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

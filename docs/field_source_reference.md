@@ -5318,9 +5318,12 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 #### 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认
 
+> 字段参考按 ELTDX v3.3.2 `CapitalChangeRecord` 返回模型登记；这是解析后的客户端模型契约，不代表下层 TDX wire 字段布局或未采集接口的覆盖情况。
+
 | 字段 | 含义 |
 |:---|:---|
-| date / category_name | 事件日期 / 类别名称 |
+| `date` | 权息/股本变迁事件日期；当前契约未进一步区分公告日、股权登记日或除权除息日 |
+| `category_name` | 事件类别的可读名称；本表不扩展具体类别码表 |
 | c1_value~c4_value | 按类别解码的四个业务值 |
 | fenhong / peigujia | 分红 / 配股价（XdxrRecord）|
 | songzhuangu / peigu | 送转股 / 配股（XdxrRecord）|

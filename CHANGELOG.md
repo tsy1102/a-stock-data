@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - 增加只读脚本 `scripts/audit_capture_unit_history.py`，按 `MIN_CAPTURE_DATE` 审计 `meta.json.capture_units`；报告区分请求数据日与已明确记录的来源数据日，显示 catalog 输出路径出现情况、采集器调用耗时、逻辑适配器调用和跨日指纹变化，并提示真实网络请求计数尚未接入；不自动改变任何采集路由或频率。
+- 依据项目固定的 ELTDX v3.3.2 Helper 实现，为 `TDX-eltdx(适配层)` 定案 8 个题材强度字段；明确统计只覆盖本次请求股票池、仅含封板成员，并记录 leader 排序、金额单位与来源日期证据边界，不新增跨源映射。
 - 按 20 只股票的 2026-11-10 收盘 Push2 样本、2026-09-30 财报及东方财富 F10 数据，确认精确路径 `东财-push2(stock/get)::f190` 为每股未分配利润（元/股），实测基础分母为总股本 `f84`；12 只可区分样本中 11 只直接吻合，农业银行计入已披露应付股利后吻合。通用 F10 帮助仍描述流通股口径，且单股调整不外推；Ulist239 同号 `f190` 维持独立未验证。详见[分母实证记录](docs/field_verification/adjudications/20261113_push2_f190_denominator_evidence.md)。
 
 - 按 `em.stock_get` 同接口族配置、东方财富资金流官方标签/既有页面锚及 2026-11-02 至 11-10 的保留期样本，为 `东财-资金流(em_fund_flow)` 补齐 f135–f143、f147–f149 共 12 个来源内语义；1,609 个可比较原值与 Push2 逐条一致，8 条公式无反例。再按 Ulist 官方中单页面锚和 140 个日期合格股票日样本，定案 Ulist f76/f77/f78 与 Push2/em_fund_flow f144/f145/f146 的中单流入、流出、净额含义。修正 Ulist↔Push2 对齐表四条净额标签错移；不新增映射。

@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-14",
+  "decisions": [
+    {
+      "id": "20261114-eltdx-theme-strength-topic-id-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "topic_id"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "topic_id",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "topic_id",
+      "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
+      "unit": "",
+      "rationale": "ELTDX 字段手册将 StockTopic.topic_id 定义为题材 ID；Helper 在 ID 存在时按 ID 聚合，否则按题材名称聚合。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_id (ThemeStrengthRow.topic_id); raw: global_helpers.theme_strength_rank.rows[*].topic_id; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_id",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-topic-name-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "topic_name"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "topic_name",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "topic_name",
+      "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
+      "unit": "",
+      "rationale": "ELTDX 字段手册将 StockTopic.topic_name 定义为题材名称；Helper 只接纳有题材 ID 或名称的关系。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_name (ThemeStrengthRow.topic_name); raw: global_helpers.theme_strength_rank.rows[*].topic_name; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_name",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-limit-up-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_up_count"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "limit_up_count",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_up_count",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。",
+      "unit": "只",
+      "rationale": "Helper 对每个题材关联的已封板成员逐一计数；limit_ladder 默认排除仅触板股票，统计范围为显式传入的本次请求池。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].limit_up_count (ThemeStrengthRow.limit_up_count); raw: global_helpers.theme_strength_rank.rows[*].limit_up_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].limit_up_count",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-highest-ladder-level-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "highest_ladder_level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "highest_ladder_level",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "highest_ladder_level",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+      "unit": "板",
+      "rationale": "Helper 对目标交易日每个题材封板成员的 ladder_level 取最大值；limit_ladder 默认只提供已封板成员。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].highest_ladder_level (ThemeStrengthRow.highest_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].highest_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].highest_ladder_level",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-lianban-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "lianban_count"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "lianban_count",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "lianban_count",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+      "unit": "只",
+      "rationale": "Helper 对目标交易日每个题材成员在 ladder_level >= 2 时增加 1；该值不是该题材全部封板股数。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].lianban_count (ThemeStrengthRow.lianban_count); raw: global_helpers.theme_strength_rank.rows[*].lianban_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].lianban_count",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-total-seal-amount-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "total_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "total_seal_amount",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "total_seal_amount",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+      "unit": "元",
+      "rationale": "Helper 累加目标交易日题材成员的 seal_amount，缺失值按 0，并对总和 round 到 6 位小数；seal_amount 是当前买一价乘买一量，单位元。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].total_seal_amount (ThemeStrengthRow.total_seal_amount); raw: global_helpers.theme_strength_rank.rows[*].total_seal_amount; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].total_seal_amount",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-leader-code-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "leader_code"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "leader_code",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "leader_code",
+      "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
+      "unit": "",
+      "rationale": "Helper 只在遇到更高 ladder_level 时更换 leader；相同高度遵循 limit_ladder 的排序：高度降序、封单额降序、完整代码升序。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_code (ThemeStrengthRow.leader_code); raw: global_helpers.theme_strength_rank.rows[*].leader_code; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_code",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    },
+    {
+      "id": "20261114-eltdx-theme-strength-leader-ladder-level-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "leader_ladder_level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "leader_ladder_level",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "leader_ladder_level",
+      "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+      "unit": "板",
+      "rationale": "该字段直接读取 Helper 在目标交易日所选 leader 的 ladder_level；样本中与最高高度一致。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+        "revision": "ELTDX v3.3.2（项目固定版本）",
+        "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_ladder_level (ThemeStrengthRow.leader_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].leader_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_ladder_level",
+        "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+      }
+    }
+  ]
+}

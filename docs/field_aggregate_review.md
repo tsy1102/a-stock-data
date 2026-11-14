@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 211 个 code；疑似合并文本 406 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 211 个 code；疑似合并文本 411 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2615,11 +2615,11 @@
 
 ### `limit_up_count` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `limit_up_count` | limit_up_count | — | — | `unverified` |
+| TDX-eltdx(适配层) · `limit_up_count` | limit_up_count | Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。 | 只 | `verified` |
 | 开盘啦(kpl) · `limit_up_count` | — | — | — | `unverified` |
 
 ### `list` — incomplete
@@ -3522,12 +3522,14 @@
 | TDX-eltdx(适配层) | `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | `verified` |
 | TDX-eltdx(适配层) | `last_close_price_milli` | last_close_price_milli | 前一根K线收盘价的千分之一元值；返回序列首条无前收盘字段 | `verified` |
 | TDX-eltdx(适配层) | `last_price` | last_price | 最新价 / 现价 | `verified` |
+| TDX-eltdx(适配层) | `leader_code` | leader_code | Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。 | `verified` |
 | TDX-eltdx(适配层) | `li_run_zong_he_raw_float` | li_run_zong_he_raw_float | 利润总额原始值；样本对应报告期累计值 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_market_value` | limit_ladder.float_market_value | 普通流通市值；普通流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_shares` | limit_ladder.float_shares | 普通流通股本；财务快照口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_market_value` | limit_ladder.free_float_market_value | 自由流通市值；自由流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_shares` | limit_ladder.free_float_shares | 自由流通股本；TDX 自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_amount` | limit_ladder.seal_amount | 当前买一金额；封板时解释为封单额 | `verified` |
+| TDX-eltdx(适配层) | `limit_up_count` | limit_up_count | Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。 | `verified` |
 | TDX-eltdx(适配层) | `locked_amount` | locked_amount | 买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `open_delta_raw` | open_delta_raw | 日K开盘价相对前一根收盘价的协议差分值；返回序列首条无前收盘基准时以开盘价为基值 | `verified` |
 | TDX-eltdx(适配层) | `opening_rush` | opening_rush | 开盘抢筹指标；算法及正负方向口径未公开 | `verified` |
@@ -3543,6 +3545,9 @@
 | TDX-eltdx(适配层) | `side` | side | 成交方向或状态标签：buy、sell、neutral 或状态名；完整数值状态码映射未确认 | `verified` |
 | TDX-eltdx(适配层) | `status_raw` | status_raw | 成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展 | `verified` |
 | TDX-eltdx(适配层) | `time` | time | 日K时间戳；按上海时区记录，本批样本时间为15:00 | `verified` |
+| TDX-eltdx(适配层) | `topic_id` | topic_id | 题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。 | `verified` |
+| TDX-eltdx(适配层) | `topic_name` | topic_name | 题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。 | `verified` |
+| TDX-eltdx(适配层) | `total_seal_amount` | total_seal_amount | Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。 | `verified` |
 | TDX-eltdx(适配层) | `tou_zi_shou_yu_raw_float` | tou_zi_shou_yu_raw_float | 投资收益；样本值对应报告期累计金额 | `verified` |
 | TDX-eltdx(适配层) | `trade_date` | trade_date | 连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期 | `verified` |
 | TDX-eltdx(适配层) | `updated_date_raw` | updated_date_raw | 财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |

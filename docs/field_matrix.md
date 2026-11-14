@@ -6,13 +6,13 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1681 个字段 / 1958 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1681 个字段 / 1966 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
-**B.1 多来源字段（187 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
+**B.1 多来源字段（195 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
 
 | 字段 | 登记来源标签数 | 来源标签（按风险参考顺序） |
 |:---|:---:|:---|
@@ -113,12 +113,17 @@
 | fenhong | 2 | TDX-eltdx、TDX(双命名源) |
 | gudongrenshu | 2 | TDX-0x0010/F10、TDX(双命名源) |
 | high_price | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| highest_ladder_level | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | inside_dish | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | is_new | 2 | 财联社、东财 |
 | ladder_level | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| leader_code | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| leader_ladder_level | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| lianban_count | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | limit_count | 2 | TDX-0x0010/F10、开盘红 |
 | limit_up_streak_count | 2 | 开盘啦(kpl)、东财-push2ex |
 | limit_time | 2 | TDX-0x0010/F10、开盘红 |
+| limit_up_count | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | liudongfuzhai | 2 | TDX-0x0010/F10、TDX(双命名源) |
 | low_price | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | main_inflow | 2 | 开盘啦(kpl)、开盘红 |
@@ -154,8 +159,11 @@
 | status_raw | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | symbol | 2 | FTShare REST、AxData |
 | target_trade_date | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| topic_id | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| topic_name | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | total_assets_yuan | 2 | TDX-eltdx、TDX(双命名源) |
 | total_hand | 2 | TDX-eltdx、TDX-eltdx(适配层) |
+| total_seal_amount | 2 | TDX-eltdx、TDX-eltdx(适配层) |
 | total_shares | 2 | TDX-eltdx、TDX(双命名源) |
 | trade | 2 | 新浪、新浪(扩展API) |
 | turnover_real | 2 | 开盘啦(kpl)、开盘红 |
@@ -204,14 +212,14 @@
 | fund_large_sell | 2 | 东财-push2(stock/get)、东财-资金流(em_fund_flow) |
 | fund_large_today | 2 | 东财-push2(stock/get)、东财-资金流(em_fund_flow) |
 
-**B.2 单来源关系字段（1494 个；仅登记一个来源标签）**
+**B.2 单来源关系字段（1486 个；仅登记一个来源标签）**
 
 - **ZHB（85）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、shareholder_change_date、shareholder_change_shares_wan、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market、stat2.zt_seal_amount
   - … 其余 25 个见正文
 - **TDX-0x0010/F10（260）**：*ST湘邮、AI解读、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai、client_fields_enum.md)、client_fields_enum.md](verify、color
   - … 其余 200 个见正文
-- **TDX-eltdx（146）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、adjust、adjust_mode、adjust_mode_raw、auctions.series（0x056a）、business_composition、buy_levels、c1_value~c4_value、category_name、dividend_financing、eltdx_opening_rush、finance_diagnosis、full_code、get_auction_0925、highest_ladder_level、history、hot_topics、index、leader_code、leader_ladder_level、lianban_count、limit_or_count_raw、limit_up_count、market_id、minutes.aux（0x051b）、minutes.today、mode_or_selector_raw、northbound_holding、period、period_name、period_param_raw、period_raw、points、price_acc_raw、price_delta_raw、price_milli、profit_forecast、quote_snapshot.active1、quote_snapshot.amount
-  - … 其余 86 个见正文
+- **TDX-eltdx（138）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、adjust、adjust_mode、adjust_mode_raw、auctions.series（0x056a）、business_composition、buy_levels、c1_value~c4_value、category_name、dividend_financing、eltdx_opening_rush、finance_diagnosis、full_code、get_auction_0925、history、hot_topics、index、limit_or_count_raw、market_id、minutes.aux（0x051b）、minutes.today、mode_or_selector_raw、northbound_holding、period、period_name、period_param_raw、period_raw、points、price_acc_raw、price_delta_raw、price_milli、profit_forecast、quote_snapshot.active1、quote_snapshot.amount、quote_snapshot.amount_raw、quote_snapshot.buy_levels、quote_snapshot.code、quote_snapshot.current_hand、quote_snapshot.exchange
+  - … 其余 78 个见正文
 - **腾讯（12）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 收盘参考基准价（L2 机制确认）、[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）、[87] 科创板、两融标记、分钟 K线、实测、月 K线
 - **FTShare REST（18）**：amplitude、avg、bid_ask_ratio、board、change_rate_day10、change_rate_day120、change_rate_day20、change_rate_day5、change_rate_day60、change_rate_ytd、float_a_shares、listing_date、shares、st、status、symbol_id、tradable_a_market_cap、ts_millis
 - **同花顺-fuyao（133）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.auction_price、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability

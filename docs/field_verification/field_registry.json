@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 376,
+      "aggregate_status_scope_unresolved": 375,
       "candidate": 1,
       "conflict": 42,
       "disproved": 26,
@@ -23,18 +23,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 38,
-      "registry_status_only_single_source": 579,
+      "registry_status_only_single_source": 572,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 4,
       "status_conflict": 36,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1097,
-      "verified": 1450,
+      "unverified": 1089,
+      "verified": 1458,
       "verified_by_empirical_addendum": 147,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 363
+      "verified_by_source_contract": 371
     },
     "updated_at": "2026-11-07"
   },
@@ -21956,17 +21956,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "highest_ladder_level",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+      "unit": "板",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "historical",
@@ -23896,17 +23894,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "leader_code",
-      "meaning": "",
+      "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "leader_ladder_level",
@@ -23916,17 +23912,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "leader_ladder_level",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+      "unit": "板",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "level",
@@ -23976,17 +23970,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "lianban_count",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+      "unit": "只",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "limit_board_text",
@@ -24568,13 +24560,15 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "verified",
         "开盘啦(kpl)": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -37001,17 +36995,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "topic_id",
-      "meaning": "",
+      "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "topic_name",
@@ -37021,17 +37013,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "topic_name",
-      "meaning": "",
+      "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "total",
@@ -37326,17 +37316,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "total_seal_amount",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+      "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "total_shares",
@@ -41582,7 +41570,8 @@
       "TDX-eltdx(适配层)"
     ],
     "highest_ladder_level": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "hisRc": [
       "东财"
@@ -41774,10 +41763,12 @@
       "东财"
     ],
     "leader_code": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "leader_ladder_level": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "level": [
       "东财"
@@ -41789,7 +41780,8 @@
       "TDX-0x0010/F10"
     ],
     "lianban_count": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "limit-break-pool` 🆕": [
       "同花顺-fuyao"
@@ -41860,7 +41852,8 @@
       "财联社"
     ],
     "limit_up_count": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "limit_up_count_in_stat_days": [
       "AxData",
@@ -43506,10 +43499,12 @@
       "TDX-eltdx"
     ],
     "topic_id": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "topic_name": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "total_assets_yuan": [
       "TDX(双命名源)",
@@ -43523,7 +43518,8 @@
       "TDX-eltdx(适配层)"
     ],
     "total_seal_amount": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "total_share": [
       "AxData"
@@ -102596,14 +102592,15 @@
       "identity": "TDX-eltdx(适配层)::highest_ladder_level",
       "path": "highest_ladder_level",
       "canonical": "highest_ladder_level",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+      "unit": "板",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].highest_ladder_level (ThemeStrengthRow.highest_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].highest_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].highest_ladder_level#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -102613,6 +102610,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-highest-ladder-level-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-highest-ladder-level-source-contract"
         ]
       },
       "reference_evidence": [
@@ -102623,6 +102626,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].highest_ladder_level (ThemeStrengthRow.highest_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].highest_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].highest_ladder_level#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "highest_ladder_level",
+          "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-highest-ladder-level-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-highest-ladder-level-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].highest_ladder_level (ThemeStrengthRow.highest_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].highest_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].highest_ladder_level",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "highest_ladder_level",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "highest_ladder_level",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+              "unit": "板"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -102637,7 +102669,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-highest-ladder-level-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "highest_ladder_level",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "highest_ladder_level",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股的最高当前连板高度。",
+              "unit": "板"
+            }
+          },
+          "rationale": "Helper 对目标交易日每个题材封板成员的 ladder_level 取最大值；limit_ladder 默认只提供已封板成员。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].highest_ladder_level (ThemeStrengthRow.highest_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].highest_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].highest_ladder_level",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -104089,14 +104157,15 @@
       "identity": "TDX-eltdx(适配层)::leader_code",
       "path": "leader_code",
       "canonical": "leader_code",
-      "meaning": "",
+      "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
       "unit": "",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_code (ThemeStrengthRow.leader_code); raw: global_helpers.theme_strength_rank.rows[*].leader_code; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_code#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -104106,6 +104175,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-leader-code-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-leader-code-source-contract"
         ]
       },
       "reference_evidence": [
@@ -104116,6 +104191,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_code (ThemeStrengthRow.leader_code); raw: global_helpers.theme_strength_rank.rows[*].leader_code; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_code#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "leader_code",
+          "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-leader-code-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-leader-code-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_code (ThemeStrengthRow.leader_code); raw: global_helpers.theme_strength_rank.rows[*].leader_code; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_code",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "leader_code",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "leader_code",
+              "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -104130,7 +104234,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-leader-code-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "leader_code",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "leader_code",
+              "meaning": "Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。",
+              "unit": ""
+            }
+          },
+          "rationale": "Helper 只在遇到更高 ladder_level 时更换 leader；相同高度遵循 limit_ladder 的排序：高度降序、封单额降序、完整代码升序。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_code (ThemeStrengthRow.leader_code); raw: global_helpers.theme_strength_rank.rows[*].leader_code; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_code",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -104138,14 +104278,15 @@
       "identity": "TDX-eltdx(适配层)::leader_ladder_level",
       "path": "leader_ladder_level",
       "canonical": "leader_ladder_level",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+      "unit": "板",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_ladder_level (ThemeStrengthRow.leader_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].leader_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_ladder_level#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -104155,6 +104296,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-leader-ladder-level-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-leader-ladder-level-source-contract"
         ]
       },
       "reference_evidence": [
@@ -104165,6 +104312,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_ladder_level (ThemeStrengthRow.leader_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].leader_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_ladder_level#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "leader_ladder_level",
+          "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-leader-ladder-level-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-leader-ladder-level-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_ladder_level (ThemeStrengthRow.leader_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].leader_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_ladder_level",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "leader_ladder_level",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "leader_ladder_level",
+              "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+              "unit": "板"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -104179,7 +104355,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-leader-ladder-level-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "leader_ladder_level",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "leader_ladder_level",
+              "meaning": "Helper 目标交易日所选 leader 对应股票的当前连板高度。",
+              "unit": "板"
+            }
+          },
+          "rationale": "该字段直接读取 Helper 在目标交易日所选 leader 的 ladder_level；样本中与最高高度一致。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].leader_ladder_level (ThemeStrengthRow.leader_ladder_level); raw: global_helpers.theme_strength_rank.rows[*].leader_ladder_level; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].leader_ladder_level",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -104299,14 +104511,15 @@
       "identity": "TDX-eltdx(适配层)::lianban_count",
       "path": "lianban_count",
       "canonical": "lianban_count",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+      "unit": "只",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].lianban_count (ThemeStrengthRow.lianban_count); raw: global_helpers.theme_strength_rank.rows[*].lianban_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].lianban_count#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -104316,6 +104529,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-lianban-count-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-lianban-count-source-contract"
         ]
       },
       "reference_evidence": [
@@ -104326,6 +104545,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].lianban_count (ThemeStrengthRow.lianban_count); raw: global_helpers.theme_strength_rank.rows[*].lianban_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].lianban_count#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "lianban_count",
+          "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+          "unit": "只",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-lianban-count-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-lianban-count-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].lianban_count (ThemeStrengthRow.lianban_count); raw: global_helpers.theme_strength_rank.rows[*].lianban_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].lianban_count",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "lianban_count",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "lianban_count",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+              "unit": "只"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -104340,7 +104588,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-lianban-count-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "lianban_count",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "lianban_count",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股里当前连板高度不低于 2 板的股票数。",
+              "unit": "只"
+            }
+          },
+          "rationale": "Helper 对目标交易日每个题材成员在 ladder_level >= 2 时增加 1；该值不是该题材全部封板股数。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].lianban_count (ThemeStrengthRow.lianban_count); raw: global_helpers.theme_strength_rank.rows[*].lianban_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].lianban_count",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -105405,14 +105689,15 @@
       "identity": "TDX-eltdx(适配层)::limit_up_count",
       "path": "limit_up_count",
       "canonical": "limit_up_count",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。",
+      "unit": "只",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].limit_up_count (ThemeStrengthRow.limit_up_count); raw: global_helpers.theme_strength_rank.rows[*].limit_up_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].limit_up_count#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -105423,6 +105708,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-limit-up-count-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-limit-up-count-source-contract"
         ]
       },
       "reference_evidence": [
@@ -105433,6 +105724,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].limit_up_count (ThemeStrengthRow.limit_up_count); raw: global_helpers.theme_strength_rank.rows[*].limit_up_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].limit_up_count#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "limit_up_count",
+          "meaning": "Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。",
+          "unit": "只",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-limit-up-count-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-limit-up-count-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].limit_up_count (ThemeStrengthRow.limit_up_count); raw: global_helpers.theme_strength_rank.rows[*].limit_up_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].limit_up_count",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_up_count",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_up_count",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。",
+              "unit": "只"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -105448,7 +105768,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-limit-up-count-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_up_count",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_up_count",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中已封涨停且关联该题材的股票数；不含仅触板股票，也不是全市场计数。",
+              "unit": "只"
+            }
+          },
+          "rationale": "Helper 对每个题材关联的已封板成员逐一计数；limit_ladder 默认排除仅触板股票，统计范围为显式传入的本次请求池。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].limit_up_count (ThemeStrengthRow.limit_up_count); raw: global_helpers.theme_strength_rank.rows[*].limit_up_count; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].limit_up_count",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -116960,14 +117316,15 @@
       "identity": "TDX-eltdx(适配层)::topic_id",
       "path": "topic_id",
       "canonical": "topic_id",
-      "meaning": "",
+      "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
       "unit": "",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_id (ThemeStrengthRow.topic_id); raw: global_helpers.theme_strength_rank.rows[*].topic_id; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_id#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -116977,6 +117334,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-topic-id-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-topic-id-source-contract"
         ]
       },
       "reference_evidence": [
@@ -116987,6 +117350,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_id (ThemeStrengthRow.topic_id); raw: global_helpers.theme_strength_rank.rows[*].topic_id; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_id#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "topic_id",
+          "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-topic-id-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-topic-id-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_id (ThemeStrengthRow.topic_id); raw: global_helpers.theme_strength_rank.rows[*].topic_id; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_id",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "topic_id",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "topic_id",
+              "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -117001,7 +117393,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-topic-id-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "topic_id",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "topic_id",
+              "meaning": "题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。",
+              "unit": ""
+            }
+          },
+          "rationale": "ELTDX 字段手册将 StockTopic.topic_id 定义为题材 ID；Helper 在 ID 存在时按 ID 聚合，否则按题材名称聚合。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_id (ThemeStrengthRow.topic_id); raw: global_helpers.theme_strength_rank.rows[*].topic_id; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_id",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -117009,14 +117437,15 @@
       "identity": "TDX-eltdx(适配层)::topic_name",
       "path": "topic_name",
       "canonical": "topic_name",
-      "meaning": "",
+      "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
       "unit": "",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_name (ThemeStrengthRow.topic_name); raw: global_helpers.theme_strength_rank.rows[*].topic_name; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_name#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -117026,6 +117455,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-topic-name-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-topic-name-source-contract"
         ]
       },
       "reference_evidence": [
@@ -117036,6 +117471,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_name (ThemeStrengthRow.topic_name); raw: global_helpers.theme_strength_rank.rows[*].topic_name; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_name#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "topic_name",
+          "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-topic-name-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-topic-name-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_name (ThemeStrengthRow.topic_name); raw: global_helpers.theme_strength_rank.rows[*].topic_name; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_name",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "topic_name",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "topic_name",
+              "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -117050,7 +117514,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-topic-name-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "topic_name",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "topic_name",
+              "meaning": "题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。",
+              "unit": ""
+            }
+          },
+          "rationale": "ELTDX 字段手册将 StockTopic.topic_name 定义为题材名称；Helper 只接纳有题材 ID 或名称的关系。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].topic_name (ThemeStrengthRow.topic_name); raw: global_helpers.theme_strength_rank.rows[*].topic_name; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].topic_name",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -117170,14 +117670,15 @@
       "identity": "TDX-eltdx(适配层)::total_seal_amount",
       "path": "total_seal_amount",
       "canonical": "total_seal_amount",
-      "meaning": "",
-      "unit": "",
+      "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+      "unit": "元",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].total_seal_amount (ThemeStrengthRow.total_seal_amount); raw: global_helpers.theme_strength_rank.rows[*].total_seal_amount; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].total_seal_amount#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -117187,6 +117688,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-theme-strength-total-seal-amount-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-eltdx-theme-strength-total-seal-amount-source-contract"
         ]
       },
       "reference_evidence": [
@@ -117197,6 +117704,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现 · client.helpers.theme_strength_rank(codes=ecodes).rows[*].total_seal_amount (ThemeStrengthRow.total_seal_amount); raw: global_helpers.theme_strength_rank.rows[*].total_seal_amount; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].total_seal_amount#src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount @ ELTDX v3.3.2（项目固定版本）",
+          "canonical": "total_seal_amount",
+          "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-eltdx-theme-strength-total-seal-amount-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-theme-strength-total-seal-amount-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].total_seal_amount (ThemeStrengthRow.total_seal_amount); raw: global_helpers.theme_strength_rank.rows[*].total_seal_amount; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].total_seal_amount",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "total_seal_amount",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "total_seal_amount",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+              "unit": "元"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -117211,7 +117747,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-theme-strength-total-seal-amount-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_theme_strength_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "total_seal_amount",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "total_seal_amount",
+              "meaning": "Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。",
+              "unit": "元"
+            }
+          },
+          "rationale": "Helper 累加目标交易日题材成员的 seal_amount，缺失值按 0，并对总和 round 到 6 位小数；seal_amount 是当前买一价乘买一量，单位元。 采集器 collect_eltdx 显式将本次 20 只股票池传给 theme_strength_rank；stock_theme_strength_rank 在固定版本中直接委托同一实现。审计 2026-10-15 起 18 组保留 raw/meta，共有 310 条非空主题行，分布于 10 个非空目标数据日；8 个字段均 310/310 存在且非空，计数、连板高度、金额及领涨高度不变量 310/310 成立，两个 Helper 输出一致。18/18 组中 Helper trade_date 与 meta.data_date 相同；但 18/18 meta 均没有 ELTDX source_as_of_date，因此这些样本只证明目标日期接线和输出序列化，不作为来源实际日期或跨来源碰撞证据。逐行样本及 raw/meta SHA-256 见 docs/field_verification/research/20261114_eltdx_theme_strength_samples.csv，SHA-256 56d1574172ce7ebff6ed73fe61b6037c04aab5f09a3a71e83755a8835ce01253。结论仅适用于 TDX-eltdx 适配层，不声称原生通达信协议字段，也不建立跨源映射。",
+          "source_contract": {
+            "authority": "项目 requirements.txt 固定的 ELTDX v3.3.2 上游字段手册与源码实现",
+            "revision": "ELTDX v3.3.2（项目固定版本）",
+            "path": "client.helpers.theme_strength_rank(codes=ecodes).rows[*].total_seal_amount (ThemeStrengthRow.total_seal_amount); raw: global_helpers.theme_strength_rank.rows[*].total_seal_amount; stock_theme_strength_rank is a direct alias serialized at global_helpers.stock_theme_strength_rank.rows[*].total_seal_amount",
+            "locator": "src/eltdx/helpers/core.py: ThemeStrengthRow, HelperApi.limit_ladder, HelperApi.theme_strength_rank, HelperApi.stock_theme_strength_rank; docs/FIELD_REFERENCE.md §StockTopics/StockTopic; docs/helpers/短线指标.md §ladder_level/seal_amount",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/src/eltdx/helpers/core.py"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

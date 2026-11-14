@@ -9,8 +9,8 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 372,
       "candidate": 1,
-      "conflict": 42,
-      "disproved": 26,
+      "conflict": 40,
+      "disproved": 27,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -22,15 +22,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 572,
+      "registry_status_only_single_source": 571,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 4,
-      "status_conflict": 36,
+      "retired_legacy_path": 5,
+      "status_conflict": 34,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1084,
-      "verified": 1461,
-      "verified_by_empirical_addendum": 150,
+      "unverified": 1083,
+      "verified": 1464,
+      "verified_by_empirical_addendum": 153,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 371
@@ -9813,20 +9813,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "calculate_parent_holder_net_profit_yoy_growth_ratio",
@@ -21422,18 +21419,33 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+      "unit": "%",
       "status_raw": "✅ L1（⚠️ 口径差，见 12.8.12f 铁证块）",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "同花顺-fuyao": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
@@ -21443,18 +21455,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+      "unit": "%",
       "status_raw": "✅ L1",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "gu_ding_zi_chan_raw_float",
@@ -45557,6 +45566,9 @@
     ],
     "ulist239_quote_data_date": [
       "东财-ulist239(np/get)"
+    ],
+    "growth.calculate_operating_profit_yoy_growth_ratio": [
+      "同花顺-fuyao"
     ]
   },
   "mappings": [
@@ -192500,23 +192512,26 @@
       "code": "calculate_operating_profit_yoy_growth_ratio",
       "identity": "同花顺-fuyao::calculate_operating_profit_yoy_growth_ratio",
       "path": "calculate_operating_profit_yoy_growth_ratio",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+      "sections": [
+        "2026-11-14 Fuyao 营业利润字段完整路径实证"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-operating-profit-unscoped-path-retirement"
         ],
-        "values": [
-          "unverified"
-        ]
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -192531,7 +192546,76 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+        "reason": "保留期 2026-10-15 起的 18 个有效 Fuyao 目录共 360 条股票记录中，旧的 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径出现 0 次；340 条有值记录均只在 fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio 出现，另 20 条为首个目录中缺少指标并已排除。项目解析器按 ability/index_id 序列化为嵌套路径。20 家发行人 2026H1 正式报告逐股支持该嵌套营业利润同比语义，故退役旧无前缀身份而保留完整路径。",
+        "evidence_files": [
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+          "docs/field_verification/research/20261114_fuyao_operating_profit_path_inventory.csv",
+          "docs/field_verification/research/20261114_fuyao_growth_official_h1_comparisons.csv"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-operating-profit-unscoped-path-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -195897,14 +195981,15 @@
       "identity": "同花顺-fuyao::growth.calculate_operating_income_yoy_growth_ratio",
       "path": "growth.calculate_operating_income_yoy_growth_ratio",
       "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "2026-11-14 Fuyao 财务增长字段全样本实证"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -195917,9 +196002,24 @@
           "同花顺-fuyao"
         ],
         "values": [
-          "verified",
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-operating-income-yoy-growth-ratio"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+        "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+        "sample": {
+          "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业收入同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 20,
+          "excluded_count": 60,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -195929,6 +196029,40 @@
           "unit": "",
           "status_raw": "✅ L1（⚠️ 口径差，见 12.8.12f 铁证块）",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-14 Fuyao 财务增长字段全样本实证",
+          "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+          "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-operating-income-yoy-growth-ratio",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+              "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业收入同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -195943,7 +196077,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-operating-income-yoy-growth-ratio",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_growth_empirical_semantics.json",
+          "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+              "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目适配器将响应 ability/index_id 原样保留为本精确嵌套路径，未重算。Fuyao 在线文档确认 yyyy-2 为中报、增长率采用百分数值，但列出的 operating_income_yoy_growth_ratio 不含实测 calculate_ 前缀，因此文档不作为该路径的独立字段契约。2026-11-12 样本中 20 只股票均选中 fin_report=2026-2；逐只以巨潮 2026 半年报对照 2025 同期营业收入，20/20 支持同一报表项目，0 反例，最大绝对误差 4.5154997727716752346e-7 个百分点，最大相对误差 9.763802554427349116e-6。贵州茅台样本区分营业收入和营业总收入，结果仅与营业收入吻合。留存期另审计到 17 个同报告期重复采集日；重复日未计为独立证据，2026-10-15 缺失的 60 条历史字段观察已排除。误差原因和跨期服务端算法未证实，故保留误差、不归因于舍入。只裁定来源内语义，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业收入同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -195951,14 +196129,15 @@
       "identity": "同花顺-fuyao::growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
       "path": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
       "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "2026-11-14 Fuyao 财务增长字段全样本实证"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -195971,9 +196150,24 @@
           "同花顺-fuyao"
         ],
         "values": [
-          "verified",
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-parent-holder-net-profit-yoy-growth-ratio"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+        "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+        "sample": {
+          "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）归母净利润同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 20,
+          "excluded_count": 60,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -195983,6 +196177,40 @@
           "unit": "",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-14 Fuyao 财务增长字段全样本实证",
+          "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+          "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-parent-holder-net-profit-yoy-growth-ratio",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+              "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）归母净利润同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -195997,7 +196225,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-parent-holder-net-profit-yoy-growth-ratio",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_growth_empirical_semantics.json",
+          "evidence_file": "adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+              "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目适配器将响应 ability/index_id 原样保留为本精确嵌套路径，未重算。Fuyao 在线文档确认 yyyy-2 为中报、增长率采用百分数值，但未列出实测 calculate_parent_holder_net_profit_yoy_growth_ratio 路径，因此文档不作为该路径的独立字段契约。2026-11-12 样本中 20 只股票均选中 fin_report=2026-2；逐只以巨潮 2026 半年报对照 2025 同期归属于母公司股东/所有者/上市公司股东的净利润，20/20 支持该报表项目，0 反例，最大绝对误差 4.872224505006443493e-7 个百分点，最大相对误差 2.960811297163220788e-7。贵州茅台样本区分归母净利润和合并净利润；000037 深南电A 与 688553 汇宇制药的负基数样本支持绝对值分母的经验式。留存期另审计到 17 个同报告期重复采集日；重复日未计为独立证据，2026-10-15 缺失的 60 条历史字段观察已排除。误差原因和跨期服务端算法未证实，故保留误差、不归因于舍入。只裁定来源内语义，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）归母净利润同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -234994,6 +235266,141 @@
         "unit": "",
         "section": ""
       }
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "identity": "同花顺-fuyao::growth.calculate_operating_profit_yoy_growth_ratio",
+      "path": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+      "sections": [
+        "2026-11-14 Fuyao 营业利润字段完整路径实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-operating-profit-yoy-growth-ratio"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_fuyao_operating_profit_path_identity.md",
+        "evidence_sha256": "e0c7c11b01e4504cdb10fa82d2f5eaa5a4ce60a72ee9d368f974965370f9b4d9",
+        "sample": {
+          "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业利润同比值逐项对照巨潮正式报告；保留期路径普查为 2026-10-15 起 18 个目录、360 条股票记录",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 20,
+          "excluded_count": 20,
+          "stock_count": 20
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+          "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+          "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-operating-profit-yoy-growth-ratio",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_fuyao_operating_profit_path_identity.md",
+          "evidence_sha256": "e0c7c11b01e4504cdb10fa82d2f5eaa5a4ce60a72ee9d368f974965370f9b4d9",
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+              "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业利润同比值逐项对照巨潮正式报告；保留期路径普查为 2026-10-15 起 18 个目录、360 条股票记录",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 20,
+            "stock_count": 20
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "growth.calculate_operating_profit_yoy_growth_ratio",
+        "sources": [
+          "同花顺-fuyao"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-operating-profit-yoy-growth-ratio",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_operating_profit_path_semantics.json",
+          "evidence_file": "adjudications/20261114_fuyao_operating_profit_path_identity.md",
+          "evidence_sha256": "e0c7c11b01e4504cdb10fa82d2f5eaa5a4ce60a72ee9d368f974965370f9b4d9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_only_source_pair",
+          "previous_metadata": {
+            "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+              "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目解析器按 ability/index_id 原样输出完整嵌套路径；官方 Fuyao 文档证实响应按 ability 分组、growth 属于分组并采用百分数值，但文档列出的 ID 不含样本实际 calculate_ 前缀，故只作为结构与单位惯例依据。保留期 18 个来源日期合格目录的 360 条股票记录中，旧根路径为 0，嵌套路径有值 340 条，首目录 20 条缺值排除。最新目标数据日的 20 家发行人均有 2026H1 指标，逐股与巨潮正式报告营业利润行及 2025H1 同期值复算 20/20 吻合、0 反例；最大绝对误差 4.647356636475838744e-7 个百分点，最大相对误差 1.596344330672318576e-7。重复采集只核查值稳定，不作为独立报告期。仅定案来源内完整路径语义，不新增跨源映射。",
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业利润同比值逐项对照巨潮正式报告；保留期路径普查为 2026-10-15 起 18 个目录、360 条股票记录",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 20,
+            "stock_count": 20
+          }
+        }
+      ]
     }
   ],
   "source_field_addenda": [
@@ -236943,6 +237350,17 @@
       "evidence_file": "docs/field_verification/adjudications/20261111_eltdx_zhu_ying_li_run_empirical_semantics.md",
       "matrix_field": "finance_batch[].zhu_ying_li_run_raw_float",
       "matrix_source": "TDX-eltdx"
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+      "unit": "%",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+      "matrix_field": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "matrix_source": "同花顺-fuyao"
     }
   ],
   "source_contract_addenda": [

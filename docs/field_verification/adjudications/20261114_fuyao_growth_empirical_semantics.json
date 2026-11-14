@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_growth_empirical_evidence.md",
+  "evidence_sha256": "ea755b69bfd232dc706e19c127a4287720467bdbec540b1d3a8dddb6c1aaaeb5",
+  "decisions": [
+    {
+      "id": "20261114-fuyao-operating-income-yoy-growth-ratio",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "growth.calculate_operating_income_yoy_growth_ratio"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+      "meaning": "该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 财务增长字段全样本实证",
+      "rationale": "项目适配器将响应 ability/index_id 原样保留为本精确嵌套路径，未重算。Fuyao 在线文档确认 yyyy-2 为中报、增长率采用百分数值，但列出的 operating_income_yoy_growth_ratio 不含实测 calculate_ 前缀，因此文档不作为该路径的独立字段契约。2026-11-12 样本中 20 只股票均选中 fin_report=2026-2；逐只以巨潮 2026 半年报对照 2025 同期营业收入，20/20 支持同一报表项目，0 反例，最大绝对误差 4.5154997727716752346e-7 个百分点，最大相对误差 9.763802554427349116e-6。贵州茅台样本区分营业收入和营业总收入，结果仅与营业收入吻合。留存期另审计到 17 个同报告期重复采集日；重复日未计为独立证据，2026-10-15 缺失的 60 条历史字段观察已排除。误差原因和跨期服务端算法未证实，故保留误差、不归因于舍入。只裁定来源内语义，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业收入同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 20,
+        "excluded_count": 60,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261114-fuyao-parent-holder-net-profit-yoy-growth-ratio",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+      "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 财务增长字段全样本实证",
+      "rationale": "项目适配器将响应 ability/index_id 原样保留为本精确嵌套路径，未重算。Fuyao 在线文档确认 yyyy-2 为中报、增长率采用百分数值，但未列出实测 calculate_parent_holder_net_profit_yoy_growth_ratio 路径，因此文档不作为该路径的独立字段契约。2026-11-12 样本中 20 只股票均选中 fin_report=2026-2；逐只以巨潮 2026 半年报对照 2025 同期归属于母公司股东/所有者/上市公司股东的净利润，20/20 支持该报表项目，0 反例，最大绝对误差 4.872224505006443493e-7 个百分点，最大相对误差 2.960811297163220788e-7。贵州茅台样本区分归母净利润和合并净利润；000037 深南电A 与 688553 汇宇制药的负基数样本支持绝对值分母的经验式。留存期另审计到 17 个同报告期重复采集日；重复日未计为独立证据，2026-10-15 缺失的 60 条历史字段观察已排除。误差原因和跨期服务端算法未证实，故保留误差、不归因于舍入。只裁定来源内语义，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）归母净利润同比值，逐项对照巨潮 2026H1 与 2025H1 正式报告；留存历史缺失记录见证据 CSV",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 20,
+        "excluded_count": 60,
+        "stock_count": 20
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
+  "evidence_sha256": "e0c7c11b01e4504cdb10fa82d2f5eaa5a4ce60a72ee9d368f974965370f9b4d9",
+  "decisions": [
+    {
+      "id": "20261114-fuyao-operating-profit-yoy-growth-ratio",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "growth.calculate_operating_profit_yoy_growth_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "meaning": "该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 营业利润字段完整路径实证",
+      "rationale": "项目解析器按 ability/index_id 原样输出完整嵌套路径；官方 Fuyao 文档证实响应按 ability 分组、growth 属于分组并采用百分数值，但文档列出的 ID 不含样本实际 calculate_ 前缀，故只作为结构与单位惯例依据。保留期 18 个来源日期合格目录的 360 条股票记录中，旧根路径为 0，嵌套路径有值 340 条，首目录 20 条缺值排除。最新目标数据日的 20 家发行人均有 2026H1 指标，逐股与巨潮正式报告营业利润行及 2025H1 同期值复算 20/20 吻合、0 反例；最大绝对误差 4.647356636475838744e-7 个百分点，最大相对误差 1.596344330672318576e-7。重复采集只核查值稳定，不作为独立报告期。仅定案来源内完整路径语义，不新增跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 只股票的 2026-2（2026H1）营业利润同比值逐项对照巨潮正式报告；保留期路径普查为 2026-10-15 起 18 个目录、360 条股票记录",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 20,
+        "excluded_count": 20,
+        "stock_count": 20
+      }
+    }
+  ]
+}

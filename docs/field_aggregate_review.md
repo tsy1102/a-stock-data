@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 458 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 460 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3678,7 +3678,9 @@
 | 东财-资金流(em_fund_flow) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 同花顺-fuyao | `assets_debt_ratio` | solvency.assets_debt_ratio | 旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `basic_eps` | basic_eps | 基本每股收益（元/股）。 | `verified` |
+| 同花顺-fuyao | `calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | `disproved` |
 | 同花顺-fuyao | `calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |
+| 同花顺-fuyao | `calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | 旧登记将 归母净利润同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_parent_holder_net_profit_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | `disproved` |
 | 同花顺-fuyao | `calendar` | a-share/calendar/trading-days | — | `unverified` |
 | 同花顺-fuyao | `cash-flow.cash_meet_invest_ratio` | cash-flow.cash_meet_invest_ratio | 现金满足投资比率；官方契约未明确具体数值量纲，本次保留空单位，不作推断。 | `verified` |
 | 同花顺-fuyao | `cash-flow.cash_operating_index` | cash-flow.cash_operating_index | 现金营运指数；官方契约未明确具体数值量纲，本次保留空单位，不作推断。 | `verified` |

@@ -9789,20 +9789,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "Fuyao 同比增长指标旧根路径退役（2026-11-14）",
+      "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+      "meaning": "旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "calculate_operating_profit_yoy_growth_ratio",
@@ -9828,20 +9825,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "Fuyao 同比增长指标旧根路径退役（2026-11-14）",
+      "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+      "meaning": "旧登记将 归母净利润同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_parent_holder_net_profit_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "calendar",
@@ -192848,23 +192842,26 @@
       "code": "calculate_operating_income_yoy_growth_ratio",
       "identity": "同花顺-fuyao::calculate_operating_income_yoy_growth_ratio",
       "path": "calculate_operating_income_yoy_growth_ratio",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "growth.calculate_operating_income_yoy_growth_ratio",
+      "meaning": "旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "Fuyao 同比增长指标旧根路径退役（2026-11-14）",
+      "sections": [
+        "Fuyao 同比增长指标旧根路径退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-operating-income-unscoped-path-retirement"
         ],
-        "values": [
-          "unverified"
-        ]
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -192879,7 +192876,76 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+        "reason": "保留边界 20261015 起的 18 个 Fuyao raw 目录共 360 条个股记录中，fin_indicators.calculate_operating_income_yoy_growth_ratio 根路径出现 0 次；340 条有值观察均只出现在 fin_indicators.growth.calculate_operating_income_yoy_growth_ratio，另 20 条是首个目录中未出现该报告期指标并已排除。各目录 as_of_date 与目录数据日相符；其余 17 个目录均是同一个 2026-2 报告期，重复快照仅用于路径存在性核查，不计作独立报告样本。项目解析器保留 ability/index_id 分组。嵌套路径的语义另由对应 E3 记录支持；本决定只退役错误的根路径身份，不确认在线文档未列出的 calculate_ 叶名契约。",
+        "evidence_files": [
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "docs/field_verification/research/20261114_fuyao_growth_official_h1_comparisons.csv",
+          "docs/field_verification/research/20261114_fuyao_growth_alias_path_inventory.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-operating-income-unscoped-path-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -192996,23 +193062,26 @@
       "code": "calculate_parent_holder_net_profit_yoy_growth_ratio",
       "identity": "同花顺-fuyao::calculate_parent_holder_net_profit_yoy_growth_ratio",
       "path": "calculate_parent_holder_net_profit_yoy_growth_ratio",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "growth.calculate_parent_holder_net_profit_yoy_growth_ratio",
+      "meaning": "旧登记将 归母净利润同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_parent_holder_net_profit_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "Fuyao 同比增长指标旧根路径退役（2026-11-14）",
+      "sections": [
+        "Fuyao 同比增长指标旧根路径退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-parent-holder-net-profit-unscoped-path-retirement"
         ],
-        "values": [
-          "unverified"
-        ]
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -193027,7 +193096,76 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+        "reason": "保留边界 20261015 起的 18 个 Fuyao raw 目录共 360 条个股记录中，fin_indicators.calculate_parent_holder_net_profit_yoy_growth_ratio 根路径出现 0 次；340 条有值观察均只出现在 fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio，另 20 条是首个目录中未出现该报告期指标并已排除。各目录 as_of_date 与目录数据日相符；其余 17 个目录均是同一个 2026-2 报告期，重复快照仅用于路径存在性核查，不计作独立报告样本。项目解析器保留 ability/index_id 分组。嵌套路径的语义另由对应 E3 记录支持；本决定只退役错误的根路径身份，不确认在线文档未列出的 calculate_ 叶名契约。",
+        "evidence_files": [
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_growth_empirical_evidence.md",
+          "docs/field_verification/research/20261114_fuyao_growth_official_h1_comparisons.csv",
+          "docs/field_verification/research/20261114_fuyao_growth_alias_path_inventory.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-parent-holder-net-profit-unscoped-path-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_growth_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",

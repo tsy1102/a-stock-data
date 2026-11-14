@@ -204,11 +204,14 @@ SECTION_MAP = [
             "12.3.1.2",
             "12.9.1 push2 stock/get",
             "12.9.2",
-            "12.8.2 东财 push2 历史",
             "12.8.7 东财 push2 资金流",
             "12.3.4 资金流四档",
         ],
     ),
+    # §12.8.2 calls /stock/fflow/daykline/get, not /stock/get. It also mentions
+    # selectors from an external SKILL without project response evidence. Keep
+    # that history endpoint out of the stock/get field identity until captured
+    # and registered under its own exact source path.
     ("东财-资金流(em_fund_flow)", ["12.3.4 资金流四档", "12.8.7 东财 push2 资金流"]),
     ("东财-ulist239(np/get)", ["12.3.2"]),
     ("东财-push2ex", ["12.8.1 东财 push2ex"]),

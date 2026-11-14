@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 211 个 code；疑似合并文本 413 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 210 个 code；疑似合并文本 413 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2131,12 +2131,11 @@
 
 ### `f61` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-em_kline_f61 · `f61` | f61 | 换手率% | % | `verified` |
-| 东财-push2(stock/get) · `f61` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f61` | f61 | — | — | `verified` |
 
 ### `f62` — ambiguous
@@ -2149,15 +2148,6 @@
 | 东财-push2(stock/get) · `f62` | f62 | 最新已发布报告期的季度序号（如 2=中报、3=三季报；不含年份） | 季度序号 | `verified` |
 | 东财-ulist239(np/get) · `f62` | f62 | 主力净流入额 | 元 | `verified` |
 | 东财-资金流(em_fund_flow) · `f62` | — | — | — | `unverified` |
-
-### `f63` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f63` | — | — | — | `unverified` |
-| 东财-ulist239(np/get) · `f63` | f63 | — | — | `unverified` |
 
 ### `f64` — incomplete
 

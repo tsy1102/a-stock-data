@@ -38,6 +38,7 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
         "东财-datacenter(英文键)"
     ]
     assert "东财-热榜(em_hot)" not in afc.section_to_sources("12.8.12b THS SDK（已退役）")
+    assert afc.section_to_sources("12.8.2 东财 push2 历史资金流（120 日，日级）✅") == []
     assert afc.section_to_sources("12.21 开盘啦 App 数据解析工具") == ["开盘啦(kpl)"]
     assert afc.section_to_sources("12.17 KPL 开盘啦（longhuvip.com 私有 API）") == ["开盘啦(kpl)"]
     assert afc.section_to_sources("12.8.14 新浪（行情/三表/期权/资金流备胎）") == ["新浪(扩展API)"]
@@ -65,6 +66,17 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert finance_path in afc.reg_tokens_for_section("TDX-eltdx(适配层)", finance_table)
     extractor = importlib.import_module("extract_registry")
     assert extractor.cell_token(finance_path, "TDX-eltdx(适配层)") == finance_path
+
+
+def test_eastmoney_flow_daykline_fields_do_not_pollute_stock_get_identity(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+
+    registered = afc.registered_field_sets()
+
+    assert "f61" not in registered["东财-push2(stock/get)"]
+    assert "f63" not in registered["东财-push2(stock/get)"]
+    assert "f61" in registered["东财-em_kline_f61"]
 
 
 def test_eastmoney_kline_registry_uses_its_own_fields2_table(monkeypatch):

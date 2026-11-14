@@ -382,7 +382,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 72
+    assert len(pairs) == 75
+    assert ("同花顺-fuyao", "growth.total_assets_growth_ratio") in pairs
+    assert ("同花顺-fuyao", "profitability.total_assets_net_ratio") in pairs
+    assert ("同花顺-fuyao", "profitability.index_deduct_weighted_avg_roe") in pairs
     assert ("TDX(双命名源)", "bid2") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.target_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.previous_trade_date") in pairs
@@ -391,6 +394,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert matrix["finance_batch[].zhu_ying_shou_ru_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].ying_ye_li_run_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].zong_xian_jin_liu_raw_float"] == {"TDX-eltdx(适配层)"}
+    assert matrix["growth.total_assets_growth_ratio"] == {"同花顺-fuyao"}
+    assert matrix["profitability.total_assets_net_ratio"] == {"同花顺-fuyao"}
+    assert matrix["profitability.index_deduct_weighted_avg_roe"] == {"同花顺-fuyao"}
     assert "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float" not in matrix
     assert "finance_batch[].fa_ren_gu_raw_float" not in matrix
 

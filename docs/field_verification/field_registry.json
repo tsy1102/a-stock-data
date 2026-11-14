@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 375,
+      "aggregate_status_scope_unresolved": 373,
       "candidate": 1,
       "conflict": 42,
       "disproved": 26,
@@ -29,9 +29,9 @@
       "status_conflict": 36,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1089,
-      "verified": 1458,
-      "verified_by_empirical_addendum": 147,
+      "unverified": 1087,
+      "verified": 1460,
+      "verified_by_empirical_addendum": 149,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 371
@@ -7853,7 +7853,7 @@
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "verified",
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "verified",
         "ZHB-tdxstat2": "verified",
         "reports": "verified",
         "东财-datacenter(英文键)": "unverified",
@@ -29493,7 +29493,7 @@
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "verified",
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "verified",
         "东财-datacenter(英文键)": "unverified",
         "东财-push2ex": "verified",
         "东财-热榜(em_hot)": "verified",
@@ -95505,15 +95505,16 @@
       "identity": "TDX-eltdx(适配层)::amount",
       "path": "amount",
       "canonical": "amount",
-      "meaning": "成交额",
-      "unit": "",
-      "section": "",
+      "meaning": "实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。",
+      "unit": "元",
+      "section": "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）",
       "sections": [
         "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-        "12.13.5 K线（bars.get，0x052d）文档确认"
+        "12.13.5 K线（bars.get，0x052d）文档确认",
+        "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -95531,7 +95532,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-adapter-amount-empirical-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+        "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.amount / 同日 TDX KlineBar.amount / Tencent qt.gtimg 字段[57]×10000；排除双方均为 0 的低信息样本",
+          "comparison_count": 359,
+          "matched_count": 359,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 1,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -95549,6 +95566,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）",
+          "canonical": "amount",
+          "meaning": "实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。",
+          "unit": "元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-adapter-amount-empirical-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "metadata_change": {
+            "before": {
+              "canonical": "amount",
+              "meaning": "成交额",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "amount",
+              "meaning": "实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。",
+              "unit": "元"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.amount / 同日 TDX KlineBar.amount / Tencent qt.gtimg 字段[57]×10000；排除双方均为 0 的低信息样本",
+            "comparison_count": 359,
+            "matched_count": 359,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 1,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -95571,7 +95622,51 @@
         "meaning": "成交额",
         "unit": "元",
         "section": "12.8.1 东财 push2ex（涨停/炸板/跌停/昨涨停四池）✅"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-adapter-amount-empirical-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_adapter_quote_semantics.json",
+          "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "amount",
+            "meaning": "成交额",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "amount",
+              "meaning": "成交额",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "amount",
+              "meaning": "实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "core/eltdx_adapter.py::_EltdxAdapter.quotes 将 QuoteSnapshot.amount 原样赋给完整项目输出键 amount。固定版本字段手册释为成交额但未明示单位；项目适配器无转换。18 个有日期资格交易日共 360 组，快照成交额与同日 TDX KlineBar.amount 360/360 精确相等；1 组双方恒 0 按低信息量规则排除。其余 359 组与已定案为万元、保留四位的 Tencent qt.gtimg 字段[57]乘 10000 后量级一致，最大绝对差 487 元、最大相对差 1.6216e-7。此处只记录观测误差，不推定 compact-float 具体舍入算法；单位结论由来源契约和同日K线/独立来源量纲交叉支持。未建立跨源映射。逐日日期资格、换算、误差及 CSV 哈希见证据文件。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.amount / 同日 TDX KlineBar.amount / Tencent qt.gtimg 字段[57]×10000；排除双方均为 0 的低信息样本",
+            "comparison_count": 359,
+            "matched_count": 359,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 1,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -110742,14 +110837,15 @@
       "identity": "TDX-eltdx(适配层)::price",
       "path": "price",
       "canonical": "price",
-      "meaning": "",
-      "unit": "",
+      "meaning": "实时行情快照最新价；收盘阶段与该数据日收盘价一致。",
+      "unit": "元",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -110766,7 +110862,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261114-eltdx-adapter-price-empirical-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+        "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.last_price / TDX KlineBar.close / Tencent qt.gtimg 字段[3]；按各来源实际日期和收盘阶段配对",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -110776,6 +110888,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）",
+          "canonical": "price",
+          "meaning": "实时行情快照最新价；收盘阶段与该数据日收盘价一致。",
+          "unit": "元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-eltdx-adapter-price-empirical-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "metadata_change": {
+            "before": {
+              "canonical": "price",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "price",
+              "meaning": "实时行情快照最新价；收盘阶段与该数据日收盘价一致。",
+              "unit": "元"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.last_price / TDX KlineBar.close / Tencent qt.gtimg 字段[3]；按各来源实际日期和收盘阶段配对",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -110797,7 +110943,51 @@
         "meaning": "现价",
         "unit": "元",
         "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-eltdx-adapter-price-empirical-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eltdx_adapter_quote_semantics.json",
+          "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "price",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "price",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "price",
+              "meaning": "实时行情快照最新价；收盘阶段与该数据日收盘价一致。",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "core/eltdx_adapter.py::_EltdxAdapter.quotes 将 QuoteSnapshot.last_price 原样赋给完整项目输出键 price。固定版本字段手册释为最新价；保留期内 18 个有来源日期的交易日、20 只股票，共 360 组，Tencent 字段[3]与 Tencent 原始时间戳日期及 meta 对齐，price 360/360 精确吻合同日 Tencent 最新价和 TDX KlineBar.close，零反例。具体日期资格、路径、证据局限与逐行值见哈希锁定证据文件。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.last_price / TDX KlineBar.close / Tencent qt.gtimg 字段[3]；按各来源实际日期和收盘阶段配对",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

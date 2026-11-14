@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex field audit",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
+  "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+  "decisions": [
+    {
+      "id": "20261114-eltdx-adapter-price-empirical-semantics",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "price",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "price",
+      "meaning": "实时行情快照最新价；收盘阶段与该数据日收盘价一致。",
+      "unit": "元",
+      "section": "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）",
+      "rationale": "core/eltdx_adapter.py::_EltdxAdapter.quotes 将 QuoteSnapshot.last_price 原样赋给完整项目输出键 price。固定版本字段手册释为最新价；保留期内 18 个有来源日期的交易日、20 只股票，共 360 组，Tencent 字段[3]与 Tencent 原始时间戳日期及 meta 对齐，price 360/360 精确吻合同日 Tencent 最新价和 TDX KlineBar.close，零反例。具体日期资格、路径、证据局限与逐行值见哈希锁定证据文件。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.last_price / TDX KlineBar.close / Tencent qt.gtimg 字段[3]；按各来源实际日期和收盘阶段配对",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261114-eltdx-adapter-amount-empirical-semantics",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "amount",
+        "meaning": "成交额",
+        "unit": ""
+      },
+      "canonical": "amount",
+      "meaning": "实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。",
+      "unit": "元",
+      "section": "ELTDX v3.3.2 7709 0x054c QuoteSnapshot（项目适配层实证）",
+      "rationale": "core/eltdx_adapter.py::_EltdxAdapter.quotes 将 QuoteSnapshot.amount 原样赋给完整项目输出键 amount。固定版本字段手册释为成交额但未明示单位；项目适配器无转换。18 个有日期资格交易日共 360 组，快照成交额与同日 TDX KlineBar.amount 360/360 精确相等；1 组双方恒 0 按低信息量规则排除。其余 359 组与已定案为万元、保留四位的 Tencent qt.gtimg 字段[57]乘 10000 后量级一致，最大绝对差 487 元、最大相对差 1.6216e-7。此处只记录观测误差，不推定 compact-float 具体舍入算法；单位结论由来源契约和同日K线/独立来源量纲交叉支持。未建立跨源映射。逐日日期资格、换算、误差及 CSV 哈希见证据文件。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.amount / 同日 TDX KlineBar.amount / Tencent qt.gtimg 字段[57]×10000；排除双方均为 0 的低信息样本",
+        "comparison_count": 359,
+        "matched_count": 359,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 1,
+        "stock_count": 20
+      }
+    }
+  ]
+}

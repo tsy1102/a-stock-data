@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 按 ELTDX v3.3.2 `QuoteSnapshot` 定义、项目适配器路径和 18 个合格交易日×20 股留存样本，补全 `TDX-eltdx(适配层)::price`（最新价，元）与 `::amount`（累计成交额，元）的来源内释义；价格与 Tencent 及同日 TDX 收盘价 360/360 精确相等，成交额与同日 TDX K 线 360/360 相等。Tencent 对照只记录实际量化误差，不推定 compact-float 舍入算法；未建立跨源映射。
 - 依据 ELTDX v3.3.2 Helper 字段链及 18 个合格交易日的保留采集，将 `TDX-eltdx(适配层)::trade_date` 来源内定案为连板天梯与题材强度结果对应的目标交易日；54 条路径观察全部匹配目标数据日，但按 18 个独立日期计样本，不建立跨源映射，也不覆盖财联社或历史未归属来源的同名字段。
 - 修正碰撞目标对 ZHB 合并 `full` 路径的状态解析：多个逐源注册路径共同拥有该运行时字段时，若所有 owner 均已验证或证伪，该路径不再重复进入破解；全体证伪时保留负向护栏。碰撞覆盖快照中的注册状态若已过期，也会按当前主注册表纠正，避免旧状态重新生成候选。
 - 将 ZHB tipinfo 的已验证原始列 `[10]`、`[13]` 分别映射到采集器便捷路径 `tipinfo.dt_date_recent`、`tipinfo.unlock_date`；两条已确认日期字段不再重复进入碰撞目标或日期语义队列。

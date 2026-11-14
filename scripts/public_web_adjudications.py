@@ -705,6 +705,7 @@ def _validate_observations(
         display_unit = (
             _optional_text(observation.get("display_unit"), "page_observation.display_unit") or ""
         )
+        display_text = _text(observation.get("display_text"), "page_observation.display_text")
         factor_value = observation.get("raw_to_display_factor")
         value_transform = observation.get("value_transform")
         missing_as_zero = observation.get("missing_as_zero", False)
@@ -778,6 +779,34 @@ def _validate_observations(
                     f"page value differs from the {value_transform} transform for {stock_code}"
                 )
             increment = None
+        elif value_transform in {"fraction_numerator", "fraction_denominator"}:
+            if factor_value is not None:
+                raise ValueError("fraction observations cannot use raw_to_display_factor")
+            if display_unit:
+                raise ValueError("fraction components must keep the page's empty display unit")
+            if "display_increment" in observation:
+                raise ValueError("fraction observations cannot use display_increment")
+            if missing_as_zero is not False:
+                raise ValueError("fraction observations cannot use missing_as_zero")
+            if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
+                raise ValueError("fraction observations require a numeric raw source value")
+            fraction = re.fullmatch(r"(\d+)/(\d+)", display_text)
+            if fraction is None:
+                raise ValueError("fraction transform requires a displayed integer pair X/Y")
+            component_index = 1 if value_transform == "fraction_numerator" else 2
+            component_value = Decimal(fraction.group(component_index))
+            display_value = _decimal(
+                observation.get("display_value"), "page_observation.display_value"
+            )
+            if (
+                display_value != component_value
+                or _decimal(raw_value, "raw source value") != component_value
+            ):
+                raise ValueError(
+                    f"page fraction component differs from archived {stock_code}::{code}"
+                )
+            normalized_display_value = format(component_value, "f")
+            increment = None
         else:
             raise ValueError("unsupported page_observation.value_transform")
 
@@ -785,8 +814,7 @@ def _validate_observations(
         if page_url not in urls:
             raise ValueError("page_url must appear in external_evidence")
         page_metric = _text(observation.get("page_metric"), "page_observation.page_metric")
-        display_text = _text(observation.get("display_text"), "page_observation.display_text")
-        if value_transform is not None and display_text != normalized_display_value:
+        if value_transform in {"exact_text", "hhmmss"} and display_text != normalized_display_value:
             raise ValueError("text observation display_text must equal display_value")
         normalized_observation = {
             "stock_code": stock_code,

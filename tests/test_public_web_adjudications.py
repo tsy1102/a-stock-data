@@ -284,6 +284,196 @@ def test_push2ex_observation_supports_exact_paths_and_formatted_times(tmp_path):
         )
 
 
+@pytest.mark.parametrize(
+    ("field_code", "transform", "unit", "component_index"),
+    [
+        ("zt_continuous", "fraction_numerator", "板", 0),
+        ("zt_days", "fraction_denominator", "天", 1),
+    ],
+)
+def test_push2ex_fraction_component_observation_is_exact(
+    tmp_path, field_code, transform, unit, component_index
+):
+    verification = tmp_path / "docs" / "field_verification"
+    source_file = "20261112/raw_push2ex.json"
+    url = "https://quote.eastmoney.com/ztb/detail"
+    rows = [
+        {"code": "000001", "zt_continuous": 5, "zt_days": 8},
+        {"code": "000002", "zt_continuous": 2, "zt_days": 2},
+    ]
+    _write_json(verification / source_file, {"limit_up_pool": rows})
+    _write_json(
+        verification / "source_lineage.json",
+        {
+            "sources": {
+                PUSH2EX_SOURCE: {
+                    "provider": "Eastmoney",
+                    "independence_status": "confirmed",
+                    "runtime_aliases": ["push2ex"],
+                }
+            }
+        },
+    )
+
+    page_observations = []
+    for row in rows:
+        fraction = f"{row['zt_continuous']}/{row['zt_days']}"
+        component = int(fraction.split("/")[component_index])
+        page_observations.append(
+            {
+                "stock_code": row["code"],
+                "data_date": "20261112",
+                "source_file": source_file,
+                "raw_collection": "limit_up_pool",
+                "raw_value": row[field_code],
+                "display_value": component,
+                "display_unit": "",
+                "value_transform": transform,
+                "page_url": url,
+                "page_metric": "涨停股池 > 涨停统计",
+                "display_text": fraction,
+                "missing_as_zero": False,
+            }
+        )
+
+    evidence_file = "adjudications/public_web/fraction_evidence.md"
+    evidence_path = verification / evidence_file
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_lines = ["# Push2EX fraction component observations"]
+    for observation in page_observations:
+        normalized = {**observation, "display_value": str(observation["display_value"])}
+        evidence_lines.append(
+            adjudications._observation_evidence_line(PUSH2EX_SOURCE, field_code, normalized)
+        )
+    evidence_path.write_text("\n".join(evidence_lines) + "\n", encoding="utf-8")
+
+    previous_resolution = "registry_status_only_single_source"
+    decision = {
+        "id": f"fraction-{field_code}",
+        "action": "verify_public_web_observation",
+        "verification_mode": "resolve_placeholders",
+        "target": {"source": PUSH2EX_SOURCE, "code": field_code},
+        "previous_status": "unverified",
+        "previous_status_resolution": previous_resolution,
+        "previous": {"canonical": "", "meaning": "", "unit": ""},
+        "previous_attribute_conflicts": {},
+        "canonical": f"test_{field_code}",
+        "meaning": "测试统计分量含义。",
+        "unit": unit,
+        "rationale": "同一数据日的官方涨停统计分量与归档原始值逐项一致。",
+        "external_evidence": [url],
+        "page_observations": page_observations,
+    }
+    document = {
+        "schema_version": 1,
+        "evidence_basis": "public_web_observation",
+        "reviewer": "test reviewer",
+        "reviewed_on": "2026-11-14",
+        "evidence_file": evidence_file,
+        "formula_validation": None,
+        "formula_validations": [],
+        "decisions": [decision],
+    }
+    registry = {
+        "source_fields": [
+            {
+                "source": PUSH2EX_SOURCE,
+                "code": field_code,
+                "canonical": "",
+                "meaning": "",
+                "unit": "",
+                "status": "unverified",
+                "status_resolution": previous_resolution,
+                "status_evidence": {
+                    "reference_statuses": [],
+                    "registry_aggregate_status": "unverified",
+                    "values": ["unverified"],
+                },
+                "reference_evidence": [],
+                "attribute_conflicts": {},
+                "attribute_ambiguities": {},
+                "adjudications": [],
+            }
+        ],
+        "fields": [],
+        "mappings": [],
+    }
+
+    updated, stats = adjudications.apply_public_web_observation_adjudications(
+        registry, document, "adjudications/public_web/fraction.json", tmp_path
+    )
+    record = updated["source_fields"][0]
+    assert record["status"] == "verified"
+    assert record["unit"] == unit
+    assert stats["public_web_observation_verified"] == 1
+
+    invalid_document = json.loads(json.dumps(document))
+    invalid_observation = invalid_document["decisions"][0]["page_observations"][0]
+    invalid_observation["display_value"] += 1
+    with pytest.raises(ValueError, match="fraction component differs"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, invalid_document, "adjudications/public_web/fraction.json", tmp_path
+        )
+
+
+def test_push2ex_fraction_component_rejects_malformed_display_text(tmp_path):
+    verification = tmp_path / "docs" / "field_verification"
+    source_file = "20261112/raw_push2ex.json"
+    _write_json(
+        verification / source_file,
+        {
+            "limit_up_pool": [
+                {"code": "000001", "zt_continuous": 5, "zt_days": 8},
+                {"code": "000002", "zt_continuous": 2, "zt_days": 2},
+            ]
+        },
+    )
+    _write_json(
+        verification / "source_lineage.json",
+        {
+            "sources": {
+                PUSH2EX_SOURCE: {
+                    "provider": "Eastmoney",
+                    "independence_status": "confirmed",
+                    "runtime_aliases": ["push2ex"],
+                }
+            }
+        },
+    )
+    observation = {
+        "stock_code": "000001",
+        "data_date": "20261112",
+        "source_file": source_file,
+        "raw_collection": "limit_up_pool",
+        "raw_value": 5,
+        "display_value": 5,
+        "display_unit": "",
+        "value_transform": "fraction_numerator",
+        "page_url": URLS[0],
+        "page_metric": "涨停股池 > 涨停统计",
+        "display_text": "5天/8板",
+        "missing_as_zero": False,
+    }
+    second_observation = {
+        **observation,
+        "stock_code": "000002",
+        "raw_value": 2,
+        "display_value": 2,
+        "display_text": "2/2",
+    }
+    with pytest.raises(ValueError, match="displayed integer pair X/Y"):
+        adjudications._validate_observations(
+            {
+                "target": {"source": PUSH2EX_SOURCE, "code": "zt_continuous"},
+                "unit": "板",
+                "external_evidence": [URLS[0]],
+                "page_observations": [observation, second_observation],
+            },
+            tmp_path,
+            "",
+        )
+
+
 def _registry():
     records = []
     for code in ("f147", "f148", "f149"):

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 133 个 code；聚合定义不完整 202 个 code；疑似合并文本 469 条逐源记录。
+> 聚合歧义 133 个 code；聚合定义不完整 202 个 code；疑似合并文本 471 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3654,6 +3654,8 @@
 | 东财-push2ex | `turnover_rate` | limit_pool_turnover_rate | 东财涨停股池个股当日换手率；官方页面值以百分比显示。本裁决只确认该来源路径对应官方涨停池“换手率”列，不推断自由流通或其他计算口径。 | `verified` |
 | 东财-push2ex | `yfbt` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `ylbc` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
+| 东财-push2ex | `zt_continuous` | limit_up_stat_count | 东财涨停股池“涨停统计”组合中的涨停板次数分量（对应原始 zttj.ct；不等同页面单列的“连板数”；统计窗口及累计规则未公开）。 | `verified` |
+| 东财-push2ex | `zt_days` | limit_up_stat_days | 东财涨停股池“涨停统计”组合中的天数分量（对应原始 zttj.days；自然日/交易日口径、起算点及回看窗口未公开）。 | `verified` |
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-push2ex | `zttj.days` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-ulist239(np/get) | `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |

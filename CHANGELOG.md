@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Push2EX 日常字段采集增加昨日涨停池端点，并将四类池接口拆成可单独补采、可追踪的 capture units；请求日期与来源实际日期分开记录，昨日池明确标为可能跨交易日的混合字段集合。
+- Push2EX 官方网页观测按采集目录中登记的输出路径动态校验 `raw_collection`，使新增昨日池样本可沿用现有逐股页面观测裁决。
+
 ### Fixed
 
 - 扩充官方网页观测裁决以支持完整来源路径、Push2EX 涨停池样本和严格的 HHMMSS 文本变换；Eastmoney 官方网页主机白名单增加精确的 `quote.eastmoney.com`，使 Push2EX 可按同日逐股页面证据定案。

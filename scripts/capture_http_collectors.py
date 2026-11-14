@@ -5,6 +5,7 @@ HTTP sessions, throttles, ban state, and retries remain in stock_common.
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Callable, Dict, Optional
 
 from scripts.capture_catalog import EM_ULIST_RESEARCH_FIELDS
@@ -995,17 +996,73 @@ def collect_ulist239(pool: list, deps: CaptureHttpDependencies) -> dict:
         return {"__error__": str(e)[:200]}
 
 
-def collect_push2ex(pool: list) -> dict:
-    """push2ex 涨停/跌停/炸板池(市场级,字典 §12.9.2)。"""
-    out: Dict[str, Any] = {}
-    try:
-        from stock_common import get_limit_up_pool, get_limit_down_pool, get_limit_broken_pool
+def collect_push2ex(
+    pool: list,
+    data_date: str = "",
+    selected_units: Optional[set[str]] = None,
+    market_phase: str = "unknown",
+) -> dict:
+    """Capture Eastmoney's dated limit pools as separate, auditable units."""
+    import stock_common
+    from scripts.capture_unit_evidence import (
+        build_capture_unit_evidence,
+        capture_units_for_collector,
+    )
 
-        out["limit_up_pool"] = get_limit_up_pool()
-        out["limit_down_pool"] = get_limit_down_pool()
-        out["limit_broken_pool"] = get_limit_broken_pool()
-    except Exception as e:
-        out["error"] = str(e)[:200]
+    out: Dict[str, Any] = {}
+    unit_ids = capture_units_for_collector("push2ex")
+    requested_units = set(selected_units) if selected_units is not None else unit_ids
+    adapters = {
+        "push2ex.limit_up_pool": ("limit_up_pool", "get_limit_up_pool"),
+        "push2ex.limit_down_pool": ("limit_down_pool", "get_limit_down_pool"),
+        "push2ex.limit_broken_pool": ("limit_broken_pool", "get_limit_broken_pool"),
+        "push2ex.yesterday_limit_pool": (
+            "yesterday_limit_pool",
+            "get_yesterday_limit_pool",
+        ),
+    }
+    unit_times: Dict[str, tuple[datetime, datetime]] = {}
+    unit_parameters: Dict[str, Dict[str, Any]] = {}
+
+    for unit_id in sorted(requested_units):
+        output_name, adapter_name = adapters[unit_id]
+        started_at = datetime.now().astimezone()
+        unit_parameters[unit_id] = {
+            "adapter": adapter_name,
+            "date_str": data_date,
+        }
+        try:
+            adapter = getattr(stock_common, adapter_name)
+            result = adapter(data_date)
+            out[output_name] = (
+                {"__error__": "collector returned None"} if result is None else result
+            )
+        except Exception as exc:
+            out[output_name] = {"__error__": str(exc)[:200]}
+        finally:
+            unit_times[unit_id] = (started_at, datetime.now().astimezone())
+
+    unit_evidence: Dict[str, Any] = {}
+    for unit_id in sorted(requested_units):
+        output_name, _adapter_name = adapters[unit_id]
+        started_at, finished_at = unit_times[unit_id]
+        payload = (
+            {output_name: out[output_name]}
+            if output_name in out
+            else {"__skipped__": "not selected by the collector scope"}
+        )
+        unit_evidence[unit_id] = build_capture_unit_evidence(
+            unit_id,
+            payload,
+            collector_started_at=started_at,
+            collector_finished_at=finished_at,
+            requested_data_date=data_date,
+            market_phase=market_phase,
+            collector_invoked=True,
+            logical_call_count=1,
+            request_parameters=unit_parameters.get(unit_id),
+        )
+    out["__capture_units__"] = unit_evidence
     return out
 
 

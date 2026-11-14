@@ -276,6 +276,59 @@ CAPTURE_UNIT_CATALOG: dict[str, dict[str, Any]] = {
         "context_only": True,
         "output_paths": [("market", "hot_list_hour")],
     },
+    "push2ex.limit_up_pool": {
+        "collector": "push2ex",
+        "interface_id": "https://push2ex.eastmoney.com/getTopicZTPool",
+        "provider_hint": "Eastmoney Push2EX",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": (
+            "date_str is sent as a request parameter but the normalized response does not echo "
+            "the returned date; treat requested_data_date as request evidence only and verify "
+            "source_as_of_date independently"
+        ),
+        "output_paths": [("limit_up_pool",)],
+    },
+    "push2ex.limit_down_pool": {
+        "collector": "push2ex",
+        "interface_id": "https://push2ex.eastmoney.com/getTopicDTPool",
+        "provider_hint": "Eastmoney Push2EX",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": (
+            "date_str is sent as a request parameter but the normalized response does not echo "
+            "the returned date; treat requested_data_date as request evidence only and verify "
+            "source_as_of_date independently"
+        ),
+        "output_paths": [("limit_down_pool",)],
+    },
+    "push2ex.limit_broken_pool": {
+        "collector": "push2ex",
+        "interface_id": "https://push2ex.eastmoney.com/getTopicZBPool",
+        "provider_hint": "Eastmoney Push2EX",
+        "identity_status": "confirmed",
+        "data_domain": "trading",
+        "source_date_contract": (
+            "date_str is sent as a request parameter but the normalized response does not echo "
+            "the returned date; treat requested_data_date as request evidence only and verify "
+            "source_as_of_date independently"
+        ),
+        "output_paths": [("limit_broken_pool",)],
+    },
+    "push2ex.yesterday_limit_pool": {
+        "collector": "push2ex",
+        "interface_id": "https://push2ex.eastmoney.com/getYesterdayZTPool",
+        "provider_hint": "Eastmoney Push2EX",
+        "identity_status": "confirmed",
+        "data_domain": "mixed_trading_dates",
+        "source_date_contract": (
+            "working hypothesis: y_first_seal and y_limit_count describe the prior A-share "
+            "trading session, while quote fields describe the request session. The normalized "
+            "response has no date echo; verify per-field dates against adjacent trading-day "
+            "pools before collision and do not assign one source_as_of_date to all paths"
+        ),
+        "output_paths": [("yesterday_limit_pool",)],
+    },
 }
 
 # 逐股采集器的预期覆盖范围。明确抽样的来源只检查实际计划采集的代码；
@@ -319,7 +372,12 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
     "kpl": [("stocks",)],
     "kph": [("stocks",)],
     "clist": [("by_type", "industry"), ("by_type", "concept"), ("by_type", "area")],
-    "push2ex": [("limit_up_pool",), ("limit_down_pool",), ("limit_broken_pool",)],
+    "push2ex": [
+        ("limit_up_pool",),
+        ("limit_down_pool",),
+        ("limit_broken_pool",),
+        ("yesterday_limit_pool",),
+    ],
     "em_hot": [("hot_rank",)],
     "cls": [("telegraph",)],
     "etf": [("etf_sh",), ("etf_sz",)],

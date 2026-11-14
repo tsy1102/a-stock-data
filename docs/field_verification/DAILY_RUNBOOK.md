@@ -12,7 +12,7 @@
 
    需要刷新动态股票池时加 `--refresh-pool`；需要龙虎榜/人气榜等市场上下文时加 `--include-context`，也可用 `--only exchange` 或 `--only em_hot` 单独选择。此命令只采集字段样本，不运行五大报告，也不启动碰撞。采集的日期参数、同日重跑行为和来源清单见 `scripts/README.md`。
 
-   复合来源 `market_sources` 与 `fuyao` 可用 `--only-unit '<unit-id,unit-id>'` 精确补采子接口；成功且质量未退化时只更新所选 raw 路径并保留同源其他路径，失败/空结果或质量退化时保留旧 raw 并记录本次证据，不支持与 `--overwrite` 同用。Fuyao 财务报表按 income/balance/cashflow API 分开，涨停/跌停/炸板池也分别记录；财务指标与 H1 摘要因共用同一接口而合并为一个单元。例：`--date 20261113 --only-unit 'fuyao.income_statements,fuyao.limit_up_pool'`。此入口不运行额外的 AxData 或 Levistock 辅助核验；每日默认采集范围与频率保持不变。
+   复合来源 `market_sources`、`fuyao` 与 `push2ex` 可用 `--only-unit '<unit-id,unit-id>'` 精确补采子接口；成功且质量未退化时只更新所选 raw 路径并保留同源其他路径，失败/空结果或质量退化时保留旧 raw 并记录本次证据，不支持与 `--overwrite` 同用。Fuyao 财务报表按 income/balance/cashflow API 分开，涨停/跌停/炸板池也分别记录；财务指标与 H1 摘要因共用同一接口而合并为一个单元。Push2EX 涨停、跌停、炸板和昨日涨停池按端点分别记录。例：`--date 20261113 --only-unit 'fuyao.income_statements,fuyao.limit_up_pool'` 或 `--date 20261116 --only push2ex --only-unit push2ex.yesterday_limit_pool`。昨日池的 `y_first_seal`/`y_limit_count` 与同一响应中的行情值可能对应不同交易日；未由响应字段确认时不把请求日期记作来源实际日期。此入口不运行额外的 AxData 或 Levistock 辅助核验；每日默认范围仅新增昨日涨停池端点，其余频率不变。
 
 3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json` 中的 `data_date`、运行时间、市场阶段、逐源采集时间、`as_of_date`、ZHB 日期、来源状态、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝。盘前采集上一交易日时，来源日期早于采集自然日仍可能是已收盘样本；以来源级资格和报告诊断为准。
 

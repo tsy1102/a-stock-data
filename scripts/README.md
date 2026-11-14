@@ -41,7 +41,7 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 
 ### 复合来源的接口单元采集与证据
 
-`market_sources` 和 `fuyao` 内部各包含多个接口或不同更新域；为后续判断字段覆盖、来源重叠和更新频率，采集器按 `scripts/capture_catalog.py` 中的稳定单元 ID 在 `meta.json.capture_units` 留存逐单元证据。Fuyao 三张财务报表与涨跌停/炸板池按不同 API 路径拆开；财务指标和 H1 摘要保留同一接口身份。记录包括接口/来源提示、所覆盖 raw 路径、字段路径与结构指纹、按字段计算的值指纹、响应中日期形状字段的观察值、采集器调用时间、请求数据日、阶段、状态及安全的调用参数摘要。值指纹不复制字段原值；原始响应仍保存在 `raw_market_sources.json` 或 `raw_fuyao.json`。`provider_hint` 仅作线索，身份状态未确认时不视为已证明同源。
+`market_sources`、`fuyao` 和 `push2ex` 内部各包含多个接口或不同更新域；为后续判断字段覆盖、来源重叠和更新频率，采集器按 `scripts/capture_catalog.py` 中的稳定单元 ID 在 `meta.json.capture_units` 留存逐单元证据。Fuyao 三张财务报表与涨跌停/炸板池按不同 API 路径拆开；财务指标和 H1 摘要保留同一接口身份。Push2EX 的涨停、跌停、炸板和昨日涨停池也分别记录，逐个复用来源适配器和 `push2ex` 风险组限流。记录包括接口/来源提示、所覆盖 raw 路径、字段路径与结构指纹、按字段计算的值指纹、响应中日期形状字段的观察值、采集器调用时间、请求数据日、阶段、状态及安全的调用参数摘要。值指纹不复制字段原值；原始响应仍保存在对应的 `raw_*.json`。`provider_hint` 仅作线索，身份状态未确认时不视为已证明同源。
 
 该层记录的是采集器/适配器调用，逻辑调用数与耗时不等于实际 HTTP 请求数；缓存命中、底层重试和请求合并未在这里计数。状态按采集器输出结构计算，适配器可能把传输失败归一为空结果，故 `empty` 不能证明上游成功返回空数据。降频决策前需另行获得底层网络请求计数及可区分失败的传输状态。审计中的目录输出路径覆盖也不等于注册表完整字段覆盖。
 
@@ -50,6 +50,7 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 ```powershell
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261113 --only-unit market_sources.kpl_sentiment
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261113 --only-unit 'fuyao.income_statements,fuyao.limit_up_pool'
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261116 --only push2ex --only-unit push2ex.yesterday_limit_pool
 ```
 
 支持的单元 ID 由 `CAPTURE_UNIT_CATALOG` 维护。只读历史审计命令为：

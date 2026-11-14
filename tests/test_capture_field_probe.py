@@ -55,6 +55,100 @@ def test_startup_scope_label_shows_selected_sources_and_context_mode():
     assert capture_probe._startup_scope_label([], False) == "源范围: 默认源集合 | 市场上下文: 跳过"
 
 
+def test_push2ex_capture_tracks_all_pool_units_and_keeps_source_date_unconfirmed(monkeypatch):
+    calls = []
+
+    def fake_pool(name, result):
+        def collect(data_date):
+            calls.append((name, data_date))
+            return result
+
+        return collect
+
+    monkeypatch.setattr(stock_common, "get_limit_up_pool", fake_pool("up", [{"code": "600000"}]))
+    monkeypatch.setattr(stock_common, "get_limit_down_pool", fake_pool("down", []))
+    monkeypatch.setattr(
+        stock_common, "get_limit_broken_pool", fake_pool("broken", [{"code": "600001"}])
+    )
+    monkeypatch.setattr(
+        stock_common,
+        "get_yesterday_limit_pool",
+        fake_pool("yesterday", [{"code": "600002", "y_first_seal": "093000", "y_limit_count": 2}]),
+    )
+
+    result = capture_probe.collect_push2ex([], data_date="20261112", market_phase="closed")
+
+    assert set(result) == {
+        "limit_up_pool",
+        "limit_down_pool",
+        "limit_broken_pool",
+        "yesterday_limit_pool",
+        "__capture_units__",
+    }
+    assert {name for name, _ in calls} == {"up", "down", "broken", "yesterday"}
+    assert {data_date for _, data_date in calls} == {"20261112"}
+    assert result["yesterday_limit_pool"][0]["y_limit_count"] == 2
+
+    units = result["__capture_units__"]
+    assert len(units) == 4
+    for record in units.values():
+        assert record["requested_data_date"] == "20261112"
+        assert record["source_as_of_date"] is None
+        assert record["network_request_count_status"] == "not_instrumented"
+    assert units["push2ex.limit_down_pool"]["status"] == "empty"
+
+
+def test_push2ex_selected_unit_calls_only_requested_endpoint(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        stock_common,
+        "get_yesterday_limit_pool",
+        lambda data_date: calls.append(("yesterday", data_date))
+        or [{"code": "600002", "y_first_seal": "093000", "y_limit_count": 2}],
+    )
+    for adapter in ("get_limit_up_pool", "get_limit_down_pool", "get_limit_broken_pool"):
+        monkeypatch.setattr(
+            stock_common,
+            adapter,
+            lambda *_args, _adapter=adapter: pytest.fail(f"unexpected request: {_adapter}"),
+        )
+
+    result = capture_probe.collect_push2ex(
+        [],
+        data_date="20261112",
+        selected_units={"push2ex.yesterday_limit_pool"},
+        market_phase="closed",
+    )
+
+    assert calls == [("yesterday", "20261112")]
+    assert "limit_up_pool" not in result
+    assert result["yesterday_limit_pool"][0]["y_limit_count"] == 2
+    assert set(result["__capture_units__"]) == {"push2ex.yesterday_limit_pool"}
+
+
+def test_push2ex_endpoint_failure_does_not_skip_sibling_pools(monkeypatch):
+    def fail_up(_data_date):
+        raise RuntimeError("up pool unavailable")
+
+    monkeypatch.setattr(stock_common, "get_limit_up_pool", fail_up)
+    monkeypatch.setattr(stock_common, "get_limit_down_pool", lambda _date: [])
+    monkeypatch.setattr(stock_common, "get_limit_broken_pool", lambda _date: [{"code": "600001"}])
+    monkeypatch.setattr(
+        stock_common,
+        "get_yesterday_limit_pool",
+        lambda _date: [{"code": "600002", "y_limit_count": 2}],
+    )
+
+    result = capture_probe.collect_push2ex([], data_date="20261112")
+
+    assert result["limit_up_pool"] == {"__error__": "up pool unavailable"}
+    assert result["limit_down_pool"] == []
+    assert result["limit_broken_pool"][0]["code"] == "600001"
+    assert result["yesterday_limit_pool"][0]["y_limit_count"] == 2
+    assert result["__capture_units__"]["push2ex.limit_up_pool"]["status"] == "failed"
+    assert result["__capture_units__"]["push2ex.limit_broken_pool"]["status"] == "ok"
+
+
 def test_failed_snapshot_cleanup_aborts_refresh(monkeypatch):
     raw_path = "docs/field_verification/20261020/raw_push2.json"
 

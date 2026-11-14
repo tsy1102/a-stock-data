@@ -2163,6 +2163,22 @@ def main() -> None:
                     selected_units=source_units,
                     market_phase=meta.get("market_phase", "unknown"),
                 )
+            elif name == "push2ex":
+                source_units = (
+                    {
+                        unit_id
+                        for unit_id in selected_unit_ids
+                        if CAPTURE_UNIT_CATALOG[unit_id]["collector"] == name
+                    }
+                    if selected_unit_ids
+                    else None
+                )
+                data = fn(
+                    pool,
+                    data_date=args.date,
+                    selected_units=source_units,
+                    market_phase=meta.get("market_phase", "unknown"),
+                )
             elif name == "baidu":
                 # The Baidu endpoint is pending validation and is probed only when
                 # the caller explicitly selects it with --only baidu.

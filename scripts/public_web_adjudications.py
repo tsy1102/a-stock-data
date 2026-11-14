@@ -10,13 +10,20 @@ from __future__ import annotations
 import copy
 from datetime import date
 from decimal import Decimal, InvalidOperation
+import importlib
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Any
 from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+CAPTURE_UNIT_CATALOG = importlib.import_module("scripts.capture_catalog").CAPTURE_UNIT_CATALOG
+
 VERIFICATION_RELATIVE = Path("docs") / "field_verification"
 VALID_ACTION = "verify_public_web_observation"
 RESOLUTION = "verified_by_public_web_observation"
@@ -161,9 +168,15 @@ def _raw_value(
         raise ValueError("source_file must use a retained sample date from 20261015 onward")
     payload = _read_json(path, "raw source sample")
     if source == "东财-push2ex":
-        allowed_collections = {"limit_up_pool", "limit_broken_pool", "limit_down_pool"}
+        allowed_collections = {
+            output_path[0]
+            for spec in CAPTURE_UNIT_CATALOG.values()
+            if spec.get("collector") == "push2ex"
+            for output_path in spec.get("output_paths", [])
+            if len(output_path) == 1 and isinstance(output_path[0], str)
+        }
         if not isinstance(raw_collection, str) or raw_collection not in allowed_collections:
-            raise ValueError("Push2EX observations require a supported raw_collection")
+            raise ValueError("Push2EX observations require a catalogued raw_collection")
         rows = payload.get(raw_collection)
         if not isinstance(rows, list):
             raise ValueError(f"{raw_collection} is not a list in {source_file}")

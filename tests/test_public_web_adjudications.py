@@ -51,6 +51,30 @@ def test_public_page_observation_uses_exact_source_to_raw_file_route(tmp_path):
         )
 
 
+def test_push2ex_public_observation_reads_catalogued_yesterday_pool(tmp_path):
+    sample_path = tmp_path / "docs" / "field_verification" / "20261114" / "raw_push2ex.json"
+    _write_json(
+        sample_path,
+        {
+            "yesterday_limit_pool": [
+                {"code": "000001", "y_first_seal": "093000", "y_limit_count": 2}
+            ]
+        },
+    )
+
+    assert (
+        adjudications._raw_value(
+            tmp_path,
+            PUSH2EX_SOURCE,
+            "20261114/raw_push2ex.json",
+            "000001",
+            "y_first_seal",
+            "yesterday_limit_pool",
+        )
+        == "093000"
+    )
+
+
 def test_push2ex_observation_supports_exact_paths_and_formatted_times(tmp_path):
     verification = tmp_path / "docs" / "field_verification"
     source_file = "20261112/raw_push2ex.json"

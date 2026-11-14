@@ -395,6 +395,50 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert "finance_batch[].fa_ren_gu_raw_float" not in matrix
 
 
+def test_ftshare_empirical_observation_is_not_required_to_have_official_contract_addendum():
+    registry = registry_parity.fra.load_registry()
+    records = registry_parity.fra.source_field_records(registry)
+    base = registry_parity.afc.registered_field_sets()
+    base_pairs = {(source, code) for source, codes in base.items() for code in codes}
+
+    contract_pairs, _, contract_problems = registry_parity._validated_contract_addenda(
+        registry, records, base_pairs
+    )
+    observation_pairs, _, observation_problems = registry_parity._validated_observation_addenda(
+        registry, records, base_pairs
+    )
+
+    pair = ("FTShare REST", "symbol_id")
+    assert contract_problems == []
+    assert observation_problems == []
+    assert pair not in contract_pairs
+    assert pair in observation_pairs
+
+    missing_official_contract = copy.deepcopy(registry)
+    missing_official_contract["source_contract_addenda"] = [
+        item
+        for item in missing_official_contract["source_contract_addenda"]
+        if (item["source"], item["code"]) != ("FTShare REST", "symbol")
+    ]
+    _, _, contract_problems = registry_parity._validated_contract_addenda(
+        missing_official_contract,
+        registry_parity.fra.source_field_records(missing_official_contract),
+        base_pairs,
+    )
+    assert any("FTShare REST::symbol 缺少官方契约补录" in problem for problem in contract_problems)
+
+    tampered = copy.deepcopy(registry)
+    row = next(
+        field for field in tampered["source_fields"] if (field["source"], field["code"]) == pair
+    )
+    row["status_evidence"]["evidence_level"] = "E2"
+    row["status_evidence"]["adjudication_ids"] = None
+    _, _, tampered_problems = registry_parity._validated_observation_addenda(
+        tampered, registry_parity.fra.source_field_records(tampered), base_pairs
+    )
+    assert any("单次观测字段不能标记为已验证" in problem for problem in tampered_problems)
+
+
 def test_source_contract_parity_rejects_registry_adjudication_tampering():
     registry = copy.deepcopy(registry_parity.fra.load_registry())
     records = registry_parity.fra.source_field_records(registry)

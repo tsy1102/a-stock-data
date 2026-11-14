@@ -713,7 +713,17 @@ def _validated_contract_addenda(
         if config.get("source_role") != "documented_contract_anchor":
             continue
         for row in source_records:
-            if row.get("source") == source and row.get("status") == "verified":
+            raw_evidence = row.get("evidence")
+            evidence = raw_evidence if isinstance(raw_evidence, dict) else {}
+            is_official_contract_field = (
+                row.get("status_resolution") == "official_contract"
+                or evidence.get("basis") == "official_contract"
+            )
+            if (
+                row.get("source") == source
+                and row.get("status") == "verified"
+                and is_official_contract_field
+            ):
                 pair = (source, row.get("code"))
                 if pair not in declared:
                     problems.append(f"{source}::{row.get('code')} 缺少官方契约补录")
@@ -766,7 +776,39 @@ def _validated_observation_addenda(
             problems.append(f"{source}::{code} 不是文档之外的单次观测字段")
         if code not in observed_names:
             problems.append(f"{source}::{code} 不在目录记录的观测响应结构中")
-        if row.get("status") not in {"unverified", "candidate"}:
+        status_evidence = row.get("status_evidence")
+        history = row.get("adjudications", [])
+        empirical_adjudication_ids = set()
+        if isinstance(history, list):
+            empirical_adjudication_ids = {
+                entry["id"]
+                for entry in history
+                if isinstance(entry, dict)
+                and isinstance(entry.get("id"), str)
+                and entry.get("action") == "verify_empirical_source_semantics"
+                and entry.get("status") == "verified"
+                and entry.get("evidence_basis") == "empirical_source_field_semantics"
+                and entry.get("evidence_level") == "E3"
+            }
+        status_adjudication_ids = (
+            status_evidence.get("adjudication_ids", []) if isinstance(status_evidence, dict) else []
+        )
+        verified_by_empirical_evidence = (
+            row.get("status") == "verified"
+            and row.get("status_resolution") == "verified_by_empirical_addendum"
+            and isinstance(status_evidence, dict)
+            and status_evidence.get("evidence_basis") == "empirical_source_field_semantics"
+            and status_evidence.get("evidence_level") == "E3"
+            and isinstance(status_adjudication_ids, list)
+            and bool(
+                empirical_adjudication_ids
+                & {item for item in status_adjudication_ids if isinstance(item, str)}
+            )
+        )
+        if (
+            row.get("status") not in {"unverified", "candidate"}
+            and not verified_by_empirical_evidence
+        ):
             problems.append(f"{source}::{code} 单次观测字段不能标记为已验证")
         evidence_file = item.get("evidence_file")
         if (

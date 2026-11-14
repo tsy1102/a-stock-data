@@ -48,11 +48,11 @@
 | `change_rate_ytd` | 年初至今涨跌幅 | number | 比率 | 官方契约锚 |
 | `ts_millis` | 交易所行情时间戳 | integer | 毫秒（Unix 时间戳） | 官方契约锚 |
 
-## 观测但未列入返回字段表
+## 观测但未列入返回字段表的来源内实证字段
 
 | 字段 | 观察 | 状态 | 处理 |
 |:--|:--|:--|:--|
-| `symbol_id` | 一次成功响应中出现；接口文档将其列为可筛选字段，但没有在返回字段表中定义 | `unverified` | 保留为采集观察字段；不得作为语义锚或据此推断含义 |
+| `symbol_id` | 官方文档未定义响应含义；保留期 15 个有效来源数据日×20 股的 300 条记录中，均为字符串，且等于同记录 `symbol` 去掉市场后缀后的六位代码 | `verified`（来源内实证 E3） | 释义仅限本 A 股行情列表接口及观察范围；不是官方契约锚，不推断跨接口 ID，不建立跨源映射。见[实证记录](../field_verification/adjudications/20261114_ftshare_rest_symbol_id_evidence.md)和[逐行样本](../field_verification/research/20261114_ftshare_rest_symbol_id_samples.csv) |
 
 ## 采集与碰撞路径
 

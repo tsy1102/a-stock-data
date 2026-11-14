@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 210 个 code；疑似合并文本 413 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 210 个 code；疑似合并文本 414 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3464,6 +3464,7 @@
 | AxData | `data.stats_date` | data.stats_date | 历史统计分母日期，来自 tdxstat / tdxstat2 | `verified` |
 | FTShare REST | `change_rate` | change_rate | 日涨跌幅；0.03 表示 3% | `verified` |
 | FTShare REST | `close` | close | 收盘价/最新价 | `verified` |
+| FTShare REST | `symbol_id` | symbol_id | FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。 | `verified` |
 | TDX(双命名源) | `Inside` | Inside | 内盘；板块指数时表示跌停家数 | `verified` |
 | TDX(双命名源) | `IsT0Fund` | IsT0Fund | 是否是 T+0 基金 | `verified` |
 | TDX(双命名源) | `JZC` | JZC | 净资产/股东权益 | `verified` |

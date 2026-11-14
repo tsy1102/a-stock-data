@@ -13,7 +13,6 @@
       "disproved": 26,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
-      "live_observed_not_documented": 1,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
@@ -27,10 +26,11 @@
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 4,
       "status_conflict": 36,
-      "status_missing": 50,
-      "unverified": 1085,
-      "verified": 1460,
-      "verified_by_empirical_addendum": 149,
+      "status_missing": 43,
+      "unresolved": 7,
+      "unverified": 1084,
+      "verified": 1461,
+      "verified_by_empirical_addendum": 150,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 371
@@ -36190,19 +36190,16 @@
         "FTShare REST"
       ],
       "section": "FTShare REST 官方接口契约：A股行情列表",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "symbol_id",
+      "meaning": "FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "FTShare REST": "unverified"
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "sz_change_pct",
@@ -62125,27 +62122,124 @@
       "code": "symbol_id",
       "identity": "FTShare REST::symbol_id",
       "path": "symbol_id",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "symbol_id",
+      "meaning": "FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。",
       "unit": "",
       "section": "FTShare REST 官方接口契约：A股行情列表",
       "sections": [
-        "FTShare REST 官方接口契约：A股行情列表"
+        "FTShare REST 官方接口契约：A股行情列表",
+        "FTShare REST 官方接口契约：A股行情列表；2026-11-14 来源内实证附录"
       ],
-      "status": "unverified",
-      "status_resolution": "live_observed_not_documented",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
-        "evidence_level": "single_live_response_observation",
-        "evidence_file": "docs/ftshare_contract_catalog.json"
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_ftshare_rest_symbol_id_evidence.md",
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-ftshare-rest-symbol-id-code-component"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_sha256": "51a38c13d610ad34f1ee7255d7fea74f75adc37eb077698d8cca57e080fb7add",
+        "sample": {
+          "scope": "2026-10-20 至 2026-11-12；FTShare REST /api/v1/market/data/daec/stocks/all；保留期内所有 15 个有效来源数据日、相同 20 只 A 股；逐条比较 stocks[*].symbol_id 与 stocks[*].symbol 的六位数字部分",
+          "comparison_count": 300,
+          "matched_count": 300,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "FTShare REST 官方接口契约：A股行情列表；2026-11-14 来源内实证附录",
+          "canonical": "symbol_id",
+          "meaning": "FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-ftshare-rest-symbol-id-code-component",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_ftshare_rest_symbol_id_evidence.md",
+          "evidence_sha256": "51a38c13d610ad34f1ee7255d7fea74f75adc37eb077698d8cca57e080fb7add",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "symbol_id",
+              "meaning": "FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "2026-10-20 至 2026-11-12；FTShare REST /api/v1/market/data/daec/stocks/all；保留期内所有 15 个有效来源数据日、相同 20 只 A 股；逐条比较 stocks[*].symbol_id 与 stocks[*].symbol 的六位数字部分",
+            "comparison_count": 300,
+            "matched_count": 300,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "identity_evidence": {
         "basis": "single_live_response_observation",
         "contract_file": "docs/ftshare_contract_catalog.json",
         "path": "symbol_id",
         "semantic_status": "unverified"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-ftshare-rest-symbol-id-code-component",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_ftshare_rest_symbol_id.json",
+          "evidence_file": "adjudications/20261114_ftshare_rest_symbol_id_evidence.md",
+          "evidence_sha256": "51a38c13d610ad34f1ee7255d7fea74f75adc37eb077698d8cca57e080fb7add",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "live_observed_not_documented",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "symbol_id",
+              "meaning": "FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目解析器将该 endpoint 的 item 原样写入 raw stocks 对象；以同接口已验证的 symbol（官方定义为含交易所后缀的证券代码）作结构锚，对保留期全部可比记录逐行核验。15 个有效来源数据日、20 只固定证券共 300 条，symbol_id 均为字符串且与 symbol 的六位数字部分完全相同，缺失 0、反例 0。官方返回字段表未定义 symbol_id，故使用来源内实证而非官方契约；不推断全局唯一性、其他接口语义或跨源关系。",
+          "sample": {
+            "scope": "2026-10-20 至 2026-11-12；FTShare REST /api/v1/market/data/daec/stocks/all；保留期内所有 15 个有效来源数据日、相同 20 只 A 股；逐条比较 stocks[*].symbol_id 与 stocks[*].symbol 的六位数字部分",
+            "comparison_count": 300,
+            "matched_count": 300,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "FTShare REST",

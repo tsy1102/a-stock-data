@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正 registry parity 将来源内 E3 已验证字段误判为必须补录官方契约的问题；单次观测字段仅在匹配的 E3 裁决存在时允许升级，同时继续强制校验真正的官方契约字段。
+- 根据 FTShare REST 官方 `symbol` 契约锚和保留期 300 条逐行样本，将 `FTShare REST::symbol_id` 来源内定案为该 A 股行情列表响应中的六位证券代码字符串（等于同条 `symbol` 去除市场后缀后的值）；不将未列入官方响应字段表的 `symbol_id` 作为契约锚、不推断跨接口通用 ID 或建立跨源映射。
 - 修正 Push2 字段审计器把历史资金流 `/stock/fflow/daykline/get` 的外部扩展字段并入 `/stock/get` 的来源污染；7 个日期合格日、140 条快照均无 `data.f61/f63`，不再把错误路径列作未知字段，K 线端点 `f61=换手率%` 保持独立。
 - 按 ELTDX v3.3.2 `QuoteSnapshot` 定义、项目适配器路径和 18 个合格交易日×20 股留存样本，补全 `TDX-eltdx(适配层)::price`（最新价，元）与 `::amount`（累计成交额，元）的来源内释义；价格与 Tencent 及同日 TDX 收盘价 360/360 精确相等，成交额与同日 TDX K 线 360/360 相等。Tencent 对照只记录实际量化误差，不推定 compact-float 舍入算法；未建立跨源映射。
 - 依据 ELTDX v3.3.2 Helper 字段链及 18 个合格交易日的保留采集，将 `TDX-eltdx(适配层)::trade_date` 来源内定案为连板天梯与题材强度结果对应的目标交易日；54 条路径观察全部匹配目标数据日，但按 18 个独立日期计样本，不建立跨源映射，也不覆盖财联社或历史未归属来源的同名字段。

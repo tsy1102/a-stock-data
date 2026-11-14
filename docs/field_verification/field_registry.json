@@ -9,8 +9,8 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 372,
       "candidate": 1,
-      "conflict": 40,
-      "disproved": 27,
+      "conflict": 36,
+      "disproved": 31,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -22,18 +22,17 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 571,
+      "registry_status_only_single_source": 567,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 5,
-      "status_conflict": 34,
-      "status_missing": 43,
-      "unresolved": 7,
-      "unverified": 1083,
-      "verified": 1464,
+      "retired_legacy_path": 9,
+      "status_conflict": 30,
+      "status_missing": 50,
+      "unverified": 1079,
+      "verified": 1468,
       "verified_by_empirical_addendum": 153,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
-      "verified_by_source_contract": 371
+      "verified_by_source_contract": 375
     },
     "updated_at": "2026-11-07"
   },
@@ -8442,20 +8441,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "canonical": "solvency.assets_debt_ratio",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "assets_total",
@@ -22400,20 +22396,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "canonical": "profitability.index_weighted_avg_roe",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "indicators",
@@ -29764,18 +29757,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "profitability.index_weighted_avg_roe",
-      "meaning": "",
-      "unit": "",
+      "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+      "unit": "%",
       "status_raw": "✅ L1",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "profitability.sale_gross_margin",
@@ -29785,18 +29775,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "profitability.sale_gross_margin",
-      "meaning": "",
-      "unit": "",
+      "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+      "unit": "%",
       "status_raw": "✅ L1",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "profitability.sale_net_interest_ratio",
@@ -29806,18 +29793,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "profitability.sale_net_interest_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+      "unit": "%",
       "status_raw": "✅ L1",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "province",
@@ -32203,20 +32187,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "canonical": "profitability.sale_gross_margin",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.sale_gross_margin，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "sale_net_interest_ratio",
@@ -32224,20 +32205,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "canonical": "profitability.sale_net_interest_ratio",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.sale_net_interest_ratio，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "sales_fee",
@@ -34164,18 +34142,15 @@
       ],
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "canonical": "solvency.assets_debt_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+      "unit": "%",
       "status_raw": "✅ L1",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "songzhuangu",
@@ -190879,22 +190854,28 @@
       "code": "assets_debt_ratio",
       "identity": "同花顺-fuyao::assets_debt_ratio",
       "path": "assets_debt_ratio",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "solvency.assets_debt_ratio",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "sections": [
+        "Fuyao 财务比率裸根路径身份退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-assets_debt_ratio-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -190910,7 +190891,111 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "reason": "官方接口按 ability 分组，项目解析器保留 out[ability][index_id] 层级。保留起点后的18个目录、360条个股记录中，fin_indicators.assets_debt_ratio 根路径出现0次，fin_indicators.solvency.assets_debt_ratio 在17个已就绪报告期日期、340条个股记录中出现；首个保留日20条没有该报告期字段。该处置仅退役裸叶身份，不否定嵌套路径语义。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261114_fuyao_ratio_path_inventory.csv",
+          "docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-assets_debt_ratio-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -197113,22 +197198,28 @@
       "code": "index_weighted_avg_roe",
       "identity": "同花顺-fuyao::index_weighted_avg_roe",
       "path": "index_weighted_avg_roe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "profitability.index_weighted_avg_roe",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "sections": [
+        "Fuyao 财务比率裸根路径身份退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-index_weighted_avg_roe-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -197144,7 +197235,111 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "reason": "官方接口按 ability 分组，项目解析器保留 out[ability][index_id] 层级。保留起点后的18个目录、360条个股记录中，fin_indicators.index_weighted_avg_roe 根路径出现0次，fin_indicators.profitability.index_weighted_avg_roe 在17个已就绪报告期日期、340条个股记录中出现；首个保留日20条没有该报告期字段。该处置仅退役裸叶身份，不否定嵌套路径语义。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261114_fuyao_ratio_path_inventory.csv",
+          "docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-index_weighted_avg_roe-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -202355,14 +202550,15 @@
       "identity": "同花顺-fuyao::profitability.index_weighted_avg_roe",
       "path": "profitability.index_weighted_avg_roe",
       "canonical": "profitability.index_weighted_avg_roe",
-      "meaning": "",
-      "unit": "",
+      "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -202377,6 +202573,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-profitability-index_weighted_avg_roe-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-fuyao-profitability-index_weighted_avg_roe-contract"
         ]
       },
       "reference_evidence": [
@@ -202387,6 +202589,35 @@
           "unit": "",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+          "canonical": "profitability.index_weighted_avg_roe",
+          "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-fuyao-profitability-index_weighted_avg_roe-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-profitability-index_weighted_avg_roe-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.index_weighted_avg_roe",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.index_weighted_avg_roe",
+              "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -202401,7 +202632,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-profitability-index_weighted_avg_roe-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_ratio_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.index_weighted_avg_roe",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.index_weighted_avg_roe",
+              "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+              "unit": "%"
+            }
+          },
+          "rationale": "官方财务指标接口文档将 `profitability.index_weighted_avg_roe` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.index_weighted_avg_roe`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 19/20 命中、1 个反例、0 个不可比项。农业银行报告将10.14%标为年化，按半年期间折半后与Fuyao 5.0700%一致；太湖远大报告7.64%与Fuyao 7.7700%相差0.13个百分点，作为未解释的样本数据异常保留。官方接口契约仍明确该ID为“净资产收益率”，此裁定确认字段语义和单位，不声称该异常值准确，也不新增跨源映射。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -202409,14 +202676,15 @@
       "identity": "同花顺-fuyao::profitability.sale_gross_margin",
       "path": "profitability.sale_gross_margin",
       "canonical": "profitability.sale_gross_margin",
-      "meaning": "",
-      "unit": "",
+      "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -202431,6 +202699,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-profitability-sale_gross_margin-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-fuyao-profitability-sale_gross_margin-contract"
         ]
       },
       "reference_evidence": [
@@ -202441,6 +202715,35 @@
           "unit": "",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+          "canonical": "profitability.sale_gross_margin",
+          "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-fuyao-profitability-sale_gross_margin-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-profitability-sale_gross_margin-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.sale_gross_margin",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.sale_gross_margin",
+              "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -202455,7 +202758,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-profitability-sale_gross_margin-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_ratio_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.sale_gross_margin",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.sale_gross_margin",
+              "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+              "unit": "%"
+            }
+          },
+          "rationale": "官方财务指标接口文档将 `profitability.sale_gross_margin` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.sale_gross_margin`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 19/20 命中、0 个反例、1 个不可比项。农业银行为银行，官方合并利润表没有可比营业成本行且该指标返回null；按行业不可比排除，不把空值作为语义命中。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -202463,14 +202802,15 @@
       "identity": "同花顺-fuyao::profitability.sale_net_interest_ratio",
       "path": "profitability.sale_net_interest_ratio",
       "canonical": "profitability.sale_net_interest_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -202485,6 +202825,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-profitability-sale_net_interest_ratio-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-fuyao-profitability-sale_net_interest_ratio-contract"
         ]
       },
       "reference_evidence": [
@@ -202495,6 +202841,35 @@
           "unit": "",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+          "canonical": "profitability.sale_net_interest_ratio",
+          "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-fuyao-profitability-sale_net_interest_ratio-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-profitability-sale_net_interest_ratio-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.sale_net_interest_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.sale_net_interest_ratio",
+              "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -202509,7 +202884,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-profitability-sale_net_interest_ratio-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_ratio_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "profitability.sale_net_interest_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "profitability.sale_net_interest_ratio",
+              "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+              "unit": "%"
+            }
+          },
+          "rationale": "官方财务指标接口文档将 `profitability.sale_net_interest_ratio` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.sale_net_interest_ratio`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 20/20 命中、0 个反例、0 个不可比项。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -203403,22 +203814,28 @@
       "code": "sale_gross_margin",
       "identity": "同花顺-fuyao::sale_gross_margin",
       "path": "sale_gross_margin",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "profitability.sale_gross_margin",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.sale_gross_margin，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "sections": [
+        "Fuyao 财务比率裸根路径身份退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-sale_gross_margin-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -203434,29 +203851,139 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "reason": "官方接口按 ability 分组，项目解析器保留 out[ability][index_id] 层级。保留起点后的18个目录、360条个股记录中，fin_indicators.sale_gross_margin 根路径出现0次，fin_indicators.profitability.sale_gross_margin 在17个已就绪报告期日期、340条个股记录中出现；首个保留日20条没有该报告期字段。该处置仅退役裸叶身份，不否定嵌套路径语义。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261114_fuyao_ratio_path_inventory.csv",
+          "docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-sale_gross_margin-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
       "code": "sale_net_interest_ratio",
       "identity": "同花顺-fuyao::sale_net_interest_ratio",
       "path": "sale_net_interest_ratio",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "profitability.sale_net_interest_ratio",
+      "meaning": "旧无分组根路径身份；当前完整字段路径为 profitability.sale_net_interest_ratio，裸叶不是当前解析响应的根级独立字段。",
+      "unit": "%",
+      "section": "Fuyao 财务比率裸根路径身份退役（2026-11-14）",
+      "sections": [
+        "Fuyao 财务比率裸根路径身份退役（2026-11-14）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-sale_net_interest_ratio-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -203472,7 +203999,111 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+        "reason": "官方接口按 ability 分组，项目解析器保留 out[ability][index_id] 层级。保留起点后的18个目录、360条个股记录中，fin_indicators.sale_net_interest_ratio 根路径出现0次，fin_indicators.profitability.sale_net_interest_ratio 在17个已就绪报告期日期、340条个股记录中出现；首个保留日20条没有该报告期字段。该处置仅退役裸叶身份，不否定嵌套路径语义。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261114_fuyao_ratio_path_inventory.csv",
+          "docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv",
+          "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-sale_net_interest_ratio-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_ratio_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -204652,14 +205283,15 @@
       "identity": "同花顺-fuyao::solvency.assets_debt_ratio",
       "path": "solvency.assets_debt_ratio",
       "canonical": "solvency.assets_debt_ratio",
-      "meaning": "",
-      "unit": "",
+      "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+      "unit": "%",
       "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -204674,6 +205306,12 @@
         "values": [
           "verified",
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-solvency-assets_debt_ratio-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261114-fuyao-solvency-assets_debt_ratio-contract"
         ]
       },
       "reference_evidence": [
@@ -204684,6 +205322,35 @@
           "unit": "",
           "status_raw": "✅ L1",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方财务指标 API 文档 · docs/verify/fuyao_api_full.md#财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740） @ 官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+          "canonical": "solvency.assets_debt_ratio",
+          "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-14：20261114-fuyao-solvency-assets_debt_ratio-contract",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-solvency-assets_debt_ratio-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "solvency.assets_debt_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "solvency.assets_debt_ratio",
+              "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -204698,7 +205365,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-solvency-assets_debt_ratio-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_ratio_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "conflict",
+          "status_resolution_change": {
+            "before": "status_conflict",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "solvency.assets_debt_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "solvency.assets_debt_ratio",
+              "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+              "unit": "%"
+            }
+          },
+          "rationale": "官方财务指标接口文档将 `solvency.assets_debt_ratio` 列在 `solvency` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `solvency.assets_debt_ratio`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 20/20 命中、0 个反例、0 个不可比项。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+            "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+            "path": "docs/verify/fuyao_api_full.md",
+            "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",

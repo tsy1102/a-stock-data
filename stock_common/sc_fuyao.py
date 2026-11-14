@@ -454,7 +454,7 @@ def get_fuyao_fin_indicators(thscode: str, report: str) -> Optional[Dict[str, An
 
     ⭐ index_weighted_avg_roe(ROE)/index_deduct_weighted_avg_roe(扣非ROE)/total_assets_net_ratio(ROA)
     官方口径——tx[65]/tx[66] 对撞终判源。返回 {ability: {index_id: value}} 展平结构。
-    ⚠️ 上游契约偏差: 实际返回 calculate_* 前缀 id；中报(yyyy-2)入库滞后于披露日(5003)。
+    ⚠️ 字段名差异: 实测部分 growth ID 带 calculate_ 前缀，而在线契约表不带；解析器按 ability 分组并原样保留 index_id。中报(yyyy-2)入库可能滞后于披露日(5003)。
     """
     d = _fuyao_raw(EP_FIN_INDICATORS, {"thscode": fuyao_to_thscode(thscode), "report": report})
     if not d or d.get("code") != 0:

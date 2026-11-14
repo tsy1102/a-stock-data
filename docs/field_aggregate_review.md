@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 208 个 code；疑似合并文本 418 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 426 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3054,30 +3054,6 @@
 |:--|:--|:--|:--|:--|
 | 同花顺-fuyao · `profitability` | profitability | — | — | `conflict` |
 
-### `profitability.index_weighted_avg_roe` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `profitability.index_weighted_avg_roe` | profitability.index_weighted_avg_roe | — | — | `conflict` |
-
-### `profitability.sale_gross_margin` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `profitability.sale_gross_margin` | profitability.sale_gross_margin | — | — | `conflict` |
-
-### `profitability.sale_net_interest_ratio` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `profitability.sale_net_interest_ratio` | profitability.sale_net_interest_ratio | — | — | `conflict` |
-
 ### `q_zrcs` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -3194,14 +3170,6 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 同花顺-fuyao · `solvency` | solvency | — | — | `conflict` |
-
-### `solvency.assets_debt_ratio` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `solvency.assets_debt_ratio` | solvency.assets_debt_ratio | — | — | `conflict` |
 
 ### `source` — incomplete
 
@@ -3708,6 +3676,7 @@
 | 东财-资金流(em_fund_flow) | `f144` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | `verified` |
 | 东财-资金流(em_fund_flow) | `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |
 | 东财-资金流(em_fund_flow) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
+| 同花顺-fuyao | `assets_debt_ratio` | solvency.assets_debt_ratio | 旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `basic_eps` | basic_eps | 基本每股收益（元/股）。 | `verified` |
 | 同花顺-fuyao | `calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |
 | 同花顺-fuyao | `calendar` | a-share/calendar/trading-days | — | `unverified` |
@@ -3721,6 +3690,7 @@
 | 同花顺-fuyao | `growth.calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。 | `verified` |
 | 同花顺-fuyao | `growth.calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。 | `verified` |
 | 同花顺-fuyao | `growth.calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | 该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。 | `verified` |
+| 同花顺-fuyao | `index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `indicators` | a-share/financials/indicators | — | `unverified` |
 | 同花顺-fuyao | `keyword_list` | keyword_list | 关键词列表；无关键词时返回空数组。 | `verified` |
 | 同花顺-fuyao | `last_seal_time` | last_seal_time | 炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
@@ -3730,11 +3700,17 @@
 | 同花顺-fuyao | `pay_dividends_profits_interest_cash` | pay_dividends_profits_interest_cash | 分配股利、利润或偿付利息支付的现金（原币元）。 | `verified` |
 | 同花顺-fuyao | `pay_fixed_assets_etc_cash` | pay_fixed_assets_etc_cash | 购建固定资产、无形资产和其他长期资产支付的现金（原币元）。 | `verified` |
 | 同花顺-fuyao | `period_end_ms` | period_end_ms | 报告期末（Asia/Shanghai 零点毫秒戳）。 | `verified` |
+| 同花顺-fuyao | `profitability.index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。 | `verified` |
+| 同花顺-fuyao | `profitability.sale_gross_margin` | profitability.sale_gross_margin | 销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。 | `verified` |
+| 同花顺-fuyao | `profitability.sale_net_interest_ratio` | profitability.sale_net_interest_ratio | 销售净利率；可比样本按合并净利润/合并营业收入×100%复算。 | `verified` |
 | 同花顺-fuyao | `rank_change` | rank_change | 排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。 | `verified` |
 | 同花顺-fuyao | `rank_trend` | rank_trend | 排名趋势：`up` / `down` / `flat` / `unknown`。 | `verified` |
 | 同花顺-fuyao | `report_date_ms` | report_date_ms | 财务报表披露日，即该报表公开披露的日期；不是报告期末 | `verified` |
 | 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | `unverified` |
+| 同花顺-fuyao | `sale_gross_margin` | profitability.sale_gross_margin | 旧无分组根路径身份；当前完整字段路径为 profitability.sale_gross_margin，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
+| 同花顺-fuyao | `sale_net_interest_ratio` | profitability.sale_net_interest_ratio | 旧无分组根路径身份；当前完整字段路径为 profitability.sale_net_interest_ratio，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `search` | meta/tickers/search | — | `unverified` |
+| 同花顺-fuyao | `solvency.assets_debt_ratio` | solvency.assets_debt_ratio | 资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。 | `verified` |
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | `unverified` |
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |

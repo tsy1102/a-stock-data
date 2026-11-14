@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-14",
+  "decisions": [
+    {
+      "id": "20261114-fuyao-profitability-index_weighted_avg_roe-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "profitability.index_weighted_avg_roe"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "profitability.index_weighted_avg_roe",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "profitability.index_weighted_avg_roe",
+      "meaning": "加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。",
+      "unit": "%",
+      "rationale": "官方财务指标接口文档将 `profitability.index_weighted_avg_roe` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.index_weighted_avg_roe`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 19/20 命中、1 个反例、0 个不可比项。农业银行报告将10.14%标为年化，按半年期间折半后与Fuyao 5.0700%一致；太湖远大报告7.64%与Fuyao 7.7700%相差0.13个百分点，作为未解释的样本数据异常保留。官方接口契约仍明确该ID为“净资产收益率”，此裁定确认字段语义和单位，不声称该异常值准确，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-profitability-sale_gross_margin-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "profitability.sale_gross_margin"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "profitability.sale_gross_margin",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "profitability.sale_gross_margin",
+      "meaning": "销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。",
+      "unit": "%",
+      "rationale": "官方财务指标接口文档将 `profitability.sale_gross_margin` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.sale_gross_margin`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 19/20 命中、0 个反例、1 个不可比项。农业银行为银行，官方合并利润表没有可比营业成本行且该指标返回null；按行业不可比排除，不把空值作为语义命中。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-profitability-sale_net_interest_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "profitability.sale_net_interest_ratio"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "profitability.sale_net_interest_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "profitability.sale_net_interest_ratio",
+      "meaning": "销售净利率；可比样本按合并净利润/合并营业收入×100%复算。",
+      "unit": "%",
+      "rationale": "官方财务指标接口文档将 `profitability.sale_net_interest_ratio` 列在 `profitability` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `profitability.sale_net_interest_ratio`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 20/20 命中、0 个反例、0 个不可比项。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-solvency-assets_debt_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "solvency.assets_debt_ratio"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "solvency.assets_debt_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "solvency.assets_debt_ratio",
+      "meaning": "资产负债率；可比样本按合并负债合计/合并资产总计×100%复算。",
+      "unit": "%",
+      "rationale": "官方财务指标接口文档将 `solvency.assets_debt_ratio` 列在 `solvency` 分组，明确给出中文指标名和百分数值约定；项目解析器按 `out[ability][index_id]` 原样构造对象，采集器保存为 `fin_indicators`，因此字段完整身份为 `solvency.assets_debt_ratio`。财报复算证据见 `docs/field_verification/research/20261114_fuyao_official_ratio_h1_comparisons.csv`。20 家发行人2026H1正式报告的结果为 20/20 命中、0 个反例、0 个不可比项。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "财务指标数据 §响应字段（lines 703-717）及 §指标字段（lines 727-740）",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    }
+  ]
+}

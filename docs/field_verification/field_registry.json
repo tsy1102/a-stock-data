@@ -22,15 +22,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 548,
+      "registry_status_only_single_source": 546,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 28,
       "status_conflict": 30,
       "status_missing": 43,
       "unresolved": 8,
-      "unverified": 1060,
-      "verified": 1485,
-      "verified_by_empirical_addendum": 156,
+      "unverified": 1058,
+      "verified": 1487,
+      "verified_by_empirical_addendum": 158,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 391
@@ -10956,20 +10956,17 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-11-14 Push2EX 市值来源内实证定案",
+      "canonical": "push2ex.tradable_a_market_value",
+      "meaning": "A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。",
+      "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "circulation_amount",
@@ -37613,13 +37610,15 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "东财-push2ex": "unverified",
+        "东财-push2ex": "verified",
         "市场源(market_sources)": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -45850,6 +45849,12 @@
     "quote_price_precision_digits": [
       "东财-push2(stock/get)",
       "东财-ulist239(np/get)"
+    ],
+    "push2ex.total_market_value": [
+      "东财-push2ex"
+    ],
+    "push2ex.tradable_a_market_value": [
+      "东财-push2ex"
     ]
   },
   "mappings": [
@@ -167411,13 +167416,15 @@
       "code": "circulating_value",
       "identity": "东财-push2ex::circulating_value",
       "path": "circulating_value",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "push2ex.tradable_a_market_value",
+      "meaning": "A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。",
+      "unit": "元",
+      "section": "2026-11-14 Push2EX 市值来源内实证定案",
+      "sections": [
+        "2026-11-14 Push2EX 市值来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -167426,10 +167433,61 @@
           "东财-push2ex"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-push2ex-circulating_value-market-value-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+        "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+        "sample": {
+          "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 5,
+          "excluded_count": 2,
+          "stock_count": 2
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-14 Push2EX 市值来源内实证定案",
+          "canonical": "push2ex.tradable_a_market_value",
+          "meaning": "A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。",
+          "unit": "元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-push2ex-circulating_value-market-value-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+          "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "push2ex.tradable_a_market_value",
+              "meaning": "A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。",
+              "unit": "元"
+            }
+          },
+          "sample": {
+            "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 5,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "circulating_value",
@@ -167442,7 +167500,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-push2ex-circulating_value-market-value-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_push2ex_market_value_empirical_decision.json",
+          "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+          "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "push2ex.tradable_a_market_value",
+              "meaning": "A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "官方东财 F10 明确流通股市值=A股实时价×非限售流通A股；精确项目路径由项目 _parse_limit_pool 的 item[\"ltsz\"]→circulating_value 映射确认。两个来源日期合格的历史样本按同日价格与官方流通股本计算均支持该释义；688781 完全相等，601091 差值仅0.000001元。KPL实际流通市值为不同项目，不建立映射。",
+          "sample": {
+            "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 5,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2ex",
@@ -168704,13 +168806,15 @@
       "code": "total_value",
       "identity": "东财-push2ex::total_value",
       "path": "total_value",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "push2ex.total_market_value",
+      "meaning": "A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。",
+      "unit": "元",
+      "section": "2026-11-14 Push2EX 市值来源内实证定案",
+      "sections": [
+        "2026-11-14 Push2EX 市值来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -168719,10 +168823,61 @@
           "东财-push2ex"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-push2ex-total_value-market-value-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+        "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+        "sample": {
+          "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 5,
+          "excluded_count": 2,
+          "stock_count": 2
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-14 Push2EX 市值来源内实证定案",
+          "canonical": "push2ex.total_market_value",
+          "meaning": "A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。",
+          "unit": "元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-push2ex-total_value-market-value-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+          "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "push2ex.total_market_value",
+              "meaning": "A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。",
+              "unit": "元"
+            }
+          },
+          "sample": {
+            "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 5,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "total_value",
@@ -168735,7 +168890,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-push2ex-total_value-market-value-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_push2ex_market_value_empirical_decision.json",
+          "evidence_file": "adjudications/20261114_push2ex_market_value_empirical_evidence.md",
+          "evidence_sha256": "244019824cad35f7d25cf2de2aa716fa57ee5849c587e071d1c99e3ee1cb73ac",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "push2ex.total_market_value",
+              "meaning": "A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "官方东财 F10 明确总市值=最新价×总股本；精确项目路径由项目 _parse_limit_pool 的 item[\"tshare\"]→total_value 映射确认。两个来源日期合格的历史样本按同日价格与官方总股本计算均支持总市值释义；688781 完全相等，601091 差值约对应 3 股，具体股本刷新/精度原因未确认且已披露。仅定来源内语义，不建立映射。",
+          "sample": {
+            "scope": "保留样本日期 2026-11-10（688781）与 2026-11-12（601091）；仅纳入 Push2EX source_capture_started_at 可还原 API date、采集发生在收盘后、KPL as_of_date 等于 data_date、且官方股本文件可配对的样本。601123 的 2026-11-03/04 两条缺少来源级采集开始时间，留在 CSV 但不计数。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 5,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2ex",

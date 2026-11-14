@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 131 个 code；聚合定义不完整 203 个 code；疑似合并文本 464 条逐源记录。
+> 聚合歧义 131 个 code；聚合定义不完整 204 个 code；疑似合并文本 466 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3258,6 +3258,15 @@
 | TDX(双命名源) · `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | 股 | `verified` |
 | 开盘啦(kpl) · `total_shares` | — | — | — | `unverified` |
 
+### `total_value` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-push2ex · `total_value` | push2ex.total_market_value | A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。 | 元 | `verified` |
+| 市场源(market_sources) · `total_value` | — | — | — | `unverified` |
+
 ### `trade_date` — ambiguous
 
 聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
@@ -3636,8 +3645,10 @@
 | 东财-push2(stock/get) | `f86` | f86 | 当日收盘/最后行情时间戳 | `verified` |
 | 东财-push2(stock/get) | `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | `verified` |
 | 东财-push2ex | `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | `verified` |
+| 东财-push2ex | `circulating_value` | push2ex.tradable_a_market_value | A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。 | `verified` |
 | 东财-push2ex | `limit_count` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；与同数据日 KPL col_15 的三个有效日期 271 组对照逐值相等。11 月 5 日次日回查存在集合和值差异，已单独记录且不计入正证据。 | `verified` |
 | 东财-push2ex | `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | `verified` |
+| 东财-push2ex | `total_value` | push2ex.total_market_value | A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。 | `verified` |
 | 东财-push2ex | `yfbt` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `ylbc` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |

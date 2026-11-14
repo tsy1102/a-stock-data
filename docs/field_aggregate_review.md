@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 131 个 code；聚合定义不完整 204 个 code；疑似合并文本 466 条逐源记录。
+> 聚合歧义 133 个 code；聚合定义不完整 202 个 code；疑似合并文本 469 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -762,7 +762,7 @@
 
 ### `code` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -771,7 +771,7 @@
 | ZHB-tdxstat · `code` | code | 代码 | - | `verified` |
 | ZHB-tdxstat2 · `code` | code | 代码 | - | `verified` |
 | ZHB-tipinfo · `code` | code | 股票代码 | 6位字符串 | `verified` |
-| 东财-push2ex · `code` | — | — | — | `unverified` |
+| 东财-push2ex · `code` | stock_code | 六位 A 股证券代码字符串，对应东方财富官方涨停股池“代码”列。 | — | `verified` |
 | 东财-热榜(em_hot) · `code` | — | — | — | `verified` |
 | 巨潮(cninfo) · `code` | code | 问答所属的六位股票代码 | 6位字符串 | `verified` |
 | 市场源(market_sources) · `code` | code | 股票代码 | — | `verified` |
@@ -2384,13 +2384,13 @@
 | 东财-push2(stock/get) · `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f92` | f92 | — | — | `verified` |
 
-### `first_limit_time` — incomplete
+### `first_limit_time` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2ex · `first_limit_time` | — | — | — | `unverified` |
+| 东财-push2ex · `first_limit_time` | limit_pool_first_seal_time | 东财涨停股池个股当日首次封板时间；项目原值为 HHMMSS 数字字符串，左补零后格式化为页面显示的 HH:MM:SS。 | HHMMSS | `verified` |
 | 同花顺-fuyao · `first_limit_time` | first_limit_time | 首次与最后跌停时间，上海时区 `HH:mm`。 | HH:mm | `verified` |
 
 ### `fund` — incomplete
@@ -2502,13 +2502,13 @@
 | TDX(双命名源) · `jing_li_run_raw_float` | jing_li_run_raw_float | 净利润原始值 | 千元 | `verified` |
 | TDX-eltdx(适配层) · `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | 千元 | `verified` |
 
-### `last_limit_time` — incomplete
+### `last_limit_time` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2ex · `last_limit_time` | — | — | — | `unverified` |
+| 东财-push2ex · `last_limit_time` | limit_pool_last_seal_time | 东财涨停股池个股当日最后封板时间；项目原值为 HHMMSS 数字字符串，左补零后格式化为页面显示的 HH:MM:SS。 | HHMMSS | `verified` |
 | 同花顺-fuyao · `last_limit_time` | last_limit_time | 首次与最后跌停时间，上海时区 `HH:mm`。 | HH:mm | `verified` |
 
 ### `last_price` — ambiguous
@@ -2778,14 +2778,14 @@
 
 ### `name` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `name` | name | 证券名称 | — | `verified` |
 | TDX(双命名源) · `name` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `name` | name | — | — | `unverified` |
-| 东财-push2ex · `name` | — | — | — | `unverified` |
+| 东财-push2ex · `name` | stock_name | 东财涨停股池记录对应的证券简称，对应东方财富官方页面“名称”列。 | — | `verified` |
 | 东财-热榜(em_hot) · `name` | — | — | — | `verified` |
 | 同花顺-fuyao · `name` | — | — | — | `unverified` |
 | 市场源(market_sources) · `name` | name | 股票名称 | — | `verified` |
@@ -3310,12 +3310,12 @@
 
 ### `turnover_rate` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `turnover_rate` | turnover_rate | 换手率 | — | `verified` |
-| 东财-push2ex · `turnover_rate` | — | — | — | `unverified` |
+| 东财-push2ex · `turnover_rate` | limit_pool_turnover_rate | 东财涨停股池个股当日换手率；官方页面值以百分比显示。本裁决只确认该来源路径对应官方涨停池“换手率”列，不推断自由流通或其他计算口径。 | % | `verified` |
 | 东财-热榜(em_hot) · `turnover_rate` | turnover_rate | 换手率% | — | `verified` |
 | 开盘红 · `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 370 组、8 个交易日逐值一致 | % | `verified` |
 
@@ -3646,9 +3646,12 @@
 | 东财-push2(stock/get) | `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | `verified` |
 | 东财-push2ex | `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | `verified` |
 | 东财-push2ex | `circulating_value` | push2ex.tradable_a_market_value | A股流通市值；按非限售流通A股股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元；不表示自由流通市值。 | `verified` |
+| 东财-push2ex | `first_limit_time` | limit_pool_first_seal_time | 东财涨停股池个股当日首次封板时间；项目原值为 HHMMSS 数字字符串，左补零后格式化为页面显示的 HH:MM:SS。 | `verified` |
+| 东财-push2ex | `last_limit_time` | limit_pool_last_seal_time | 东财涨停股池个股当日最后封板时间；项目原值为 HHMMSS 数字字符串，左补零后格式化为页面显示的 HH:MM:SS。 | `verified` |
 | 东财-push2ex | `limit_count` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；与同数据日 KPL col_15 的三个有效日期 271 组对照逐值相等。11 月 5 日次日回查存在集合和值差异，已单独记录且不计入正证据。 | `verified` |
 | 东财-push2ex | `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | `verified` |
 | 东财-push2ex | `total_value` | push2ex.total_market_value | A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。 | `verified` |
+| 东财-push2ex | `turnover_rate` | limit_pool_turnover_rate | 东财涨停股池个股当日换手率；官方页面值以百分比显示。本裁决只确认该来源路径对应官方涨停池“换手率”列，不推断自由流通或其他计算口径。 | `verified` |
 | 东财-push2ex | `yfbt` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `ylbc` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |

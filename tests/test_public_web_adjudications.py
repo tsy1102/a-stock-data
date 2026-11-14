@@ -5,6 +5,7 @@ import pytest
 from scripts import public_web_adjudications as adjudications
 
 SOURCE = "东财-push2(stock/get)"
+PUSH2EX_SOURCE = "东财-push2ex"
 URLS = [
     "https://data.eastmoney.com/zjlx/000001.html",
     "https://data.eastmoney.com/zjlx/000002.html",
@@ -47,6 +48,239 @@ def test_public_page_observation_uses_exact_source_to_raw_file_route(tmp_path):
             "20261109/raw_push2.json",
             "600519",
             "f45",
+        )
+
+
+def test_push2ex_observation_supports_exact_paths_and_formatted_times(tmp_path):
+    verification = tmp_path / "docs" / "field_verification"
+    source_file = "20261112/raw_push2ex.json"
+    sample_path = verification / source_file
+    rows = [
+        {
+            "code": "000001",
+            "name": "测试甲",
+            "turnover_rate": 0.9817042947,
+            "first_limit_time": "92500",
+        },
+        {
+            "code": "000002",
+            "name": "测试乙",
+            "turnover_rate": 1.2345,
+            "first_limit_time": "93001",
+        },
+    ]
+    _write_json(
+        sample_path,
+        {"limit_up_pool": rows, "limit_broken_pool": [], "limit_down_pool": []},
+    )
+    _write_json(
+        verification / "source_lineage.json",
+        {
+            "sources": {
+                PUSH2EX_SOURCE: {
+                    "provider": "Eastmoney",
+                    "independence_status": "confirmed",
+                    "runtime_aliases": ["push2ex"],
+                }
+            }
+        },
+    )
+
+    url = "https://quote.eastmoney.com/ztb/detail"
+    observations = []
+    time_rows = []
+    turnover_rows = []
+    code_rows = []
+    name_rows = []
+    for item, display_time, display_turnover in zip(
+        rows, ("09:25:00", "09:30:01"), (0.98, 1.23), strict=True
+    ):
+        time_rows.append(
+            {
+                "stock_code": item["code"],
+                "data_date": "20261112",
+                "source_file": source_file,
+                "raw_collection": "limit_up_pool",
+                "raw_value": item["first_limit_time"],
+                "display_value": display_time,
+                "display_unit": "HHMMSS",
+                "value_transform": "hhmmss",
+                "page_url": url,
+                "page_metric": "涨停股池 > 首次封板时间",
+                "display_text": display_time,
+                "missing_as_zero": False,
+            }
+        )
+        turnover_rows.append(
+            {
+                "stock_code": item["code"],
+                "data_date": "20261112",
+                "source_file": source_file,
+                "raw_collection": "limit_up_pool",
+                "raw_value": item["turnover_rate"],
+                "display_value": display_turnover,
+                "display_increment": 0.01,
+                "display_unit": "%",
+                "page_url": url,
+                "page_metric": "涨停股池 > 换手率",
+                "display_text": f"{display_turnover:.2f}%",
+                "missing_as_zero": False,
+            }
+        )
+        for field_code, display_value, metric, target_rows in (
+            ("code", item["code"], "涨停股池 > 代码", code_rows),
+            ("name", item["name"], "涨停股池 > 名称", name_rows),
+        ):
+            target_rows.append(
+                {
+                    "stock_code": item["code"],
+                    "data_date": "20261112",
+                    "source_file": source_file,
+                    "raw_collection": "limit_up_pool",
+                    "raw_value": item[field_code],
+                    "display_value": display_value,
+                    "display_unit": "",
+                    "value_transform": "exact_text",
+                    "page_url": url,
+                    "page_metric": metric,
+                    "display_text": display_value,
+                    "missing_as_zero": False,
+                }
+            )
+
+    for code, canonical, meaning, unit, status_resolution, page_rows in (
+        (
+            "code",
+            "stock_code",
+            "六位 A 股证券代码字符串，对应官方涨停股池“代码”列。",
+            "",
+            "aggregate_status_scope_unresolved",
+            code_rows,
+        ),
+        (
+            "name",
+            "stock_name",
+            "东财涨停股池记录对应的证券简称，对应官方页面“名称”列。",
+            "",
+            "aggregate_status_scope_unresolved",
+            name_rows,
+        ),
+        (
+            "first_limit_time",
+            "limit_pool_first_seal_time",
+            "涨停股池当日首次封板时间；原始值按 HHMMSS 编码，官网显示为 HH:mm:ss。",
+            "HHMMSS",
+            "registry_status_only_single_source",
+            time_rows,
+        ),
+        (
+            "turnover_rate",
+            "limit_pool_turnover_rate",
+            "涨停股池显示的换手率，官网单位为百分比。",
+            "%",
+            "aggregate_status_scope_unresolved",
+            turnover_rows,
+        ),
+    ):
+        decision = {
+            "id": f"20261114-push2ex-{code}",
+            "action": "verify_public_web_observation",
+            "verification_mode": "resolve_placeholders",
+            "target": {"source": PUSH2EX_SOURCE, "code": code},
+            "previous_status": "unverified",
+            "previous_status_resolution": status_resolution,
+            "previous": {"canonical": "", "meaning": "", "unit": ""},
+            "previous_attribute_conflicts": {},
+            "canonical": canonical,
+            "meaning": meaning,
+            "unit": unit,
+            "rationale": "同一来源数据日两只股票的官网显示值与归档原始路径逐值对应。",
+            "external_evidence": [url],
+            "page_observations": page_rows,
+        }
+        observations.append(decision)
+
+    evidence_file = "adjudications/public_web/20261114_push2ex_observations.md"
+    evidence_path = verification / evidence_file
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_lines = ["# Push2EX official page observations"]
+    for decision in observations:
+        for observation in decision["page_observations"]:
+            normalized = {
+                **observation,
+                "display_value": str(observation["display_value"]),
+            }
+            if "display_increment" in observation:
+                normalized["display_increment"] = str(observation["display_increment"])
+            evidence_lines.append(
+                adjudications._observation_evidence_line(
+                    PUSH2EX_SOURCE, decision["target"]["code"], normalized
+                )
+            )
+    evidence_path.write_text("\n".join(evidence_lines) + "\n", encoding="utf-8")
+    decision_path = "adjudications/public_web/20261114_push2ex_observations.json"
+    document = {
+        "schema_version": 1,
+        "evidence_basis": "public_web_observation",
+        "reviewer": "test reviewer",
+        "reviewed_on": "2026-11-14",
+        "evidence_file": evidence_file,
+        "formula_validation": None,
+        "formula_validations": [],
+        "decisions": observations,
+    }
+
+    registry = {
+        "source_fields": [
+            {
+                "source": PUSH2EX_SOURCE,
+                "code": decision["target"]["code"],
+                "canonical": "",
+                "meaning": "",
+                "unit": "",
+                "status": "unverified",
+                "status_resolution": decision["previous_status_resolution"],
+                "status_evidence": {
+                    "reference_statuses": [],
+                    "registry_aggregate_status": "unverified",
+                    "values": ["unverified"],
+                },
+                "reference_evidence": [],
+                "attribute_conflicts": {},
+                "attribute_ambiguities": {},
+                "adjudications": [],
+            }
+            for decision in observations
+        ],
+        "fields": [],
+        "mappings": [],
+    }
+
+    updated, stats = adjudications.apply_public_web_observation_adjudications(
+        registry, document, decision_path, tmp_path
+    )
+
+    records = {row["code"]: row for row in updated["source_fields"]}
+    assert records["code"]["status"] == "verified"
+    assert records["name"]["status"] == "verified"
+    assert records["first_limit_time"]["status"] == "verified"
+    assert records["turnover_rate"]["status"] == "verified"
+    assert stats["public_web_observation_verified"] == 4
+    assert updated["mappings"] == []
+    _write_json(tmp_path / "docs" / "field_verification" / decision_path, document)
+    assert adjudications.validate_registry_adjudications(updated, tmp_path) == []
+
+    invalid_document = json.loads(json.dumps(document))
+    invalid_time = next(
+        decision
+        for decision in invalid_document["decisions"]
+        if decision["target"]["code"] == "first_limit_time"
+    )["page_observations"][0]
+    invalid_time["display_value"] = "09:25:01"
+    invalid_time["display_text"] = "09:25:01"
+    with pytest.raises(ValueError, match="differs from the hhmmss transform"):
+        adjudications.apply_public_web_observation_adjudications(
+            registry, invalid_document, decision_path, tmp_path
         )
 
 

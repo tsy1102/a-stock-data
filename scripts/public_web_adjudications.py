@@ -42,7 +42,7 @@ VERIFICATION_MODES = {
     REPORT_SOURCE_RATING_CODE_MODE,
 }
 PLACEHOLDER_MEANINGS = {"", "待破解", "待确认", "待验证", "未验证", "未定义", "未知"}
-OFFICIAL_PROVIDER_HOSTS = {"Eastmoney": {"data.eastmoney.com"}}
+OFFICIAL_PROVIDER_HOSTS = {"Eastmoney": {"data.eastmoney.com", "quote.eastmoney.com"}}
 
 
 def _object(value: Any, label: str) -> dict[str, Any]:
@@ -138,12 +138,18 @@ def _stock_rows(payload: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
 
 
 def _raw_value(
-    repo_root: Path, source: str, source_file: Any, stock_code: str, field_code: str
+    repo_root: Path,
+    source: str,
+    source_file: Any,
+    stock_code: str,
+    field_code: str,
+    raw_collection: str | None = None,
 ) -> Any:
     path, _ = _sample_path(repo_root, source_file, "source_file")
     expected_files = {
         "东财-push2(stock/get)": "raw_push2.json",
         "东财-ulist239(np/get)": "raw_ulist239.json",
+        "东财-push2ex": "raw_push2ex.json",
     }
     expected_file = expected_files.get(source)
     if expected_file is None:
@@ -154,6 +160,27 @@ def _raw_value(
     if not re.fullmatch(r"20\d{6}", date_dir) or date_dir < "20261015":
         raise ValueError("source_file must use a retained sample date from 20261015 onward")
     payload = _read_json(path, "raw source sample")
+    if source == "东财-push2ex":
+        allowed_collections = {"limit_up_pool", "limit_broken_pool", "limit_down_pool"}
+        if not isinstance(raw_collection, str) or raw_collection not in allowed_collections:
+            raise ValueError("Push2EX observations require a supported raw_collection")
+        rows = payload.get(raw_collection)
+        if not isinstance(rows, list):
+            raise ValueError(f"{raw_collection} is not a list in {source_file}")
+        matches = [
+            item
+            for item in rows
+            if isinstance(item, dict) and str(item.get("code", "")) == stock_code
+        ]
+        if len(matches) != 1:
+            raise ValueError(
+                f"{stock_code} must occur exactly once in {raw_collection} of {source_file}"
+            )
+        if field_code not in matches[0]:
+            raise ValueError(f"{stock_code} has no {field_code} in {source_file}")
+        return matches[0][field_code]
+    if raw_collection is not None:
+        raise ValueError("raw_collection is only supported for 东财-push2ex")
     for code, data in _stock_rows(payload):
         if code == stock_code:
             if field_code not in data:
@@ -336,13 +363,18 @@ def _observation_evidence_line(source: str, code: str, observation: dict[str, An
         "source_file": observation["source_file"],
         "raw_value": observation["raw_value"],
         "display_value": observation["display_value"],
-        "display_increment": observation["display_increment"],
         "display_unit": observation["display_unit"],
         "page_url": observation["page_url"],
         "page_metric": observation["page_metric"],
         "display_text": observation["display_text"],
         "missing_as_zero": observation["missing_as_zero"],
     }
+    if "display_increment" in observation:
+        payload["display_increment"] = observation["display_increment"]
+    if "raw_collection" in observation:
+        payload["raw_collection"] = observation["raw_collection"]
+    if "value_transform" in observation:
+        payload["value_transform"] = observation["value_transform"]
     if "raw_to_display_factor" in observation:
         payload["raw_to_display_factor"] = observation["raw_to_display_factor"]
     return "[observation] " + json.dumps(
@@ -625,9 +657,7 @@ def _validate_observations(
     code = _text(decision["target"].get("code"), "target.code")
     if source == "reports":
         return _validate_report_record_observations(decision, repo_root, evidence_text)
-    if not re.fullmatch(r"f\d+", code):
-        raise ValueError("public-page source observations currently require an fNN code path")
-    unit = _text(decision.get("unit"), "decision.unit")
+    unit = _optional_text(decision.get("unit"), "decision.unit") or ""
     urls = _validate_external_urls(decision.get("external_evidence"), "external_evidence")
     _validate_official_provider_urls(source, urls, repo_root)
     rows = decision.get("page_observations")
@@ -655,7 +685,14 @@ def _validate_observations(
         source_path, _ = _sample_path(repo_root, source_file, "page_observation.source_file")
         if source_path.parent.name != data_date:
             raise ValueError("page observation date must match its raw source file directory")
-        raw_value = _raw_value(repo_root, source, source_file, stock_code, code)
+        raw_collection = observation.get("raw_collection")
+        if source == "东财-push2ex":
+            raw_collection = _text(raw_collection, "page_observation.raw_collection")
+        elif raw_collection is not None:
+            raise ValueError("raw_collection is only supported for 东财-push2ex")
+        raw_value = _raw_value(
+            repo_root, source, source_file, stock_code, code, raw_collection=raw_collection
+        )
         declared_raw = observation.get("raw_value")
         if isinstance(raw_value, (int, float)) and isinstance(declared_raw, (int, float)):
             if _decimal(raw_value, "raw source value") != _decimal(
@@ -665,58 +702,110 @@ def _validate_observations(
         elif raw_value != declared_raw:
             raise ValueError(f"declared raw_value differs from archived {stock_code}::{code}")
 
-        display_unit = _text(observation.get("display_unit"), "page_observation.display_unit")
-        factor_value = observation.get("raw_to_display_factor")
-        if factor_value is None:
-            if display_unit != unit:
-                raise ValueError("different page and raw units require raw_to_display_factor")
-            raw_to_display_factor = Decimal(1)
-        else:
-            raw_to_display_factor = _decimal(factor_value, "page_observation.raw_to_display_factor")
-            if raw_to_display_factor <= 0:
-                raise ValueError("raw_to_display_factor must be positive")
-            if display_unit == unit and raw_to_display_factor != 1:
-                raise ValueError(
-                    "raw_to_display_factor must be 1 when page and raw units are equal"
-                )
-        display_value = _decimal(observation.get("display_value"), "page_observation.display_value")
-        increment = _decimal(
-            observation.get("display_increment"), "page_observation.display_increment"
+        display_unit = (
+            _optional_text(observation.get("display_unit"), "page_observation.display_unit") or ""
         )
-        if increment <= 0:
-            raise ValueError("display_increment must be positive")
+        factor_value = observation.get("raw_to_display_factor")
+        value_transform = observation.get("value_transform")
         missing_as_zero = observation.get("missing_as_zero", False)
-        if raw_value == "-":
-            if missing_as_zero is not True or display_value != 0:
-                raise ValueError("a raw '-' may map to zero only when the official page shows zero")
-            comparison_value = Decimal(0)
-        else:
-            if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
-                raise ValueError("raw source value must be numeric or the '-' sentinel")
-            comparison_value = _decimal(raw_value, "raw source value") * raw_to_display_factor
-        if abs(comparison_value - display_value) > increment / Decimal(2):
-            raise ValueError(
-                f"page value is outside its stated rounding precision for {stock_code}"
+        normalized_display_value: str
+        if value_transform is None:
+            if factor_value is None:
+                if display_unit != unit:
+                    raise ValueError("different page and raw units require raw_to_display_factor")
+                raw_to_display_factor = Decimal(1)
+            else:
+                raw_to_display_factor = _decimal(
+                    factor_value, "page_observation.raw_to_display_factor"
+                )
+                if raw_to_display_factor <= 0:
+                    raise ValueError("raw_to_display_factor must be positive")
+                if display_unit == unit and raw_to_display_factor != 1:
+                    raise ValueError(
+                        "raw_to_display_factor must be 1 when page and raw units are equal"
+                    )
+            display_value = _decimal(
+                observation.get("display_value"), "page_observation.display_value"
             )
+            increment = _decimal(
+                observation.get("display_increment"), "page_observation.display_increment"
+            )
+            if increment <= 0:
+                raise ValueError("display_increment must be positive")
+            if raw_value == "-":
+                if missing_as_zero is not True or display_value != 0:
+                    raise ValueError(
+                        "a raw '-' may map to zero only when the official page shows zero"
+                    )
+                comparison_value = Decimal(0)
+            else:
+                if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
+                    raise ValueError(
+                        "raw source value must be numeric or use an explicit text transform"
+                    )
+                comparison_value = _decimal(raw_value, "raw source value") * raw_to_display_factor
+            if abs(comparison_value - display_value) > increment / Decimal(2):
+                raise ValueError(
+                    f"page value is outside its stated rounding precision for {stock_code}"
+                )
+            normalized_display_value = str(display_value)
+        elif value_transform == "exact_text" or value_transform == "hhmmss":
+            if factor_value is not None:
+                raise ValueError("text observations cannot use raw_to_display_factor")
+            if display_unit != unit:
+                raise ValueError("text observations must keep the raw unit")
+            if "display_increment" in observation:
+                raise ValueError("text observations cannot use display_increment")
+            if missing_as_zero is not False:
+                raise ValueError("text observations cannot use missing_as_zero")
+            if not isinstance(raw_value, str):
+                raise ValueError("text observations require a string raw source value")
+            normalized_display_value = _text(
+                observation.get("display_value"), "page_observation.display_value"
+            )
+            if value_transform == "exact_text":
+                expected_display = raw_value
+            else:
+                if not re.fullmatch(r"\d{1,6}", raw_value):
+                    raise ValueError("hhmmss transform requires 1-6 decimal digits")
+                digits = raw_value.zfill(6)
+                hour, minute, second = int(digits[:2]), int(digits[2:4]), int(digits[4:6])
+                if hour > 23 or minute > 59 or second > 59:
+                    raise ValueError("hhmmss transform received an invalid clock time")
+                expected_display = f"{digits[:2]}:{digits[2:4]}:{digits[4:6]}"
+            if normalized_display_value != expected_display:
+                raise ValueError(
+                    f"page value differs from the {value_transform} transform for {stock_code}"
+                )
+            increment = None
+        else:
+            raise ValueError("unsupported page_observation.value_transform")
 
         page_url = _text(observation.get("page_url"), "page_observation.page_url")
         if page_url not in urls:
             raise ValueError("page_url must appear in external_evidence")
         page_metric = _text(observation.get("page_metric"), "page_observation.page_metric")
         display_text = _text(observation.get("display_text"), "page_observation.display_text")
+        if value_transform is not None and display_text != normalized_display_value:
+            raise ValueError("text observation display_text must equal display_value")
         normalized_observation = {
             "stock_code": stock_code,
             "data_date": data_date,
             "source_file": source_file.replace("\\", "/"),
             "raw_value": raw_value,
-            "display_value": str(display_value),
-            "display_increment": str(increment),
+            "display_value": normalized_display_value,
             "display_unit": display_unit,
             "page_url": page_url,
             "page_metric": page_metric,
             "display_text": display_text,
             "missing_as_zero": missing_as_zero,
         }
+        if increment is not None:
+            normalized_observation["display_increment"] = str(increment)
+        if raw_collection is not None:
+            normalized_observation["raw_collection"] = raw_collection
+        if value_transform is not None:
+            normalized_observation["value_transform"] = value_transform
         if factor_value is not None:
             normalized_observation["raw_to_display_factor"] = format(
                 raw_to_display_factor.normalize(), "f"
@@ -1030,7 +1119,10 @@ def _validate_prior_state(
         raise ValueError("public-page adjudication cannot overwrite an established meaning")
     if previous["canonical"] not in {"", row.get("code", "")}:
         raise ValueError("public-page adjudication cannot overwrite an established canonical name")
-    if previous["unit"] not in {"", _text(decision.get("unit"), "decision.unit")}:
+    if previous["unit"] not in {
+        "",
+        _optional_text(decision.get("unit"), "decision.unit") or "",
+    }:
         raise ValueError("public-page adjudication cannot overwrite an established unit")
 
 
@@ -1270,9 +1362,23 @@ def validate_registry_adjudications(
                     for item in public_records
                 )
             )
+            unitless_exact_text_record = bool(public_records) and all(
+                isinstance(item.get("metadata_change"), dict)
+                and isinstance(item["metadata_change"].get("after"), dict)
+                and item["metadata_change"]["after"].get("unit", "") == ""
+                and isinstance(item.get("page_observations"), list)
+                and bool(item["page_observations"])
+                and all(
+                    isinstance(observation, dict)
+                    and observation.get("value_transform") == "exact_text"
+                    and observation.get("display_unit", "") == ""
+                    for observation in item["page_observations"]
+                )
+                for item in public_records
+            )
             metadata_complete = bool(metadata["canonical"] and metadata["meaning"])
             metadata_complete = metadata_complete and bool(
-                metadata["unit"] or unitless_report_record
+                metadata["unit"] or unitless_report_record or unitless_exact_text_record
             )
             if row.get("status") != "verified" or not metadata_complete:
                 problems.append(

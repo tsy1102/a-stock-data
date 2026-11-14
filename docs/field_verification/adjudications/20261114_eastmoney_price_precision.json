@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex field audit",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_eastmoney_price_precision_evidence.md",
+  "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+  "decisions": [
+    {
+      "id": "20261114-push2-f59-price-precision",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f59"
+      },
+      "previous_status": "candidate",
+      "previous_status_resolution": "status_missing",
+      "previous": {
+        "canonical": "f59",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "quote_price_precision_digits",
+      "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+      "unit": "位（小数位数）",
+      "section": "2026-11-14 Eastmoney 报价精度来源内实证",
+      "rationale": "项目 collect_push2 将 stock/get 响应 data 原样保存。Eastmoney 官方接口于 2026-11-14 查询 600519 和 900901：fltt=1 的 f43 分别为 143526 和 516，f59 分别为 2 和 3；fltt=2 的 f43 分别为 1435.26 和 0.516，均按 10 的 f59 次幂还原并吻合官方行情展示。保留期内来源日期合格的 140 个 A 股样本中 f59 均为 2；由于常量样本不区分语义，定案依赖 B 股差异样本。未发现 Eastmoney 为 stock/get 数字路径发布正式字段释义，故只作来源内经验定案，不称为官方契约或跨源映射。",
+      "sample": {
+        "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f59 均为 2）；加 2026-11-14 17:36 Asia/Shanghai 官方 stock/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f86 对应数据日 2026-11-13。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261114-ulist-f1-price-precision",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f1"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f1",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "quote_price_precision_digits",
+      "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+      "unit": "位（小数位数）",
+      "section": "2026-11-14 Eastmoney 报价精度来源内实证",
+      "rationale": "项目 collect_ulist239 将 ulist.np/get 的 diff 行原样保存。Eastmoney 官方接口于 2026-11-14 查询 600519 和 900901：fltt=1 的 f2 分别为 143526 和 516，f1 分别为 2 和 3；fltt=2 的 f2 分别为 1435.26 和 0.516，均按 10 的 f1 次幂还原并吻合官方行情展示。保留期内来源日期合格的 140 个 A 股样本中 f1 均为 2；由于常量样本不区分语义，定案依赖 B 股差异样本。未发现 Eastmoney 为 ulist.np/get 数字路径发布正式字段释义，故只作来源内经验定案，不称为官方契约或跨源映射。",
+      "sample": {
+        "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f1 均为 2）；加 2026-11-14 17:36–17:38 Asia/Shanghai 官方 ulist.np/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f297 均为 2026-11-13。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    }
+  ]
+}

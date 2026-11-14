@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 372,
+      "aggregate_status_scope_unresolved": 371,
       "candidate": 1,
       "conflict": 36,
       "disproved": 50,
@@ -16,7 +16,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
-      "matched": 787,
+      "matched": 785,
       "not_field_schema_token": 15,
       "official_contract": 31,
       "reference_scope_reconciled": 3,
@@ -27,10 +27,10 @@
       "retired_legacy_path": 28,
       "status_conflict": 30,
       "status_missing": 43,
-      "unresolved": 7,
+      "unresolved": 8,
       "unverified": 1060,
       "verified": 1485,
-      "verified_by_empirical_addendum": 154,
+      "verified_by_empirical_addendum": 156,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 391
@@ -14334,7 +14334,8 @@
       "aggregation_issues": [
         "canonical_incomplete",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -15802,10 +15803,10 @@
       "canonical": "f152",
       "meaning": "",
       "unit": "",
-      "status_raw": "≥0.95 多日再确认（强化既有 ✅/L1）",
+      "status_raw": "⚠️ 旧跨源关系已撤回；字段语义待核",
       "status": "unverified",
       "source_statuses": {
-        "东财-push2(stock/get)": "verified",
+        "东财-push2(stock/get)": "candidate",
         "东财-ulist239(np/get)": "unverified"
       },
       "aggregation_status": "incomplete",
@@ -19012,21 +19013,24 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f59",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
         "东财-em_kline_f61": "verified",
-        "东财-push2(stock/get)": "candidate",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "conflict"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
+        "meaning_differs",
         "meaning_incomplete",
         "source_status_conflict",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -44871,9 +44875,6 @@
     "行情协议固定枚举常量(枚举,恒值)": [
       "东财"
     ],
-    "行情协议固定枚举常量②(恒为2)": [
-      "东财"
-    ],
     "行情协议固定枚举常量③(恒为3)": [
       "东财"
     ],
@@ -45845,21 +45846,13 @@
     ],
     "growth.fixed_asset_invest_expansion_ratio": [
       "同花顺-fuyao"
+    ],
+    "quote_price_precision_digits": [
+      "东财-push2(stock/get)",
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
-    {
-      "from": {
-        "source": "东财-ulist239",
-        "code": "f1"
-      },
-      "to": {
-        "source": "东财-push2",
-        "code": "f59"
-      },
-      "relation": "cross_number_diff_meaning",
-      "evidence": "ulist_push2_align.md"
-    },
     {
       "from": {
         "source": "东财-ulist239",
@@ -46792,18 +46785,6 @@
       "to": {
         "source": "东财-push2",
         "code": "f177"
-      },
-      "relation": "cross_number_diff_meaning",
-      "evidence": "ulist_push2_align.md"
-    },
-    {
-      "from": {
-        "source": "东财-ulist239",
-        "code": "f152"
-      },
-      "to": {
-        "source": "东财-push2",
-        "code": "f59"
       },
       "relation": "cross_number_diff_meaning",
       "evidence": "ulist_push2_align.md"
@@ -160844,25 +160825,29 @@
       "unit": "",
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "sections": [
-        "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
+        "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
+        "2026-11-14 Eastmoney 报价精度关系撤回"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "candidate",
+      "status_resolution": null,
       "status_evidence": {
         "reference_statuses": [
-          "verified"
+          "candidate"
         ],
         "reference_status_raw": [
-          "≥0.95 多日再确认（强化既有 ✅/L1）"
+          "⚠️ 旧跨源关系已撤回；字段语义待核"
         ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "unverified",
         "registry_aggregate_sources": [
           "东财-push2(stock/get)",
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "verified"
-        ]
+          "candidate"
+        ],
+        "manual_correction_id": "20261114-push2-f152-relation-withdrawal",
+        "correction_evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+        "correction_evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
       },
       "reference_evidence": [
         {
@@ -160872,6 +160857,16 @@
           "unit": "",
           "status_raw": "≥0.95 多日再确认（强化既有 ✅/L1）",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-14 Eastmoney 报价精度关系撤回",
+          "canonical": "f152",
+          "meaning": "",
+          "unit": "",
+          "status_raw": "旧跨源相等关系撤回；来源内含义待核",
+          "status": "candidate",
+          "evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+          "evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
         }
       ],
       "attribute_conflicts": {},
@@ -160887,7 +160882,27 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-push2-f152-relation-withdrawal",
+          "action": "withdraw_unsupported_cross_source_status",
+          "status": "candidate",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+          "evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f152",
+            "meaning": "",
+            "unit": ""
+          },
+          "status_resolution_after": null,
+          "rationale": "B-share counterexample invalidates the old f152-to-ulist-f1 equality; the field path exists but its meaning remains unknown, so it returns to candidate rather than disproved."
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -165611,15 +165626,16 @@
       "code": "f59",
       "identity": "东财-push2(stock/get)::f59",
       "path": "f59",
-      "canonical": "f59",
-      "meaning": "",
-      "unit": "",
+      "canonical": "quote_price_precision_digits",
+      "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+      "unit": "位（小数位数）",
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "sections": [
-        "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
+        "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
+        "2026-11-14 Eastmoney 报价精度来源内实证"
       ],
-      "status": "candidate",
-      "status_resolution": null,
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "candidate"
@@ -165634,8 +165650,24 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "candidate"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-push2-f59-price-precision"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+        "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+        "sample": {
+          "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f59 均为 2）；加 2026-11-14 17:36 Asia/Shanghai 官方 stock/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f86 对应数据日 2026-11-13。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -165645,6 +165677,40 @@
           "unit": "",
           "status_raw": "⚠️ 待核对（见下）",
           "status": "candidate"
+        },
+        {
+          "section": "2026-11-14 Eastmoney 报价精度来源内实证",
+          "canonical": "quote_price_precision_digits",
+          "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+          "unit": "位（小数位数）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-push2-f59-price-precision",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+          "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+          "metadata_change": {
+            "before": {
+              "canonical": "f59",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "quote_price_precision_digits",
+              "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+              "unit": "位（小数位数）"
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f59 均为 2）；加 2026-11-14 17:36 Asia/Shanghai 官方 stock/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f86 对应数据日 2026-11-13。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -165661,7 +165727,51 @@
         "status": "conflict",
         "status_raw": "",
         "unit": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-push2-f59-price-precision",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eastmoney_price_precision.json",
+          "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+          "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "candidate",
+          "previous_status_resolution": "status_missing",
+          "previous_metadata": {
+            "canonical": "f59",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f59",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "quote_price_precision_digits",
+              "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+              "unit": "位（小数位数）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目 collect_push2 将 stock/get 响应 data 原样保存。Eastmoney 官方接口于 2026-11-14 查询 600519 和 900901：fltt=1 的 f43 分别为 143526 和 516，f59 分别为 2 和 3；fltt=2 的 f43 分别为 1435.26 和 0.516，均按 10 的 f59 次幂还原并吻合官方行情展示。保留期内来源日期合格的 140 个 A 股样本中 f59 均为 2；由于常量样本不区分语义，定案依赖 B 股差异样本。未发现 Eastmoney 为 stock/get 数字路径发布正式字段释义，故只作来源内经验定案，不称为官方契约或跨源映射。",
+          "sample": {
+            "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f59 均为 2）；加 2026-11-14 17:36 Asia/Shanghai 官方 stock/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f86 对应数据日 2026-11-13。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -169647,15 +169757,16 @@
       "code": "f1",
       "identity": "东财-ulist239(np/get)::f1",
       "path": "f1",
-      "canonical": "f1",
-      "meaning": "",
-      "unit": "",
+      "canonical": "quote_price_precision_digits",
+      "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+      "unit": "位（小数位数）",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-14 Eastmoney 报价精度来源内实证"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -169670,7 +169781,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261114-ulist-f1-price-precision"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+        "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+        "sample": {
+          "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f1 均为 2）；加 2026-11-14 17:36–17:38 Asia/Shanghai 官方 ulist.np/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f297 均为 2026-11-13。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -169680,6 +169807,40 @@
           "unit": "",
           "status_raw": "✅ 跨源",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-14 Eastmoney 报价精度来源内实证",
+          "canonical": "quote_price_precision_digits",
+          "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+          "unit": "位（小数位数）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-ulist-f1-price-precision",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+          "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+          "metadata_change": {
+            "before": {
+              "canonical": "f1",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "quote_price_precision_digits",
+              "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+              "unit": "位（小数位数）"
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f1 均为 2）；加 2026-11-14 17:36–17:38 Asia/Shanghai 官方 ulist.np/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f297 均为 2026-11-13。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -169695,7 +169856,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-ulist-f1-price-precision",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_eastmoney_price_precision.json",
+          "evidence_file": "adjudications/20261114_eastmoney_price_precision_evidence.md",
+          "evidence_sha256": "5d383e90d5807102f821da1c2c69210a335118fbd0d617942ec5783ee252bcf3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f1",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f1",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "quote_price_precision_digits",
+              "meaning": "该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。",
+              "unit": "位（小数位数）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目 collect_ulist239 将 ulist.np/get 的 diff 行原样保存。Eastmoney 官方接口于 2026-11-14 查询 600519 和 900901：fltt=1 的 f2 分别为 143526 和 516，f1 分别为 2 和 3；fltt=2 的 f2 分别为 1435.26 和 0.516，均按 10 的 f1 次幂还原并吻合官方行情展示。保留期内来源日期合格的 140 个 A 股样本中 f1 均为 2；由于常量样本不区分语义，定案依赖 B 股差异样本。未发现 Eastmoney 为 ulist.np/get 数字路径发布正式字段释义，故只作来源内经验定案，不称为官方契约或跨源映射。",
+          "sample": {
+            "scope": "保留期 2026-11-02 至 2026-11-10 的 7 个来源日期合格交易日×20只 A 股（140 条，f1 均为 2）；加 2026-11-14 17:36–17:38 Asia/Shanghai 官方 ulist.np/get fltt=1/fltt=2 对 600519、900901 的同记录比较，f297 均为 2026-11-13。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -173640,21 +173845,25 @@
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-14 Eastmoney 报价精度关系撤回"
       ],
       "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status_resolution": null,
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "unverified",
         "registry_aggregate_sources": [
           "东财-push2(stock/get)",
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "verified"
-        ]
+          "unverified"
+        ],
+        "manual_correction_id": "20261114-ulist-f152-scope-resolution-reset",
+        "correction_evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+        "correction_evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
       },
       "reference_evidence": [
         {
@@ -173664,6 +173873,16 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-14 Eastmoney 报价精度关系撤回",
+          "canonical": "f152",
+          "meaning": "",
+          "unit": "",
+          "status_raw": "普通待核；旧 aggregate_status_scope_unresolved 原因已消失",
+          "status": "unverified",
+          "evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+          "evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
         }
       ],
       "attribute_conflicts": {},
@@ -173679,7 +173898,22 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261114-ulist-f152-scope-resolution-reset",
+          "action": "clear_stale_aggregate_status_resolution",
+          "status": "unverified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-14",
+          "evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
+          "evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "status_resolution_after": null,
+          "rationale": "The prior unresolved aggregate scope was caused by the other source's unsupported verified status, which is now withdrawn; Ulist f152 remains semantically unknown."
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

@@ -3,10 +3,10 @@
 > 来源: 20260815/raw_ulist239.json + raw_push2_full.json 全字段同值匹配(20 股全一致)
 > 用途: ulist239 索引定位(ulist 索引≠push2 索引, 此为权威映射)
 > 2026-11-13 复核：保留期 7 个交易日、20 股共 140 条股票日样本确认资金流路径配对；修正 f62/f66/f72/f78 四条净额语义标签错移，并将“特大单”统一为东方财富页面名称“超大单”。字段路径配对不变；逐值证据见 [中单与资金流复核](../field_verification/adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md)。
+> 2026-11-14 更正：移除 `ulist f1 → push2 f59` 与 `ulist f152 → push2 f59` 两条旧活动关系。前者的历史 A 股恒值相等不足以定映射；两个路径现分别以来源内证据解释为报价精度位数，但本轮未登记跨源关系。后者被同数据日 B 股反例否定：`ulist f152=2`、`push2 f59=3`；`ulist f152` 仍未知。另有旧 `push2 f152 ↔ ulist f1` L1 记录也被同一 B 股样本否定，Push2 f152 已退回候选。旧历史报告不改写；详见[证据与裁决](../field_verification/adjudications/20261114_eastmoney_price_precision_evidence.md)。
 
 | ulist | push2 | push2 语义 | | ulist | push2 | push2 语义 |
 |---|---|---|---|---|---|---|
-| ulist f1 | f59 | 协议固定枚举常量②（全市场恒为 2，非个股指标；2026-09-12 多日实测） |
 | ulist f2 | f43 | 现价 |
 | ulist f3 | f170 | 涨幅% |
 | ulist f4 | f169 | 涨跌额 |
@@ -85,7 +85,6 @@
 | ulist f144 | f43 | 现价2 |
 | ulist f145 | f131 | ≡ulist:f131 同值(✅多日再确认 §12.3.1.2) |
 | ulist f148 | f177 | ≡ulist:f148 同值(✅多日再确认 §12.3.1.2) |
-| ulist f152 | f59 | 总股本(≡ulist:f1, ⚠️待核对 §12.3.1.2) |
 | ulist f153 | f153 | 本端点恒值占位（恒为3，非个股指标；同号映射=常量退化相关） |
 | ulist f154 | f154 | 本端点恒值占位（恒为4，非个股指标；同号映射=常量退化相关） |
 | ulist f184 | f193 | 衍生指标1(≡ulist:f184 同值, ✅ §12.3.1.2) |

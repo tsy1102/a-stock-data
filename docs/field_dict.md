@@ -30,7 +30,7 @@
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。
-- 已验证字段描述缺口：165 条含义为空/占位、38 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；质量问题会阻止其作为碰撞锚。
+- 已验证字段描述缺口：163 条含义为空/占位、38 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；质量问题会阻止其作为碰撞锚。
 - 同短 code 的聚合歧义、缺失定义和疑似合并文本单独列在 [`field_aggregate_review.md`](field_aggregate_review.md)；该清单不覆盖逐源定义，也不自动拆分字段。
 - 完整历史正文：[`field_source_reference.md`](field_source_reference.md)。
 

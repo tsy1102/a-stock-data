@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 462 条逐源记录。
+> 聚合歧义 131 个 code；聚合定义不完整 203 个 code；疑似合并文本 464 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -858,12 +858,12 @@
 
 ### `f1` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f1` | — | — | — | `unverified` |
-| 东财-ulist239(np/get) · `f1` | f1 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | 位（小数位数） | `verified` |
 
 ### `f10` — incomplete
 
@@ -1385,7 +1385,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f152` | f152 | — | — | `verified` |
+| 东财-push2(stock/get) · `f152` | f152 | — | — | `candidate` |
 | 东财-ulist239(np/get) · `f152` | f152 | — | — | `unverified` |
 
 ### `f153` — incomplete
@@ -2109,14 +2109,14 @@
 | 东财-push2(stock/get) · `f58` | f58 | 股票名称 | - | `verified` |
 | 东财-ulist239(np/get) · `f58` | f58 | — | — | `verified` |
 
-### `f59` — incomplete
+### `f59` — ambiguous
 
-聚合问题：meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-em_kline_f61 · `f59` | f59 | 涨跌幅 | % | `verified` |
-| 东财-push2(stock/get) · `f59` | f59 | — | — | `candidate` |
+| 东财-push2(stock/get) · `f59` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | 位（小数位数） | `verified` |
 | 东财-ulist239(np/get) · `f59` | f59 | — | — | `conflict` |
 
 ### `f60` — ambiguous
@@ -3631,6 +3631,7 @@
 | 东财-push2(stock/get) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 东财-push2(stock/get) | `f163` | f163 | 静态市盈率（总市值/上年度净利润） | `verified` |
 | 东财-push2(stock/get) | `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | `verified` |
+| 东财-push2(stock/get) | `f59` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-push2(stock/get) | `f62` | f62 | 最新已发布报告期的季度序号（如 2=中报、3=三季报；不含年份） | `verified` |
 | 东财-push2(stock/get) | `f86` | f86 | 当日收盘/最后行情时间戳 | `verified` |
 | 东财-push2(stock/get) | `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | `verified` |
@@ -3641,6 +3642,7 @@
 | 东财-push2ex | `ylbc` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-push2ex | `zttj.days` | zttj.days / zttj.ct | N天M板 | `verified` |
+| 东财-ulist239(np/get) | `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-ulist239(np/get) | `f114` | f114 | 市盈率(静态/年报 LYR) | `verified` |
 | 东财-ulist239(np/get) | `f13` | f13 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；保留期样本与 f27 同值。 | `verified` |
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |

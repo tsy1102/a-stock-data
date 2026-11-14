@@ -21996,16 +21996,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX-eltdx(适配层)": "verified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_statuses_differ"
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -23760,20 +23761,21 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "status_raw": "✅ L1",
+      "status_raw": "",
       "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "verified",
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
-        "source_status_conflict",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -25266,16 +25268,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX-eltdx(适配层)": "verified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_statuses_differ"
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -27453,16 +27456,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX-eltdx(适配层)": "verified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_statuses_differ"
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -28412,20 +28416,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 估值字段裸根路径身份退役（2026-11-15）",
+      "canonical": "valuation.pe_mrq",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 valuation.pe_mrq。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "pe_next",
@@ -28542,11 +28543,12 @@
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "verified",
         "ZHB-tdxstat": "verified",
-        "同花顺-fuyao": "unverified",
+        "同花顺-fuyao": "disproved",
         "开盘啦(kpl)": "conflict"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
@@ -29513,20 +29515,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
-      "canonical": "派生 `prev_price × 板块涨停幅度",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "✅ L1",
-      "status": "conflict",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
+      "canonical": "snapshot.prev_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.prev_price。官方接口将 prev_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "prev_seal_amount",
@@ -207238,23 +207237,28 @@
       "code": "high_price",
       "identity": "同花顺-fuyao::high_price",
       "path": "high_price",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "snapshot.high_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.high_price。官方接口将 high_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
+      "sections": [
+        "Fuyao 行情快照裸根路径身份退役（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX-eltdx(适配层)"
+        "adjudication_ids": [
+          "20261115-fuyao-high-price-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -207271,7 +207275,119 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "reason": "Fuyao 官方行情快照契约定义 data.item[].high_price 为当日最高价；项目适配器提取 data.item 后由采集器保存到 stocks.<代码>.snapshot。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的 high_price 键均不存在；snapshot.high_price 各有 320 条非空记录。来源级 as_of_date 与目录日一致，但适配器不保留 data.timestamp，本处置只裁定完整采集路径身份，不重新定案跨源数值关系或逐指标有效日期。",
+        "evidence_files": [
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261115_fuyao_snapshot_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-high-price-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX-eltdx(适配层)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -209009,31 +209125,28 @@
       "code": "last_price",
       "identity": "同花顺-fuyao::last_price",
       "path": "last_price",
-      "canonical": "派生 `last_price ÷ f92(BPS)",
-      "meaning": "",
-      "unit": "",
-      "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+      "canonical": "snapshot.last_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.last_price。官方接口将 last_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "Fuyao 行情快照裸根路径身份退役（2026-11-15）"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
+        "adjudication_ids": [
+          "20261115-fuyao-last-price-root-alias-retirement"
         ],
-        "reference_status_raw": [
-          "✅ L1"
-        ],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX(双命名源)",
-          "TDX-eltdx(适配层)"
-        ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "verified",
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -209060,7 +209173,153 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "reason": "Fuyao 官方行情快照契约定义 data.item[].last_price 为最新成交价；项目适配器提取 data.item 后由采集器保存到 stocks.<代码>.snapshot。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的 last_price 键均不存在；snapshot.last_price 各有 320 条非空记录。来源级 as_of_date 与目录日一致，但适配器不保留 data.timestamp，本处置只裁定完整采集路径身份，不重新定案跨源数值关系或逐指标有效日期。",
+        "evidence_files": [
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261115_fuyao_snapshot_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "status_raw": null,
+        "canonical": "派生 `last_price ÷ f92(BPS)",
+        "meaning": "",
+        "unit": "",
+        "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "sections": [
+          "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        ],
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ L1"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+            "canonical": "派生 `last_price ÷ f92(BPS)",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ L1",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-last-price-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "status_raw": null,
+            "canonical": "派生 `last_price ÷ f92(BPS)",
+            "meaning": "",
+            "unit": "",
+            "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+            "sections": [
+              "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+            ],
+            "status_evidence": {
+              "reference_statuses": [
+                "verified"
+              ],
+              "reference_status_raw": [
+                "✅ L1"
+              ],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX(双命名源)",
+                "TDX-eltdx(适配层)"
+              ],
+              "values": [
+                "verified",
+                "unverified"
+              ]
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+                "canonical": "派生 `last_price ÷ f92(BPS)",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ L1",
+                "status": "verified"
+              }
+            ],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -209723,23 +209982,28 @@
       "code": "low_price",
       "identity": "同花顺-fuyao::low_price",
       "path": "low_price",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "snapshot.low_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.low_price。官方接口将 low_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
+      "sections": [
+        "Fuyao 行情快照裸根路径身份退役（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX-eltdx(适配层)"
+        "adjudication_ids": [
+          "20261115-fuyao-low-price-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -209756,7 +210020,119 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "reason": "Fuyao 官方行情快照契约定义 data.item[].low_price 为当日最低价；项目适配器提取 data.item 后由采集器保存到 stocks.<代码>.snapshot。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的 low_price 键均不存在；snapshot.low_price 各有 320 条非空记录。来源级 as_of_date 与目录日一致，但适配器不保留 data.timestamp，本处置只裁定完整采集路径身份，不重新定案跨源数值关系或逐指标有效日期。",
+        "evidence_files": [
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261115_fuyao_snapshot_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-low-price-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX-eltdx(适配层)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -211331,23 +211707,28 @@
       "code": "open_price",
       "identity": "同花顺-fuyao::open_price",
       "path": "open_price",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "snapshot.open_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.open_price。官方接口将 open_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
+      "sections": [
+        "Fuyao 行情快照裸根路径身份退役（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX-eltdx(适配层)"
+        "adjudication_ids": [
+          "20261115-fuyao-open-price-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -211364,7 +211745,119 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "reason": "Fuyao 官方行情快照契约定义 data.item[].open_price 为当日开盘价；项目适配器提取 data.item 后由采集器保存到 stocks.<代码>.snapshot。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的 open_price 键均不存在；snapshot.open_price 各有 320 条非空记录。来源级 as_of_date 与目录日一致，但适配器不保留 data.timestamp，本处置只裁定完整采集路径身份，不重新定案跨源数值关系或逐指标有效日期。",
+        "evidence_files": [
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261115_fuyao_snapshot_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-open-price-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX-eltdx(适配层)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -212592,22 +213085,28 @@
       "code": "pe_mrq",
       "identity": "同花顺-fuyao::pe_mrq",
       "path": "pe_mrq",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "valuation.pe_mrq",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 valuation.pe_mrq。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。",
+      "unit": "倍",
+      "section": "Fuyao 估值字段裸根路径身份退役（2026-11-15）",
+      "sections": [
+        "Fuyao 估值字段裸根路径身份退役（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-pe-mrq-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -212623,34 +213122,139 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+        "reason": "官方估值端点将 pe_ttm/pe_mrq 作为 data.item[] 的叶字段；项目 _items 提取该 item 后，采集器把它保存到 stocks.<代码>.valuation。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的对应键均不存在；valuation.<字段> 各有 320 条非空记录。来源级 as_of_date 均与目录数据日相符，但官方 data.timestamp 未被适配器保存，因此本处置只裁定采集路径身份，不用于逐指标日期或跨源语义推断。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/adjudications/20261105_fuyao_valuation_contract.json",
+          "docs/field_verification/research/20261115_fuyao_valuation_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-pe-mrq-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
       "code": "pe_ttm",
       "identity": "同花顺-fuyao::pe_ttm",
       "path": "pe_ttm",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "valuation.pe_ttm",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 valuation.pe_ttm。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。",
+      "unit": "倍",
+      "section": "Fuyao 估值字段裸根路径身份退役（2026-11-15）",
+      "sections": [
+        "Fuyao 估值字段裸根路径身份退役（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX(双命名源)",
-          "TDX-eltdx(适配层)",
-          "ZHB-tdxstat",
-          "Levistock历史未归属",
-          "开盘啦(kpl)"
+        "adjudication_ids": [
+          "20261115-fuyao-pe-ttm-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -212671,7 +213275,121 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+        "reason": "官方估值端点将 pe_ttm/pe_mrq 作为 data.item[] 的叶字段；项目 _items 提取该 item 后，采集器把它保存到 stocks.<代码>.valuation。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的对应键均不存在；valuation.<字段> 各有 320 条非空记录。来源级 as_of_date 均与目录数据日相符，但官方 data.timestamp 未被适配器保存，因此本处置只裁定采集路径身份，不用于逐指标日期或跨源语义推断。",
+        "evidence_files": [
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/adjudications/20261105_fuyao_valuation_contract.json",
+          "docs/field_verification/research/20261115_fuyao_valuation_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "ZHB-tdxstat",
+            "Levistock历史未归属",
+            "开盘啦(kpl)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-pe-ttm-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_valuation_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX(双命名源)",
+                "TDX-eltdx(适配层)",
+                "ZHB-tdxstat",
+                "Levistock历史未归属",
+                "开盘啦(kpl)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -213094,29 +213812,28 @@
       "code": "prev_price",
       "identity": "同花顺-fuyao::prev_price",
       "path": "prev_price",
-      "canonical": "派生 `prev_price × 板块涨停幅度",
-      "meaning": "",
-      "unit": "",
-      "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+      "canonical": "snapshot.prev_price",
+      "meaning": "旧无分组根路径身份；当前完整采集路径为 snapshot.prev_price。官方接口将 prev_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。",
+      "unit": "元",
+      "section": "Fuyao 行情快照裸根路径身份退役（2026-11-15）",
       "sections": [
-        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        "Fuyao 行情快照裸根路径身份退役（2026-11-15）"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
+        "adjudication_ids": [
+          "20261115-fuyao-prev-price-root-alias-retirement"
         ],
-        "reference_status_raw": [
-          "✅ L1"
-        ],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "verified",
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -213141,7 +213858,149 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+        "reason": "Fuyao 官方行情快照契约定义 data.item[].prev_price 为前收盘价；项目适配器提取 data.item 后由采集器保存到 stocks.<代码>.snapshot。保留边界 20261015 起 18 个 Fuyao raw 日目录、360 条股票记录中，stocks.<代码> 根路径的 prev_price 键均不存在；snapshot.prev_price 各有 320 条非空记录。来源级 as_of_date 与目录日一致，但适配器不保留 data.timestamp，本处置只裁定完整采集路径身份，不重新定案跨源数值关系或逐指标有效日期。",
+        "evidence_files": [
+          "docs/field_source_reference.md",
+          "docs/verify/fuyao_api_full.md",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/field_verification/research/20261115_fuyao_snapshot_path_inventory.csv",
+          "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "docs/field_verification/20261015/raw_fuyao.json",
+          "docs/field_verification/20261015/meta.json",
+          "docs/field_verification/20261016/raw_fuyao.json",
+          "docs/field_verification/20261016/meta.json",
+          "docs/field_verification/20261019/raw_fuyao.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261020/raw_fuyao.json",
+          "docs/field_verification/20261020/meta.json",
+          "docs/field_verification/20261021/raw_fuyao.json",
+          "docs/field_verification/20261021/meta.json",
+          "docs/field_verification/20261023/raw_fuyao.json",
+          "docs/field_verification/20261023/meta.json",
+          "docs/field_verification/20261026/raw_fuyao.json",
+          "docs/field_verification/20261026/meta.json",
+          "docs/field_verification/20261028/raw_fuyao.json",
+          "docs/field_verification/20261028/meta.json",
+          "docs/field_verification/20261029/raw_fuyao.json",
+          "docs/field_verification/20261029/meta.json",
+          "docs/field_verification/20261030/raw_fuyao.json",
+          "docs/field_verification/20261030/meta.json",
+          "docs/field_verification/20261102/raw_fuyao.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_fuyao.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_fuyao.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_fuyao.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_fuyao.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_fuyao.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_fuyao.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261112/raw_fuyao.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "status_raw": null,
+        "canonical": "派生 `prev_price × 板块涨停幅度",
+        "meaning": "",
+        "unit": "",
+        "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "sections": [
+          "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+        ],
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ L1"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+            "canonical": "派生 `prev_price × 板块涨停幅度",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ L1",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-prev-price-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_snapshot_root_path_retirement.md",
+          "previous_status_snapshot": {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "status_raw": null,
+            "canonical": "派生 `prev_price × 板块涨停幅度",
+            "meaning": "",
+            "unit": "",
+            "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+            "sections": [
+              "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕"
+            ],
+            "status_evidence": {
+              "reference_statuses": [
+                "verified"
+              ],
+              "reference_status_raw": [
+                "✅ L1"
+              ],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "verified",
+                "unverified"
+              ]
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+                "canonical": "派生 `prev_price × 板块涨停幅度",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ L1",
+                "status": "verified"
+              }
+            ],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",

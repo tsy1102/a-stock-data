@@ -2092,14 +2092,14 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
+      "section": "2026-11-15 Push2EX HHMMSS token classification",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -167133,19 +167133,22 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-15 Push2EX HHMMSS token classification",
+      "sections": [
+        "2026-11-15 Push2EX HHMMSS token classification"
+      ],
+      "status": "disproved",
+      "status_resolution": "not_field_schema_token",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "push2ex-schema-token-nonfield-20261115:东财-push2ex::HHMMSS",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "东财-push2ex"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "not_field_schema_token"
         ]
       },
       "reference_evidence": [],
@@ -167161,6 +167164,51 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "东财-push2ex"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "HHMMSS",
+          "sources": [
+            "东财-push2ex"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        }
+      },
+      "adjudication_evidence": {
+        "id": "push2ex-schema-token-nonfield-20261115:东财-push2ex::HHMMSS",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_push2ex_hhmmss_not_field.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_push2ex_hhmmss_not_field.md",
+          "docs/field_verification/research/20261115_push2ex_hhmmss_path_audit.csv",
+          "docs/field_source_reference.md",
+          "stock_common/sc_datasource/_pools.py"
+        ],
+        "reason": "字段参考表将 HHMMSS 标作时间值单位/格式，适配器输出具名时间路径；18 个保留期且目录 data_date 合格的 Push2EX raw JSON 中，精确对象键 HHMMSS 出现 0 次。归档均缺 source_as_of_date，因此这些 raw 仅用于核对结构键，不作为正式数值碰撞样本，也不推断时间值日期。",
+        "sample_as_of_dates": [],
+        "sample_count_per_path": 0
       }
     },
     {

@@ -155,6 +155,120 @@ def test_retired_path_in_baseline_remains_in_historical_parity():
     assert problems == []
 
 
+def test_collector_output_container_requires_auditable_decision(monkeypatch):
+    evidence_paths = {
+        "docs/field_verification/collector_container.md",
+        "scripts/capture_catalog.py",
+    }
+    monkeypatch.setattr(
+        registry_parity,
+        "_repo_file_exists",
+        lambda path: path in evidence_paths,
+    )
+    row = {
+        "source": "source-a",
+        "code": "pool_rows",
+        "status": "disproved",
+        "status_resolution": "collector_output_container",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/collector_container.md",
+            "reason": "The path is a collector output list container, not a row field.",
+            "evidence_files": [
+                "docs/field_verification/collector_container.md",
+                "scripts/capture_catalog.py",
+            ],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    pairs, problems = registry_parity._validated_non_field_schema_pairs([row], set())
+
+    assert pairs == {("source-a", "pool_rows")}
+    assert problems == []
+
+
+def test_collector_output_container_in_baseline_stays_in_native_parity(monkeypatch):
+    evidence_paths = {
+        "docs/field_verification/collector_container.md",
+        "scripts/capture_catalog.py",
+    }
+    monkeypatch.setattr(
+        registry_parity,
+        "_repo_file_exists",
+        lambda path: path in evidence_paths,
+    )
+    row = {
+        "source": "source-a",
+        "code": "pool_rows",
+        "status": "disproved",
+        "status_resolution": "collector_output_container",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/collector_container.md",
+            "reason": "The path is a collector output list container, not a row field.",
+            "evidence_files": [
+                "docs/field_verification/collector_container.md",
+                "scripts/capture_catalog.py",
+            ],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    excluded_pairs, problems = registry_parity._validated_non_field_schema_pairs(
+        [row], {("source-a", "pool_rows")}
+    )
+
+    assert excluded_pairs == set()
+    assert problems == []
+
+
+def test_collector_output_container_rejects_missing_evidence(monkeypatch):
+    monkeypatch.setattr(registry_parity, "_repo_file_exists", lambda _: False)
+    row = {
+        "source": "source-a",
+        "code": "pool_rows",
+        "status": "disproved",
+        "status_resolution": "collector_output_container",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/missing.md",
+            "reason": "The path is a collector output list container.",
+            "evidence_files": ["scripts/capture_catalog.py"],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    pairs, problems = registry_parity._validated_non_field_schema_pairs([row], set())
+
+    assert pairs == set()
+    assert any("采集容器路径" in problem for problem in problems)
+
+
+def test_collector_output_container_in_baseline_still_requires_evidence(monkeypatch):
+    monkeypatch.setattr(registry_parity, "_repo_file_exists", lambda _: False)
+    row = {
+        "source": "source-a",
+        "code": "pool_rows",
+        "status": "disproved",
+        "status_resolution": "collector_output_container",
+        "adjudication_evidence": {
+            "decision": "disproved",
+            "decision_note": "docs/field_verification/missing.md",
+            "reason": "The path is a collector output list container.",
+            "evidence_files": ["scripts/capture_catalog.py"],
+        },
+        "superseded_status_evidence": {"status": "unverified"},
+    }
+
+    excluded_pairs, problems = registry_parity._validated_non_field_schema_pairs(
+        [row], {("source-a", "pool_rows")}
+    )
+
+    assert excluded_pairs == set()
+    assert any("采集容器路径" in problem for problem in problems)
+
+
 def test_native_parity_remains_strict_without_accepted_debt():
     expected = {("source-a", "field-a"), ("source-b", "field-b")}
     actual = {("source-b", "field-b")}

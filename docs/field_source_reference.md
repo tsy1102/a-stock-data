@@ -2263,7 +2263,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | **新闻层** | ✅ 全覆盖 | `get_eastmoney_stock_news`、`cls_telegraph`(财联社)、`get_eastmoney_global_news` | 无 |
 | **基础数据** | ✅ 全覆盖 | `tdx_get_finance_info`(0x0010 37字段)、F10系列、`get_sina_financial_report`+`get_sina_balance_sheet`+`get_eastmoney_cash_flow`(三表) | 无 |
 | **公告层** | ✅ 全覆盖 | `get_strategic_announcements`(巨潮)、`tdx_get_latest_announcements` | 无 |
-| **打板层** | ⚠️ 部分 | `get_limit_up_pool`(涨停)、`get_limit_broken_pool`(炸板)、`get_limit_down_pool`(跌停)、`ths_limit_up_pool`(同花顺揭秘) | ① **重点监控池 `em_stock_monitor`**：✅ 已联网验证可用（17条，字段 MARKET/STKCODE/STKNAME/VALIDATESTARTDATE/VALIDATEENDDATE，注意 MARKET="B"=北交所）② 昨涨停池（getTopicYTPool 接口返回非JSON，待研）③ 日内异动池 `em_price_anomaly`：❌ 接口返回 "unknow product" 不可用（参考仓库也注明）|
+| **打板层** | ⚠️ 部分 | `get_limit_up_pool`(涨停)、`get_limit_broken_pool`(炸板)、`get_limit_down_pool`(跌停)、`get_yesterday_limit_pool`(昨涨停)、`ths_limit_up_pool`(同花顺揭秘) | ① **重点监控池 `em_stock_monitor`**：✅ 已联网验证可用（17条，字段 MARKET/STKCODE/STKNAME/VALIDATESTARTDATE/VALIDATEENDDATE，注意 MARKET="B"=北交所）② 旧 `getTopicYTPool` 返回非JSON；项目另已接入 `getYesterdayZTPool`，其字段/日期仍待核验。③ 日内异动池 `em_price_anomaly`：❌ 接口返回 "unknow product" 不可用（参考仓库也注明）|
 | **期权层** | ❌ 缺失 | 无 | 新浪期权 T型报价/希腊字母/IV——**股票研究项目可选**，低优先 |
 | **舆情互动** | ✅ 全覆盖 | `cninfo_irm`(互动易)、`ths_hot_list`(热榜)、`em_hot_rank`(人气榜)、`em_hot_concept`(概念命中) | 无 |
 
@@ -2302,7 +2302,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 **联网验证结论**：
 - ✅ **可补充**：重点监控池（17条已实测）、板块资金流（83.push2 可用）
-- ⚠️ **待研**：昨涨停池（接口返回非 JSON）、研报 PDF 下载
+- ⚠️ **待研**：旧 `getTopicYTPool` 接口（返回非 JSON）；项目接入的 `getYesterdayZTPool` 字段/日期核验仍待完成；研报 PDF 下载
 - ❌ **不可用**：日内异动池（`unknow product`，参考仓库同款问题）
 - ⏸️ **可选**：iwencai（需 Key）、期权层（股票研究非核心）
 
@@ -2420,7 +2420,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 基础 | 新浪财报三表 | quotes.sina.cn | `get_sina_financial_report` | ✅ |
 | 公告 | 巨潮公告 | cninfo.com.cn | `get_strategic_announcements` | ✅ |
 | 打板 | 东财涨停/炸板/跌停池 | push2ex.eastmoney.com | `get_limit_up_pool` / `get_limit_broken_pool` / `get_limit_down_pool` | ✅ |
-| 打板 | 东财昨涨停池 | push2ex.eastmoney.com | 无 | ⏸️ |
+| 打板 | 东财昨涨停池 | push2ex.eastmoney.com | `get_yesterday_limit_pool` | ✅ 已接入采集；字段/日期仍待核验 |
 | 打板 | 同花顺涨停揭秘 | data.10jqka.com.cn | `ths_limit_up_pool` | ✅ |
 | 打板 | 东财重点监控池 | mobappconfig.securities | `em_stock_monitor` | ✅ |
 | 打板 | 东财日内异动 | dycalchis.eastmoney.com | 无 | ❌ |
@@ -2435,7 +2435,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 > 接口：`https://push2ex.eastmoney.com/getTopicZTPool|getTopicZBPool|getTopicDTPool|getYesterdayZTPool`
 > 参数：`ut=7eea3edcaed734bea9cbfc24409ed989, dpt=wz.ztzt, pagesize=10000, sort=fbt:asc|fund:asc|zs:desc, date=YYYYMMDD`
-> 项目函数：`get_limit_up_pool`(zt) / `get_limit_broken_pool`(zb) / `get_limit_down_pool`(dt)；**em_yzt_pool(昨涨停) 未接入** ⏸️
+> 项目函数：`get_limit_up_pool`(zt) / `get_limit_broken_pool`(zb) / `get_limit_down_pool`(dt) / `get_yesterday_limit_pool`(yesterday_limit_pool)；昨日池接口 `getYesterdayZTPool` 已接入采集。
 
 | 原始字段 | 含义 | 单位 | 项目映射 | 状态 |
 |:---|:---|:---:|:---|:---:|
@@ -2463,7 +2463,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | oc | 开板次数 | 次 | - | ✅ |
 | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | HHMMSS / 板 | y_first_seal / y_limit_count | ⚠️ |
 
-> ⚠️ 含义由 `stock_common/sc_datasource/_pools.py:get_yesterday_limit_pool()` 代码级确证（源 `push2ex.eastmoney.com/getYesterdayZTPool`，与同表 `fbt/lbc` 为「昨日」对应项）；本仓无含此二字段的 raw 快照、实时 2026 补采受阻，缺数值闭环故不升 L1。
+> ⚠️ `get_yesterday_limit_pool()` 将上游 `yfbt` / `ylbc` 映射到项目键 `y_first_seal` / `y_limit_count`，代码注释分别写作“昨封板时间”/“昨连板数”；这只能证明项目映射和候选解释，不能替代上游字段定义或数据日期证据。当前保留期内尚无该接口样本；待正常交易日采集后，须按股票和相邻交易日对照池内记录及官方页面。
 
 #### 12.8.2 东财 push2 历史资金流（120 日，日级）✅
 

@@ -219,8 +219,8 @@ def main(argv=None):
     )
     print(
         f"parity[adjudicated-non-fields]: {'PASS' if not non_field_problems else 'FAIL'} "
-        f"{len(non_field_pairs)} 条类型/格式说明或基线外退役旧路径不是独立返回路径；"
-        "YYYYMMDD 保留为日期值格式元数据，对应字段见裁决文档"
+        f"{len(non_field_pairs)} 条类型/格式标记、基线外采集器输出容器或已审计退役路径已排除；"
+        "历史基线中的容器路径仍计入 parity；YYYYMMDD 保留为日期值格式元数据，对应字段见裁决文档"
     )
     print(
         f"parity[source-contract-adjudications]: "
@@ -308,12 +308,16 @@ def _validated_non_field_schema_pairs(
     source_records: list[dict],
     expected_pairs: set[tuple[str, str]],
 ) -> tuple[set[tuple[str, str]], list[str]]:
-    """Exclude schema tokens and evidenced retired aliases outside the active baseline."""
+    """Exclude non-field tokens and paths, retaining historical baseline identities."""
     pairs: set[tuple[str, str]] = set()
     problems: list[str] = []
     for row in source_records:
         resolution = row.get("status_resolution")
-        if resolution not in {"not_field_schema_token", "retired_legacy_path"}:
+        if resolution not in {
+            "not_field_schema_token",
+            "collector_output_container",
+            "retired_legacy_path",
+        }:
             continue
         source, code = row.get("source"), row.get("code")
         if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
@@ -322,11 +326,12 @@ def _validated_non_field_schema_pairs(
         if row.get("status") != "disproved":
             problems.append(f"{source}::{code} {resolution} 路径必须保持 disproved")
             continue
-        if resolution == "retired_legacy_path":
-            pair = (source, code)
-            # A retired path already in the baseline remains part of historical parity.
-            if pair in expected_pairs:
-                continue
+        pair = (source, code)
+        if resolution == "retired_legacy_path" and pair in expected_pairs:
+            # Historical baseline membership preserves parity; these existing
+            # retired-path records predate the stricter audit-evidence contract.
+            continue
+        if resolution in {"retired_legacy_path", "collector_output_container"}:
             evidence = row.get("adjudication_evidence")
             evidence_files = evidence.get("evidence_files") if isinstance(evidence, dict) else None
             if (
@@ -345,11 +350,21 @@ def _validated_non_field_schema_pairs(
                 or not _repo_file_exists(evidence["decision_note"])
                 or not isinstance(row.get("superseded_status_evidence"), dict)
             ):
-                problems.append(
-                    f"{source}::{code} 基线外退役路径缺少决定、理由、证据文件或原状态快照"
+                label = (
+                    "采集容器路径"
+                    if resolution == "collector_output_container"
+                    else "基线外退役路径"
                 )
+                problems.append(f"{source}::{code} {label}缺少决定、理由、证据文件或原状态快照")
                 continue
-        pairs.add((source, code))
+        if resolution == "collector_output_container" and pair in expected_pairs:
+            # Keep historical baseline identities in native parity while the
+            # adjudication removes them from the unresolved-field queue.
+            continue
+        if resolution == "retired_legacy_path" and pair in expected_pairs:
+            # A retired path already in the baseline remains part of historical parity.
+            continue
+        pairs.add(pair)
     return pairs, problems
 
 

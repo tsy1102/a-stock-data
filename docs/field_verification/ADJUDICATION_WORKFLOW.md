@@ -181,6 +181,12 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 满足上述条件后，留存逐来源的日期化审计记录，仅将对应精确身份标为 `disproved`、`status_resolution: not_field_schema_token`，并说明它是类型/格式占位符而非数据路径；不创建字段映射，不把相同短 token 批量套到其他来源。若该字符串确实是接口响应键，则继续按普通来源字段核验。
 
+## 排除采集器输出容器路径
+
+注册表路径若对应 `CAPTURE_UNIT_CATALOG.output_paths` 中的列表/对象输出容器，不应作为上游业务字段破解。先逐条追踪目录项、调用的采集器函数和适配器返回结构，再核对字段完整性审计是否只从容器内记录提取字段键。可用保留期归档验证容器形状，但须先核对目录名与 `meta.data_date`；缺少来源 `as_of_date` 时，归档只支持结构判断，不作数值碰撞或来源日期推断。空列表不证明接口失败或字段无效。
+
+留存精确 `(source, code path)`、代码与结构审计证据、原状态快照，并将其标为 `disproved`、`status_resolution: collector_output_container`。这与类型/格式 token (`not_field_schema_token`) 和曾经存在但已退役的字段路径 (`retired_legacy_path`) 分开记录；不得把容器下的记录字段一并排除。
+
 ## 退出当前解析器中的历史来源路径
 
 当注册表仍列出一个旧来源路径，但当前解析器和测试均不再输出该路径时，先按完整 `(source, code path)` 检查它是否只是同一来源中已由新路径承接的历史键。必须有旧协议/说明明确旧键指向的来源列、当前解析器把同一列映射到新键、测试覆盖当前映射，并检查保留期内按来源实际数据日去重后的样本未出现旧键；不得把目录自然日当成来源日期，也不得读取保留起点之前的 raw、ZHB 包或解析缓存。

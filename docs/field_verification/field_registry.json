@@ -24071,14 +24071,14 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -24165,14 +24165,14 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -24703,14 +24703,14 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -172574,20 +172574,57 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "status_missing",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
+      "sections": [
+        "2026-11-15 Push2EX pool output containers are not field paths"
+      ],
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_broken_pool",
         "reference_status_raw": [],
-        "registry_aggregate_status": null,
+        "reference_statuses": [],
         "registry_aggregate_sources": [],
-        "values": []
+        "registry_aggregate_status": null,
+        "values": [
+          "collector_output_container"
+        ]
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
-      "registry_aggregate": null
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "status_missing",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": null,
+          "registry_aggregate_sources": [],
+          "values": []
+        },
+        "registry_aggregate": null
+      },
+      "adjudication_evidence": {
+        "id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_broken_pool",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+          "docs/field_verification/research/20261115_push2ex_pool_container_audit.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_http_collectors.py",
+          "stock_common/sc_datasource/_pools.py",
+          "scripts/audit_field_completeness.py"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将 limit_up_pool、limit_down_pool、limit_broken_pool 登记为输出路径；collect_push2ex 把三个 adapter 返回列表分别放入这些根路径。保留期 18 个合格归档中三项均为列表容器。audit_field_completeness.py 只从列表项提取字段键，不把根容器名当作字段。归档缺少 source_as_of_date，故只作结构佐证，不用列表值进行数值碰撞或推断来源数据日。",
+        "sample_as_of_dates": [],
+        "sample_count_per_path": 0
+      }
     },
     {
       "source": "东财-push2ex",
@@ -172722,19 +172759,22 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
+      "sections": [
+        "2026-11-15 Push2EX pool output containers are not field paths"
+      ],
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_down_pool",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "东财-push2ex"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "collector_output_container"
         ]
       },
       "reference_evidence": [],
@@ -172750,6 +172790,53 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "东财-push2ex"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "limit_down_pool",
+          "sources": [
+            "东财-push2ex"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        }
+      },
+      "adjudication_evidence": {
+        "id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_down_pool",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+          "docs/field_verification/research/20261115_push2ex_pool_container_audit.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_http_collectors.py",
+          "stock_common/sc_datasource/_pools.py",
+          "scripts/audit_field_completeness.py"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将 limit_up_pool、limit_down_pool、limit_broken_pool 登记为输出路径；collect_push2ex 把三个 adapter 返回列表分别放入这些根路径。保留期 18 个合格归档中三项均为列表容器。audit_field_completeness.py 只从列表项提取字段键，不把根容器名当作字段。归档缺少 source_as_of_date，故只作结构佐证，不用列表值进行数值碰撞或推断来源数据日。",
+        "sample_as_of_dates": [],
+        "sample_count_per_path": 0
       }
     },
     {
@@ -172850,20 +172937,57 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "status_missing",
+      "section": "2026-11-15 Push2EX pool output containers are not field paths",
+      "sections": [
+        "2026-11-15 Push2EX pool output containers are not field paths"
+      ],
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_up_pool",
         "reference_status_raw": [],
-        "registry_aggregate_status": null,
+        "reference_statuses": [],
         "registry_aggregate_sources": [],
-        "values": []
+        "registry_aggregate_status": null,
+        "values": [
+          "collector_output_container"
+        ]
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
-      "registry_aggregate": null
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "status_missing",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": null,
+          "registry_aggregate_sources": [],
+          "values": []
+        },
+        "registry_aggregate": null
+      },
+      "adjudication_evidence": {
+        "id": "push2ex-output-container-nonfield-20261115:东财-push2ex::limit_up_pool",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_push2ex_pool_containers_not_fields.md",
+          "docs/field_verification/research/20261115_push2ex_pool_container_audit.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_http_collectors.py",
+          "stock_common/sc_datasource/_pools.py",
+          "scripts/audit_field_completeness.py"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将 limit_up_pool、limit_down_pool、limit_broken_pool 登记为输出路径；collect_push2ex 把三个 adapter 返回列表分别放入这些根路径。保留期 18 个合格归档中三项均为列表容器。audit_field_completeness.py 只从列表项提取字段键，不把根容器名当作字段。归档缺少 source_as_of_date，故只作结构佐证，不用列表值进行数值碰撞或推断来源数据日。",
+        "sample_as_of_dates": [],
+        "sample_count_per_path": 0
+      }
     },
     {
       "source": "东财-push2ex",

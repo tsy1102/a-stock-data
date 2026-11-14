@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-15",
+  "decisions": [
+    {
+      "id": "20261115-push2ex-sector",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-push2ex",
+        "code": "sector"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sector",
+      "meaning": "涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。",
+      "unit": "-",
+      "rationale": "项目代码在 _parse_limit_pool 与 get_yesterday_limit_pool 中均将上游 item.get('hybk') 原样写入输出路径 sector；同一来源的精确路径 东财-push2ex::hybk 已由字段来源参考和注册表核验为“所属行业板块”。东方财富官网个股页在“所属板块”区域显示 [光伏设备] 相关个股；2026-11-12 保留样本中 002623 亚玛顿和 603396 金辰股份的 Push2EX sector 均为“光伏设备”，仅作语义佐证。该批样本缺少 source_as_of_dates.push2ex，不作来源日期合格的正式碰撞证据。官方 Push2EX API 直链未能由网页核验工具打开，因此本决定不声称已读取当前 API 响应，也不推断板块分类体系、层级、版本、完整标签格式或其他来源同名 sector 的等价关系。研究记录：adjudications/public_web/20261115_public_web_research.md。",
+      "source_contract": {
+        "authority": "东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk",
+        "revision": "Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验",
+        "path": "getTopicZTPool 响应 data[].hybk",
+        "locator": "stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified",
+        "url": "https://push2ex.eastmoney.com/getTopicZTPool"
+      }
+    }
+  ]
+}

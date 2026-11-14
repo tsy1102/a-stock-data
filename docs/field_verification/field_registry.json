@@ -1,41 +1,42 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-14",
+    "updated": "2026-11-15",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 365,
+      "aggregate_status_scope_unresolved": 364,
       "candidate": 1,
+      "collector_output_container": 3,
       "conflict": 36,
-      "disproved": 50,
+      "disproved": 54,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
       "matched": 785,
-      "not_field_schema_token": 15,
+      "not_field_schema_token": 16,
       "official_contract": 31,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 544,
+      "registry_status_only_single_source": 542,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 28,
       "status_conflict": 30,
-      "status_missing": 43,
+      "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1050,
-      "verified": 1495,
+      "unverified": 1045,
+      "verified": 1496,
       "verified_by_empirical_addendum": 158,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 391
+      "verified_by_source_contract": 392
     },
-    "updated_at": "2026-11-14"
+    "updated_at": "2026-11-15"
   },
   "sources": [
     {
@@ -32588,13 +32589,15 @@
       "status": "unverified",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "东财-push2ex": "unverified",
+        "东财-push2ex": "verified",
         "市场源(market_sources)": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -45850,6 +45853,9 @@
       "东财-push2ex"
     ],
     "push2ex.tradable_a_market_value": [
+      "东财-push2ex"
+    ],
+    "sector": [
       "东财-push2ex"
     ]
   },
@@ -174447,13 +174453,15 @@
       "code": "sector",
       "identity": "东财-push2ex::sector",
       "path": "sector",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "sector",
+      "meaning": "涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。",
+      "unit": "-",
+      "section": "source contract: 东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk · getTopicZTPool 响应 data[].hybk#stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified @ Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验",
+      "sections": [
+        "source contract: 东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk · getTopicZTPool 响应 data[].hybk#stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified @ Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -174465,9 +174473,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261115-push2ex-sector"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261115-push2ex-sector"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk · getTopicZTPool 响应 data[].hybk#stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified @ Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验",
+          "canonical": "sector",
+          "meaning": "涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-15：20261115-push2ex-sector",
+          "status": "verified",
+          "adjudication_id": "20261115-push2ex-sector",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk",
+            "revision": "Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验",
+            "path": "getTopicZTPool 响应 data[].hybk",
+            "locator": "stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified",
+            "url": "https://push2ex.eastmoney.com/getTopicZTPool"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sector",
+              "meaning": "涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。",
+              "unit": "-"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "sector",
@@ -174482,7 +174526,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261115-push2ex-sector",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-15",
+          "decision_file": "adjudications/20261115_push2ex_sector_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sector",
+              "meaning": "涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。",
+              "unit": "-"
+            }
+          },
+          "rationale": "项目代码在 _parse_limit_pool 与 get_yesterday_limit_pool 中均将上游 item.get('hybk') 原样写入输出路径 sector；同一来源的精确路径 东财-push2ex::hybk 已由字段来源参考和注册表核验为“所属行业板块”。东方财富官网个股页在“所属板块”区域显示 [光伏设备] 相关个股；2026-11-12 保留样本中 002623 亚玛顿和 603396 金辰股份的 Push2EX sector 均为“光伏设备”，仅作语义佐证。该批样本缺少 source_as_of_dates.push2ex，不作来源日期合格的正式碰撞证据。官方 Push2EX API 直链未能由网页核验工具打开，因此本决定不声称已读取当前 API 响应，也不推断板块分类体系、层级、版本、完整标签格式或其他来源同名 sector 的等价关系。研究记录：adjudications/public_web/20261115_public_web_research.md。",
+          "source_contract": {
+            "authority": "东方财富 Push2EX 涨停池接口及其已验证同源字段 hybk",
+            "revision": "Push2EX 接口未公布版本；按项目适配器、来源参考及注册表在 2026-11-15 核验",
+            "path": "getTopicZTPool 响应 data[].hybk",
+            "locator": "stock_common/sc_datasource/_pools.py::_parse_limit_pool 与 get_yesterday_limit_pool 将 item.get('hybk') 映射到输出 sector；docs/field_source_reference.md §12.8.1 列出 hybk → sector；field_registry.json 中 东财-push2ex::hybk 已 verified",
+            "url": "https://push2ex.eastmoney.com/getTopicZTPool"
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2ex",

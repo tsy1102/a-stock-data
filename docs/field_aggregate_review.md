@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 133 个 code；聚合定义不完整 202 个 code；疑似合并文本 471 条逐源记录。
+> 聚合歧义 133 个 code；聚合定义不完整 203 个 code；疑似合并文本 472 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3154,6 +3154,15 @@
 | 开盘红 · `seal_money` | max_seal | 封单金额；与 KPL max_seal 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `seal_money` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
+### `sector` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-push2ex · `sector` | sector | 涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。 | - | `verified` |
+| 市场源(market_sources) · `sector` | — | — | — | `unverified` |
+
 ### `shares` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
@@ -3650,6 +3659,7 @@
 | 东财-push2ex | `last_limit_time` | limit_pool_last_seal_time | 东财涨停股池个股当日最后封板时间；项目原值为 HHMMSS 数字字符串，左补零后格式化为页面显示的 HH:MM:SS。 | `verified` |
 | 东财-push2ex | `limit_count` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；与同数据日 KPL col_15 的三个有效日期 271 组对照逐值相等。11 月 5 日次日回查存在集合和值差异，已单独记录且不计入正证据。 | `verified` |
 | 东财-push2ex | `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | `verified` |
+| 东财-push2ex | `sector` | sector | 涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。 | `verified` |
 | 东财-push2ex | `total_value` | push2ex.total_market_value | A股总市值；按总股本乘该涨停/跌停/炸板池记录的A股现价计算，输出单位元。 | `verified` |
 | 东财-push2ex | `turnover_rate` | limit_pool_turnover_rate | 东财涨停股池个股当日换手率；官方页面值以百分比显示。本裁决只确认该来源路径对应官方涨停池“换手率”列，不推断自由流通或其他计算口径。 | `verified` |
 | 东财-push2ex | `yfbt` | yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | `unverified` |

@@ -382,7 +382,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 75
+    assert len(pairs) == 88
     assert ("同花顺-fuyao", "growth.total_assets_growth_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.total_assets_net_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.index_deduct_weighted_avg_roe") in pairs
@@ -397,6 +397,23 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert matrix["growth.total_assets_growth_ratio"] == {"同花顺-fuyao"}
     assert matrix["profitability.total_assets_net_ratio"] == {"同花顺-fuyao"}
     assert matrix["profitability.index_deduct_weighted_avg_roe"] == {"同花顺-fuyao"}
+    for path in (
+        "solvency.current_ratio",
+        "solvency.quick_ratio",
+        "solvency.cash_ratio",
+        "solvency.earned_interest_multiple",
+        "operation.long_term_debt_equity_ratio",
+        "operation.total_assets_turnover_ratio",
+        "operation.inventory_turnover_ratio",
+        "operation.current_assets_turnover_ratio",
+        "operation.receive_account_turnover_ratio",
+        "cash-flow.cash_operating_index",
+        "cash-flow.operating_cash_flow_net_divide_income",
+        "cash-flow.net_profit_cash_content",
+        "cash-flow.cash_meet_invest_ratio",
+    ):
+        assert ("同花顺-fuyao", path) in pairs
+        assert matrix[path] == {"同花顺-fuyao"}
     assert "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float" not in matrix
     assert "finance_batch[].fa_ren_gu_raw_float" not in matrix
 

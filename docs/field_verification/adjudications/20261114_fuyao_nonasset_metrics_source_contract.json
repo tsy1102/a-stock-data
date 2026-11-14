@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-14",
+  "decisions": [
+    {
+      "id": "20261114-fuyao-solvency-current_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "solvency.current_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "solvency.current_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "solvency.current_ratio",
+      "meaning": "流动比率；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 偿债能力（solvency）指标表逐项列出精确 index_id `current_ratio` 及中文名称“流动比率”。比率单位未明确。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.solvency.current_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；偿债能力 solvency 指标表 `current_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-solvency-quick_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "solvency.quick_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "solvency.quick_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "solvency.quick_ratio",
+      "meaning": "速动比率；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 偿债能力（solvency）指标表逐项列出精确 index_id `quick_ratio` 及中文名称“速动比率”。比率单位未明确。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.solvency.quick_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；偿债能力 solvency 指标表 `quick_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-solvency-cash_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "solvency.cash_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "solvency.cash_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "solvency.cash_ratio",
+      "meaning": "现金比率；接口值按百分数表达。",
+      "unit": "%",
+      "rationale": "官方财务指标接口在 偿债能力（solvency）指标表逐项列出精确 index_id `cash_ratio` 及中文名称“现金比率”。官方数值口径将现金比率列为百分数。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.solvency.cash_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；偿债能力 solvency 指标表 `cash_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-solvency-earned_interest_multiple-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "solvency.earned_interest_multiple"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "solvency.earned_interest_multiple",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "solvency.earned_interest_multiple",
+      "meaning": "已获利息倍数；官方文档说明已获利息倍数按“倍”展示。",
+      "unit": "倍",
+      "rationale": "官方财务指标接口在 偿债能力（solvency）指标表逐项列出精确 index_id `earned_interest_multiple` 及中文名称“已获利息倍数”。官方数值口径明确按倍展示。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.solvency.earned_interest_multiple。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 102 个非空值、238 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；偿债能力 solvency 指标表 `earned_interest_multiple`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-operation-long_term_debt_equity_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operation.long_term_debt_equity_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "operation.long_term_debt_equity_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operation.long_term_debt_equity_ratio",
+      "meaning": "长期负债权益比率；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 营运能力（operation）指标表逐项列出精确 index_id `long_term_debt_equity_ratio` 及中文名称“长期负债权益比率”。官方未明确该比率的具体量纲。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.operation.long_term_debt_equity_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；营运能力 operation 指标表 `long_term_debt_equity_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-operation-total_assets_turnover_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operation.total_assets_turnover_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "operation.total_assets_turnover_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operation.total_assets_turnover_ratio",
+      "meaning": "总资产周转率；官方文档说明周转率通常按“次”展示。",
+      "unit": "次",
+      "rationale": "官方财务指标接口在 营运能力（operation）指标表逐项列出精确 index_id `total_assets_turnover_ratio` 及中文名称“总资产周转率”。官方数值口径说明周转率通常按次展示。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.operation.total_assets_turnover_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；营运能力 operation 指标表 `total_assets_turnover_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-operation-inventory_turnover_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operation.inventory_turnover_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "operation.inventory_turnover_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operation.inventory_turnover_ratio",
+      "meaning": "存货周转率；官方文档说明周转率通常按“次”展示。",
+      "unit": "次",
+      "rationale": "官方财务指标接口在 营运能力（operation）指标表逐项列出精确 index_id `inventory_turnover_ratio` 及中文名称“存货周转率”。官方数值口径说明周转率通常按次展示。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.operation.inventory_turnover_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；营运能力 operation 指标表 `inventory_turnover_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-operation-current_assets_turnover_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operation.current_assets_turnover_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "operation.current_assets_turnover_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operation.current_assets_turnover_ratio",
+      "meaning": "流动资产周转率；官方文档说明周转率通常按“次”展示。",
+      "unit": "次",
+      "rationale": "官方财务指标接口在 营运能力（operation）指标表逐项列出精确 index_id `current_assets_turnover_ratio` 及中文名称“流动资产周转率”。官方数值口径说明周转率通常按次展示。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.operation.current_assets_turnover_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；营运能力 operation 指标表 `current_assets_turnover_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-operation-receive_account_turnover_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operation.receive_account_turnover_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "operation.receive_account_turnover_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operation.receive_account_turnover_ratio",
+      "meaning": "应收账款周转率；官方文档说明周转率通常按“次”展示。",
+      "unit": "次",
+      "rationale": "官方财务指标接口在 营运能力（operation）指标表逐项列出精确 index_id `receive_account_turnover_ratio` 及中文名称“应收账款周转率”。官方数值口径说明周转率通常按次展示。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.operation.receive_account_turnover_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 323 个非空值、17 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；营运能力 operation 指标表 `receive_account_turnover_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-cash-flow-cash_operating_index-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash-flow.cash_operating_index"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "cash-flow.cash_operating_index",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash-flow.cash_operating_index",
+      "meaning": "现金营运指数；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 现金流（cash-flow）指标表逐项列出精确 index_id `cash_operating_index` 及中文名称“现金营运指数”。官方未明确数值量纲。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.cash-flow.cash_operating_index。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；现金流 cash-flow 指标表 `cash_operating_index`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-cash-flow-operating_cash_flow_net_divide_income-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash-flow.operating_cash_flow_net_divide_income"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "cash-flow.operating_cash_flow_net_divide_income",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash-flow.operating_cash_flow_net_divide_income",
+      "meaning": "销售现金比率；接口值按百分数表达。",
+      "unit": "%",
+      "rationale": "官方财务指标接口在 现金流（cash-flow）指标表逐项列出精确 index_id `operating_cash_flow_net_divide_income` 及中文名称“销售现金比率”。官方数值口径将现金比率类指标列为百分数。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.cash-flow.operating_cash_flow_net_divide_income。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；现金流 cash-flow 指标表 `operating_cash_flow_net_divide_income`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-cash-flow-net_profit_cash_content-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash-flow.net_profit_cash_content"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "cash-flow.net_profit_cash_content",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash-flow.net_profit_cash_content",
+      "meaning": "净利润现金含量；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 现金流（cash-flow）指标表逐项列出精确 index_id `net_profit_cash_content` 及中文名称“净利润现金含量”。官方未明确数值量纲。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.cash-flow.net_profit_cash_content。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；现金流 cash-flow 指标表 `net_profit_cash_content`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    },
+    {
+      "id": "20261114-fuyao-cash-flow-cash_meet_invest_ratio-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash-flow.cash_meet_invest_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "cash-flow.cash_meet_invest_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash-flow.cash_meet_invest_ratio",
+      "meaning": "现金满足投资比率；官方契约未明确具体数值量纲，本次保留空单位，不作推断。",
+      "unit": "",
+      "rationale": "官方财务指标接口在 现金流（cash-flow）指标表逐项列出精确 index_id `cash_meet_invest_ratio` 及中文名称“现金满足投资比率”。官方未明确该比率的具体量纲。项目解析器以 out[ability][index_id] 保留分组，采集样本完整路径为 fin_indicators.cash-flow.cash_meet_invest_ratio。保留起点 2026-10-15 之后 18 个含 Fuyao raw 的目录、360 条股票记录中，该无分组根路径出现0次，完整嵌套路径出现340次（其中 340 个非空值、0 个 null；2026-10-15首日20条未出现报告期指标）。重复采集均为同一2026-2报告期，不算独立财报样本。本裁决不推断未披露的公式、空值含义或跨源等价关系。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方财务指标 API 文档",
+        "revision": "官方契约镜像抓取于 2026-08-22；在线页面复核于 2026-11-14",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "GET /api/a-share/financials/indicators；响应 data.abilities[].indicators[]；现金流 cash-flow 指标表 `cash_meet_invest_ratio`；value 数值口径",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+      }
+    }
+  ]
+}

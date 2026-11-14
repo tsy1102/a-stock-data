@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-14",
+  "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+  "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+  "decisions": [
+    {
+      "id": "20261114-fuyao-fixed-asset-expansion-ratio",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "growth.fixed_asset_invest_expansion_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "growth.fixed_asset_invest_expansion_ratio",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+      "rationale": "项目适配器按 ability/index_id 将原始指标保留在 growth 嵌套路径；Fuyao 官方在线指标表没有列出 fixed_asset_invest_expansion_ratio，因此不将此决定标作官方字段契约。2026-11-12 采集的 20 家发行人均选中 fin_report=2026-2。逐项以 2026H1 与 2025H1 正式报告合并资产负债表的固定资产账面价值复算，20/20 同向且量级接近；15/20 与复算值之差不超过 0.0000005 个百分点，另 5 项保留未解释残差，最大绝对差 0.2538839372 个百分点（深南电A）。matched_count 表示这 20 个样本均支持同一固定资产变动指标语义，不表示 20/20 数值完全相等。未将残差归因于舍入或更正。对五个残差样本测试母公司固定资产口径，均不能解释原值。留存期 18 个来源日期合格目录共 360 条记录，旧根路径为 0，嵌套路径非空 340 条；首目录 20 条缺字段排除。其余 17 日均为相同 20 只股票、同一 2026-2 报告期且字段值逐股不变，只作路径和值稳定性证据，不计为独立报告期。仅定案完整来源路径语义，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 家发行人的 fin_report=2026-2（2026H1）值，与 2026H1/2025H1 正式报告合并资产负债表固定资产项目逐项对照；历史路径审计为 2026-10-15 起 18 个目录",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 40,
+        "excluded_count": 20,
+        "observation_count": 340,
+        "stock_count": 20,
+        "unexplained_residual_count": 5,
+        "max_absolute_residual_percentage_points": 0.253883937183030417104709007,
+        "max_relative_error_percent": 4.697893569864535042383781697
+      }
+    }
+  ]
+}

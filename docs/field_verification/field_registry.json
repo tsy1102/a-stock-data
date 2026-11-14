@@ -10,7 +10,7 @@
       "aggregate_status_scope_unresolved": 372,
       "candidate": 1,
       "conflict": 36,
-      "disproved": 47,
+      "disproved": 50,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -22,15 +22,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 551,
+      "registry_status_only_single_source": 548,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 25,
+      "retired_legacy_path": 28,
       "status_conflict": 30,
       "status_missing": 43,
       "unresolved": 7,
-      "unverified": 1063,
-      "verified": 1484,
-      "verified_by_empirical_addendum": 153,
+      "unverified": 1060,
+      "verified": 1485,
+      "verified_by_empirical_addendum": 154,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 15,
       "verified_by_source_contract": 391
@@ -20689,20 +20689,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "flat",
@@ -21503,6 +21500,24 @@
       "meaning": "该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。",
       "unit": "%",
       "status_raw": "✅ L1",
+      "status": "verified",
+      "source_statuses": {
+        "同花顺-fuyao": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "growth.fixed_asset_invest_expansion_ratio",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+      "unit": "%",
+      "status_raw": "",
       "status": "verified",
       "source_statuses": {
         "同花顺-fuyao": "verified"
@@ -45826,6 +45841,9 @@
       "同花顺-fuyao"
     ],
     "cash-flow.cash_meet_invest_ratio": [
+      "同花顺-fuyao"
+    ],
+    "growth.fixed_asset_invest_expansion_ratio": [
       "同花顺-fuyao"
     ]
   },
@@ -196182,22 +196200,28 @@
       "code": "fixed_asset_invest_expansion_ratio",
       "identity": "同花顺-fuyao::fixed_asset_invest_expansion_ratio",
       "path": "fixed_asset_invest_expansion_ratio",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+      "sections": [
+        "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261114-fuyao-fixed-asset-unscoped-path-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340,
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -196213,7 +196237,74 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+        "reason": "保留期 2026-10-15 起 18 个日期合格 Fuyao 目录的 360 条个股记录中，无分组根路径出现 0 次；实际 growth 嵌套路径出现 340 次，首目录 20 条缺指标。项目解析器按 ability/index_id 保留分组，故该条仅为过时的无分组路径身份。",
+        "evidence_files": [
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+          "docs/field_verification/research/20261114_fuyao_fixed_asset_path_inventory.csv"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "unscoped_root_path_count": 0,
+        "nested_path_count": 340
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-fixed-asset-unscoped-path-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-14",
+          "decision_note": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -239634,6 +239725,153 @@
           }
         }
       ]
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "growth.fixed_asset_invest_expansion_ratio",
+      "identity": "同花顺-fuyao::growth.fixed_asset_invest_expansion_ratio",
+      "path": "growth.fixed_asset_invest_expansion_ratio",
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+      "unit": "%",
+      "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+      "sections": [
+        "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261114-fuyao-fixed-asset-expansion-ratio"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+        "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+        "sample": {
+          "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 家发行人的 fin_report=2026-2（2026H1）值，与 2026H1/2025H1 正式报告合并资产负债表固定资产项目逐项对照；历史路径审计为 2026-10-15 起 18 个目录",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 40,
+          "excluded_count": 20,
+          "observation_count": 340,
+          "stock_count": 20,
+          "unexplained_residual_count": 5,
+          "max_absolute_residual_percentage_points": 0.25388393718303043,
+          "max_relative_error_percent": 4.697893569864535
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证",
+          "canonical": "growth.fixed_asset_invest_expansion_ratio",
+          "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-14",
+          "status": "verified",
+          "adjudication_id": "20261114-fuyao-fixed-asset-expansion-ratio",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+          "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.fixed_asset_invest_expansion_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.fixed_asset_invest_expansion_ratio",
+              "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 家发行人的 fin_report=2026-2（2026H1）值，与 2026H1/2025H1 正式报告合并资产负债表固定资产项目逐项对照；历史路径审计为 2026-10-15 起 18 个目录",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 40,
+            "excluded_count": 20,
+            "observation_count": 340,
+            "stock_count": 20,
+            "unexplained_residual_count": 5,
+            "max_absolute_residual_percentage_points": 0.25388393718303043,
+            "max_relative_error_percent": 4.697893569864535
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "growth.fixed_asset_invest_expansion_ratio",
+        "sources": [
+          "同花顺-fuyao"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "growth.fixed_asset_invest_expansion_ratio",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "20261114-fuyao-fixed-asset-expansion-ratio",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-14",
+          "decision_file": "adjudications/20261114_fuyao_fixed_asset_growth_semantics.json",
+          "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+          "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "growth.fixed_asset_invest_expansion_ratio",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "growth.fixed_asset_invest_expansion_ratio",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "growth.fixed_asset_invest_expansion_ratio",
+              "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目适配器按 ability/index_id 将原始指标保留在 growth 嵌套路径；Fuyao 官方在线指标表没有列出 fixed_asset_invest_expansion_ratio，因此不将此决定标作官方字段契约。2026-11-12 采集的 20 家发行人均选中 fin_report=2026-2。逐项以 2026H1 与 2025H1 正式报告合并资产负债表的固定资产账面价值复算，20/20 同向且量级接近；15/20 与复算值之差不超过 0.0000005 个百分点，另 5 项保留未解释残差，最大绝对差 0.2538839372 个百分点（深南电A）。matched_count 表示这 20 个样本均支持同一固定资产变动指标语义，不表示 20/20 数值完全相等。未将残差归因于舍入或更正。对五个残差样本测试母公司固定资产口径，均不能解释原值。留存期 18 个来源日期合格目录共 360 条记录，旧根路径为 0，嵌套路径非空 340 条；首目录 20 条缺字段排除。其余 17 日均为相同 20 只股票、同一 2026-2 报告期且字段值逐股不变，只作路径和值稳定性证据，不计为独立报告期。仅定案完整来源路径语义，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 家发行人的 fin_report=2026-2（2026H1）值，与 2026H1/2025H1 正式报告合并资产负债表固定资产项目逐项对照；历史路径审计为 2026-10-15 起 18 个目录",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 40,
+            "excluded_count": 20,
+            "observation_count": 340,
+            "stock_count": 20,
+            "unexplained_residual_count": 5,
+            "max_absolute_residual_percentage_points": 0.25388393718303043,
+            "max_relative_error_percent": 4.697893569864535
+          }
+        }
+      ]
     }
   ],
   "source_field_addenda": [
@@ -241593,6 +241831,17 @@
       "evidence_level": "E3",
       "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_operating_profit_path_identity.md",
       "matrix_field": "growth.calculate_operating_profit_yoy_growth_ratio",
+      "matrix_source": "同花顺-fuyao"
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "growth.fixed_asset_invest_expansion_ratio",
+      "canonical": "growth.fixed_asset_invest_expansion_ratio",
+      "meaning": "固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。",
+      "unit": "%",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
+      "matrix_field": "growth.fixed_asset_invest_expansion_ratio",
       "matrix_source": "同花顺-fuyao"
     }
   ],

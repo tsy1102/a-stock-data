@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 460 条逐源记录。
+> 聚合歧义 130 个 code；聚合定义不完整 204 个 code；疑似合并文本 462 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3699,9 +3699,11 @@
 | 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
 | 同花顺-fuyao | `first_seal_time` | first_seal_time | 炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
 | 同花顺-fuyao | `fiscal_period` | fiscal_period | `FY` / `Q1` / `Q2` / `Q3` / `Q4`。 | `verified` |
+| 同花顺-fuyao | `fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |
 | 同花顺-fuyao | `growth.calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 该股票所选财报期营业收入相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业收入－上年同期营业收入）／abs（上年同期营业收入）×100 复算吻合。 | `verified` |
 | 同花顺-fuyao | `growth.calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 该股票所选财报期营业利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期营业利润－上年同期营业利润）／abs（上年同期营业利润）×100 复算吻合。 | `verified` |
 | 同花顺-fuyao | `growth.calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | 该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。 | `verified` |
+| 同花顺-fuyao | `growth.fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。 | `verified` |
 | 同花顺-fuyao | `growth.total_assets_growth_ratio` | growth.total_assets_growth_ratio | 总资产增长率；接口值按百分数表达。2026H1样本中按本期末合并总资产相对上期末未调整合并总资产复算；中华企业报告使用调整后比较基数，差异另行保留。 | `verified` |
 | 同花顺-fuyao | `index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 旧登记的无分组叶名身份；当前完整路径为 profitability.index_deduct_weighted_avg_roe。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。 | `disproved` |

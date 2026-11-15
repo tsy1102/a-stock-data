@@ -25,18 +25,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 516,
+      "registry_status_only_single_source": 515,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 22,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1007,
-      "verified": 1507,
+      "unverified": 1006,
+      "verified": 1508,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 407
+      "verified_by_source_contract": 408
     },
     "updated_at": "2026-11-15"
   },
@@ -37710,17 +37710,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "trade_datetime",
-      "meaning": "",
-      "unit": "",
+      "meaning": "ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。",
+      "unit": "-",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "trading_date",
@@ -43732,7 +43730,8 @@
       "财联社"
     ],
     "trade_datetime": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "trades.today": [
       "TDX-eltdx"
@@ -120361,14 +120360,15 @@
       "identity": "TDX-eltdx(适配层)::trade_datetime",
       "path": "trade_datetime",
       "canonical": "trade_datetime",
-      "meaning": "",
-      "unit": "",
+      "meaning": "ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。",
+      "unit": "-",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: ELTDX v3.3.2 方法与返回模型文档（客户端模型契约，不等同 TDX 原始 wire 字段定义） · TradeTick.trade_datetime returned by client.trades.history / opening_match_history#docs/methods/7709-历史0925正式撮合.md §返回字段：trade_datetime = 指定交易日的成交时间，且真实返回示例为 2026-08-14T09:25:00；docs/methods/7709-当日0925正式撮合.md §返回字段：trade_datetime 当日通常为 None；docs/METHOD_REFERENCE.md §成交明细：当前 0x0fc5 原始响应不带日期，TradePage.trading_date 保持为空。 @ eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -120378,6 +120378,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "eltdx-trade-tick-trade-datetime-20261116"
+        ],
+        "source_contract_adjudication_ids": [
+          "eltdx-trade-tick-trade-datetime-20261116"
         ]
       },
       "reference_evidence": [
@@ -120388,6 +120394,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 方法与返回模型文档（客户端模型契约，不等同 TDX 原始 wire 字段定义） · TradeTick.trade_datetime returned by client.trades.history / opening_match_history#docs/methods/7709-历史0925正式撮合.md §返回字段：trade_datetime = 指定交易日的成交时间，且真实返回示例为 2026-08-14T09:25:00；docs/methods/7709-当日0925正式撮合.md §返回字段：trade_datetime 当日通常为 None；docs/METHOD_REFERENCE.md §成交明细：当前 0x0fc5 原始响应不带日期，TradePage.trading_date 保持为空。 @ eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+          "canonical": "trade_datetime",
+          "meaning": "ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。",
+          "unit": "-",
+          "status_raw": "人工核验上游契约 2026-11-16：eltdx-trade-tick-trade-datetime-20261116",
+          "status": "verified",
+          "adjudication_id": "eltdx-trade-tick-trade-datetime-20261116",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 方法与返回模型文档（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+            "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+            "path": "TradeTick.trade_datetime returned by client.trades.history / opening_match_history",
+            "locator": "docs/methods/7709-历史0925正式撮合.md §返回字段：trade_datetime = 指定交易日的成交时间，且真实返回示例为 2026-08-14T09:25:00；docs/methods/7709-当日0925正式撮合.md §返回字段：trade_datetime 当日通常为 None；docs/METHOD_REFERENCE.md §成交明细：当前 0x0fc5 原始响应不带日期，TradePage.trading_date 保持为空。",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%8E%86%E5%8F%B20925%E6%AD%A3%E5%BC%8F%E6%92%AE%E5%90%88.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "trade_datetime",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "trade_datetime",
+              "meaning": "ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。",
+              "unit": "-"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -120402,7 +120437,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eltdx-trade-tick-trade-datetime-20261116",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_eltdx_trade_datetime_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "trade_datetime",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "trade_datetime",
+              "meaning": "ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。",
+              "unit": "-"
+            }
+          },
+          "rationale": "项目历史来源参考 §12.13.10E 将 trade_datetime 列在 TradeTick 的 19 个字段中。锁定的 ELTDX v3.3.2 方法契约明确区分 TradePage.trading_date 与 TradeTick.trade_datetime：历史 0x0fc6 的 09:25 正式撮合字段定义为指定交易日的成交时间，并给出含日期和时分秒的实际返回示例；当日 0x0fc5 的同字段通常为 None，且当日原始响应不提供交易日期。故可确认该适配层模型字段的事件时间语义，但不得把它当采集时间或当日来源数据日。本项目当前采集器不调用 trades/auctions；2026-10-15 保留边界后的 raw_eltdx 样本未出现该路径，所以本决定不声称当前采集器输出此字段，不引用边界前 raw，不建立跨源映射。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 方法与返回模型文档（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+            "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+            "path": "TradeTick.trade_datetime returned by client.trades.history / opening_match_history",
+            "locator": "docs/methods/7709-历史0925正式撮合.md §返回字段：trade_datetime = 指定交易日的成交时间，且真实返回示例为 2026-08-14T09:25:00；docs/methods/7709-当日0925正式撮合.md §返回字段：trade_datetime 当日通常为 None；docs/METHOD_REFERENCE.md §成交明细：当前 0x0fc5 原始响应不带日期，TradePage.trading_date 保持为空。",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E5%8E%86%E5%8F%B20925%E6%AD%A3%E5%BC%8F%E6%92%AE%E5%90%88.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

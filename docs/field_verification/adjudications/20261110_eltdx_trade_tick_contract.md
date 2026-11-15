@@ -20,3 +20,7 @@
 本批未读取历史采集值，因此不依赖目录目标数据日或自然日推定来源数据日，也不建立任何跨源数值映射。以下相邻字段继续单独待核：`trade_datetime`、`trading_date` 涉及日期资格；`volume`、`index`、`time_label` 在多个模型类型中出现，当前扁平身份不足以确认唯一语义。
 
 项目代码边界另行核实：当前 `scripts/capture_field_probe.py::collect_eltdx` 委托 `scripts/capture_tcp_collectors.py::collect_eltdx`，该采集器调用快照、ShortlineIndicator 和全局 Helpers，没有调用 `client.trades` 或 `client.auctions`。所以本裁决只确认 ELTDX v3.3.2 上游模型字段契约；不声称这些字段当前由项目采集，不恢复接口路由，也不将其作为本项目当前碰撞锚。
+
+## 2026-11-16 后续裁决
+
+`trade_datetime` 已依据锁定版 ELTDX v3.3.2 的 `TradeTick` 字段和历史/当日 09:25 方法文档，单独定案为成交事件时间；历史接口的值包含指定交易日，当日接口字段通常为空。该结论不把它当来源数据日。裁决与边界见 [`20261116_eltdx_trade_datetime.md`](20261116_eltdx_trade_datetime.md)。本报告中 `trade_datetime` 仍待核的原结论保留为 11 月 10 日状态；`trading_date`、`volume`、`index`、`time_label` 不随本次裁决改变。

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 504 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 505 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3469,6 +3469,7 @@
 | TDX-eltdx(适配层) | `total_seal_amount` | total_seal_amount | Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。 | `verified` |
 | TDX-eltdx(适配层) | `tou_zi_shou_yu_raw_float` | tou_zi_shou_yu_raw_float | 投资收益；样本值对应报告期累计金额 | `verified` |
 | TDX-eltdx(适配层) | `trade_date` | trade_date | 连板天梯及题材强度结果对应的目标交易日；由 ShortlineIndicatorTable.target_trade_date 派生，题材强度 Helper 继承该日期 | `verified` |
+| TDX-eltdx(适配层) | `trade_datetime` | trade_datetime | ELTDX v3.3.2 TradeTick 的成交事件时间。历史 0x0fc6 接口按指定交易日返回成交时间；当日 0x0fc5 原始响应不带日期，因此 TradePage.trading_date 为空，trade_datetime 可为 None。它表示事件时间，不是采集时间，也不能单独代表来源数据日。文档未注明时区。 | `verified` |
 | TDX-eltdx(适配层) | `updated_date_raw` | updated_date_raw | 财务数据更新日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
 | TDX-eltdx(适配层) | `volume_wire_value` | volume_wire_value | 协议解码后的成交量值；普通A股单位为股，已验证的可转债品种单位为手 | `verified` |
 | TDX-eltdx(适配层) | `zhu_ying_li_run_raw_float` | zhu_ying_li_run_raw_float | 营业成本原始值（保留样本对应报告营业成本；上游标签“主营利润”冲突） | `verified` |

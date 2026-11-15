@@ -557,7 +557,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 93
+    assert len(pairs) == 94
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
@@ -589,6 +589,18 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "anchor_date": "20261115-eltdx-kline-anchor-date-source-contract",
     }
     records_by_pair = {(row["source"], row["code"]): row for row in records}
+    trade_tick_source = "TDX-eltdx(适配层)"
+    trade_tick_decision_ids = {
+        "index": "eltdx-trade-tick-index-20261116",
+        "time_minutes": "eltdx-trade-tick-time-minutes-20261116",
+        "time_label": "eltdx-trade-tick-time-label-20261116",
+    }
+    for code, decision_id in trade_tick_decision_ids.items():
+        row = records_by_pair[(trade_tick_source, code)]
+        assert row["status"] == "verified"
+        assert row["status_resolution"] == "verified_by_source_contract"
+        assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
+
     for code, decision_id in kline_decision_ids.items():
         row = records_by_pair[(kline_source, code)]
         assert row["status"] == "verified"

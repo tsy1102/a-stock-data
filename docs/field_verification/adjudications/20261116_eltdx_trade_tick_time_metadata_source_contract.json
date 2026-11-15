@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "decisions": [
+    {
+      "id": "eltdx-trade-tick-index-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "index"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "index",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "index",
+      "meaning": "ELTDX v3.3.2 TradeTick 当前返回页内的成交记录序号；与 absolute_index 的服务端全局序号区分。",
+      "unit": "序号",
+      "rationale": "项目来源参考 §12.13.10E 将 index 列在 TradeTick 字段表；锁定版 ELTDX v3.3.2 方法参考明确 index/absolute_index 分别是页内序号/全局序号。§12.13.10F 的 AuctionPoint.index 是另一完整路径，本裁决不合并。保留边界后的 18 份 raw_eltdx 共 360 条股票记录没有成交明细对象，当前采集器也未调用 trades/auctions；因此此结论仅限客户端模型，不声称当前采集器输出或原始 wire 定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 标准 7709 成交明细返回模型（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+        "path": "TradeTick.index returned by client.trades.today / history / all_today / all_history",
+        "locator": "docs/METHOD_REFERENCE.md §成交明细：TradeTick 字段表将 index / absolute_index 分别定义为页内序号 / 全局序号。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "eltdx-trade-tick-time-minutes-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "time_minutes"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "time_minutes",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "time_minutes",
+      "meaning": "ELTDX v3.3.2 TradeTick 的分钟数时间属性，与 time_label 一同描述逐笔记录时间；文档未明确分钟起算基准或 wire 编码。",
+      "unit": "分钟",
+      "rationale": "项目来源参考 §12.13.10E 将 time_minutes 列在 TradeTick 字段表；锁定版 ELTDX v3.3.2 方法参考明确将 TradeTick.time_minutes / time_label 定义为分钟数 / 时间文本。文档未给出 time_minutes 的起算基准或原始编码，本裁决不推断具体转换，也不把它当作交易日或来源数据日。保留边界后的 18 份 raw_eltdx 共 360 条股票记录没有成交明细对象，当前采集器也未调用 trades/auctions；因此此结论仅限客户端模型，不声称当前采集器输出或原始 wire 定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 标准 7709 成交明细返回模型（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+        "path": "TradeTick.time_minutes returned by client.trades.today / history / all_today / all_history",
+        "locator": "docs/METHOD_REFERENCE.md §成交明细：TradeTick.time_minutes / time_label 定义为分钟数 / 时间文本；未规定分钟起算基准或 wire 编码。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "eltdx-trade-tick-time-label-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "time_label"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "time_label",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "time_label",
+      "meaning": "ELTDX v3.3.2 TradeTick 的成交时间文本；09:25 正式撮合接口中固定为 09:25。该字段不含来源日期。",
+      "unit": "-",
+      "rationale": "项目来源参考 §12.13.10E 将 time_label 列在 TradeTick 字段表；锁定版 ELTDX v3.3.2 方法参考将其定义为时间文本，历史 09:25 正式撮合文档说明该接口固定返回 09:25。来源参考另有完整路径 AuctionPoint.time_label，本裁决只确认 TradeTick 的精确注册身份。保留边界后的 18 份 raw_eltdx 共 360 条股票记录没有成交明细对象，当前采集器也未调用 trades/auctions；因此此结论仅限客户端模型，不声称当前采集器输出或原始 wire 定义，不把该字段当作来源数据日，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 标准 7709 成交明细返回模型（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+        "path": "TradeTick.time_label returned by client.trades.today / history / all_today / all_history",
+        "locator": "docs/METHOD_REFERENCE.md §成交明细：TradeTick.time_label 为时间文本；docs/methods/7709-历史0925正式撮合.md §解析字段：09:25 接口只返回 09:25 正式撮合，time_label 固定为 09:25。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/METHOD_REFERENCE.md"
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 506 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 509 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3432,6 +3432,7 @@
 | TDX-eltdx(适配层) | `finance_info_raw` | finance_info_raw | 0x0010 财务基础信息记录的原始主体；解码后为 136 字节，JSON 中以十六进制字符串保存 | `verified` |
 | TDX-eltdx(适配层) | `gu_dong_ren_shu_raw_float` | gu_dong_ren_shu_raw_float | 股东人数（按股东账户计；具体有效报告期以来源记录为准） | `verified` |
 | TDX-eltdx(适配层) | `guo_jia_gu_raw_float` | guo_jia_gu_raw_float | 国家股原始值（与发起人法人股、法人股为不同股本分类） | `verified` |
+| TDX-eltdx(适配层) | `index` | index | ELTDX v3.3.2 TradeTick 当前返回页内的成交记录序号；与 absolute_index 的服务端全局序号区分。 | `verified` |
 | TDX-eltdx(适配层) | `ipo_date_raw` | ipo_date_raw | 上市日期原始整数；YYYYMMDD 编码，不是采集来源数据日 | `verified` |
 | TDX-eltdx(适配层) | `jing_li_run_raw_float` | jing_li_run_raw_float | 归属于上市公司股东的净利润原始值；样本对应报告期累计值 | `verified` |
 | TDX-eltdx(适配层) | `last_close_price_milli` | last_close_price_milli | 前一根K线收盘价的千分之一元值；返回序列首条无前收盘字段 | `verified` |
@@ -3465,6 +3466,8 @@
 | TDX-eltdx(适配层) | `side` | side | 成交方向或状态标签：buy、sell、neutral 或状态名；完整数值状态码映射未确认 | `verified` |
 | TDX-eltdx(适配层) | `status_raw` | status_raw | 成交明细方向或状态的原始值；具体状态码映射未在本裁决中扩展 | `verified` |
 | TDX-eltdx(适配层) | `time` | time | 日K时间戳；按上海时区记录，本批样本时间为15:00 | `verified` |
+| TDX-eltdx(适配层) | `time_label` | time_label | ELTDX v3.3.2 TradeTick 的成交时间文本；09:25 正式撮合接口中固定为 09:25。该字段不含来源日期。 | `verified` |
+| TDX-eltdx(适配层) | `time_minutes` | time_minutes | ELTDX v3.3.2 TradeTick 的分钟数时间属性，与 time_label 一同描述逐笔记录时间；文档未明确分钟起算基准或 wire 编码。 | `verified` |
 | TDX-eltdx(适配层) | `topic_id` | topic_id | 题材 ID；由参与聚合股票的 F10 题材关系提供，可为空；ID 缺失时 Helper 回退到题材名称作为分组键。 | `verified` |
 | TDX-eltdx(适配层) | `topic_name` | topic_name | 题材名称；取自参与聚合股票的 F10 题材关系，作为聚合组的可读名称。 | `verified` |
 | TDX-eltdx(适配层) | `total_seal_amount` | total_seal_amount | Helper 返回的目标交易日内，本次请求股票池中该题材封板成分股当前买一金额之和；单股金额缺失按 0，聚合值保留 6 位小数。共享题材股票会计入各自题材。 | `verified` |

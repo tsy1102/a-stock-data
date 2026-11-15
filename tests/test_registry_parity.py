@@ -557,7 +557,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 89
+    assert len(pairs) == 91
+    assert ("TDX(双命名源)", "Zgb") in pairs
+    assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
     assert matrix["auction_final.auction_pct"] == {"同花顺-fuyao"}
     assert ("同花顺-fuyao", "growth.total_assets_growth_ratio") in pairs

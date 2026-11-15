@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-15",
+  "decisions": [
+    {
+      "id": "tdx-gb-info-zgb-20261115",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Zgb"
+      },
+      "canonical": "Zgb",
+      "meaning": "总股本",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方 get_gb_info_by_date 输出表将精确路径 Zgb（double）定义为总股本。字段单位未写明，本决定保留单位未知；官方样例数值不单独作为单位证明。本裁决仅确认 TDX 来源字段契约，不声称项目当前调用该接口或已在保留期原始样本中观测到此路径，不创建跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_gb_info_by_date 返回列表字段 Zgb",
+        "locator": "输出数据表：Zgb | double | 总股本",
+        "revision": "官方更新说明记录该接口于 2026-05-15 新增；接口文档于 2026-11-15 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1hc4303vsv1fk.html"
+      }
+    },
+    {
+      "id": "tdx-gb-info-ltgb-20261115",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Ltgb"
+      },
+      "canonical": "Ltgb",
+      "meaning": "流通股本",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台官方 get_gb_info_by_date 输出表将精确路径 Ltgb（double）定义为流通股本。字段单位未写明，本决定保留单位未知；官方样例数值不单独作为单位证明。本裁决仅确认 TDX 来源字段契约，不声称项目当前调用该接口或已在保留期原始样本中观测到此路径，不创建跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_gb_info_by_date 返回列表字段 Ltgb",
+        "locator": "输出数据表：Ltgb | double | 流通股本",
+        "revision": "官方更新说明记录该接口于 2026-05-15 新增；接口文档于 2026-11-15 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1hc4303vsv1fk.html"
+      }
+    }
+  ]
+}

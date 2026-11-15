@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2633；日常来源路径 2489：unverified 892、candidate 1、conflict 28、disproved 85；历史来源路径 144。
+> 注册字段路径 2633；日常来源路径 2489：unverified 887、candidate 1、conflict 28、disproved 90；历史来源路径 144。
 > 另有 146 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,18 +15,18 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 748 |
+| 含义栏为空/占位 | 743 |
 | 含义栏有文本（仍未验证） | 144 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 316 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 313 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 58 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 437 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 435 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 42 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（28）
@@ -68,7 +68,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（892）
+## 三、待破解字段（887）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -148,30 +148,25 @@
 | TDX-eltdx(适配层) | `amount_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `bin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `category` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX-eltdx(适配层) | `code` | code | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `columns` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `eltdx` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `eltdx_opening_rush` | eltdx_opening_rush | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical） |
 | TDX-eltdx(适配层) | `entry` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `error_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `exchange` | exchange | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `extra_meta_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `extra_pair_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX-eltdx(适配层) | `full_code` | full_code | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `hitCache` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `index` | index | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `issue_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `key` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `kline_day` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `limit_or_count_raw` | limit_or_count_raw | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
-| TDX-eltdx(适配层) | `market_id` | market_id | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `mode_or_selector_raw` | mode_or_selector_raw | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `name` | name | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `neg_price_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `open_amount_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `opening_rush_raw` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `points` | points | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
-| TDX-eltdx(适配层) | `pre_close` | pre_close | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `price_acc_raw` | price_acc_raw | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `price_delta_raw` | price_delta_raw | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | TDX-eltdx(适配层) | `price_milli` | price_milli | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
@@ -965,7 +960,7 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（85）
+## 四、已证伪（默认不重复破解）（90）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -982,10 +977,15 @@
 | TDX(双命名源) | `str` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
 | TDX(双命名源) | `uint` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
 | TDX-eltdx(适配层) | `bool` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `code` | shortline.code | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
+| TDX-eltdx(适配层) | `exchange` | shortline.exchange | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
 | TDX-eltdx(适配层) | `fa_qi_ren_fa_ren_gu_raw_float` | finance_batch[].fa_qi_ren_fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_qi_ren_fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | 千元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-11 ELTDX 无前缀候选路径退役审计 |
 | TDX-eltdx(适配层) | `fa_ren_gu_raw_float` | finance_batch[].fa_ren_gu_raw_float | 未限定旧叶名；当前完整采集路径为 finance_batch[].fa_ren_gu_raw_float，此无前缀身份不是独立输出字段。 | 千元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-11 ELTDX 无前缀候选路径退役审计 |
 | TDX-eltdx(适配层) | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `full_code` | shortline.full_code | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
 | TDX-eltdx(适配层) | `int` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
+| TDX-eltdx(适配层) | `market_id` | shortline.market_id | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
+| TDX-eltdx(适配层) | `pre_close` | shortline.pre_close | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
 | TDX-eltdx(适配层) | `str` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
 | ZHB-tdxstat | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 ZHB 格式/类型 token 与实际字段对应关系 |
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |

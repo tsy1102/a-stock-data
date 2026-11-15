@@ -1,17 +1,17 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-15",
+    "updated": "2026-11-16",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 355,
+      "aggregate_status_scope_unresolved": 352,
       "candidate": 1,
       "collector_output_container": 9,
       "conflict": 28,
-      "disproved": 85,
+      "disproved": 90,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -25,13 +25,13 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 518,
+      "registry_status_only_single_source": 516,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 43,
+      "retired_legacy_path": 48,
       "status_conflict": 22,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1012,
+      "unverified": 1007,
       "verified": 1507,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
@@ -11191,7 +11191,7 @@
       "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "verified",
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "disproved",
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
@@ -14235,13 +14235,14 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified",
+        "TDX-eltdx(适配层)": "disproved",
         "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -20973,19 +20974,17 @@
       "sources": [
         "TDX-eltdx(适配层)"
       ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "full_code",
-      "meaning": "",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
+      "canonical": "shortline.full_code",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "fund",
@@ -26011,19 +26010,17 @@
       "sources": [
         "TDX-eltdx(适配层)"
       ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "market_id",
-      "meaning": "",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
+      "canonical": "shortline.market_id",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "market_index_all_em",
@@ -29154,12 +29151,13 @@
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -99095,19 +99093,20 @@
       "code": "code",
       "identity": "TDX-eltdx(适配层)::code",
       "path": "code",
-      "canonical": "code",
-      "meaning": "",
+      "canonical": "shortline.code",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "eltdx-unqualified-helper-path-retirement-20261115:code",
         "reference_status_raw": [],
-        "registry_aggregate_status": "verified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX(双命名源)",
           "TDX-eltdx(适配层)",
@@ -99121,8 +99120,9 @@
           "开盘啦(kpl)",
           "财联社(cls)"
         ],
+        "registry_aggregate_status": "verified",
         "values": [
-          "verified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -99155,24 +99155,115 @@
       "registry_aggregate": {
         "code": "code",
         "sources": [
-          "TDX(双命名源)",
-          "TDX-eltdx(适配层)",
-          "ZHB-tdxstat",
-          "ZHB-tdxstat2",
-          "ZHB-tipinfo",
-          "东财-push2ex",
-          "东财-热榜(em_hot)",
-          "巨潮(cninfo)",
-          "市场源(market_sources)",
-          "开盘啦(kpl)",
-          "财联社(cls)"
+          "TDX-eltdx(适配层)"
         ],
-        "status": "verified",
-        "status_raw": "✅",
+        "status": "disproved",
+        "status_raw": "retired_legacy_path",
+        "canonical": "shortline.code",
+        "meaning": "已退役的未限定旧路径身份",
+        "unit": "",
+        "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+          "docs/field_verification/research/20261115_eltdx_unqualified_helper_path_inventory.csv",
+          "docs/field_source_reference.md",
+          "scripts/capture_field_probe.py",
+          "scripts/capture_tcp_collectors.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "id": "eltdx-unqualified-helper-path-retirement-20261115:code",
+        "reason": "The legacy token code is not a standalone stocks.<ticker> output path. Across 17 complete retained capture directories (340 stock records total; 20 per directory), the direct per-stock-root occurrence count is zero; the token appears only at the complete nested paths recorded in the audit inventory. This is a path-identity correction only; it does not transfer semantics among contexts.",
+        "sample_floor": "20261015",
+        "capture_directories": [
+          "20261015",
+          "20261016",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105",
+          "20261106",
+          "20261109",
+          "20261110",
+          "20261112"
+        ],
+        "excluded_directories": [
+          "20261019"
+        ],
+        "eligible_stock_day_count": 340,
+        "full_path_occurrence_count": 2423,
+        "unprefixed_top_level_record_count": 0,
+        "source_as_of_date_available": false,
+        "observed_full_paths": [
+          "global_helpers.limit_ladder.rows[].code",
+          "global_helpers.market_stat_880005.code",
+          "global_helpers.realtime_rank.rows[].raw.code",
+          "stocks.*.finance_batch[].code",
+          "stocks.*.limit_ladder.code",
+          "stocks.*.quote_snapshot.code",
+          "stocks.*.shortline.code"
+        ]
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
         "canonical": "code",
-        "meaning": "股票代码",
-        "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "meaning": "",
+        "unit": "",
+        "registry_aggregate": {
+          "code": "code",
+          "sources": [
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "ZHB-tdxstat",
+            "ZHB-tdxstat2",
+            "ZHB-tipinfo",
+            "东财-push2ex",
+            "东财-热榜(em_hot)",
+            "巨潮(cninfo)",
+            "市场源(market_sources)",
+            "开盘啦(kpl)",
+            "财联社(cls)"
+          ],
+          "status": "verified",
+          "status_raw": "✅",
+          "canonical": "code",
+          "meaning": "股票代码",
+          "unit": "6位字符串",
+          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        },
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "ZHB-tdxstat",
+            "ZHB-tdxstat2",
+            "ZHB-tipinfo",
+            "东财-push2ex",
+            "东财-热榜(em_hot)",
+            "巨潮(cninfo)",
+            "市场源(market_sources)",
+            "开盘啦(kpl)",
+            "财联社(cls)"
+          ],
+          "values": [
+            "verified"
+          ]
+        }
       }
     },
     {
@@ -101417,25 +101508,27 @@
       "code": "exchange",
       "identity": "TDX-eltdx(适配层)::exchange",
       "path": "exchange",
-      "canonical": "exchange",
-      "meaning": "",
+      "canonical": "shortline.exchange",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "eltdx-unqualified-helper-path-retirement-20261115:exchange",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "同花顺-fuyao",
           "TDX-eltdx(适配层)"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -101468,15 +101561,97 @@
       "registry_aggregate": {
         "code": "exchange",
         "sources": [
-          "同花顺-fuyao",
           "TDX-eltdx(适配层)"
         ],
+        "status": "disproved",
+        "status_raw": "retired_legacy_path",
+        "canonical": "shortline.exchange",
+        "meaning": "已退役的未限定旧路径身份",
+        "unit": "",
+        "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+          "docs/field_verification/research/20261115_eltdx_unqualified_helper_path_inventory.csv",
+          "docs/field_source_reference.md",
+          "scripts/capture_field_probe.py",
+          "scripts/capture_tcp_collectors.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "id": "eltdx-unqualified-helper-path-retirement-20261115:exchange",
+        "reason": "The legacy token exchange is not a standalone stocks.<ticker> output path. Across 17 complete retained capture directories (340 stock records total; 20 per directory), the direct per-stock-root occurrence count is zero; the token appears only at the complete nested paths recorded in the audit inventory. This is a path-identity correction only; it does not transfer semantics among contexts.",
+        "sample_floor": "20261015",
+        "capture_directories": [
+          "20261015",
+          "20261016",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105",
+          "20261106",
+          "20261109",
+          "20261110",
+          "20261112"
+        ],
+        "excluded_directories": [
+          "20261019"
+        ],
+        "eligible_stock_day_count": 340,
+        "full_path_occurrence_count": 2423,
+        "unprefixed_top_level_record_count": 0,
+        "source_as_of_date_available": false,
+        "observed_full_paths": [
+          "global_helpers.limit_ladder.rows[].exchange",
+          "global_helpers.market_stat_880005.exchange",
+          "global_helpers.realtime_rank.rows[].raw.exchange",
+          "stocks.*.finance_batch[].exchange",
+          "stocks.*.limit_ladder.exchange",
+          "stocks.*.quote_snapshot.exchange",
+          "stocks.*.shortline.exchange"
+        ]
+      },
+      "superseded_status_evidence": {
         "status": "unverified",
-        "status_raw": "",
+        "status_resolution": "aggregate_status_scope_unresolved",
         "canonical": "exchange",
         "meaning": "",
         "unit": "",
-        "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "registry_aggregate": {
+          "code": "exchange",
+          "sources": [
+            "同花顺-fuyao",
+            "TDX-eltdx(适配层)"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "exchange",
+          "meaning": "",
+          "unit": "",
+          "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        },
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        }
       }
     },
     {
@@ -103077,24 +103252,26 @@
       "code": "full_code",
       "identity": "TDX-eltdx(适配层)::full_code",
       "path": "full_code",
-      "canonical": "full_code",
-      "meaning": "",
+      "canonical": "shortline.full_code",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "eltdx-unqualified-helper-path-retirement-20261115:full_code",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX-eltdx(适配层)"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -103121,12 +103298,90 @@
         "sources": [
           "TDX-eltdx(适配层)"
         ],
+        "status": "disproved",
+        "status_raw": "retired_legacy_path",
+        "canonical": "shortline.full_code",
+        "meaning": "已退役的未限定旧路径身份",
+        "unit": "",
+        "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+          "docs/field_verification/research/20261115_eltdx_unqualified_helper_path_inventory.csv",
+          "docs/field_source_reference.md",
+          "scripts/capture_field_probe.py",
+          "scripts/capture_tcp_collectors.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "id": "eltdx-unqualified-helper-path-retirement-20261115:full_code",
+        "reason": "The legacy token full_code is not a standalone stocks.<ticker> output path. Across 17 complete retained capture directories (340 stock records total; 20 per directory), the direct per-stock-root occurrence count is zero; the token appears only at the complete nested paths recorded in the audit inventory. This is a path-identity correction only; it does not transfer semantics among contexts.",
+        "sample_floor": "20261015",
+        "capture_directories": [
+          "20261015",
+          "20261016",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105",
+          "20261106",
+          "20261109",
+          "20261110",
+          "20261112"
+        ],
+        "excluded_directories": [
+          "20261019"
+        ],
+        "eligible_stock_day_count": 340,
+        "full_path_occurrence_count": 1726,
+        "unprefixed_top_level_record_count": 0,
+        "source_as_of_date_available": false,
+        "observed_full_paths": [
+          "global_helpers.limit_ladder.rows[].full_code",
+          "global_helpers.realtime_rank.rows[].full_code",
+          "stocks.*.limit_ladder.full_code",
+          "stocks.*.shortline.full_code"
+        ]
+      },
+      "superseded_status_evidence": {
         "status": "unverified",
-        "status_raw": "",
+        "status_resolution": "registry_status_only_single_source",
         "canonical": "full_code",
         "meaning": "",
         "unit": "",
-        "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "registry_aggregate": {
+          "code": "full_code",
+          "sources": [
+            "TDX-eltdx(适配层)"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "full_code",
+          "meaning": "",
+          "unit": "",
+          "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        },
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        }
       }
     },
     {
@@ -108606,24 +108861,26 @@
       "code": "market_id",
       "identity": "TDX-eltdx(适配层)::market_id",
       "path": "market_id",
-      "canonical": "market_id",
-      "meaning": "",
+      "canonical": "shortline.market_id",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "eltdx-unqualified-helper-path-retirement-20261115:market_id",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX-eltdx(适配层)"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -108658,12 +108915,93 @@
         "sources": [
           "TDX-eltdx(适配层)"
         ],
+        "status": "disproved",
+        "status_raw": "retired_legacy_path",
+        "canonical": "shortline.market_id",
+        "meaning": "已退役的未限定旧路径身份",
+        "unit": "",
+        "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+          "docs/field_verification/research/20261115_eltdx_unqualified_helper_path_inventory.csv",
+          "docs/field_source_reference.md",
+          "scripts/capture_field_probe.py",
+          "scripts/capture_tcp_collectors.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "id": "eltdx-unqualified-helper-path-retirement-20261115:market_id",
+        "reason": "The legacy token market_id is not a standalone stocks.<ticker> output path. Across 17 complete retained capture directories (340 stock records total; 20 per directory), the direct per-stock-root occurrence count is zero; the token appears only at the complete nested paths recorded in the audit inventory. This is a path-identity correction only; it does not transfer semantics among contexts.",
+        "sample_floor": "20261015",
+        "capture_directories": [
+          "20261015",
+          "20261016",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105",
+          "20261106",
+          "20261109",
+          "20261110",
+          "20261112"
+        ],
+        "excluded_directories": [
+          "20261019"
+        ],
+        "eligible_stock_day_count": 340,
+        "full_path_occurrence_count": 2423,
+        "unprefixed_top_level_record_count": 0,
+        "source_as_of_date_available": false,
+        "observed_full_paths": [
+          "global_helpers.limit_ladder.rows[].market_id",
+          "global_helpers.market_stat_880005.market_id",
+          "global_helpers.realtime_rank.rows[].raw.market_id",
+          "stocks.*.finance_batch[].market_id",
+          "stocks.*.limit_ladder.market_id",
+          "stocks.*.quote_snapshot.market_id",
+          "stocks.*.shortline.market_id"
+        ]
+      },
+      "superseded_status_evidence": {
         "status": "unverified",
-        "status_raw": "",
+        "status_resolution": "registry_status_only_single_source",
         "canonical": "market_id",
         "meaning": "",
         "unit": "",
-        "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "registry_aggregate": {
+          "code": "market_id",
+          "sources": [
+            "TDX-eltdx(适配层)"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "market_id",
+          "meaning": "",
+          "unit": "",
+          "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        },
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "TDX-eltdx(适配层)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        }
       }
     },
     {
@@ -111523,26 +111861,28 @@
       "code": "pre_close",
       "identity": "TDX-eltdx(适配层)::pre_close",
       "path": "pre_close",
-      "canonical": "pre_close",
-      "meaning": "",
+      "canonical": "shortline.pre_close",
+      "meaning": "已退役的未限定旧路径身份",
       "unit": "",
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "eltdx-unqualified-helper-path-retirement-20261115:pre_close",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX(双命名源)",
           "TDX-eltdx(适配层)",
           "Levistock历史未归属"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [
@@ -111567,16 +111907,96 @@
       "registry_aggregate": {
         "code": "pre_close",
         "sources": [
-          "TDX(双命名源)",
-          "TDX-eltdx(适配层)",
-          "Levistock历史未归属"
+          "TDX-eltdx(适配层)"
         ],
+        "status": "disproved",
+        "status_raw": "retired_legacy_path",
+        "canonical": "shortline.pre_close",
+        "meaning": "已退役的未限定旧路径身份",
+        "unit": "",
+        "section": "2026-11-15 ELTDX Helper 未限定字段路径退役核查"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_eltdx_unqualified_helper_paths.md",
+          "docs/field_verification/research/20261115_eltdx_unqualified_helper_path_inventory.csv",
+          "docs/field_source_reference.md",
+          "scripts/capture_field_probe.py",
+          "scripts/capture_tcp_collectors.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "id": "eltdx-unqualified-helper-path-retirement-20261115:pre_close",
+        "reason": "The legacy token pre_close is not a standalone stocks.<ticker> output path. Across 17 complete retained capture directories (340 stock records total; 20 per directory), the direct per-stock-root occurrence count is zero; the token appears only at the complete nested paths recorded in the audit inventory. This is a path-identity correction only; it does not transfer semantics among contexts.",
+        "sample_floor": "20261015",
+        "capture_directories": [
+          "20261015",
+          "20261016",
+          "20261020",
+          "20261021",
+          "20261023",
+          "20261026",
+          "20261028",
+          "20261029",
+          "20261030",
+          "20261102",
+          "20261103",
+          "20261104",
+          "20261105",
+          "20261106",
+          "20261109",
+          "20261110",
+          "20261112"
+        ],
+        "excluded_directories": [
+          "20261019"
+        ],
+        "eligible_stock_day_count": 340,
+        "full_path_occurrence_count": 1726,
+        "unprefixed_top_level_record_count": 0,
+        "source_as_of_date_available": false,
+        "observed_full_paths": [
+          "global_helpers.limit_ladder.rows[].pre_close",
+          "global_helpers.realtime_rank.rows[].pre_close",
+          "stocks.*.limit_ladder.pre_close",
+          "stocks.*.shortline.pre_close"
+        ]
+      },
+      "superseded_status_evidence": {
         "status": "unverified",
-        "status_raw": "",
+        "status_resolution": "aggregate_status_scope_unresolved",
         "canonical": "pre_close",
         "meaning": "",
         "unit": "",
-        "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "registry_aggregate": {
+          "code": "pre_close",
+          "sources": [
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "Levistock历史未归属"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "pre_close",
+          "meaning": "",
+          "unit": "",
+          "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        },
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "Levistock历史未归属"
+          ],
+          "values": [
+            "unverified"
+          ]
+        }
       }
     },
     {

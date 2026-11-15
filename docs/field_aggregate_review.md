@@ -767,7 +767,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `code` | code | 股票代码 | 6位字符串 | `verified` |
-| TDX-eltdx(适配层) · `code` | code | — | — | `unverified` |
+| TDX-eltdx(适配层) · `code` | shortline.code | 已退役的未限定旧路径身份 | — | `disproved` |
 | ZHB-tdxstat · `code` | code | 代码 | - | `verified` |
 | ZHB-tdxstat2 · `code` | code | 代码 | - | `verified` |
 | ZHB-tipinfo · `code` | code | 股票代码 | 6位字符串 | `verified` |
@@ -849,11 +849,11 @@
 
 ### `exchange` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX-eltdx(适配层) · `exchange` | exchange | — | — | `unverified` |
+| TDX-eltdx(适配层) · `exchange` | shortline.exchange | 已退役的未限定旧路径身份 | — | `disproved` |
 | 同花顺-fuyao · `exchange` | — | — | — | `unverified` |
 
 ### `f1` — incomplete
@@ -2951,12 +2951,12 @@
 
 ### `pre_close` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `pre_close` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `pre_close` | pre_close | — | — | `unverified` |
+| TDX-eltdx(适配层) · `pre_close` | shortline.pre_close | 已退役的未限定旧路径身份 | — | `disproved` |
 
 ### `pre_close_price` — ambiguous
 

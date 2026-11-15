@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-15",
+  "decisions": [
+    {
+      "id": "20261115-fuyao-auction-pct-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_pct",
+      "meaning": "集合竞价涨跌幅，按百分数原值返回",
+      "unit": "%",
+      "rationale": "Fuyao 官方集合竞价快照契约将 data.item[].auction_pct 定义为竞价涨跌幅的百分数值。项目适配器保留完整响应信封，采集器提取 data.item 并将每项保存到 stocks.<代码>.auction_final，因此项目完整来源路径精确为 auction_final.auction_pct。保留期内 314 条非空观察均与同项 auction_price、pre_close_price 的百分比复算在四位小数上相符，作为路径/量纲一致性佐证。官方 data.timestamp 是响应组装时间，项目元数据明确 source_data_date=null 且 collision_eligible=false；本决定不确认竞价样本日期、不将其用于跨源碰撞，也不创建 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 金融数据 API 官方集合竞价文档",
+        "revision": "在线官方文档于 2026-11-15 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    }
+  ]
+}

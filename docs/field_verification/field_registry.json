@@ -7,11 +7,11 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 363,
+      "aggregate_status_scope_unresolved": 357,
       "candidate": 1,
       "collector_output_container": 3,
-      "conflict": 36,
-      "disproved": 54,
+      "conflict": 34,
+      "disproved": 69,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -23,18 +23,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 541,
+      "registry_status_only_single_source": 534,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 28,
-      "status_conflict": 30,
+      "retired_legacy_path": 43,
+      "status_conflict": 28,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1043,
-      "verified": 1498,
+      "unverified": 1030,
+      "verified": 1499,
       "verified_by_empirical_addendum": 158,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 394
+      "verified_by_source_contract": 395
     },
     "updated_at": "2026-11-15"
   },
@@ -8623,6 +8623,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "auction_final.auction_pct",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "source contract: 同花顺 Fuyao 金融数据 API 官方集合竞价文档 · GET /api/a-share/auction/snapshot#集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义 @ 在线官方文档于 2026-11-15 核验",
+      "canonical": "auction_final.auction_pct",
+      "meaning": "集合竞价涨跌幅，按百分数原值返回",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "同花顺-fuyao": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "auction_matched_volume",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -8646,20 +8664,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "auction_final.auction_pct",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 auction_final.auction_pct。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "auction_prev_volume_ratio",
@@ -28280,20 +28295,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "valuation.pb_mrq",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.pb_mrq。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "pcf_ttm",
@@ -28301,20 +28313,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "valuation.pcf_ttm",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.pcf_ttm。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "pct",
@@ -29685,20 +29694,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "snapshot.price_change",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "price_change_ratio_pct",
@@ -29706,20 +29712,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "snapshot.price_change_ratio_pct",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change_ratio_pct。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "price_delta_raw",
@@ -30038,20 +30041,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "canonical": "valuation.ps_ttm",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.ps_ttm。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "publishDate",
@@ -37927,7 +37927,7 @@
       "status": "conflict",
       "source_statuses": {
         "FTShare REST": "verified",
-        "同花顺-fuyao": "unverified",
+        "同花顺-fuyao": "disproved",
         "开盘啦(kpl)": "unverified",
         "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified",
@@ -38934,17 +38934,19 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
         "unit_incomplete"
@@ -45860,6 +45862,9 @@
     ],
     "event_date": [
       "TDX(双命名源)"
+    ],
+    "auction_final.auction_pct": [
+      "同花顺-fuyao"
     ]
   },
   "mappings": [
@@ -96074,7 +96079,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-        "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+        "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
         "sample": {
           "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.amount / 同日 TDX KlineBar.amount / Tencent qt.gtimg 字段[57]×10000；排除双方均为 0 的低信息样本",
           "comparison_count": 359,
@@ -96113,7 +96118,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
           "metadata_change": {
             "before": {
               "canonical": "amount",
@@ -96167,7 +96172,7 @@
           "reviewed_on": "2026-11-14",
           "decision_file": "adjudications/20261114_eltdx_adapter_quote_semantics.json",
           "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -111404,7 +111409,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-        "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+        "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
         "sample": {
           "scope": "2026-10-15 至 2026-11-12；18 个目标交易日；TDX quote_snapshot.last_price / TDX KlineBar.close / Tencent qt.gtimg 字段[3]；按各来源实际日期和收盘阶段配对",
           "comparison_count": 360,
@@ -111435,7 +111440,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
           "metadata_change": {
             "before": {
               "canonical": "price",
@@ -111488,7 +111493,7 @@
           "reviewed_on": "2026-11-14",
           "decision_file": "adjudications/20261114_eltdx_adapter_quote_semantics.json",
           "evidence_file": "adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-          "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+          "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",
@@ -201601,16 +201606,18 @@
     },
     {
       "source": "同花顺-fuyao",
-      "code": "auction_pct",
-      "identity": "同花顺-fuyao::auction_pct",
-      "path": "auction_pct",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "code": "auction_final.auction_pct",
+      "identity": "同花顺-fuyao::auction_final.auction_pct",
+      "path": "auction_final.auction_pct",
+      "canonical": "auction_final.auction_pct",
+      "meaning": "集合竞价涨跌幅，按百分数原值返回",
+      "unit": "%",
+      "section": "source contract: 同花顺 Fuyao 金融数据 API 官方集合竞价文档 · GET /api/a-share/auction/snapshot#集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义 @ 在线官方文档于 2026-11-15 核验",
+      "sections": [
+        "source contract: 同花顺 Fuyao 金融数据 API 官方集合竞价文档 · GET /api/a-share/auction/snapshot#集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义 @ 在线官方文档于 2026-11-15 核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -201620,6 +201627,122 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261115-fuyao-auction-pct-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261115-fuyao-auction-pct-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 同花顺 Fuyao 金融数据 API 官方集合竞价文档 · GET /api/a-share/auction/snapshot#集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义 @ 在线官方文档于 2026-11-15 核验",
+          "canonical": "auction_final.auction_pct",
+          "meaning": "集合竞价涨跌幅，按百分数原值返回",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-15：20261115-fuyao-auction-pct-contract",
+          "status": "verified",
+          "adjudication_id": "20261115-fuyao-auction-pct-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 金融数据 API 官方集合竞价文档",
+            "revision": "在线官方文档于 2026-11-15 核验",
+            "path": "GET /api/a-share/auction/snapshot",
+            "locator": "集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "auction_final.auction_pct",
+              "meaning": "集合竞价涨跌幅，按百分数原值返回",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "auction_final.auction_pct",
+        "sources": [
+          "同花顺-fuyao"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-auction-pct-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-15",
+          "decision_file": "adjudications/20261115_fuyao_auction_pct_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "auction_final.auction_pct",
+              "meaning": "集合竞价涨跌幅，按百分数原值返回",
+              "unit": "%"
+            }
+          },
+          "rationale": "Fuyao 官方集合竞价快照契约将 data.item[].auction_pct 定义为竞价涨跌幅的百分数值。项目适配器保留完整响应信封，采集器提取 data.item 并将每项保存到 stocks.<代码>.auction_final，因此项目完整来源路径精确为 auction_final.auction_pct。保留期内 314 条非空观察均与同项 auction_price、pre_close_price 的百分比复算在四位小数上相符，作为路径/量纲一致性佐证。官方 data.timestamp 是响应组装时间，项目元数据明确 source_data_date=null 且 collision_eligible=false；本决定不确认竞价样本日期、不将其用于跨源碰撞，也不创建 mappings。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 金融数据 API 官方集合竞价文档",
+            "revision": "在线官方文档于 2026-11-15 核验",
+            "path": "GET /api/a-share/auction/snapshot",
+            "locator": "集合竞价快照响应 data.item[].auction_pct 字段表；data.timestamp 时间语义",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+          }
+        }
+      ]
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "auction_pct",
+      "identity": "同花顺-fuyao::auction_pct",
+      "path": "auction_pct",
+      "canonical": "auction_final.auction_pct",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 auction_final.auction_pct。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "%",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
+      "status_evidence": {
+        "adjudication_ids": [
+          "20261115-fuyao-auction-pct-root-alias-retirement"
+        ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 314,
+        "values": [
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -201635,7 +201758,79 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 auction_final.auction_pct；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 314 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 314
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-auction-pct-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -213009,22 +213204,28 @@
       "code": "pb_mrq",
       "identity": "同花顺-fuyao::pb_mrq",
       "path": "pb_mrq",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "valuation.pb_mrq",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.pb_mrq。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-pb-mrq-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -213040,29 +213241,107 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 valuation.pb_mrq；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-pb-mrq-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
       "code": "pcf_ttm",
       "identity": "同花顺-fuyao::pcf_ttm",
       "path": "pcf_ttm",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "valuation.pcf_ttm",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.pcf_ttm。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-pcf-ttm-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -213078,7 +213357,79 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 valuation.pcf_ttm；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-pcf-ttm-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -214007,22 +214358,28 @@
       "code": "price_change",
       "identity": "同花顺-fuyao::price_change",
       "path": "price_change",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "snapshot.price_change",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "元",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-price-change-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -214038,29 +214395,107 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 snapshot.price_change；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-price-change-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
       "code": "price_change_ratio_pct",
       "identity": "同花顺-fuyao::price_change_ratio_pct",
       "path": "price_change_ratio_pct",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "snapshot.price_change_ratio_pct",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change_ratio_pct。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "%",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-price-change-ratio-pct-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -214076,7 +214511,79 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 snapshot.price_change_ratio_pct；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-price-change-ratio-pct-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -214845,22 +215352,28 @@
       "code": "ps_ttm",
       "identity": "同花顺-fuyao::ps_ttm",
       "path": "ps_ttm",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "valuation.ps_ttm",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 valuation.ps_ttm。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "倍",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
+        "adjudication_ids": [
+          "20261115-fuyao-ps-ttm-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -214876,7 +215389,79 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 valuation.ps_ttm；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-ps-ttm-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -218582,25 +219167,28 @@
       "code": "turnover",
       "identity": "同花顺-fuyao::turnover",
       "path": "turnover",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "snapshot.turnover",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "元",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "开盘红(Levistock适配)",
-          "开盘啦(kpl)",
-          "新浪(扩展API)"
+        "adjudication_ids": [
+          "20261115-fuyao-turnover-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -218619,7 +219207,85 @@
         "meaning": "成交额 / 换手率%",
         "unit": "",
         "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "开盘红(Levistock适配)",
+            "开盘啦(kpl)",
+            "新浪(扩展API)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 snapshot.turnover；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-turnover-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "开盘红(Levistock适配)",
+                "开盘啦(kpl)",
+                "新浪(扩展API)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -219287,25 +219953,28 @@
       "code": "volume",
       "identity": "同花顺-fuyao::volume",
       "path": "volume",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "snapshot.volume",
+      "meaning": "已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。",
+      "unit": "股",
+      "section": "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）",
+      "sections": [
+        "Fuyao 行情、估值与竞价裸路径复核（2026-11-15）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX(双命名源)",
-          "TDX-eltdx(适配层)",
-          "Levistock历史未归属"
+        "adjudication_ids": [
+          "20261115-fuyao-volume-root-alias-retirement"
         ],
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320,
         "values": [
-          "unverified"
+          "retired_legacy_path"
         ]
       },
       "reference_evidence": [],
@@ -219324,7 +219993,85 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "status_raw": null,
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "sections": [],
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX(双命名源)",
+            "TDX-eltdx(适配层)",
+            "Levistock历史未归属"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+        "reason": "项目当前将 Fuyao data.item 记录保存到对应分组路径 snapshot.volume；保留期 18 个来源日期、360 条股票记录中旧根键出现 0 次，完整路径有 320 条非空观察。该决定只退役旧路径身份，不改变目标路径的语义裁决，不确认竞价字段的来源数据日期，也不创建跨源映射。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "docs/field_verification/research/20261115_fuyao_leaf_path_inventory.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "root_path_count": 0,
+        "nested_path_count": 320
+      },
+      "adjudications": [
+        {
+          "id": "20261115-fuyao-volume-root-alias-retirement",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_leaf_path_followup.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "aggregate_status_scope_unresolved",
+            "status_raw": null,
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "section": "",
+            "sections": [],
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao",
+                "TDX(双命名源)",
+                "TDX-eltdx(适配层)",
+                "Levistock历史未归属"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -250294,7 +251041,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
-        "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+        "evidence_sha256": "df1e99baf02effb90fd945c6cc766116e06a39ee436d30089069259705570124",
         "sample": {
           "scope": "2026-11-12 目标数据日、Fuyao as_of_date 2026-11-12；20 家发行人的 fin_report=2026-2（2026H1）值，与 2026H1/2025H1 正式报告合并资产负债表固定资产项目逐项对照；历史路径审计为 2026-10-15 起 18 个目录",
           "comparison_count": 20,
@@ -250321,7 +251068,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
-          "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+          "evidence_sha256": "df1e99baf02effb90fd945c6cc766116e06a39ee436d30089069259705570124",
           "metadata_change": {
             "before": {
               "canonical": "growth.fixed_asset_invest_expansion_ratio",
@@ -250371,7 +251118,7 @@
           "reviewed_on": "2026-11-14",
           "decision_file": "adjudications/20261114_fuyao_fixed_asset_growth_semantics.json",
           "evidence_file": "adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
-          "evidence_sha256": "d1ba77a9a58a879a17f7d3a8dcd4f909819b405eed048fd855c4f3be95f9b59e",
+          "evidence_sha256": "df1e99baf02effb90fd945c6cc766116e06a39ee436d30089069259705570124",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",

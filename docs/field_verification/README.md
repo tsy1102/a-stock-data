@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261115_e3_evidence_digest_correction.md`](adjudications/20261115_e3_evidence_digest_correction.md)：复核并修正 ELTDX 行情及 Fuyao 固定资产两份既有 E3 证据的陈旧摘要；逐行重验归档和对照表，字段语义、单位、状态及映射均未更改。
+- [`adjudications/20261115_fuyao_leaf_path_followup.md`](adjudications/20261115_fuyao_leaf_path_followup.md)：核对保留期 18 个 Fuyao 目录、360 条股票记录，退役 8 个未实际输出的无分组裸路径；为新完整路径 `auction_final.auction_pct` 按官方接口定案竞价涨跌幅和 `%` 单位，314 条值通过同记录价格复算。竞价来源数据日未暴露，未把它用于跨源碰撞；逐行路径、值和 raw/meta 哈希见 [`research/20261115_fuyao_leaf_path_inventory.csv`](research/20261115_fuyao_leaf_path_inventory.csv)。
 - [`adjudications/20261115_tdx_xdxr_date_category_contract.json`](adjudications/20261115_tdx_xdxr_date_category_contract.json) 与 [`research/20261115_tdx_xdxr_date_semantics.md`](research/20261115_tdx_xdxr_date_semantics.md)：按锁定版 ELTDX `CapitalChangeRecord` 契约拆开并定案 `TDX(双命名源)::date`（XDXR 事件日期）和 `category_name`（类别可读名称）；不推断公告日/登记日/除权日子类型、不扩展类别码表，且注明 `category_name` 当前未被适配器转发。保留期没有 XDXR 原始样本，本次不声称完成逐值碰撞，也不新增跨源映射。大写 `Date` 因缺精确映射仍待核。
 - [`adjudications/20261115_push2ex_sector_source_contract.json`](adjudications/20261115_push2ex_sector_source_contract.json) 与 [`adjudications/public_web/20261115_public_web_research.md`](adjudications/public_web/20261115_public_web_research.md)：确认 `东财-push2ex::sector` 是同源 `hybk` 的所属行业板块标签别名；代码映射、已验证的 `hybk` 定义及两只股票的东方财富官方页标签相符。Push2EX 样本缺来源日期，仅作语义线索；不确认分类层级/版本，也不建立跨源映射。
 - [`research/20261114_push2ex_yesterday_pool_capture_gap.md`](research/20261114_push2ex_yesterday_pool_capture_gap.md)：保留期 18 个 Push2EX 数据日归档均无来源 `as_of_date` 或昨日池路径；核对项目解析器后确认昨日池接口能提供 `yfbt`→`y_first_seal`、`ylbc`→`y_limit_count` 的待核映射。日常采集现补入昨日池并分接口记录；官方页面只支持“昨日涨停股池/昨日连板数”业务线索，字段未定案，日期样本尚待后续交易日产生。

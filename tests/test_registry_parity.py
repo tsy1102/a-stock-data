@@ -496,7 +496,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 88
+    assert len(pairs) == 89
+    assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
+    assert matrix["auction_final.auction_pct"] == {"同花顺-fuyao"}
     assert ("同花顺-fuyao", "growth.total_assets_growth_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.total_assets_net_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.index_deduct_weighted_avg_roe") in pairs
@@ -530,6 +532,37 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         assert matrix[path] == {"同花顺-fuyao"}
     assert "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float" not in matrix
     assert "finance_batch[].fa_ren_gu_raw_float" not in matrix
+
+
+def test_fuyao_leaf_path_followup_retires_only_unqualified_identities():
+    registry = registry_parity.fra.load_registry()
+    records = {
+        (row["source"], row["code"]): row
+        for row in registry_parity.fra.source_field_records(registry)
+    }
+    retired_paths = {
+        "auction_pct": "auction_final.auction_pct",
+        "pb_mrq": "valuation.pb_mrq",
+        "pcf_ttm": "valuation.pcf_ttm",
+        "price_change": "snapshot.price_change",
+        "price_change_ratio_pct": "snapshot.price_change_ratio_pct",
+        "ps_ttm": "valuation.ps_ttm",
+        "turnover": "snapshot.turnover",
+        "volume": "snapshot.volume",
+    }
+
+    target = records[("同花顺-fuyao", "auction_final.auction_pct")]
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["unit"] == "%"
+
+    for legacy_path, full_path in retired_paths.items():
+        record = records[("同花顺-fuyao", legacy_path)]
+        assert record["status"] == "disproved"
+        assert record["status_resolution"] == "retired_legacy_path"
+        assert record["canonical"] == full_path
+        assert isinstance(record.get("superseded_status_evidence"), dict)
+        assert record["adjudication_evidence"]["decision"] == "disproved"
 
 
 def test_ftshare_empirical_observation_is_not_required_to_have_official_contract_addendum():

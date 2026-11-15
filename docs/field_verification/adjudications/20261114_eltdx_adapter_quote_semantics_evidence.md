@@ -41,7 +41,7 @@
 360 组中有 1 组（`20261015 / 600825`）双方成交额均为 0。依照恒 0 低信息量规则，该组不计入成交额语义比较；它仍计入价格检查。359 组正成交额的最大绝对差为 487 元，最大相对差为 `1.6216e-7`。本结论不假定或推导 compact-float 的具体舍入算法；单位判断主要依赖同日 TDX K 线 360/360 精确相等，并以独立 Tencent 字段的万元换算值验证元级量纲。Tencent 对照只报告实际观测误差，不将其包装成预先证明的协议精度阈值。
 
 逐样本表：[20261114_eltdx_adapter_quote_samples.csv](../research/20261114_eltdx_adapter_quote_samples.csv)
-CSV SHA-256：`942B736FAA87B00AAA3B99D9A30CD79995A2DC68318DB004BE0A23071AE1D3DE`
+CSV 规范 LF SHA-256：`4de7e3a4b3204a2384a1afe990a163e59ac20660a27bd23cfd1bd51d27cf7b6c`
 
 ## 边界
 

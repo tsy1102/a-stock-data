@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2632；日常来源路径 2488：unverified 918、candidate 1、conflict 34、disproved 61；历史来源路径 144。
+> 注册字段路径 2633；日常来源路径 2489：unverified 910、candidate 1、conflict 34、disproved 69；历史来源路径 144。
 > 另有 146 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,18 +15,18 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 774 |
+| 含义栏为空/占位 | 766 |
 | 含义栏有文本（仍未验证） | 144 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 320 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 318 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 58 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 459 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 453 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 42 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（34）
@@ -74,7 +74,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（918）
+## 三、待破解字段（910）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -494,7 +494,6 @@
 | 同花顺-fuyao | `amplitude` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `anomaly_list` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `asset_type` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `auction_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `calendar` | a-share/calendar/trading-days | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `catalog` | a-share-index/catalog/ths-index-list | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `close_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -552,16 +551,11 @@
 | 同花顺-fuyao | `offerings/list` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `open` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `operation` | operation | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕 |
-| 同花顺-fuyao | `pb_mrq` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `pcf_ttm` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `performance` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `period` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `price_change` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `price_change_ratio_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `prices` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `probe_trading_day` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `profile` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `ps_ttm` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `rank` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `returns` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | 元 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕；12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕 |
@@ -573,10 +567,8 @@
 | 同花顺-fuyao | `ticker` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `tickers` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `total` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `turnover` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `turnover_ratio_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
-| 同花顺-fuyao | `volume` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `weighted_roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `zt_seal_amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `zt_seal_amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -997,7 +989,7 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（61）
+## 四、已证伪（默认不重复破解）（69）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -1032,6 +1024,7 @@
 | 东财-push2ex | `limit_down_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |
 | 东财-push2ex | `limit_up_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |
 | 同花顺-fuyao | `assets_debt_ratio` | solvency.assets_debt_ratio | 旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务比率裸根路径身份退役（2026-11-14） |
+| 同花顺-fuyao | `auction_pct` | auction_final.auction_pct | 已退役的旧无分组来源路径；当前完整采集路径为 auction_final.auction_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 同比增长指标旧根路径退役（2026-11-14） |
 | 同花顺-fuyao | `calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-14 Fuyao 营业利润字段完整路径实证 |
 | 同花顺-fuyao | `calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | 旧登记将 归母净利润同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_parent_holder_net_profit_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 同比增长指标旧根路径退役（2026-11-14） |
@@ -1052,9 +1045,14 @@
 | 同花顺-fuyao | `net_profit_cash_content` | cash-flow.net_profit_cash_content | 旧登记的无分组叶名身份；当前完整路径为 cash-flow.net_profit_cash_content。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `open_price` | snapshot.open_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.open_price。官方接口将 open_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情快照裸根路径身份退役（2026-11-15） |
 | 同花顺-fuyao | `operating_cash_flow_net_divide_income` | cash-flow.operating_cash_flow_net_divide_income | 旧登记的无分组叶名身份；当前完整路径为 cash-flow.operating_cash_flow_net_divide_income。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
+| 同花顺-fuyao | `pb_mrq` | valuation.pb_mrq | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.pb_mrq。本条只处置路径身份，不否定目标字段的语义或单位。 | 倍 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
+| 同花顺-fuyao | `pcf_ttm` | valuation.pcf_ttm | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.pcf_ttm。本条只处置路径身份，不否定目标字段的语义或单位。 | 倍 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `pe_mrq` | valuation.pe_mrq | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_mrq。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | 倍 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 估值字段裸根路径身份退役（2026-11-15） |
 | 同花顺-fuyao | `pe_ttm` | valuation.pe_ttm | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_ttm。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | 倍 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 估值字段裸根路径身份退役（2026-11-15） |
 | 同花顺-fuyao | `prev_price` | snapshot.prev_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.prev_price。官方接口将 prev_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情快照裸根路径身份退役（2026-11-15） |
+| 同花顺-fuyao | `price_change` | snapshot.price_change | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change。本条只处置路径身份，不否定目标字段的语义或单位。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
+| 同花顺-fuyao | `price_change_ratio_pct` | snapshot.price_change_ratio_pct | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change_ratio_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
+| 同花顺-fuyao | `ps_ttm` | valuation.ps_ttm | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.ps_ttm。本条只处置路径身份，不否定目标字段的语义或单位。 | 倍 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `quick_ratio` | solvency.quick_ratio | 旧登记的无分组叶名身份；当前完整路径为 solvency.quick_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `receive_account_turnover_ratio` | operation.receive_account_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.receive_account_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `sale_gross_margin` | profitability.sale_gross_margin | 旧无分组根路径身份；当前完整字段路径为 profitability.sale_gross_margin，裸叶不是当前解析响应的根级独立字段。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务比率裸根路径身份退役（2026-11-14） |
@@ -1062,6 +1060,8 @@
 | 同花顺-fuyao | `total_assets_growth_ratio` | growth.total_assets_growth_ratio | 旧登记的无分组叶名身份；当前完整路径为 growth.total_assets_growth_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务指标无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `total_assets_net_ratio` | profitability.total_assets_net_ratio | 旧登记的无分组叶名身份；当前完整路径为 profitability.total_assets_net_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务指标无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `total_assets_turnover_ratio` | operation.total_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.total_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
+| 同花顺-fuyao | `turnover` | snapshot.turnover | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
+| 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | 股 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 
 ## 已退出来源字段（仅历史证据，不进入默认破解）
 

@@ -4,7 +4,7 @@
   "reviewer": "Codex field audit",
   "reviewed_on": "2026-11-14",
   "evidence_file": "docs/field_verification/adjudications/20261114_eltdx_adapter_quote_semantics_evidence.md",
-  "evidence_sha256": "aa56e934cdbb8a2211a4f7fd98d29b24a130c321a0f1e82d2339f4539961675e",
+  "evidence_sha256": "28be9cb637e12b56250d624b2e1d174e97c0df021389e59e2ad90c82a1633980",
   "decisions": [
     {
       "id": "20261114-eltdx-adapter-price-empirical-semantics",

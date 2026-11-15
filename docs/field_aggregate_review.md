@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 136 个 code；聚合定义不完整 199 个 code；疑似合并文本 479 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 487 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3294,7 +3294,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `turnover` | turnover | 成交额 | 元 | `verified` |
-| 同花顺-fuyao · `turnover` | — | — | — | `unverified` |
+| 同花顺-fuyao · `turnover` | snapshot.turnover | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。 | 元 | `disproved` |
 | 开盘啦(kpl) · `turnover` | — | — | — | `unverified` |
 | 开盘红 · `turnover` | amount | 成交额；与 KPL amount 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | `unverified` |
@@ -3358,16 +3358,16 @@
 | 市场源(market_sources) · `vol_ratio` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `vol_ratio` | vol_ratio | 量比 | — | `unverified` |
 
-### `volume` — incomplete
+### `volume` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `volume` | volume | 成交量 | 股 | `verified` |
 | TDX(双命名源) · `volume` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `volume` | volume | — | — | `unverified` |
-| 同花顺-fuyao · `volume` | — | — | — | `unverified` |
+| 同花顺-fuyao · `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | 股 | `disproved` |
 
 ### `zong_zi_chan_raw_float` — ambiguous
 
@@ -3697,6 +3697,7 @@
 | 东财-资金流(em_fund_flow) | `f145` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |
 | 东财-资金流(em_fund_flow) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 同花顺-fuyao | `assets_debt_ratio` | solvency.assets_debt_ratio | 旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
+| 同花顺-fuyao | `auction_pct` | auction_final.auction_pct | 已退役的旧无分组来源路径；当前完整采集路径为 auction_final.auction_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `basic_eps` | basic_eps | 基本每股收益（元/股）。 | `verified` |
 | 同花顺-fuyao | `calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | `disproved` |
 | 同花顺-fuyao | `calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |
@@ -3748,15 +3749,20 @@
 | 同花顺-fuyao | `operation.total_assets_turnover_ratio` | operation.total_assets_turnover_ratio | 总资产周转率；官方文档说明周转率通常按“次”展示。 | `verified` |
 | 同花顺-fuyao | `pay_dividends_profits_interest_cash` | pay_dividends_profits_interest_cash | 分配股利、利润或偿付利息支付的现金（原币元）。 | `verified` |
 | 同花顺-fuyao | `pay_fixed_assets_etc_cash` | pay_fixed_assets_etc_cash | 购建固定资产、无形资产和其他长期资产支付的现金（原币元）。 | `verified` |
+| 同花顺-fuyao | `pb_mrq` | valuation.pb_mrq | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.pb_mrq。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
+| 同花顺-fuyao | `pcf_ttm` | valuation.pcf_ttm | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.pcf_ttm。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `pe_mrq` | valuation.pe_mrq | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_mrq。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `pe_ttm` | valuation.pe_ttm | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_ttm。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `period_end_ms` | period_end_ms | 报告期末（Asia/Shanghai 零点毫秒戳）。 | `verified` |
 | 同花顺-fuyao | `prev_price` | snapshot.prev_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.prev_price。官方接口将 prev_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
+| 同花顺-fuyao | `price_change` | snapshot.price_change | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
+| 同花顺-fuyao | `price_change_ratio_pct` | snapshot.price_change_ratio_pct | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change_ratio_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `profitability.index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 扣非加权净资产收益率；接口值按百分数表达。 | `verified` |
 | 同花顺-fuyao | `profitability.index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。 | `verified` |
 | 同花顺-fuyao | `profitability.sale_gross_margin` | profitability.sale_gross_margin | 销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。 | `verified` |
 | 同花顺-fuyao | `profitability.sale_net_interest_ratio` | profitability.sale_net_interest_ratio | 销售净利率；可比样本按合并净利润/合并营业收入×100%复算。 | `verified` |
 | 同花顺-fuyao | `profitability.total_assets_net_ratio` | profitability.total_assets_net_ratio | 总资产收益率；接口值按百分数表达。2026H1样本中按当期合并净利润除以本期末与上期末未调整合并总资产的均值复算；该样本关系不外推为所有期间的通用算法。 | `verified` |
+| 同花顺-fuyao | `ps_ttm` | valuation.ps_ttm | 已退役的旧无分组来源路径；当前完整采集路径为 valuation.ps_ttm。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `quick_ratio` | solvency.quick_ratio | 旧登记的无分组叶名身份；当前完整路径为 solvency.quick_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `rank_change` | rank_change | 排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。 | `verified` |
 | 同花顺-fuyao | `rank_trend` | rank_trend | 排名趋势：`up` / `down` / `flat` / `unknown`。 | `verified` |
@@ -3774,8 +3780,10 @@
 | 同花顺-fuyao | `total_assets_growth_ratio` | growth.total_assets_growth_ratio | 旧登记的无分组叶名身份；当前完整路径为 growth.total_assets_growth_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `total_assets_net_ratio` | profitability.total_assets_net_ratio | 旧登记的无分组叶名身份；当前完整路径为 profitability.total_assets_net_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `total_assets_turnover_ratio` | operation.total_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.total_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
+| 同花顺-fuyao | `turnover` | snapshot.turnover | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | `unverified` |
+| 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |

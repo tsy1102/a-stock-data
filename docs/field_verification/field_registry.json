@@ -7,11 +7,11 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 357,
+      "aggregate_status_scope_unresolved": 355,
       "candidate": 1,
-      "collector_output_container": 7,
+      "collector_output_container": 9,
       "conflict": 28,
-      "disproved": 81,
+      "disproved": 85,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,22 +21,22 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
-      "project_derived_capture_output": 3,
+      "project_derived_capture_output": 5,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 521,
+      "registry_status_only_single_source": 518,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 43,
       "status_conflict": 22,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1017,
-      "verified": 1506,
+      "unverified": 1012,
+      "verified": 1507,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 406
+      "verified_by_source_contract": 407
     },
     "updated_at": "2026-11-15"
   },
@@ -12825,19 +12825,16 @@
         "同花顺-fuyao"
       ],
       "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "canonical": "date_ms",
+      "meaning": "项目按 probe_trading_day 生成的 Asia/Shanghai 零点毫秒 Unix 时间戳，作为涨停、跌停及炸板池接口的 date_ms 请求参数；该根字段不是 Fuyao 响应字段，也不能代替来源实际数据日。",
+      "unit": "毫秒 Unix 时间戳（Asia/Shanghai 00:00）",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "dates",
@@ -20525,19 +20522,16 @@
         "同花顺-fuyao"
       ],
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "stocks.<ticker>.financials",
+      "meaning": "采集器按股票归并 income_q、income_a、balance_q、cashflow_q 四个报表输出数组的对象容器；不是可独立解释或赋予单一单位的财务指标。叶路径语义按各自接口字段维护。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "financing_cash_flow_net",
@@ -22493,17 +22487,15 @@
       ],
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
       "canonical": "a-share/financials/indicators",
-      "meaning": "",
+      "meaning": "财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "industry",
@@ -25838,7 +25830,7 @@
         "市场源(market_sources)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "market",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -25849,14 +25841,12 @@
         "ZHB-tdxstat2": "verified",
         "reports": "verified",
         "东财-热榜(em_hot)": "verified",
-        "同花顺-fuyao": "unverified",
+        "同花顺-fuyao": "disproved",
         "市场源(market_sources)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
         "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
@@ -29774,12 +29764,14 @@
       "status": "unverified",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -45854,6 +45846,9 @@
     ],
     "anchor_date": [
       "TDX-eltdx(适配层)"
+    ],
+    "a-share/financials/indicators": [
+      "同花顺-fuyao"
     ]
   },
   "mappings": [
@@ -205820,22 +205815,23 @@
       "code": "date_ms",
       "identity": "同花顺-fuyao::date_ms",
       "path": "date_ms",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "canonical": "date_ms",
+      "meaning": "项目按 probe_trading_day 生成的 Asia/Shanghai 零点毫秒 Unix 时间戳，作为涨停、跌停及炸板池接口的 date_ms 请求参数；该根字段不是 Fuyao 响应字段，也不能代替来源实际数据日。",
+      "unit": "毫秒 Unix 时间戳（Asia/Shanghai 00:00）",
       "section": "",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-date-ms-request-metadata-20261115",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -205851,6 +205847,82 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "date_ms",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-date-ms-request-metadata-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+          "docs/field_verification/research/20261115_fuyao_capture_path_inventory.csv",
+          "scripts/capture_retention.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "stock_common/sc_fuyao.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "collect_fuyao() 从 last_completed_trading_day() 构造 date_ms 并写入根输出，随后将其传给三个 limit-pool 调用；保留期 18/18 个目录中解码日期均与 probe_trading_day 和目标数据日一致。这是项目请求元数据，不是提供方返回的业务字段。",
+        "sample_as_of_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "sample_count_per_path": 18,
+        "date_ms_sample_count": 18,
+        "date_ms_matches_probe_count": 18,
+        "fuyao_status_ok_count": 18
       }
     },
     {
@@ -206752,68 +206824,27 @@
       "code": "financials",
       "identity": "同花顺-fuyao::financials",
       "path": "financials",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "stocks.<ticker>.financials",
+      "meaning": "采集器按股票归并 income_q、income_a、balance_q、cashflow_q 四个报表输出数组的对象容器；不是可独立解释或赋予单一单位的财务指标。叶路径语义按各自接口字段维护。",
       "unit": "",
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
       "sections": [
         "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-financials-output-container-20261115",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "unverified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-          "canonical": "a-share/financials/income-statements",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-          "canonical": "a-share/financials/balance-sheets",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-          "canonical": "a-share/financials/cash-flow-statements",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-          "canonical": "a-share/financials/indicators",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        }
-      ],
-      "attribute_conflicts": {
-        "canonical": [
-          "a-share/financials/balance-sheets",
-          "a-share/financials/cash-flow-statements",
-          "a-share/financials/income-statements",
-          "a-share/financials/indicators"
-        ]
-      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "financials",
         "sources": [
@@ -206825,6 +206856,133 @@
         "meaning": "",
         "unit": "",
         "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "financials",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "a-share/financials/income-statements",
+          "meaning": "",
+          "unit": "",
+          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+            "canonical": "a-share/financials/income-statements",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+            "canonical": "a-share/financials/balance-sheets",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+            "canonical": "a-share/financials/cash-flow-statements",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+            "canonical": "a-share/financials/indicators",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          }
+        ],
+        "attribute_conflicts": {
+          "canonical": [
+            "a-share/financials/balance-sheets",
+            "a-share/financials/cash-flow-statements",
+            "a-share/financials/income-statements",
+            "a-share/financials/indicators"
+          ]
+        },
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-financials-output-container-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+          "docs/field_verification/research/20261115_fuyao_capture_path_inventory.csv",
+          "scripts/capture_retention.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "stock_common/sc_fuyao.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将四个报表采集单元分别写入 stocks.*.financials 下的独立子路径；保留期 360/360 条股票记录中该路径均为对象，并含四个列表子键。每个子列表在 338/360 条记录中非空。容器分类不推断报表科目含义、单位或报告期。",
+        "sample_as_of_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "sample_count_per_path": 360,
+        "stock_record_count": 360,
+        "financials_object_count": 360,
+        "financial_child_keys": [
+          "income_q",
+          "income_a",
+          "balance_q",
+          "cashflow_q"
+        ],
+        "nonempty_child_record_counts": {
+          "income_q": 338,
+          "income_a": 338,
+          "balance_q": 338,
+          "cashflow_q": 338
+        }
       }
     },
     {
@@ -209907,14 +210065,15 @@
       "identity": "同花顺-fuyao::indicators",
       "path": "indicators",
       "canonical": "a-share/financials/indicators",
-      "meaning": "",
+      "meaning": "财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。",
       "unit": "",
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
       "sections": [
-        "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
+        "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+        "source contract: 同花顺 Fuyao 官方 REST API · GET /api/a-share/financials/indicators 响应#data.abilities[].indicators[] 以及其子项 index_id、value（docs/verify/fuyao_api_full.md 财务指标响应字段表） @ 项目锁定的 V17.0.5 官方契约镜像，项目于 2026-08-10 登记；本次按镜像与当前适配器核对"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -209924,6 +210083,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "fuyao-indicators-container-contract-20261115"
+        ],
+        "source_contract_adjudication_ids": [
+          "fuyao-indicators-container-contract-20261115"
         ]
       },
       "reference_evidence": [
@@ -209934,6 +210099,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 REST API · GET /api/a-share/financials/indicators 响应#data.abilities[].indicators[] 以及其子项 index_id、value（docs/verify/fuyao_api_full.md 财务指标响应字段表） @ 项目锁定的 V17.0.5 官方契约镜像，项目于 2026-08-10 登记；本次按镜像与当前适配器核对",
+          "canonical": "a-share/financials/indicators",
+          "meaning": "财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-15：fuyao-indicators-container-contract-20261115",
+          "status": "verified",
+          "adjudication_id": "fuyao-indicators-container-contract-20261115",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 REST API",
+            "revision": "项目锁定的 V17.0.5 官方契约镜像，项目于 2026-08-10 登记；本次按镜像与当前适配器核对",
+            "path": "GET /api/a-share/financials/indicators 响应",
+            "locator": "data.abilities[].indicators[] 以及其子项 index_id、value（docs/verify/fuyao_api_full.md 财务指标响应字段表）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "a-share/financials/indicators",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "a-share/financials/indicators",
+              "meaning": "财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -209948,7 +210142,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-indicators-container-contract-20261115",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-15",
+          "decision_file": "adjudications/20261115_fuyao_indicators_container_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "a-share/financials/indicators",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "a-share/financials/indicators",
+              "meaning": "财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目锁定的 Fuyao V17.0.5 官方契约将 data.abilities[].indicators[] 明确列为指标列表，其条目包含 index_id 和 value。项目 stock_common/sc_fuyao.py 的 get_fuyao_fin_indicators() 从 data.abilities[] 逐组读取 ab.get(\"indicators\")，并逐条将 index_id 映射到 value；capture_verified_collectors.py 随后保存展平后的 fin_indicators。保留期 18 个 raw 中均没有独立 indicators 键，与该解析和序列化路径一致。该决定只确认上游容器的结构角色，不为指标叶项增加语义，不创建跨源映射。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 REST API",
+            "revision": "项目锁定的 V17.0.5 官方契约镜像，项目于 2026-08-10 登记；本次按镜像与当前适配器核对",
+            "path": "GET /api/a-share/financials/indicators 响应",
+            "locator": "data.abilities[].indicators[] 以及其子项 index_id、value（docs/verify/fuyao_api_full.md 财务指标响应字段表）",
+            "url": "https://fuyao.aicubes.cn/docs/api-reference/financial-indicators/"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -212040,42 +212270,26 @@
       "code": "market",
       "identity": "同花顺-fuyao::market",
       "path": "market",
-      "canonical": "dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url",
-      "meaning": "",
+      "canonical": "market",
+      "meaning": "Fuyao 采集器保存市场级结果的顶层对象容器，包含基准、涨跌停池和异动等独立输出路径；不是单一市场业务指标。各子路径按对应采集单元维护。",
       "unit": "",
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
       "sections": [
         "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-market-output-container-20261115",
         "reference_status_raw": [],
-        "registry_aggregate_status": "verified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "TDX(双命名源)",
-          "ZHB-tdxstat",
-          "ZHB-tdxstat2",
-          "reports",
-          "东财-热榜(em_hot)",
-          "市场源(market_sources)"
-        ],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "verified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-          "canonical": "dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        }
-      ],
+      "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "market",
@@ -212094,6 +212308,101 @@
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
         "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "TDX(双命名源)",
+            "ZHB-tdxstat",
+            "ZHB-tdxstat2",
+            "reports",
+            "东财-热榜(em_hot)",
+            "市场源(market_sources)"
+          ],
+          "values": [
+            "verified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "market",
+          "sources": [
+            "同花顺-fuyao",
+            "TDX(双命名源)",
+            "ZHB-tdxstat",
+            "ZHB-tdxstat2",
+            "reports",
+            "东财-热榜(em_hot)",
+            "市场源(market_sources)"
+          ],
+          "status": "verified",
+          "status_raw": "✅",
+          "canonical": "market",
+          "meaning": "市场代码",
+          "unit": "0=深/1=沪/2=京",
+          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+            "canonical": "dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          }
+        ],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-market-output-container-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+          "docs/field_verification/research/20261115_fuyao_capture_path_inventory.csv",
+          "scripts/capture_retention.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "stock_common/sc_fuyao.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "collect_fuyao() 初始化顶层 market 对象，CAPTURE_UNIT_CATALOG 将多个不同 Fuyao 采集单元写入其子路径；保留期 18/18 个 raw 中 market 都是对象。该结论仅处理容器身份，不定义或合并其子路径。",
+        "sample_as_of_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "sample_count_per_path": 18,
+        "market_object_count": 18
       }
     },
     {
@@ -216323,23 +216632,23 @@
       "code": "probe_trading_day",
       "identity": "同花顺-fuyao::probe_trading_day",
       "path": "probe_trading_day",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "canonical": "probe_trading_day",
+      "meaning": "项目调用 last_completed_trading_day() 后生成的请求日期标签，并用于构造 date_ms；不是 Fuyao 响应字段，也不单独证明响应的实际数据日期。",
+      "unit": "日期（YYYY-MM-DD）",
       "section": "",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-probe-trading-day-request-metadata-20261115",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao",
-          "Levistock历史未归属"
-        ],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -216356,6 +216665,83 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "aggregate_status_scope_unresolved",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao",
+            "Levistock历史未归属"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "probe_trading_day",
+          "sources": [
+            "同花顺-fuyao",
+            "Levistock历史未归属"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-probe-trading-day-request-metadata-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_capture_path_disambiguation.md",
+          "docs/field_verification/research/20261115_fuyao_capture_path_inventory.csv",
+          "scripts/capture_retention.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "stock_common/sc_fuyao.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "collect_fuyao() 将项目交易日历返回的 td.isoformat() 写入根输出，并用同一 td 构造 date_ms。保留期 18/18 个目录的 probe_trading_day 与目录 data_date、meta Fuyao as_of_date 一致；一致性只验证本项目请求日期，不把它解释为独立来源返回日期。",
+        "sample_as_of_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "sample_count_per_path": 18,
+        "probe_matches_data_date_count": 18,
+        "fuyao_status_ok_count": 18
       }
     },
     {

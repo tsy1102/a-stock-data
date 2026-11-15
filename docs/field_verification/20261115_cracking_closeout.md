@@ -39,6 +39,7 @@
 ## 注册表与闭环检查
 
 - 截至本补充收口，2,633 条 `source_fields` 状态分布为：`verified` 1,506、`unverified` 1,017、`conflict` 28、`disproved` 81、`candidate` 1。未验证状态不等同于所有条目都在本轮碰撞队列中。
+- 上述数量是 Fuyao 路径复核前的收口快照。随后核查 5 个精确身份后，当前 2,633 条 `source_fields` 为：`verified` 1,507、`unverified` 1,012、`conflict` 28、`disproved` 85、`candidate` 1。`date_ms`、`probe_trading_day` 是项目派生请求元数据，`financials`、`market` 是采集输出容器，`indicators` 仅确认官方接口数组结构；详情和逐日证据见 [Fuyao 采集日期元数据与输出容器路径核查](adjudications/20261115_fuyao_capture_path_disambiguation.md)。这批复核没有定案新的财务叶字段，也没有新增跨源映射。
 - [`../../scripts/registry_parity.py`](../../scripts/registry_parity.py) 通过：历史来源基线、聚合视图、字段矩阵一致；93 条来源契约、88 条来源实证、8 条裁决补充和 2 条采集路径补录均通过；181 条未验证候选列在 [`../unknown_fields.md`](../unknown_fields.md)。18 条类型/token、容器或已审计退役路径依规排除。
 - Fuyao 补充裁决仅将四个分组根路径和一个请求期标签移出字段语义破解队列，保留其旧状态证据；未改变嵌套指标语义、采集代码或跨源映射。
 

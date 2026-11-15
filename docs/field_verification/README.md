@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261115_fuyao_capture_path_disambiguation.md`](adjudications/20261115_fuyao_capture_path_disambiguation.md) 与 [`research/20261115_fuyao_capture_path_inventory.csv`](research/20261115_fuyao_capture_path_inventory.csv)：复核保留期 18 个 Fuyao 目录、360 条股票记录，将 `date_ms` / `probe_trading_day` 定为项目请求元数据、`financials` / `market` 定为采集容器，并按官方接口契约确认 `indicators[]` 是指标记录容器；不外推叶字段语义或创建跨源映射。
+
 - [`adjudications/20261115_sina_financial_item_semantics.md`](adjudications/20261115_sina_financial_item_semantics.md) 与 [`research/20261115_sina_financial_item_page_comparisons.csv`](research/20261115_sina_financial_item_page_comparisons.csv)：审计保留期 16 个目录、20 只股票、960 个三表包装对象及 91,168 行科目数据；将 `新浪(扩展API)::item_value` 定案为单位随科目变化的报表值、`::item_tongbi` 定案为小数同比比例（7/7 页面复算），并确认 `::report_type` 是项目请求类别回显而非上游字段。逐报表 raw/meta 哈希见 `research/20261115_sina_financial_report_inventory.csv`；不新增跨源映射。
 - [`adjudications/20261115_fuyao_container_and_report_label.md`](adjudications/20261115_fuyao_container_and_report_label.md) 与 [`research/20261115_fuyao_fin_indicator_container_audit.csv`](research/20261115_fuyao_fin_indicator_container_audit.csv)：复核 18 个保留目录、360 条记录、官方 Fuyao 指标接口结构及项目适配器，将四个财务能力根路径识别为输出容器，将 `fin_report` 识别为项目选用的请求期标签；它们不再进入默认破解目标，分组子字段及实际报告期语义不由此推断。
 - [`20261115_cracking_closeout.md`](20261115_cracking_closeout.md)：总结并复核 11 月 14–15 日的来源身份、字段定案、路径清理和采集补充；附 18 个目标数据日、360 条 ELTDX 样本路径核验，明确 22 条 TDX 对照缺值不是失配，且不将嵌套路径结论移植到同名裸路径。

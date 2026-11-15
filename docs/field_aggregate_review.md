@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 501 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 504 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2721,7 +2721,7 @@
 
 ### `market` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -2730,7 +2730,7 @@
 | ZHB-tdxstat2 · `market` | market | 市场 | - | `verified` |
 | reports · `market` | market | 交易所 | — | `verified` |
 | 东财-热榜(em_hot) · `market` | market | 市场 | — | `verified` |
-| 同花顺-fuyao · `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | — | `unverified` |
+| 同花顺-fuyao · `market` | market | Fuyao 采集器保存市场级结果的顶层对象容器，包含基准、涨跌停池和异动等独立输出路径；不是单一市场业务指标。各子路径按对应采集单元维护。 | — | `disproved` |
 | 市场源(market_sources) · `market` | market | 市场 | — | `verified` |
 
 ### `market_cap` — ambiguous
@@ -3679,10 +3679,12 @@
 | 同花顺-fuyao | `continue_day_text` | continue_day_text | 连板文本，例如 `首板`、`5天4板`。 | `verified` |
 | 同花顺-fuyao | `current_assets_turnover_ratio` | operation.current_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.current_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `current_ratio` | solvency.current_ratio | 旧登记的无分组叶名身份；当前完整路径为 solvency.current_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
+| 同花顺-fuyao | `date_ms` | date_ms | 项目按 probe_trading_day 生成的 Asia/Shanghai 零点毫秒 Unix 时间戳，作为涨停、跌停及炸板池接口的 date_ms 请求参数；该根字段不是 Fuyao 响应字段，也不能代替来源实际数据日。 | `disproved` |
 | 同花顺-fuyao | `dump` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
 | 同花顺-fuyao | `earned_interest_multiple` | solvency.earned_interest_multiple | 旧登记的无分组叶名身份；当前完整路径为 solvency.earned_interest_multiple。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
 | 同花顺-fuyao | `fin_report` | fin_report | 项目财务指标采集器记录成功返回非空指标所用的 report 请求期标签；它不是指标响应中的独立上游字段，也不单独证明指标实际所属报告期。 | `disproved` |
+| 同花顺-fuyao | `financials` | stocks.<ticker>.financials | 采集器按股票归并 income_q、income_a、balance_q、cashflow_q 四个报表输出数组的对象容器；不是可独立解释或赋予单一单位的财务指标。叶路径语义按各自接口字段维护。 | `disproved` |
 | 同花顺-fuyao | `first_seal_time` | first_seal_time | 炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
 | 同花顺-fuyao | `fiscal_period` | fiscal_period | `FY` / `Q1` / `Q2` / `Q3` / `Q4`。 | `verified` |
 | 同花顺-fuyao | `fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |
@@ -3694,7 +3696,7 @@
 | 同花顺-fuyao | `high_price` | snapshot.high_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.high_price。官方接口将 high_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 旧登记的无分组叶名身份；当前完整路径为 profitability.index_deduct_weighted_avg_roe。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
-| 同花顺-fuyao | `indicators` | a-share/financials/indicators | — | `unverified` |
+| 同花顺-fuyao | `indicators` | a-share/financials/indicators | 财务能力分组中的指标条目数组容器；每个条目以 index_id 标识指标并以 value 保存对应值，不是单一财务指标。项目适配器读取该数组后展平为 {ability: {index_id: value}}，采集输出路径为 stocks.<ticker>.fin_indicators.<ability>.<index_id>。 | `verified` |
 | 同花顺-fuyao | `inventory_turnover_ratio` | operation.inventory_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.inventory_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `keyword_list` | keyword_list | 关键词列表；无关键词时返回空数组。 | `verified` |
 | 同花顺-fuyao | `last_price` | snapshot.last_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.last_price。官方接口将 last_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
@@ -3703,7 +3705,7 @@
 | 同花顺-fuyao | `list` | meta/tickers/list | — | `unverified` |
 | 同花顺-fuyao | `long_term_debt_equity_ratio` | operation.long_term_debt_equity_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.long_term_debt_equity_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `low_price` | snapshot.low_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.low_price。官方接口将 low_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
-| 同花顺-fuyao | `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
+| 同花顺-fuyao | `market` | market | Fuyao 采集器保存市场级结果的顶层对象容器，包含基准、涨跌停池和异动等独立输出路径；不是单一市场业务指标。各子路径按对应采集单元维护。 | `disproved` |
 | 同花顺-fuyao | `net_profit_cash_content` | cash-flow.net_profit_cash_content | 旧登记的无分组叶名身份；当前完整路径为 cash-flow.net_profit_cash_content。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `open_price` | snapshot.open_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.open_price。官方接口将 open_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `operating_cash_flow_net_divide_income` | cash-flow.operating_cash_flow_net_divide_income | 旧登记的无分组叶名身份；当前完整路径为 cash-flow.operating_cash_flow_net_divide_income。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
@@ -3722,6 +3724,7 @@
 | 同花顺-fuyao | `prev_price` | snapshot.prev_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.prev_price。官方接口将 prev_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `price_change` | snapshot.price_change | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `price_change_ratio_pct` | snapshot.price_change_ratio_pct | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.price_change_ratio_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
+| 同花顺-fuyao | `probe_trading_day` | probe_trading_day | 项目调用 last_completed_trading_day() 后生成的请求日期标签，并用于构造 date_ms；不是 Fuyao 响应字段，也不单独证明响应的实际数据日期。 | `disproved` |
 | 同花顺-fuyao | `profitability.index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 扣非加权净资产收益率；接口值按百分数表达。 | `verified` |
 | 同花顺-fuyao | `profitability.index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 加权平均净资产收益率；接口值按百分数表达。年化与非年化比较按发行人报告明确披露的口径归一。 | `verified` |
 | 同花顺-fuyao | `profitability.sale_gross_margin` | profitability.sale_gross_margin | 销售毛利率；可比样本按（合并营业收入－合并营业成本）/合并营业收入×100%复算。 | `verified` |

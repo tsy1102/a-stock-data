@@ -11,14 +11,14 @@
       "candidate": 1,
       "collector_output_container": 3,
       "conflict": 34,
-      "disproved": 73,
+      "disproved": 75,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
-      "matched": 781,
-      "mixed_source_capture_passthrough": 3,
+      "matched": 779,
+      "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
       "project_derived_capture_output": 1,
@@ -32,7 +32,7 @@
       "status_missing": 41,
       "unresolved": 8,
       "unverified": 1030,
-      "verified": 1495,
+      "verified": 1493,
       "verified_by_empirical_addendum": 158,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
@@ -30500,12 +30500,12 @@
       ],
       "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
       "canonical": "quote_full.change_pct_1d",
-      "meaning": "涨跌幅",
+      "meaning": "该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。",
       "unit": "%",
-      "status_raw": "✅ L1",
-      "status": "verified",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "TDX(双命名源)": "verified"
+        "TDX(双命名源)": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -30518,12 +30518,12 @@
       ],
       "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
       "canonical": "quote_full.change_pct_2d",
-      "meaning": "涨跌幅",
+      "meaning": "该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。",
       "unit": "%",
-      "status_raw": "✅ L1",
-      "status": "verified",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "TDX(双命名源)": "verified"
+        "TDX(双命名源)": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -91101,27 +91101,26 @@
       "identity": "TDX(双命名源)::quote_full.change_pct_1d",
       "path": "quote_full.change_pct_1d",
       "canonical": "quote_full.change_pct_1d",
-      "meaning": "涨跌幅",
+      "meaning": "该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。",
       "unit": "%",
       "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
       "sections": [
         "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "mixed_source_capture_passthrough",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ L1"
-        ],
-        "registry_aggregate_status": "verified",
+        "adjudication_evidence_id": "tdx-quote-mixed-20261115:quote_full.change_pct_1d",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "TDX(双命名源)"
         ],
         "values": [
-          "verified"
+          "disproved"
         ]
       },
       "reference_evidence": [
@@ -91146,6 +91145,73 @@
         "meaning": "涨跌幅",
         "unit": "%",
         "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "quote_full.change_pct_1d",
+        "meaning": "涨跌幅",
+        "unit": "%",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ L1"
+          ],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "TDX(双命名源)"
+          ],
+          "values": [
+            "verified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "quote_full.change_pct_1d",
+          "sources": [
+            "TDX(双命名源)"
+          ],
+          "status": "verified",
+          "status_raw": "✅ L1",
+          "canonical": "quote_full.change_pct_1d",
+          "meaning": "涨跌幅",
+          "unit": "%",
+          "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
+            "canonical": "quote_full.change_pct_1d",
+            "meaning": "涨跌幅",
+            "unit": "%",
+            "status_raw": "✅ L1",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "id": "tdx-quote-mixed-20261115:quote_full.change_pct_1d",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+        "reason": "保留期唯一观测日 2026-10-15 的 20 条 quote_full.change_pct_1d 值均与同记录 ZHB full 和 stat 对应完整路径逐值相同；该记录 quote_raw 均为空，TDX 来源日期未提供，ZHB 来源日期为 20261014。当前 TDX raw 采集器和规范化函数不产生此路径。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+          "docs/field_verification/research/20261115_tdx_rolling_change_provenance.csv",
+          "docs/field_verification/20261015/raw_tdx.json",
+          "docs/field_verification/20261015/raw_zhb.json",
+          "docs/field_verification/20261015/meta.json",
+          "core/tdx_client.py",
+          "scripts/capture_tcp_collectors.py",
+          "scripts/capture_field_probe.py",
+          "docs/field_verification/source_lineage.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 1,
+        "stock_record_count": 20,
+        "structured_evidence": "docs/field_verification/research/20261115_tdx_rolling_change_provenance.csv"
       }
     },
     {
@@ -91154,27 +91220,26 @@
       "identity": "TDX(双命名源)::quote_full.change_pct_2d",
       "path": "quote_full.change_pct_2d",
       "canonical": "quote_full.change_pct_2d",
-      "meaning": "涨跌幅",
+      "meaning": "该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。",
       "unit": "%",
       "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
       "sections": [
         "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "mixed_source_capture_passthrough",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ L1"
-        ],
-        "registry_aggregate_status": "verified",
+        "adjudication_evidence_id": "tdx-quote-mixed-20261115:quote_full.change_pct_2d",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "TDX(双命名源)"
         ],
         "values": [
-          "verified"
+          "disproved"
         ]
       },
       "reference_evidence": [
@@ -91199,6 +91264,73 @@
         "meaning": "涨跌幅",
         "unit": "%",
         "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
+      },
+      "superseded_status_evidence": {
+        "status": "verified",
+        "status_resolution": "matched",
+        "canonical": "quote_full.change_pct_2d",
+        "meaning": "涨跌幅",
+        "unit": "%",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ L1"
+          ],
+          "registry_aggregate_status": "verified",
+          "registry_aggregate_sources": [
+            "TDX(双命名源)"
+          ],
+          "values": [
+            "verified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "quote_full.change_pct_2d",
+          "sources": [
+            "TDX(双命名源)"
+          ],
+          "status": "verified",
+          "status_raw": "✅ L1",
+          "canonical": "quote_full.change_pct_2d",
+          "meaning": "涨跌幅",
+          "unit": "%",
+          "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
+            "canonical": "quote_full.change_pct_2d",
+            "meaning": "涨跌幅",
+            "unit": "%",
+            "status_raw": "✅ L1",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "id": "tdx-quote-mixed-20261115:quote_full.change_pct_2d",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+        "reason": "保留期唯一观测日 2026-10-15 的 20 条 quote_full.change_pct_2d 值均与同记录 ZHB full 和 stat 对应完整路径逐值相同；该记录 quote_raw 均为空，TDX 来源日期未提供，ZHB 来源日期为 20261014。当前 TDX raw 采集器和规范化函数不产生此路径。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_tdx_rolling_change_provenance.md",
+          "docs/field_verification/research/20261115_tdx_rolling_change_provenance.csv",
+          "docs/field_verification/20261015/raw_tdx.json",
+          "docs/field_verification/20261015/raw_zhb.json",
+          "docs/field_verification/20261015/meta.json",
+          "core/tdx_client.py",
+          "scripts/capture_tcp_collectors.py",
+          "scripts/capture_field_probe.py",
+          "docs/field_verification/source_lineage.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 1,
+        "stock_record_count": 20,
+        "structured_evidence": "docs/field_verification/research/20261115_tdx_rolling_change_provenance.csv"
       }
     },
     {

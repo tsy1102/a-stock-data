@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 按精确路径纠正 `TDX::quote_full.change_pct_1d/2d` 的历史来源归属：保留样本仅有的 2026-10-15 值来自 ZHB 复合回退；裸 `change_pct_1d/2d` 仍独立待核，不将嵌套路径结论推广过去。
 - 更正 TDX 行情采集来源链：`tdx_get_quote_raw` 实际由 ELTDX 主用、easy-tdx 备用；登记表不再把 easy-tdx 单独描述为唯一运行客户端。按完整身份纠正 `TDX::quote_full.change_pct` 项目派生路径及三个历史 ZHB 回退串源路径；保留同名裸路径为独立待核身份。
 - 扩充官方网页观测裁决以支持完整来源路径、Push2EX 涨停池样本和严格的 HHMMSS 文本变换；Eastmoney 官方网页主机白名单增加精确的 `quote.eastmoney.com`，使 Push2EX 可按同日逐股页面证据定案。
 - 官方网页观测增加严格的 `X/Y` 整数分量校验，可将单一原始字段精确绑定页面组合中的分子或分母，并保留页面未标注单位及统计窗口未公开等边界。

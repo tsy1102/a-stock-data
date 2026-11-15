@@ -28,11 +28,19 @@
 
 逐行原值及 raw 哈希见 [`20261115_eltdx_core_helper_fields_samples.csv`](research/20261115_eltdx_core_helper_fields_samples.csv)。既有来源契约见 [ELTDX ShortlineIndicator 字段裁决](adjudications/20261109_eltdx_shortline_fields.md)和 [ELTDX 快照字段裁决](adjudications/20261109_eltdx_quote_snapshot_fields.md)。
 
+## 收口后的 11 月 15 日补充核查
+
+后续提交 `7a5ea85` 又完成新浪三表字段语义复核：覆盖 16 个归档目录、960 个报表包装对象和 91,168 行科目数据；`item_value` 按科目取报表值，单位随科目变化，`item_tongbi` 为小数同比比例（7/7 个公开财报页面复算通过），`report_type` 则是项目请求类别回显。完整样本和哈希见 [`新浪财报字段裁决`](adjudications/20261115_sina_financial_item_semantics.md)及其引用清单。
+
+本次补充收口 Fuyao 财务指标结构：保留期 18 个目录、360 条记录中，17 日的 340 条有效指标记录均包含五类非空分组对象，`fin_report` 均记录项目选中的 `2026-2` 请求期。四个已登记分组根路径归类为采集输出容器，`fin_report` 归类为项目生成的请求标签；它们不再进入默认破解目标，但仍在“已证伪”审计分组留痕。这些结论不会改变分组内指标语义，也不把请求标签当作来源实际数据日或报告期内容证明。核验记录和逐目录 raw/meta 哈希见 [Fuyao 分组容器与请求期标签核查](adjudications/20261115_fuyao_container_and_report_label.md)。
+
+以上收口没有运行采集，也没有新增跨源映射。黄金锚或来源内契约只支持其精确完整路径；未确认子字段覆盖与指标实际报告期仍留作后续独立核验。
+
 ## 注册表与闭环检查
 
-- 当前 2,633 条 `source_fields` 状态分布：`verified` 1,504、`unverified` 1,019、`conflict` 34、`disproved` 75、`candidate` 1。未验证状态不等同于所有条目都在本轮碰撞队列中。
-- [`../../scripts/registry_parity.py`](../../scripts/registry_parity.py) 通过：历史来源基线、聚合视图、字段矩阵一致；93 条来源契约、86 条来源实证、8 条裁决补充均通过重放；181 条未验证候选仍列在 [`../unknown_fields.md`](../unknown_fields.md)。18 条类型/token、容器或已审计退役路径依规排除。
-- 注册表与字段视图的现有裁决保持闭环；本次仅新增研究记录和样本表，不改主字典、注册表、采集代码或来源映射。
+- 截至本补充收口，2,633 条 `source_fields` 状态分布为：`verified` 1,506、`unverified` 1,017、`conflict` 28、`disproved` 81、`candidate` 1。未验证状态不等同于所有条目都在本轮碰撞队列中。
+- [`../../scripts/registry_parity.py`](../../scripts/registry_parity.py) 通过：历史来源基线、聚合视图、字段矩阵一致；93 条来源契约、88 条来源实证、8 条裁决补充和 2 条采集路径补录均通过；181 条未验证候选列在 [`../unknown_fields.md`](../unknown_fields.md)。18 条类型/token、容器或已审计退役路径依规排除。
+- Fuyao 补充裁决仅将四个分组根路径和一个请求期标签移出字段语义破解队列，保留其旧状态证据；未改变嵌套指标语义、采集代码或跨源映射。
 
 ## 后续边界
 

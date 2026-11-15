@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 500 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 501 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2402,14 +2402,6 @@
 | 东财-push2ex · `fund` | fund | 封单额 | 元 | `verified` |
 | 同花顺-fuyao · `fund` | — | — | — | `unverified` |
 
-### `growth` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `growth` | growth | — | — | `conflict` |
-
 ### `high` — ambiguous
 
 聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
@@ -3022,14 +3014,6 @@
 | 市场源(market_sources) · `price` | price | 现价 | — | `verified` |
 | 开盘啦(kpl) · `price` | price | 现价 | 元 | `unverified` |
 
-### `profitability` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `profitability` | profitability | — | — | `conflict` |
-
 ### `q_zrcs` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -3139,14 +3123,6 @@
 |:--|:--|:--|:--|:--|
 | FTShare REST · `shares` | shares | 总股本 | 股 | `verified` |
 | 东财-datacenter(英文键) · `shares` | — | — | — | `unverified` |
-
-### `solvency` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `solvency` | solvency | — | — | `conflict` |
 
 ### `source` — incomplete
 
@@ -3706,6 +3682,7 @@
 | 同花顺-fuyao | `dump` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
 | 同花顺-fuyao | `earned_interest_multiple` | solvency.earned_interest_multiple | 旧登记的无分组叶名身份；当前完整路径为 solvency.earned_interest_multiple。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
+| 同花顺-fuyao | `fin_report` | fin_report | 项目财务指标采集器记录成功返回非空指标所用的 report 请求期标签；它不是指标响应中的独立上游字段，也不单独证明指标实际所属报告期。 | `disproved` |
 | 同花顺-fuyao | `first_seal_time` | first_seal_time | 炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
 | 同花顺-fuyao | `fiscal_period` | fiscal_period | `FY` / `Q1` / `Q2` / `Q3` / `Q4`。 | `verified` |
 | 同花顺-fuyao | `fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。 | `disproved` |

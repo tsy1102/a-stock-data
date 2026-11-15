@@ -9,9 +9,9 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 357,
       "candidate": 1,
-      "collector_output_container": 3,
-      "conflict": 31,
-      "disproved": 76,
+      "collector_output_container": 7,
+      "conflict": 28,
+      "disproved": 81,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,17 +21,17 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
-      "project_derived_capture_output": 2,
+      "project_derived_capture_output": 3,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 523,
+      "registry_status_only_single_source": 521,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 43,
-      "status_conflict": 25,
+      "status_conflict": 22,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1019,
+      "unverified": 1017,
       "verified": 1506,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
@@ -20362,20 +20362,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "canonical": "fin_report",
+      "meaning": "项目财务指标采集器记录成功返回非空指标所用的 report 请求期标签；它不是指标响应中的独立上游字段，也不单独证明指标实际所属报告期。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "finance_batch[].fa_qi_ren_fa_ren_gu_raw_float",
@@ -21438,19 +21435,19 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-      "canonical": "growth",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "conflict",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
+        "canonical_incomplete",
+        "meaning_incomplete"
       ]
     },
     {
@@ -27739,17 +27736,18 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-      "canonical": "operation",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
+        "canonical_incomplete",
         "meaning_incomplete"
       ]
     },
@@ -29868,19 +29866,19 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-      "canonical": "profitability",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "conflict",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
+        "canonical_incomplete",
+        "meaning_incomplete"
       ]
     },
     {
@@ -34278,19 +34276,19 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-      "canonical": "solvency",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "status_raw": "✅ 20/20",
-      "status": "conflict",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "conflict"
+        "同花顺-fuyao": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "source_status_conflict"
+        "canonical_incomplete",
+        "meaning_incomplete"
       ]
     },
     {
@@ -206592,22 +206590,27 @@
       "code": "fin_report",
       "identity": "同花顺-fuyao::fin_report",
       "path": "fin_report",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "fin_report",
+      "meaning": "项目财务指标采集器记录成功返回非空指标所用的 report 请求期标签；它不是指标响应中的独立上游字段，也不单独证明指标实际所属报告期。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
+      "sections": [
+        "2026-11-15 Fuyao financial indicator containers and request-period label"
+      ],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-fin-report-request-label-20261115",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "同花顺-fuyao"
         ],
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -206623,7 +206626,126 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "fin_report",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-fin-report-request-label-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "capture_verified_collectors.py 按 -2、-1 顺序请求财务指标，并把产生非空结果的请求参数存入 fin_report；sc_fuyao.py 只返回 ability/index_id/value 字典，未保留 data.report。官方契约把 data.report 定义为入参回显。审计中 340 条有效指标记录的 fin_report 均为 2026-2，因此该值是项目选用的请求期标签，不能单独证明底层指标内容的报告期。",
+        "sample_as_of_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "sample_count_per_path": 340,
+        "sample_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "indicator_record_count": 340,
+        "report_label_counts": {
+          "2026-2": 340
+        },
+        "structured_evidence": "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv"
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-fin-report-request-label-20261115",
+          "action": "classify_project_derived_capture_output",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "registry_aggregate": {
+              "code": "fin_report",
+              "sources": [
+                "同花顺-fuyao"
+              ],
+              "status": "unverified",
+              "status_raw": "",
+              "canonical": "",
+              "meaning": "",
+              "unit": "",
+              "section": ""
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {},
+            "attribute_ambiguities": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -208018,74 +208140,26 @@
       "code": "growth",
       "identity": "同花顺-fuyao::growth",
       "path": "growth",
-      "canonical": "growth",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
       "sections": [
-        "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕"
+        "2026-11-15 Fuyao financial indicator containers and request-period label"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ 19/20 ⚠️口径差",
-          "✅ 20/20"
-        ],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "adjudication_evidence_id": "fuyao-fin-indicator-container-20261115:growth",
+        "reference_status_raw": [],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "verified",
-          "unverified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "growth",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 19/20 ⚠️口径差",
-          "status": "verified"
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "growth",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "growth",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 20/20",
-          "status": "verified"
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "growth",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "growth",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        }
-      ],
+      "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "growth",
@@ -208098,7 +208172,224 @@
         "meaning": "",
         "unit": "",
         "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
-      }
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "canonical": "growth",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ 19/20 ⚠️口径差",
+            "✅ 20/20"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "growth",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "growth` 成长能力",
+          "meaning": "",
+          "unit": "",
+          "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 19/20 ⚠️口径差",
+            "status": "verified"
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 20/20",
+            "status": "verified"
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          }
+        ],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-fin-indicator-container-20261115:growth",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "官方接口把能力分组作为 data.abilities[].ability 返回，并在各分组下提供 indicators[]；项目适配器输出 {ability: {index_id: value}}。保留边界 2026-10-15 起的 18 个目录、360 条股票记录中，17 个有指标数据的来源日共 340 条记录，四个已登记根路径均为非空对象；2026-10-15 的 20 条记录没有 fin_indicators，按缺失处理。该身份是采集输出容器，不是标量字段。",
+        "sample_as_of_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "sample_count_per_path": 340,
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "indicator_record_count": 340,
+        "category_object_counts": {
+          "growth": 340,
+          "profitability": 340,
+          "solvency": 340,
+          "operation": 340,
+          "cash-flow": 340
+        }
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-fin-indicator-container-20261115:growth",
+          "action": "classify_output_container",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "previous_status_snapshot": {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "canonical": "growth",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [
+                "verified"
+              ],
+              "reference_status_raw": [
+                "✅ 19/20 ⚠️口径差",
+                "✅ 20/20"
+              ],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "verified",
+                "unverified"
+              ]
+            },
+            "registry_aggregate": {
+              "code": "growth",
+              "sources": [
+                "同花顺-fuyao"
+              ],
+              "status": "unverified",
+              "status_raw": "",
+              "canonical": "growth` 成长能力",
+              "meaning": "",
+              "unit": "",
+              "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "growth",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 19/20 ⚠️口径差",
+                "status": "verified"
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "growth",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "growth",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 20/20",
+                "status": "verified"
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "growth",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "growth",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              }
+            ],
+            "attribute_conflicts": {},
+            "attribute_ambiguities": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -213960,68 +214251,26 @@
       "code": "operation",
       "identity": "同花顺-fuyao::operation",
       "path": "operation",
-      "canonical": "operation",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
       "sections": [
-        "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕"
+        "2026-11-15 Fuyao financial indicator containers and request-period label"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-fin-indicator-container-20261115:operation",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "unverified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "operation",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "operation",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "operation",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "operation",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "operation",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        }
-      ],
+      "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "operation",
@@ -214034,7 +214283,212 @@
         "meaning": "",
         "unit": "",
         "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
-      }
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "operation",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "operation",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "operation` 营运能力",
+          "meaning": "",
+          "unit": "",
+          "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          }
+        ],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-fin-indicator-container-20261115:operation",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "官方接口把能力分组作为 data.abilities[].ability 返回，并在各分组下提供 indicators[]；项目适配器输出 {ability: {index_id: value}}。保留边界 2026-10-15 起的 18 个目录、360 条股票记录中，17 个有指标数据的来源日共 340 条记录，四个已登记根路径均为非空对象；2026-10-15 的 20 条记录没有 fin_indicators，按缺失处理。该身份是采集输出容器，不是标量字段。",
+        "sample_as_of_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "sample_count_per_path": 340,
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "indicator_record_count": 340,
+        "category_object_counts": {
+          "growth": 340,
+          "profitability": 340,
+          "solvency": 340,
+          "operation": 340,
+          "cash-flow": 340
+        }
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-fin-indicator-container-20261115:operation",
+          "action": "classify_output_container",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "operation",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "registry_aggregate": {
+              "code": "operation",
+              "sources": [
+                "同花顺-fuyao"
+              ],
+              "status": "unverified",
+              "status_raw": "",
+              "canonical": "operation` 营运能力",
+              "meaning": "",
+              "unit": "",
+              "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "operation",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "operation",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "operation",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "operation",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "operation",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              }
+            ],
+            "attribute_conflicts": {},
+            "attribute_ambiguities": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -216086,74 +216540,26 @@
       "code": "profitability",
       "identity": "同花顺-fuyao::profitability",
       "path": "profitability",
-      "canonical": "profitability",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
       "sections": [
-        "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕"
+        "2026-11-15 Fuyao financial indicator containers and request-period label"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ 19/20",
-          "✅ 20/20"
-        ],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "adjudication_evidence_id": "fuyao-fin-indicator-container-20261115:profitability",
+        "reference_status_raw": [],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "verified",
-          "unverified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "profitability",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 19/20",
-          "status": "verified"
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "profitability",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "profitability",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "profitability",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 19/20",
-          "status": "verified"
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "profitability",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 20/20",
-          "status": "verified"
-        }
-      ],
+      "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "profitability",
@@ -216166,7 +216572,224 @@
         "meaning": "",
         "unit": "",
         "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
-      }
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "canonical": "profitability",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ 19/20",
+            "✅ 20/20"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "profitability",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "profitability` 盈利能力",
+          "meaning": "",
+          "unit": "",
+          "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 19/20",
+            "status": "verified"
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 19/20",
+            "status": "verified"
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 20/20",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-fin-indicator-container-20261115:profitability",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "官方接口把能力分组作为 data.abilities[].ability 返回，并在各分组下提供 indicators[]；项目适配器输出 {ability: {index_id: value}}。保留边界 2026-10-15 起的 18 个目录、360 条股票记录中，17 个有指标数据的来源日共 340 条记录，四个已登记根路径均为非空对象；2026-10-15 的 20 条记录没有 fin_indicators，按缺失处理。该身份是采集输出容器，不是标量字段。",
+        "sample_as_of_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "sample_count_per_path": 340,
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "indicator_record_count": 340,
+        "category_object_counts": {
+          "growth": 340,
+          "profitability": 340,
+          "solvency": 340,
+          "operation": 340,
+          "cash-flow": 340
+        }
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-fin-indicator-container-20261115:profitability",
+          "action": "classify_output_container",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "previous_status_snapshot": {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "canonical": "profitability",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [
+                "verified"
+              ],
+              "reference_status_raw": [
+                "✅ 19/20",
+                "✅ 20/20"
+              ],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "verified",
+                "unverified"
+              ]
+            },
+            "registry_aggregate": {
+              "code": "profitability",
+              "sources": [
+                "同花顺-fuyao"
+              ],
+              "status": "unverified",
+              "status_raw": "",
+              "canonical": "profitability` 盈利能力",
+              "meaning": "",
+              "unit": "",
+              "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "profitability",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 19/20",
+                "status": "verified"
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "profitability",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "profitability",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "profitability",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 19/20",
+                "status": "verified"
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "profitability",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 20/20",
+                "status": "verified"
+              }
+            ],
+            "attribute_conflicts": {},
+            "attribute_ambiguities": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -219048,73 +219671,26 @@
       "code": "solvency",
       "identity": "同花顺-fuyao::solvency",
       "path": "solvency",
-      "canonical": "solvency",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+      "section": "2026-11-15 Fuyao financial indicator containers and request-period label",
       "sections": [
-        "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕"
+        "2026-11-15 Fuyao financial indicator containers and request-period label"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅ 20/20"
-        ],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "同花顺-fuyao"
-        ],
+        "adjudication_evidence_id": "fuyao-fin-indicator-container-20261115:solvency",
+        "reference_status_raw": [],
+        "reference_statuses": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
         "values": [
-          "verified",
-          "unverified"
+          "collector_output_container"
         ]
       },
-      "reference_evidence": [
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "solvency",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "✅ 20/20",
-          "status": "verified"
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "solvency",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "solvency",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "solvency",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        },
-        {
-          "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
-          "canonical": "solvency",
-          "meaning": "",
-          "unit": "",
-          "status_raw": "",
-          "status": ""
-        }
-      ],
+      "reference_evidence": [],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "solvency",
@@ -219127,7 +219703,222 @@
         "meaning": "",
         "unit": "",
         "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
-      }
+      },
+      "attribute_ambiguities": {},
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "canonical": "solvency",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅ 20/20"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "solvency",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "solvency` 偿债能力",
+          "meaning": "",
+          "unit": "",
+          "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "✅ 20/20",
+            "status": "verified"
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          },
+          {
+            "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_raw": "",
+            "status": ""
+          }
+        ],
+        "attribute_conflicts": {},
+        "attribute_ambiguities": {}
+      },
+      "adjudication_evidence": {
+        "id": "fuyao-fin-indicator-container-20261115:solvency",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "docs/field_verification/research/20261115_fuyao_fin_indicator_container_audit.csv",
+          "stock_common/sc_fuyao.py",
+          "scripts/capture_verified_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/verify/fuyao_api_full.md"
+        ],
+        "reason": "官方接口把能力分组作为 data.abilities[].ability 返回，并在各分组下提供 indicators[]；项目适配器输出 {ability: {index_id: value}}。保留边界 2026-10-15 起的 18 个目录、360 条股票记录中，17 个有指标数据的来源日共 340 条记录，四个已登记根路径均为非空对象；2026-10-15 的 20 条记录没有 fin_indicators，按缺失处理。该身份是采集输出容器，不是标量字段。",
+        "sample_as_of_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-26",
+          "2026-10-28",
+          "2026-10-29",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03",
+          "2026-11-04",
+          "2026-11-05",
+          "2026-11-06",
+          "2026-11-09",
+          "2026-11-10",
+          "2026-11-12"
+        ],
+        "sample_count_per_path": 340,
+        "capture_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 360,
+        "indicator_record_count": 340,
+        "category_object_counts": {
+          "growth": 340,
+          "profitability": 340,
+          "solvency": 340,
+          "operation": 340,
+          "cash-flow": 340
+        }
+      },
+      "adjudications": [
+        {
+          "id": "fuyao-fin-indicator-container-20261115:solvency",
+          "action": "classify_output_container",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-15",
+          "decision_note": "docs/field_verification/adjudications/20261115_fuyao_container_and_report_label.md",
+          "previous_status_snapshot": {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "canonical": "solvency",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [
+                "verified"
+              ],
+              "reference_status_raw": [
+                "✅ 20/20"
+              ],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "同花顺-fuyao"
+              ],
+              "values": [
+                "verified",
+                "unverified"
+              ]
+            },
+            "registry_aggregate": {
+              "code": "solvency",
+              "sources": [
+                "同花顺-fuyao"
+              ],
+              "status": "unverified",
+              "status_raw": "",
+              "canonical": "solvency` 偿债能力",
+              "meaning": "",
+              "unit": "",
+              "section": "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+            },
+            "reference_evidence": [
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "solvency",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "✅ 20/20",
+                "status": "verified"
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "solvency",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "solvency",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "solvency",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              },
+              {
+                "section": "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+                "canonical": "solvency",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": ""
+              }
+            ],
+            "attribute_conflicts": {},
+            "attribute_ambiguities": {}
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",

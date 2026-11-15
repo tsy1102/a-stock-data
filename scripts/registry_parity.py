@@ -317,6 +317,8 @@ def _validated_non_field_schema_pairs(
             "not_field_schema_token",
             "collector_output_container",
             "retired_legacy_path",
+            "project_derived_capture_output",
+            "mixed_source_capture_passthrough",
         }:
             continue
         source, code = row.get("source"), row.get("code")
@@ -331,7 +333,12 @@ def _validated_non_field_schema_pairs(
             # Historical baseline membership preserves parity; these existing
             # retired-path records predate the stricter audit-evidence contract.
             continue
-        if resolution in {"retired_legacy_path", "collector_output_container"}:
+        if resolution in {
+            "retired_legacy_path",
+            "collector_output_container",
+            "project_derived_capture_output",
+            "mixed_source_capture_passthrough",
+        }:
             evidence = row.get("adjudication_evidence")
             evidence_files = evidence.get("evidence_files") if isinstance(evidence, dict) else None
             if (
@@ -353,16 +360,30 @@ def _validated_non_field_schema_pairs(
                 label = (
                     "采集容器路径"
                     if resolution == "collector_output_container"
-                    else "基线外退役路径"
+                    else (
+                        "项目派生路径"
+                        if resolution == "project_derived_capture_output"
+                        else (
+                            "混合来源回退路径"
+                            if resolution == "mixed_source_capture_passthrough"
+                            else "基线外退役路径"
+                        )
+                    )
                 )
                 problems.append(f"{source}::{code} {label}缺少决定、理由、证据文件或原状态快照")
                 continue
-        if resolution == "collector_output_container" and pair in expected_pairs:
-            # Keep historical baseline identities in native parity while the
-            # adjudication removes them from the unresolved-field queue.
-            continue
-        if resolution == "retired_legacy_path" and pair in expected_pairs:
-            # A retired path already in the baseline remains part of historical parity.
+        if (
+            resolution
+            in {
+                "collector_output_container",
+                "retired_legacy_path",
+                "project_derived_capture_output",
+                "mixed_source_capture_passthrough",
+            }
+            and pair in expected_pairs
+        ):
+            # Preserve historical baseline identities in native parity while
+            # the adjudication removes them from the unresolved-field queue.
             continue
         pairs.add(pair)
     return pairs, problems

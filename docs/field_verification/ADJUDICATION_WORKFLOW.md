@@ -197,6 +197,14 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 对基线外的历史无前缀叶名，还须核对实际序列化位置，证明它只作为某个完整对象路径的叶字段输出，且没有同名独立顶层路径；满足后可按 `retired_legacy_path` 退役旧的未限定身份，并链接当前完整路径。parity 只排除带有退役决定、证据文件和原状态快照的基线外旧路径；原本属于基线的真实历史路径仍计入历史 parity。
 
+## 区分项目派生值与混合来源回退
+
+采集归档中的字段可能由项目计算，也可能由复合 accessor 的回退值填充。它们是真实 JSON 值，但不一定是登记来源的原始字段；不得把包装层字段名直接当作上游响应键。字段身份始终按完整 `(source, code path)` 处理：`quote_full.change_pct` 的证据不能直接定案或退役裸 `change_pct`，反之亦然。
+
+- **项目派生采集值**：沿采集入口追到确切上游响应键、规范化函数及公式；检查公式没有跨来源回退，并用同一原始记录复算全部可用的保留期样本。若来源字段清单仍将该输出列为上游字段，将精确身份记为 `disproved`、`status_resolution: project_derived_capture_output`；在 `meaning` 中写明公式和项目派生属性。此处的 `disproved` 只表示“不是提供方原始字段”，不表示输出值错误。不得据此新增跨源映射；输出日期或来源实际数据日不完整时，复算只作管道转换核验，不作为行情碰撞证据。
+- **混合来源回退透传**：证明历史输出属于哪条复合 accessor、该来源原始响应缺失/不含该键、同记录值实际来自哪个来源路径，并核查当前来源专属采集器是否仍会输出。相同数值只用于识别回退血缘；若来源实际日期不同或缺失，不得据此宣布字段等价或用作碰撞样本。将错误归属的精确身份记为 `disproved`、`status_resolution: mixed_source_capture_passthrough`，保留原状态快照和证据；不创建 `mappings`，也不修改实际提供值的来源字段。
+- 两种处置均须提供日期化审计记录、结构化逐样本证据、当前调用链/适配器实现及原状态快照；若路径生产方式曾变化，明确记录各时期的血缘，不能把当前生成方式倒推到历史样本。`registry_parity.py` 对基线内外路径都要求这些证据。保留历史原始归档，不回写或重解释原始采集文件。它们与 `retired_legacy_path` 不同：前者说明输出如何产生，不能伪造同源新键承接关系。
+
 ## 撤销错误的历史定义
 
 当解析器列映射、原始响应或跨日样本证明一个历史 `verified` 定义错误时，不能把它当作普通碰撞晋级，也不能让旧的 `reference_evidence` 静默覆盖新结论。当前碰撞决策工具没有通用的 `disprove` 动作；此类源级纠错需单独留存带日期的审计记录，并在 `field_registry.json.source_fields` 中按完整 `(source, code)` 身份将状态改为 `disproved`、注明正确的对应字段和证据路径，保留旧 `reference_evidence` 作为历史记录；同时移除所有指向已证伪身份的活动 `mappings`。随后重建 `fields` 聚合视图与 `meta.source_field_stats`，运行字典生成器和同步校验。不要修改只读历史档案来掩盖旧定义，也不要按短字段名批量证伪其他来源。示例见 [`change_30d_adjudication_20261017.md`](change_30d_adjudication_20261017.md)。

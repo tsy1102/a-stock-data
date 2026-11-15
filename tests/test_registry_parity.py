@@ -269,6 +269,67 @@ def test_collector_output_container_in_baseline_still_requires_evidence(monkeypa
     assert any("采集容器路径" in problem for problem in problems)
 
 
+def test_capture_output_classifications_require_evidence_and_leave_unknown_queue(monkeypatch):
+    evidence_paths = {
+        "docs/field_verification/capture_output_provenance.md",
+        "scripts/capture_field_probe.py",
+    }
+    monkeypatch.setattr(
+        registry_parity,
+        "_repo_file_exists",
+        lambda path: path in evidence_paths,
+    )
+    for resolution in (
+        "project_derived_capture_output",
+        "mixed_source_capture_passthrough",
+    ):
+        row = {
+            "source": "source-a",
+            "code": f"field-{resolution}",
+            "status": "disproved",
+            "status_resolution": resolution,
+            "adjudication_evidence": {
+                "decision": "disproved",
+                "decision_note": "docs/field_verification/capture_output_provenance.md",
+                "reason": "The exact source path is a project-derived or mixed-source capture output.",
+                "evidence_files": [
+                    "docs/field_verification/capture_output_provenance.md",
+                    "scripts/capture_field_probe.py",
+                ],
+            },
+            "superseded_status_evidence": {"status": "unverified"},
+        }
+        excluded_pairs, problems = registry_parity._validated_non_field_schema_pairs([row], set())
+        assert excluded_pairs == {("source-a", row["code"])}
+        assert problems == []
+
+
+def test_capture_output_classifications_in_baseline_still_require_evidence(monkeypatch):
+    monkeypatch.setattr(registry_parity, "_repo_file_exists", lambda _: False)
+    for resolution in (
+        "project_derived_capture_output",
+        "mixed_source_capture_passthrough",
+    ):
+        row = {
+            "source": "source-a",
+            "code": "historical-field",
+            "status": "disproved",
+            "status_resolution": resolution,
+            "adjudication_evidence": {
+                "decision": "disproved",
+                "decision_note": "docs/field_verification/missing.md",
+                "reason": "The source path is not a native provider field.",
+                "evidence_files": ["scripts/capture_field_probe.py"],
+            },
+            "superseded_status_evidence": {"status": "unverified"},
+        }
+        excluded_pairs, problems = registry_parity._validated_non_field_schema_pairs(
+            [row], {("source-a", "historical-field")}
+        )
+        assert excluded_pairs == set()
+        assert any("证据文件" in problem for problem in problems)
+
+
 def test_native_parity_remains_strict_without_accepted_debt():
     expected = {("source-a", "field-a"), ("source-b", "field-b")}
     actual = {("source-b", "field-b")}

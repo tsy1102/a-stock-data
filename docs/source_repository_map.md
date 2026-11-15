@@ -54,10 +54,12 @@
 
 ### TDX(双命名源)
 
-- 来源说明：通达信协议行情/财务客户端数据。
+- 来源说明：通达信协议行情/财务客户端链；tdx_get_quote_raw 由 ELTDX 主用、easy-tdx 备用，两者不构成独立来源。
 - 对话确认：confirmed（2026-10-06）。确认该仓库是本项目使用的 easy-tdx 运行时客户端 fork；上游数据提供方仍是通达信。
-- [https://github.com/yanwei99521/easy-tdx](https://github.com/yanwei99521/easy-tdx) — runtime_client_fork；confirmed。requirements 固定到该仓库提交；本项目 tdx_client 使用 easy_tdx API。
+- [https://github.com/yanwei99521/easy-tdx](https://github.com/yanwei99521/easy-tdx) — fallback_runtime_client_fork；confirmed。requirements 固定到该仓库提交；本项目 tdx_client 将 easy-tdx 用作 ELTDX 失败时的备用客户端。
   - 项目内证据：requirements.txt, docs/easy_tdx_repo_identity_check_20260916.md
+- [https://github.com/electkismet/eltdx](https://github.com/electkismet/eltdx) — primary_runtime_client；confirmed。tdx_get_quote_raw 使用的 TDX 适配链优先创建 ELTDX 客户端；归档目前不记录单条采集实际命中 ELTDX 还是 easy-tdx。
+  - 项目内证据：requirements.txt, core/tdx_client.py, core/eltdx_adapter.py, scripts/capture_tcp_collectors.py
 
 ### TDX-eltdx(适配层)
 

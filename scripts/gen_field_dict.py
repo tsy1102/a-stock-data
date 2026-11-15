@@ -45,6 +45,8 @@ _STATUS_RESOLUTION_NOTES = {
     "status_missing": "缺少可用的历史状态记录",
     "reference_meaning_unresolved": "含义缺失或属性未能对齐，不能作为已定语义",
     "reference_semantic_attribute_conflict": "来源参考记录中的含义或单位互相冲突",
+    "project_derived_capture_output": "项目代码派生的采集值，不是提供方原始字段",
+    "mixed_source_capture_passthrough": "历史回退把其他来源值写入此来源采集桶",
 }
 
 
@@ -53,6 +55,10 @@ def _meaning_annotation_state(record: dict[str, Any]) -> str:
     resolution = _status_resolution(record)
     if resolution == "retired_legacy_path":
         return "已退役路径身份（不进入默认破解）"
+    if resolution == "project_derived_capture_output":
+        return "项目派生采集值（不是上游原始字段）"
+    if resolution == "mixed_source_capture_passthrough":
+        return "历史回退串源路径（不是该来源原始字段）"
     if resolution == "collector_output_container":
         return "采集器输出容器（不是字段路径）"
     if resolution == "not_field_schema_token":

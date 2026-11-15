@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 487 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 491 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3447,6 +3447,10 @@
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | `disproved` |
 | TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
+| TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
+| TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
+| TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | `disproved` |
+| TDX(双命名源) | `quote_full.pe_ttm` | quote_full.pe_ttm | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |

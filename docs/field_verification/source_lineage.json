@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-18",
+  "updated": "2026-11-15",
   "description": "运行时来源别名、提供方独立性、客户端/服务仓库关系与锚点资格；AxData/Levistock 框架和包装关系不等同于底层独立数据源。",
   "sources": {
     "AxData": {
@@ -40,18 +40,30 @@
       "independence_family": "tdx",
       "independence_status": "confirmed",
       "anchor_eligible": true,
-      "anchor_note": "通达信协议行情/财务客户端数据",
+      "anchor_note": "通达信协议行情/财务客户端链；tdx_get_quote_raw 由 ELTDX 主用、easy-tdx 备用，两者不构成独立来源",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
           "url": "https://github.com/yanwei99521/easy-tdx",
-          "relation": "runtime_client_fork",
+          "relation": "fallback_runtime_client_fork",
           "status": "confirmed",
           "evidence_files": [
             "requirements.txt",
             "docs/easy_tdx_repo_identity_check_20260916.md"
           ],
-          "note": "requirements 固定到该仓库提交；本项目 tdx_client 使用 easy_tdx API。"
+          "note": "requirements 固定到该仓库提交；本项目 tdx_client 将 easy-tdx 用作 ELTDX 失败时的备用客户端。"
+        },
+        {
+          "url": "https://github.com/electkismet/eltdx",
+          "relation": "primary_runtime_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "core/tdx_client.py",
+            "core/eltdx_adapter.py",
+            "scripts/capture_tcp_collectors.py"
+          ],
+          "note": "tdx_get_quote_raw 使用的 TDX 适配链优先创建 ELTDX 客户端；归档目前不记录单条采集实际命中 ELTDX 还是 easy-tdx。"
         }
       ],
       "dialog_confirmation": {

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "decisions": [
+    {
+      "id": "eltdx-auction-series-trading-date-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "trading_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "trading_date",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "trading_date",
+      "meaning": "ELTDX v3.3.2 AuctionSeries 的历史请求日期元数据；当日请求返回 None。该字段记录请求日期角色，不证明服务器实际返回值对应的来源数据日，也不表示采集运行日期或事件日期。",
+      "unit": "日期（字段格式未明确）",
+      "rationale": "项目来源参考 §12.13.10F 在 AuctionSeries/AuctionPoint 表中将未限定的 trading_date 列为 AuctionSeries 顶层字段。锁定版 ELTDX v3.3.2 字段手册定义 AuctionSeries.trading_date 为请求的历史日期、当日请求为 None；方法参考将 AuctionSeries 对应到 client.auctions.series(code, date=None)，传日期时查询指定历史日期。故可确认请求日期元数据角色，但不能外推为来源实际数据日。保留边界后的 18 份 raw_eltdx 共 360 条股票记录没有 AuctionSeries 对象，当前采集器也未调用 client.auctions.series；本决定仅限客户端模型，不声称当前采集输出或原始 wire 定义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 标准 7709 0x056a 集合竞价返回模型（客户端模型契约，不等同 TDX 原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+        "path": "AuctionSeries.trading_date returned by client.auctions.series(code, date=None)",
+        "locator": "docs/FIELD_REFERENCE.md §AuctionSeries/AuctionPoint：trading_date 为请求的历史日期、当日请求为 None；docs/METHOD_REFERENCE.md §集合竞价：client.auctions.series(code, date=None)，传入日期请求指定历史日期。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

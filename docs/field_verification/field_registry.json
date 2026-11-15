@@ -10,8 +10,8 @@
       "aggregate_status_scope_unresolved": 357,
       "candidate": 1,
       "collector_output_container": 3,
-      "conflict": 34,
-      "disproved": 75,
+      "conflict": 31,
+      "disproved": 76,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,19 +21,19 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
-      "project_derived_capture_output": 1,
+      "project_derived_capture_output": 2,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
       "registry_status_only_single_source": 523,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 43,
-      "status_conflict": 28,
+      "status_conflict": 25,
       "status_missing": 41,
       "unresolved": 8,
       "unverified": 1019,
-      "verified": 1504,
-      "verified_by_empirical_addendum": 158,
+      "verified": 1506,
+      "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 406
@@ -23188,17 +23188,15 @@
       ],
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "canonical": "item_tongbi",
-      "meaning": "同比（有才附 `_同比` 键）",
-      "unit": "",
+      "meaning": "同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。",
+      "unit": "比率",
       "status_raw": "✅",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "新浪(扩展API)": "conflict"
+        "新浪(扩展API)": "verified"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "item_value",
@@ -23208,17 +23206,15 @@
       ],
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "canonical": "item_value",
-      "meaning": "科目值（字符串）",
+      "meaning": "指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。",
       "unit": "",
       "status_raw": "✅",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "新浪(扩展API)": "conflict"
+        "新浪(扩展API)": "verified"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "iv",
@@ -31600,17 +31596,15 @@
       ],
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "canonical": "report_type",
-      "meaning": "fzb(资产负债)/lrb(利润)/llb(现金流)",
+      "meaning": "项目采集器回显的请求类别，不是新浪原始报表字段：适配器把请求参数 report_type 写入返回包装对象，提供方报表数据位于 report_list。fzb 表示资产负债表请求，lrb 表示利润表请求，llb 表示现金流量表请求。",
       "unit": "",
-      "status_raw": "✅",
-      "status": "conflict",
+      "status_raw": "",
+      "status": "disproved",
       "source_statuses": {
-        "新浪(扩展API)": "conflict"
+        "新浪(扩展API)": "disproved"
       },
       "aggregation_status": "consistent",
-      "aggregation_issues": [
-        "source_status_conflict"
-      ]
+      "aggregation_issues": []
     },
     {
       "code": "request_count",
@@ -41900,10 +41894,12 @@
       "TDX-0x0010/F10"
     ],
     "item_tongbi": [
-      "新浪"
+      "新浪",
+      "新浪(扩展API)"
     ],
     "item_value": [
-      "新浪"
+      "新浪",
+      "新浪(扩展API)"
     ],
     "iv": [
       "新浪"
@@ -241849,14 +241845,15 @@
       "identity": "新浪(扩展API)::item_tongbi",
       "path": "item_tongbi",
       "canonical": "item_tongbi",
-      "meaning": "同比（有才附 `_同比` 键）",
-      "unit": "",
+      "meaning": "同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。",
+      "unit": "比率",
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "sections": [
-        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
+        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
+        "新浪扩展 API 财务报表科目实证（2026-11-15）"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -241869,9 +241866,25 @@
           "新浪(扩展API)"
         ],
         "values": [
-          "verified",
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "sina-financial-20261115-item-tongbi"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+        "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+        "sample": {
+          "scope": "保留期 2026-10-15 起的新浪财报归档中，选取 2026-11-12 目标数据日、600519 与 601288 的 7 个可复算项目；当前值和上年同期值分别绑定同一股票、报表类别、项目标签和 2026-09-30 / 2025-09-30 报告期。",
+          "comparison_count": 7,
+          "matched_count": 7,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2,
+          "observation_count": 91168
+        }
       },
       "reference_evidence": [
         {
@@ -241881,6 +241894,41 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "新浪扩展 API 财务报表科目实证（2026-11-15）",
+          "canonical": "item_tongbi",
+          "meaning": "同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。",
+          "unit": "比率",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-15",
+          "status": "verified",
+          "adjudication_id": "sina-financial-20261115-item-tongbi",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+          "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+          "metadata_change": {
+            "before": {
+              "canonical": "item_tongbi",
+              "meaning": "同比（有才附 `_同比` 键）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "item_tongbi",
+              "meaning": "同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。",
+              "unit": "比率"
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 起的新浪财报归档中，选取 2026-11-12 目标数据日、600519 与 601288 的 7 个可复算项目；当前值和上年同期值分别绑定同一股票、报表类别、项目标签和 2026-09-30 / 2025-09-30 报告期。",
+            "comparison_count": 7,
+            "matched_count": 7,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "observation_count": 91168
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -241895,7 +241943,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "sina-financial-20261115-item-tongbi",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-15",
+          "decision_file": "adjudications/20261115_sina_financial_items_empirical_semantics.json",
+          "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+          "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "item_tongbi",
+            "meaning": "同比（有才附 `_同比` 键）",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "item_tongbi",
+              "meaning": "同比（有才附 `_同比` 键）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "item_tongbi",
+              "meaning": "同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。",
+              "unit": "比率"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "精确路径为 report_list.<report_period>.data[].item_tongbi。对七个新浪官网财报页面项目按 (2026-09-30 页面值 / 2025-09-30 页面值) - 1 复算，并以 ROUND_HALF_UP 舍入到五位小数；7/7 与采集数值相同。比较包括货币金额与每股收益，页面单位在同比分子分母中抵消，因此结果显示为小数比例而非百分数值。全量归档 36,117 个数值中包含有效的 0，55,051 个空字符串单独表示无可用同比值。证据不外推至上年同期为零、报表重述或其他未观测服务端边界。",
+          "sample": {
+            "scope": "保留期 2026-10-15 起的新浪财报归档中，选取 2026-11-12 目标数据日、600519 与 601288 的 7 个可复算项目；当前值和上年同期值分别绑定同一股票、报表类别、项目标签和 2026-09-30 / 2025-09-30 报告期。",
+            "comparison_count": 7,
+            "matched_count": 7,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "observation_count": 91168
+          }
+        }
+      ]
     },
     {
       "source": "新浪(扩展API)",
@@ -241903,14 +241996,15 @@
       "identity": "新浪(扩展API)::item_value",
       "path": "item_value",
       "canonical": "item_value",
-      "meaning": "科目值（字符串）",
+      "meaning": "指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。",
       "unit": "",
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "sections": [
-        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
+        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
+        "新浪扩展 API 财务报表科目实证（2026-11-15）"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -241923,9 +242017,25 @@
           "新浪(扩展API)"
         ],
         "values": [
-          "verified",
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "sina-financial-20261115-item-value"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+        "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+        "sample": {
+          "scope": "保留期 2026-10-15 起 16 个含新浪扩展报表 raw 的目标数据目录、20 只股票、91,168 行科目记录；另以 2026-11-12 目录中 600519 与 601288 的 8 个 2026-09-30 项目，对照新浪官网当前财报页标签、报告期、单位和显示值。",
+          "comparison_count": 8,
+          "matched_count": 8,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2,
+          "observation_count": 91168
+        }
       },
       "reference_evidence": [
         {
@@ -241935,6 +242045,41 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "新浪扩展 API 财务报表科目实证（2026-11-15）",
+          "canonical": "item_value",
+          "meaning": "指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-15",
+          "status": "verified",
+          "adjudication_id": "sina-financial-20261115-item-value",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+          "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+          "metadata_change": {
+            "before": {
+              "canonical": "item_value",
+              "meaning": "科目值（字符串）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "item_value",
+              "meaning": "指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 起 16 个含新浪扩展报表 raw 的目标数据目录、20 只股票、91,168 行科目记录；另以 2026-11-12 目录中 600519 与 601288 的 8 个 2026-09-30 项目，对照新浪官网当前财报页标签、报告期、单位和显示值。",
+            "comparison_count": 8,
+            "matched_count": 8,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "observation_count": 91168
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -241949,7 +242094,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "sina-financial-20261115-item-value",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-15",
+          "decision_file": "adjudications/20261115_sina_financial_items_empirical_semantics.json",
+          "evidence_file": "adjudications/20261115_sina_financial_item_semantics.md",
+          "evidence_sha256": "acfcd68ed8c1e411f1c6507acb9028b7e9b9200a6972f3e08dba783157e1b802",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "previous_metadata": {
+            "canonical": "item_value",
+            "meaning": "科目值（字符串）",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "item_value",
+              "meaning": "科目值（字符串）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "item_value",
+              "meaning": "指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "精确路径为 report_list.<report_period>.data[].item_value；项目采集保留 item_field、item_title、report_type、报告期、主体口径及币种在同一记录中。全量样本类型分布为 37,495 个非空数值字符串、2,528 个空字符串和 51,145 个 null；空字符串行均为无 item_field 的分组行。新浪页面金额单位是万元而 raw 为人民币元，逐项乘 10,000 后按页面两位小数的半个显示刻度检查；EPS 按元/股和四位小数刻度检查，8/8 命中。此结论只定义科目值的行级角色，不为异质科目指定统一单位，不声称每个科目编码的具体业务含义都已破解。",
+          "sample": {
+            "scope": "保留期 2026-10-15 起 16 个含新浪扩展报表 raw 的目标数据目录、20 只股票、91,168 行科目记录；另以 2026-11-12 目录中 600519 与 601288 的 8 个 2026-09-30 项目，对照新浪官网当前财报页标签、报告期、单位和显示值。",
+            "comparison_count": 8,
+            "matched_count": 8,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "observation_count": 91168
+          }
+        }
+      ]
     },
     {
       "source": "新浪(扩展API)",
@@ -242663,28 +242853,26 @@
       "identity": "新浪(扩展API)::report_type",
       "path": "report_type",
       "canonical": "report_type",
-      "meaning": "fzb(资产负债)/lrb(利润)/llb(现金流)",
+      "meaning": "项目采集器回显的请求类别，不是新浪原始报表字段：适配器把请求参数 report_type 写入返回包装对象，提供方报表数据位于 report_list。fzb 表示资产负债表请求，lrb 表示利润表请求，llb 表示现金流量表请求。",
       "unit": "",
       "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
       "sections": [
         "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [
-          "verified"
-        ],
-        "reference_status_raw": [
-          "✅"
-        ],
-        "registry_aggregate_status": "unverified",
+        "adjudication_evidence_id": "sina-report-type-20261115",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261115_sina_financial_item_semantics.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "新浪(扩展API)"
         ],
         "values": [
-          "verified",
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [
@@ -242709,6 +242897,75 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "conflict",
+        "status_resolution": "status_conflict",
+        "canonical": "report_type",
+        "meaning": "fzb(资产负债)/lrb(利润)/llb(现金流)",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [
+            "verified"
+          ],
+          "reference_status_raw": [
+            "✅"
+          ],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "新浪(扩展API)"
+          ],
+          "values": [
+            "verified",
+            "unverified"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "report_type",
+          "sources": [
+            "新浪(扩展API)"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        },
+        "reference_evidence": [
+          {
+            "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
+            "canonical": "report_type",
+            "meaning": "fzb(资产负债)/lrb(利润)/llb(现金流)",
+            "unit": "",
+            "status_raw": "✅",
+            "status": "verified"
+          }
+        ],
+        "attribute_conflicts": {}
+      },
+      "adjudication_evidence": {
+        "id": "sina-report-type-20261115",
+        "decision": "disproved",
+        "decision_date": "2026-11-15",
+        "decision_note": "docs/field_verification/adjudications/20261115_sina_financial_item_semantics.md",
+        "reason": "保留期 16 个新浪三表采集目录共 960 个报表包装对象，包装 report_type 与外层请求类别 960/960 相同；内层 report_list 的 report_type 键为 0/960，91,168 条科目行的 item_source 也全部等于对应报表类别。get_sina_financial_report_raw 明确把请求类别写入 项目返回包装对象，因此该路径是项目派生的请求类别回显，不是新浪提供方原始字段。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261115_sina_financial_item_semantics.md",
+          "docs/field_verification/research/20261115_sina_financial_report_inventory.csv",
+          "docs/field_verification/research/20261115_sina_financial_item_page_comparisons.csv",
+          "stock_common/sc_datasource/_financials.py",
+          "scripts/capture_http_collectors.py",
+          "scripts/capture_retention.py",
+          "docs/field_verification/20261019/raw_sina_extended.json",
+          "docs/field_verification/20261019/meta.json",
+          "docs/field_verification/20261112/raw_sina_extended.json",
+          "docs/field_verification/20261112/meta.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 16,
+        "stock_record_count": 320,
+        "structured_evidence": "docs/field_verification/research/20261115_sina_financial_report_inventory.csv"
       }
     },
     {

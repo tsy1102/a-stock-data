@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 499 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 500 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2477,22 +2477,6 @@
 | 同花顺-fuyao · `is_new` | is_new | 是否未开板新股，仅展示。 | 布尔值 | `verified` |
 | 财联社(cls) · `is_new` | is_new | 是否新上榜（1=是） | — | `unverified` |
 
-### `item_tongbi` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `item_tongbi` | item_tongbi | 同比（有才附 `_同比` 键） | — | `conflict` |
-
-### `item_value` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `item_value` | item_value | 科目值（字符串） | — | `conflict` |
-
 ### `jing_li_run_raw_float` — ambiguous
 
 聚合问题：meaning_differs；聚合状态：`conflict`。
@@ -3106,14 +3090,6 @@
 | 市场源(market_sources) · `reason` | — | — | — | `unverified` |
 | 开盘红 · `reason` | limit_up_reason | 涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值 | — | `verified` |
 | 开盘红(Levistock适配) · `reason` | reason | 涨停原因 | — | `unverified` |
-
-### `report_type` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 新浪(扩展API) · `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | — | `conflict` |
 
 ### `rise_speed` — incomplete
 
@@ -3875,6 +3851,8 @@
 | 新浪(扩展API) | `bid_vol` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |
 | 新浪(扩展API) | `delta` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(扩展API) | `gamma` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
+| 新浪(扩展API) | `item_tongbi` | item_tongbi | 同一报表项目相对上年同期的变动率，以小数比例表示；例如 0.01959 表示增长 1.959%。空字符串表示没有可用同比值，数值 0 表示同比变化为 0。 | `verified` |
+| 新浪(扩展API) | `item_value` | item_value | 指定报表类别、报告期及主体口径下的财务报表科目值，与同一行的 item_field / item_title 绑定；不同科目的量纲不统一。已核实金额项目以人民币元存档，基本每股收益以元/股存档。空字符串用于无科目代码的分组行，null 表示缺值，均不是数值 0。 | `verified` |
 | 新浪(扩展API) | `iv` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(扩展API) | `last` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |
 | 新浪(扩展API) | `limit_down` | limit_up / limit_down | 涨跌停价 | `unverified` |
@@ -3882,7 +3860,6 @@
 | 新浪(扩展API) | `netamount` | netamount | 个股资金流记录中的净流入金额原始值（元；新浪帮助页展示单位为万元） | `verified` |
 | 新浪(扩展API) | `open` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
 | 新浪(扩展API) | `prev_close` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
-| 新浪(扩展API) | `report_type` | report_type | fzb(资产负债)/lrb(利润)/llb(现金流) | `conflict` |
 | 新浪(扩展API) | `strike` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | `unverified` |
 | 新浪(扩展API) | `theta` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(扩展API) | `trade` | trade | 个股资金流记录中 opendate 对应行的行情价格快照（元/股）；不能默认视为官方收盘价 | `verified` |

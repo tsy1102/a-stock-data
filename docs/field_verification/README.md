@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`20261115_cracking_closeout.md`](20261115_cracking_closeout.md)：总结并复核 11 月 14–15 日的来源身份、字段定案、路径清理和采集补充；附 18 个目标数据日、360 条 ELTDX 样本路径核验，明确 22 条 TDX 对照缺值不是失配，且不将嵌套路径结论移植到同名裸路径。
 - [`adjudications/20261115_eltdx_kline_series_source_contract.md`](adjudications/20261115_eltdx_kline_series_source_contract.md) 与 [`research/20261115_eltdx_kline_series_metadata.csv`](research/20261115_eltdx_kline_series_metadata.csv)：依据项目锁定的 ELTDX v3.3.2 `KlineSeries`/7709 K 线契约，定案 9 个周期、复权及分页元数据字段；18 份保留模型输出与当前 `period=day`、`count=1`、默认不复权调用一致。明确这些不是行情值或来源日期，不新增跨源映射。
 - [`adjudications/20261115_tdx_share_capital_source_contract.md`](adjudications/20261115_tdx_share_capital_source_contract.md) 与 [`adjudications/20261115_tdx_share_capital_source_contract.json`](adjudications/20261115_tdx_share_capital_source_contract.json)：按通达信官方 `get_gb_info_by_date` 字段表定案 `TDX(双命名源)::Zgb`（总股本）和 `::Ltgb`（流通股本）；官方未注明单位，保留未知，不声称当前采集器调用该接口，也不新增跨源映射。`Date` 因来源路径角色未能精确归属而保持待核。
 - [`adjudications/20261115_tdx_rolling_change_provenance.md`](adjudications/20261115_tdx_rolling_change_provenance.md) 与 [`research/20261115_tdx_rolling_change_provenance.csv`](research/20261115_tdx_rolling_change_provenance.csv)：补查 TDX 嵌套 `quote_full.change_pct_1d/2d`；两路径在 2026-10-15 各 20/20 精确来自 ZHB 回退，当前 TDX raw 采集器不再输出，按完整路径撤销旧 TDX 原始字段归属；裸 `change_pct_1d/2d` 继续待核，不移植嵌套路径证据。

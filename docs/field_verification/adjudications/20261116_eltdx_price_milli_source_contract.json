@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "decisions": [
+    {
+      "id": "eltdx-trade-tick-price-milli-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "price_milli"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "price_milli",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "price_milli",
+      "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+      "unit": "千分之一元（0.001元）",
+      "rationale": "项目来源参考 §12.13.10E 将精确注册身份 price_milli 列在 TradeTick 字段表。requirements.txt 锁定 eltdx==3.3.2；该版本字段手册明确 *_milli 为毫厘价格、通常 price=price_milli/1000，方法参考将 TradeTick.price_milli 释为毫厘价；历史 09:25 正式撮合的真实返回示例 price=11.22、price_milli=11220，验证 1000 倍缩放。该含义仅指 ELTDX 客户端模型字段，不声称原始 wire 定义。现行项目采集器不调用 trades/auctions，保留期 18 份 raw_eltdx 均无此键，所以本决定不声称当前采集输出、不引用保留边界前数据、不建立跨源映射；完整路径 AuctionPoint.price_milli 不属于本次 TradeTick 注册身份。",
+      "source_contract": {
+        "authority": "ELTDX v3.3.2 标准 7709 成交模型字段手册与方法参考（客户端模型契约，不等同通达信原始 wire 字段定义）",
+        "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+        "path": "TradeTick.price_milli returned by client.trades.history / opening_match_history",
+        "locator": "docs/FIELD_REFERENCE.md §通用约定：*_milli 为毫厘价格，通常 price=price_milli/1000；docs/METHOD_REFERENCE.md §成交明细：TradeTick.price/price_milli 为成交价/毫厘价；docs/methods/7709-历史0925正式撮合.md §真实返回 JSON：price=11.22、price_milli=11220。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

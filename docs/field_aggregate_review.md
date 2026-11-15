@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 505 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 506 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3452,6 +3452,7 @@
 | TDX-eltdx(适配层) | `period_param_raw` | period_param_raw | K线周期的底层参数；固定周期通常为 1，扩展周期中的 N 表示 N 分钟、N 日或 N 秒。 | `verified` |
 | TDX-eltdx(适配层) | `period_raw` | period_raw | K线周期的底层类型编号；需与 period_param_raw 配对解释，例如 4/1 表示日K、8/N 表示 N 分钟扩展周期。 | `verified` |
 | TDX-eltdx(适配层) | `price` | price | 实时行情快照最新价；收盘阶段与该数据日收盘价一致。 | `verified` |
+| TDX-eltdx(适配层) | `price_milli` | price_milli | ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。 | `verified` |
 | TDX-eltdx(适配层) | `request_count` | request_count | K线请求条数元数据；单页结果记录请求条数，自动分页合并结果将其更新为合并后的K线总条数。 | `verified` |
 | TDX-eltdx(适配层) | `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `shortline.auction_prev_volume_ratio` | shortline.auction_prev_volume_ratio | 竞价量/昨量比 | `verified` |

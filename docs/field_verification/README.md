@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261116_eltdx_price_milli.md`](adjudications/20261116_eltdx_price_milli.md) 与 [`adjudications/20261116_eltdx_price_milli_source_contract.json`](adjudications/20261116_eltdx_price_milli_source_contract.json)：按 ELTDX v3.3.2 返回模型契约定案 `TradeTick.price_milli` 为成交价千分值（`price = price_milli / 1000`）；仅确认客户端模型语义，当前采集器未采该字段，不建立跨源映射。
 - [`adjudications/20261116_eltdx_trade_datetime.md`](adjudications/20261116_eltdx_trade_datetime.md) 与 [`adjudications/20261116_eltdx_trade_datetime_source_contract.json`](adjudications/20261116_eltdx_trade_datetime_source_contract.json)：按锁定版 ELTDX v3.3.2 契约定案 `TradeTick.trade_datetime` 为成交事件时间；区分历史接口事件日期时间与当日接口缺失日期/空值，不把它当采集时间或来源数据日。项目当前采集器未调用成交接口，保留期 raw 无该路径，不建立跨源映射。
 - [`adjudications/20261115_eltdx_unqualified_helper_paths.md`](adjudications/20261115_eltdx_unqualified_helper_paths.md) 与 [`research/20261115_eltdx_unqualified_helper_path_inventory.csv`](research/20261115_eltdx_unqualified_helper_path_inventory.csv)：核对 ELTDX 序列化器与 18 个保留目录；其中 17 个目录满足完整接收条件，共 340 条有效记录。退役 `code`、`exchange`、`full_code`、`market_id`、`pre_close` 五个无前缀路径身份；TradeTick `volume` 与盘口档位量不混同，仍待核。ELTDX 无来源级 `as_of_date`，结论限于路径结构，不作为数值碰撞证据。
 - [`adjudications/20261115_fuyao_capture_path_disambiguation.md`](adjudications/20261115_fuyao_capture_path_disambiguation.md) 与 [`research/20261115_fuyao_capture_path_inventory.csv`](research/20261115_fuyao_capture_path_inventory.csv)：复核保留期 18 个 Fuyao 目录、360 条股票记录，将 `date_ms` / `probe_trading_day` 定为项目请求元数据、`financials` / `market` 定为采集容器，并按官方接口契约确认 `indicators[]` 是指标记录容器；不外推叶字段语义或创建跨源映射。

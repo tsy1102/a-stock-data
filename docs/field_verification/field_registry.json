@@ -25,18 +25,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 515,
+      "registry_status_only_single_source": 514,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 22,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1006,
-      "verified": 1508,
+      "unverified": 1005,
+      "verified": 1509,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 408
+      "verified_by_source_contract": 409
     },
     "updated_at": "2026-11-15"
   },
@@ -29714,17 +29714,15 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "price_milli",
-      "meaning": "",
-      "unit": "",
+      "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+      "unit": "千分之一元（0.001元）",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX-eltdx(适配层)": "unverified"
+        "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "prices",
@@ -42603,7 +42601,8 @@
       "TDX-eltdx"
     ],
     "price_milli": [
-      "TDX-eltdx"
+      "TDX-eltdx",
+      "TDX-eltdx(适配层)"
     ],
     "prices": [
       "同花顺-fuyao"
@@ -113100,14 +113099,15 @@
       "identity": "TDX-eltdx(适配层)::price_milli",
       "path": "price_milli",
       "canonical": "price_milli",
-      "meaning": "",
-      "unit": "",
+      "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+      "unit": "千分之一元（0.001元）",
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "sections": [
-        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+        "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+        "source contract: ELTDX v3.3.2 标准 7709 成交模型字段手册与方法参考（客户端模型契约，不等同通达信原始 wire 字段定义） · TradeTick.price_milli returned by client.trades.history / opening_match_history#docs/FIELD_REFERENCE.md §通用约定：*_milli 为毫厘价格，通常 price=price_milli/1000；docs/METHOD_REFERENCE.md §成交明细：TradeTick.price/price_milli 为成交价/毫厘价；docs/methods/7709-历史0925正式撮合.md §真实返回 JSON：price=11.22、price_milli=11220。 @ eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -113117,6 +113117,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "eltdx-trade-tick-price-milli-20261116"
+        ],
+        "source_contract_adjudication_ids": [
+          "eltdx-trade-tick-price-milli-20261116"
         ]
       },
       "reference_evidence": [
@@ -113127,6 +113133,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: ELTDX v3.3.2 标准 7709 成交模型字段手册与方法参考（客户端模型契约，不等同通达信原始 wire 字段定义） · TradeTick.price_milli returned by client.trades.history / opening_match_history#docs/FIELD_REFERENCE.md §通用约定：*_milli 为毫厘价格，通常 price=price_milli/1000；docs/METHOD_REFERENCE.md §成交明细：TradeTick.price/price_milli 为成交价/毫厘价；docs/methods/7709-历史0925正式撮合.md §真实返回 JSON：price=11.22、price_milli=11220。 @ eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+          "canonical": "price_milli",
+          "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+          "unit": "千分之一元（0.001元）",
+          "status_raw": "人工核验上游契约 2026-11-16：eltdx-trade-tick-price-milli-20261116",
+          "status": "verified",
+          "adjudication_id": "eltdx-trade-tick-price-milli-20261116",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 标准 7709 成交模型字段手册与方法参考（客户端模型契约，不等同通达信原始 wire 字段定义）",
+            "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+            "path": "TradeTick.price_milli returned by client.trades.history / opening_match_history",
+            "locator": "docs/FIELD_REFERENCE.md §通用约定：*_milli 为毫厘价格，通常 price=price_milli/1000；docs/METHOD_REFERENCE.md §成交明细：TradeTick.price/price_milli 为成交价/毫厘价；docs/methods/7709-历史0925正式撮合.md §真实返回 JSON：price=11.22、price_milli=11220。",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "price_milli",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "price_milli",
+              "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+              "unit": "千分之一元（0.001元）"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -113141,7 +113176,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eltdx-trade-tick-price-milli-20261116",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_eltdx_price_milli_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "price_milli",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "price_milli",
+              "meaning": "ELTDX v3.3.2 TradeTick 成交价格的千分值；通常 price = price_milli / 1000。",
+              "unit": "千分之一元（0.001元）"
+            }
+          },
+          "rationale": "项目来源参考 §12.13.10E 将精确注册身份 price_milli 列在 TradeTick 字段表。requirements.txt 锁定 eltdx==3.3.2；该版本字段手册明确 *_milli 为毫厘价格、通常 price=price_milli/1000，方法参考将 TradeTick.price_milli 释为毫厘价；历史 09:25 正式撮合的真实返回示例 price=11.22、price_milli=11220，验证 1000 倍缩放。该含义仅指 ELTDX 客户端模型字段，不声称原始 wire 定义。现行项目采集器不调用 trades/auctions，保留期 18 份 raw_eltdx 均无此键，所以本决定不声称当前采集输出、不引用保留边界前数据、不建立跨源映射；完整路径 AuctionPoint.price_milli 不属于本次 TradeTick 注册身份。",
+          "source_contract": {
+            "authority": "ELTDX v3.3.2 标准 7709 成交模型字段手册与方法参考（客户端模型契约，不等同通达信原始 wire 字段定义）",
+            "revision": "eltdx==3.3.2（requirements.txt 锁定；2026-11-16 核验）",
+            "path": "TradeTick.price_milli returned by client.trades.history / opening_match_history",
+            "locator": "docs/FIELD_REFERENCE.md §通用约定：*_milli 为毫厘价格，通常 price=price_milli/1000；docs/METHOD_REFERENCE.md §成交明细：TradeTick.price/price_milli 为成交价/毫厘价；docs/methods/7709-历史0925正式撮合.md §真实返回 JSON：price=11.22、price_milli=11220。",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",

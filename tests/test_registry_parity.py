@@ -557,7 +557,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    assert len(pairs) == 91
+    assert len(pairs) == 93
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
@@ -575,6 +575,28 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert matrix["finance_batch[].zong_xian_jin_liu_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["growth.total_assets_growth_ratio"] == {"同花顺-fuyao"}
     assert matrix["profitability.total_assets_net_ratio"] == {"同花顺-fuyao"}
+
+    kline_source = "TDX-eltdx(适配层)"
+    kline_decision_ids = {
+        "period_raw": "20261115-eltdx-kline-period-raw-source-contract",
+        "period_param_raw": "20261115-eltdx-kline-period-param-raw-source-contract",
+        "period_name": "20261115-eltdx-kline-period-name-source-contract",
+        "start": "20261115-eltdx-kline-start-source-contract",
+        "request_count": "20261115-eltdx-kline-request-count-source-contract",
+        "adjust_mode_raw": "20261115-eltdx-kline-adjust-mode-raw-source-contract",
+        "adjust_mode": "20261115-eltdx-kline-adjust-mode-source-contract",
+        "anchor_date_raw": "20261115-eltdx-kline-anchor-date-raw-source-contract",
+        "anchor_date": "20261115-eltdx-kline-anchor-date-source-contract",
+    }
+    records_by_pair = {(row["source"], row["code"]): row for row in records}
+    for code, decision_id in kline_decision_ids.items():
+        row = records_by_pair[(kline_source, code)]
+        assert row["status"] == "verified"
+        assert row["status_resolution"] == "verified_by_source_contract"
+        assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
+
+    assert (kline_source, "anchor_date") in pairs
+    assert (kline_source, "anchor_date_raw") in pairs
     assert matrix["profitability.index_deduct_weighted_avg_roe"] == {"同花顺-fuyao"}
     for path in (
         "solvency.current_ratio",

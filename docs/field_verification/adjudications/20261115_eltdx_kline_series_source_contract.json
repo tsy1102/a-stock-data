@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-15",
+  "decisions": [
+    {
+      "id": "20261115-eltdx-kline-period-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "period_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "period_raw",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "period_raw",
+      "meaning": "K线周期的底层类型编号；需与 period_param_raw 配对解释，例如 4/1 表示日K、8/N 表示 N 分钟扩展周期。",
+      "unit": "协议编号",
+      "rationale": "项目采集器调用 client.bars.get(\"sh880005\", period=\"day\", count=1)，并将返回的 KlineSeries 序列化至 global_helpers.market_stat_880005。锁定版 ELTDX v3.3.2 的 7709 K线周期线文档在周期表中明确给出底层编号与周期的对应关系。18 份保留 raw_eltdx.json 均观察到 period_raw=4，且同一对象 period_param_raw=1、period_name=day；这些请求元数据样本只用于核对 SDK 输出，不作为行情值或来源数据日证据。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, period, ...) -> KlineSeries.period_raw",
+        "locator": "7709 K线周期线文档 §周期、§解析字段；KlineSeries 模型 period_raw 属性",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-period-param-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "period_param_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "period_param_raw",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "period_param_raw",
+      "meaning": "K线周期的底层参数；固定周期通常为 1，扩展周期中的 N 表示 N 分钟、N 日或 N 秒。",
+      "unit": "协议参数",
+      "rationale": "项目采集器调用 client.bars.get(\"sh880005\", period=\"day\", count=1)，并将返回的 KlineSeries 序列化至 global_helpers.market_stat_880005。ELTDX v3.3.2 周期表以 period_raw/period_param_raw 成对表示底层周期，并明确扩展周期中参数 N 的含义。18 份保留样本均为 period_raw=4、period_param_raw=1、period_name=day；不将该参数解释为行情数据频率或来源实际数据日。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, period, ...) -> KlineSeries.period_param_raw",
+        "locator": "7709 K线周期线文档 §周期、§解析字段；KlineSeries 模型 period_param_raw 属性",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-period-name-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "period_name"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "period_name",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "period_name",
+      "meaning": "ELTDX SDK 规范化后的K线周期名称，例如 day、1m。",
+      "unit": "",
+      "rationale": "项目采集器明确以 period=\"day\" 调用 client.bars.get，并直接序列化返回的 KlineSeries。ELTDX v3.3.2 字段手册将 period_name 定义为周期名，并给出 day、1m 示例。保留期 18 份模型样本均为 day，与采集调用参数一致；这是请求/模型描述字段，不是来源实际数据日期。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, period, ...) -> KlineSeries.period_name",
+        "locator": "字段手册 §KlineSeries / KlineBar；7709 K线周期线文档 §真实返回样本、§周期",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-start-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "start"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "start",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "start",
+      "meaning": "K线分页请求的起始位置，从 0 开始计数。",
+      "unit": "条索引",
+      "rationale": "项目采集器调用 client.bars.get(\"sh880005\", period=\"day\", count=1)，未显式传 start，使用默认起点 0；KlineSeries 在 global_helpers.market_stat_880005 中被原样序列化。ELTDX v3.3.2 7709 K线周期线参数表明确 start 是从 0 开始的起始位置。18 份保留样本均为 0。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, period, start, ...) -> KlineSeries.start",
+        "locator": "7709 K线周期线文档 §参数、§解析字段；KlineSeries 模型 start 属性",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-request-count-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "request_count"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "request_count",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "request_count",
+      "meaning": "K线请求条数元数据；单页结果记录请求条数，自动分页合并结果将其更新为合并后的K线总条数。",
+      "unit": "条",
+      "rationale": "项目采集器请求 count=1，并直接序列化 KlineSeries；ELTDX v3.3.2 参数/解析字段表将 request_count 定义为请求条数，并说明自动分页合并时该值更新为合并后的 K 线总数。保留期 18 份单页样本均为 1。该字段是请求元数据，不代表收到的服务器数据行数之外的市场语义。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, period, count, ...) -> KlineSeries.request_count",
+        "locator": "7709 K线周期线文档 §真实返回样本、§参数、§解析字段；自动分页 request_count 说明",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-adjust-mode-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "adjust_mode_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "adjust_mode_raw",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "adjust_mode_raw",
+      "meaning": "K线复权模式的底层编号：0 不复权、1 前复权、2 后复权、3 定点前复权、4 定点后复权。",
+      "unit": "协议枚举码",
+      "rationale": "项目采集器未传 adjust，使用不复权默认值，并直接序列化 KlineSeries。ELTDX v3.3.2 7709 K线周期线文档的复权表逐项列出 adjust 模式与底层值映射；18 份保留样本均为 0，且同一对象 adjust_mode=none。该字段是协议/请求模式元数据，不是行情数值。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, adjust, ...) -> KlineSeries.adjust_mode_raw",
+        "locator": "7709 K线周期线文档 §复权、§解析字段；KlineSeries 模型 adjust_mode_raw 属性",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-adjust-mode-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "adjust_mode"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "adjust_mode",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "adjust_mode",
+      "meaning": "SDK 规范化的K线复权模式：none（不复权）、qfq（前复权）、hfq（后复权）、fixed_qfq（定点前复权）、fixed_hfq（定点后复权）。",
+      "unit": "",
+      "rationale": "项目采集器使用默认不复权请求，直接序列化 client.bars.get 返回的 KlineSeries。ELTDX v3.3.2 字段手册及 7709 K线周期线文档均列明复权模式；18 份保留样本均为 none，与 adjust_mode_raw=0 一致。该字段描述 K 线处理模式，不表示价格本身的复权因子或来源数据日期。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, adjust, ...) -> KlineSeries.adjust_mode",
+        "locator": "字段手册 §KlineSeries / KlineBar；7709 K线周期线文档 §复权、§解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-anchor-date-raw-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "anchor_date_raw"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "anchor_date_raw",
+      "meaning": "定点复权日期的底层原始值；0 表示未使用。官方字段手册未说明非零值的具体编码格式。",
+      "unit": "",
+      "rationale": "ELTDX v3.3.2 KlineSeries 模型及 7709 K线周期线字段表明确区分 anchor_date_raw 与解析后的 anchor_date，并规定 0 表示未使用。项目采集器使用默认不复权请求；保留期 18 份样本均为 anchor_date_raw=0、anchor_date=null。由于契约未注明非零原始值编码，本裁决不推断其格式或日期角色之外的含义。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, anchor_date, ...) -> KlineSeries.anchor_date_raw",
+        "locator": "7709 K线周期线文档 §复权、§解析字段；KlineSeries 模型 anchor_date_raw 属性",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-K%E7%BA%BF%E5%91%A8%E6%9C%9F%E7%BA%BF.md"
+      }
+    },
+    {
+      "id": "20261115-eltdx-kline-anchor-date-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "anchor_date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "anchor_date",
+      "meaning": "定点复权使用的锚定日期；仅 fixed_qfq 或 fixed_hfq 模式需要。",
+      "unit": "日期",
+      "rationale": "ELTDX v3.3.2 字段手册将 anchor_date 定义为定点复权日期，复权表规定 fixed_qfq/fixed_hfq 模式需要该参数；KlineSeries 模型类型为 date 或 None。项目采集器使用默认不复权请求，18 份保留样本均为 null。该字段不表示上市日、报告日、行情数据日或采集日。",
+      "source_contract": {
+        "authority": "项目锁定版本 ELTDX v3.3.2 KlineSeries / 7709 K线周期线契约",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本）",
+        "path": "client.bars.get(code, adjust, anchor_date, ...) -> KlineSeries.anchor_date",
+        "locator": "字段手册 §KlineSeries / KlineBar；7709 K线周期线文档 §复权、§解析字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    }
+  ]
+}

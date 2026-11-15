@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 491 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 198 个 code；疑似合并文本 499 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3459,7 +3459,11 @@
 | TDX(双命名源) | `zhuyinglyrun` | zhuyinglyrun | 财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。 | `verified` |
 | TDX(双命名源) | `zhuyingshouru` | zhuyingshouru | 主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。 | `verified` |
 | TDX(双命名源) | `zongxianjinliu` | zongxianjinliu | 经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。 | `verified` |
+| TDX-eltdx(适配层) | `adjust_mode` | adjust_mode | SDK 规范化的K线复权模式：none（不复权）、qfq（前复权）、hfq（后复权）、fixed_qfq（定点前复权）、fixed_hfq（定点后复权）。 | `verified` |
+| TDX-eltdx(适配层) | `adjust_mode_raw` | adjust_mode_raw | K线复权模式的底层编号：0 不复权、1 前复权、2 后复权、3 定点前复权、4 定点后复权。 | `verified` |
 | TDX-eltdx(适配层) | `amount` | amount | 实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。 | `verified` |
+| TDX-eltdx(适配层) | `anchor_date` | anchor_date | 定点复权使用的锚定日期；仅 fixed_qfq 或 fixed_hfq 模式需要。 | `verified` |
+| TDX-eltdx(适配层) | `anchor_date_raw` | anchor_date_raw | 定点复权日期的底层原始值；0 表示未使用。官方字段手册未说明非零值的具体编码格式。 | `verified` |
 | TDX-eltdx(适配层) | `auction_matched_volume` | auction_matched_volume | 成交明细模型中的竞价匹配量占位字段，固定为 None；实际竞价匹配量由 auctions.series 的 AuctionPoint.matched_volume 提供 | `verified` |
 | TDX-eltdx(适配层) | `auction_unmatched_signed_volume` | auction_unmatched_signed_volume | 成交明细模型中的带符号竞价未匹配量占位字段，固定为 None；实际未匹配量由 auctions.series 返回 | `verified` |
 | TDX-eltdx(适配层) | `bao_liu_2_raw_float` | bao_liu_2_raw_float | 上游保留字段 2；未公开业务语义 | `verified` |
@@ -3492,7 +3496,11 @@
 | TDX-eltdx(适配层) | `open_delta_raw` | open_delta_raw | 日K开盘价相对前一根收盘价的协议差分值；返回序列首条无前收盘基准时以开盘价为基值 | `verified` |
 | TDX-eltdx(适配层) | `opening_rush` | opening_rush | 开盘抢筹指标；算法及正负方向口径未公开 | `verified` |
 | TDX-eltdx(适配层) | `order_count` | order_count | 成交明细中的原始笔数字段；集合竞价快照不赋予其未匹配量含义 | `verified` |
+| TDX-eltdx(适配层) | `period_name` | period_name | ELTDX SDK 规范化后的K线周期名称，例如 day、1m。 | `verified` |
+| TDX-eltdx(适配层) | `period_param_raw` | period_param_raw | K线周期的底层参数；固定周期通常为 1，扩展周期中的 N 表示 N 分钟、N 日或 N 秒。 | `verified` |
+| TDX-eltdx(适配层) | `period_raw` | period_raw | K线周期的底层类型编号；需与 period_param_raw 配对解释，例如 4/1 表示日K、8/N 表示 N 分钟扩展周期。 | `verified` |
 | TDX-eltdx(适配层) | `price` | price | 实时行情快照最新价；收盘阶段与该数据日收盘价一致。 | `verified` |
+| TDX-eltdx(适配层) | `request_count` | request_count | K线请求条数元数据；单页结果记录请求条数，自动分页合并结果将其更新为合并后的K线总条数。 | `verified` |
 | TDX-eltdx(适配层) | `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `shortline.auction_prev_volume_ratio` | shortline.auction_prev_volume_ratio | 竞价量/昨量比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_prev_amount_ratio` | shortline.open_prev_amount_ratio | 开盘额/昨额比 | `verified` |

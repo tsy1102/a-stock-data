@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 按项目锁定的 ELTDX v3.3.2 `KlineSeries` 契约，定案 `period_raw`、`period_param_raw`、`period_name`、`start`、`request_count`、`adjust_mode_raw`、`adjust_mode`、`anchor_date_raw`、`anchor_date` 九个适配层元数据字段；对 18 份保留模型归档核验调用参数，不将其误作行情值或来源日期。
 - 根据通达信官方 `get_gb_info_by_date` 接口字段表确认 `TDX(双命名源)::Zgb` 为总股本、`::Ltgb` 为流通股本；官方未注明单位，保持未知，不建立跨源映射或声称当前采集器调用该接口。
 - 按精确路径纠正 `TDX::quote_full.change_pct_1d/2d` 的历史来源归属：保留样本仅有的 2026-10-15 值来自 ZHB 复合回退；裸 `change_pct_1d/2d` 仍独立待核，不将嵌套路径结论推广过去。
 - 更正 TDX 行情采集来源链：`tdx_get_quote_raw` 实际由 ELTDX 主用、easy-tdx 备用；登记表不再把 easy-tdx 单独描述为唯一运行客户端。按完整身份纠正 `TDX::quote_full.change_pct` 项目派生路径及三个历史 ZHB 回退串源路径；保留同名裸路径为独立待核身份。

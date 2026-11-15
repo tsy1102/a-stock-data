@@ -747,7 +747,9 @@ class CanonicalStockData:
     # Push2 财务字段按完整来源路径分别裁决；f108 的当前实证见
     # docs/field_verification/adjudications/20261114_push2_f108_eps_ttm_evidence.md。
     ocf_ttm: float = 0.0  # 经营活动现金流量净额 TTM (元) — push2 f103
-    revenue_ttm: float = 0.0  # 营业总收入 TTM (元) — push2 f104
+    revenue_ttm: float = (
+        0.0  # 东财 push2 f104 为营业总收入 TTM；Fuyao operating_income 仅作营业收入 TTM 近似兜底 (元)
+    )
     net_profit_period: float = 0.0  # 归母净利润 最新报告期 (元) — push2 f105
     net_profit_annual: float = 0.0  # 归母净利润 最新年报 (元) — push2 f109
     eps_annual: float = 0.0  # 年报EPS =f109/f84 (元/股) — push2 f160

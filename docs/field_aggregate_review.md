@@ -3704,7 +3704,7 @@
 | 同花顺-fuyao | `rank_trend` | rank_trend | 排名趋势：`up` / `down` / `flat` / `unknown`。 | `verified` |
 | 同花顺-fuyao | `receive_account_turnover_ratio` | operation.receive_account_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.receive_account_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `report_date_ms` | report_date_ms | 财务报表披露日，即该报表公开披露的日期；不是报告期末 | `verified` |
-| 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | `unverified` |
+| 同花顺-fuyao | `revenue_ttm` | revenue_ttm | 项目回算的营业收入 TTM 近似兜底值：最近上一年度 Q4 累计 operating_income + 本期累计 operating_income − 上年同期累计 operating_income。不是 Fuyao 原始响应字段；与东财 Push2 f104 的营业总收入 TTM 口径不同，仅在统一输出缺少值时填入。 | `disproved` |
 | 同花顺-fuyao | `sale_gross_margin` | profitability.sale_gross_margin | 旧无分组根路径身份；当前完整字段路径为 profitability.sale_gross_margin，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `sale_net_interest_ratio` | profitability.sale_net_interest_ratio | 旧无分组根路径身份；当前完整字段路径为 profitability.sale_net_interest_ratio，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
 | 同花顺-fuyao | `search` | meta/tickers/search | — | `unverified` |

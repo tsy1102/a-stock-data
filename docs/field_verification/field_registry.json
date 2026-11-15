@@ -11,7 +11,7 @@
       "candidate": 1,
       "collector_output_container": 9,
       "conflict": 23,
-      "disproved": 91,
+      "disproved": 92,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,17 +21,17 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
-      "project_derived_capture_output": 6,
+      "project_derived_capture_output": 7,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 510,
+      "registry_status_only_single_source": 509,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 1001,
+      "unverified": 1000,
       "verified": 1517,
       "verified_by_empirical_addendum": 160,
       "verified_by_manual_public_data_semantic_adjudication": 6,
@@ -31724,18 +31724,16 @@
         "同花顺-fuyao"
       ],
       "section": "",
-      "canonical": "",
-      "meaning": "营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底",
+      "canonical": "revenue_ttm",
+      "meaning": "项目回算的营业收入 TTM 近似兜底值：最近上一年度 Q4 累计 operating_income + 本期累计 operating_income − 上年同期累计 operating_income。不是 Fuyao 原始响应字段；与东财 Push2 f104 的营业总收入 TTM 口径不同，仅在统一输出缺少值时填入。",
       "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "rise_and_fall",
@@ -219804,17 +219802,20 @@
       "code": "revenue_ttm",
       "identity": "同花顺-fuyao::revenue_ttm",
       "path": "revenue_ttm",
-      "canonical": "",
-      "meaning": "营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底",
+      "canonical": "revenue_ttm",
+      "meaning": "项目回算的营业收入 TTM 近似兜底值：最近上一年度 Q4 累计 operating_income + 本期累计 operating_income − 上年同期累计 operating_income。不是 Fuyao 原始响应字段；与东财 Push2 f104 的营业总收入 TTM 口径不同，仅在统一输出缺少值时填入。",
       "unit": "元",
       "section": "",
       "sections": [
         "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
         "12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
+        "adjudication_evidence_id": "fuyao-revenue-ttm-derived-20261116",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261116_fuyao_revenue_ttm_provenance.md",
         "reference_statuses": [],
         "reference_status_raw": [],
         "registry_aggregate_status": "unverified",
@@ -219822,7 +219823,7 @@
           "同花顺-fuyao"
         ],
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [
@@ -219843,12 +219844,7 @@
           "status": ""
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f104 revenue_ttm",
-          "revenue_ttm(f104)"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "revenue_ttm",
         "sources": [
@@ -219860,6 +219856,62 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261116_fuyao_revenue_ttm_provenance.md",
+        "reason": "该精确路径由项目按上一年度 Q4 累计营业收入 + 本期累计营业收入 − 上年同期累计营业收入回算；Fuyao 官方利润表契约仅列 operating_income（营业收入），保留期 raw 也没有 revenue_ttm 键。公开财报进一步证明该回算口径与东财 f104 营业总收入 TTM 存在结构性科目差异。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261116_fuyao_revenue_ttm_provenance.md",
+          "docs/field_verification/research/20261116_fuyao_revenue_ttm_pipeline_samples.csv",
+          "core/data_provider.py",
+          "stock_common/sc_fuyao.py",
+          "stock_common/sc_schema.py",
+          "scripts/capture_catalog.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_source_reference.md"
+        ]
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "同花顺-fuyao"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "canonical": "",
+        "meaning": "营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底",
+        "unit": "元",
+        "section": "",
+        "sections": [
+          "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+          "12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕"
+        ],
+        "attribute_conflicts": {
+          "canonical": [
+            "f104 revenue_ttm",
+            "revenue_ttm(f104)"
+          ]
+        },
+        "registry_aggregate": {
+          "code": "revenue_ttm",
+          "sources": [
+            "同花顺-fuyao"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "revenue_ttm(f104)",
+          "meaning": "待破解",
+          "unit": "元",
+          "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕"
+        }
       }
     },
     {

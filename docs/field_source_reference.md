@@ -2586,11 +2586,11 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | ✅ **东财 datacenter 实证**：10 日求和完全吻合 |
 | margin_trading.balance_gr | 融资余额单日环比增长率(%) | ✅ **东财 datacenter 实证**：`(rzye_T − rzye_{T-1}) / rzye_{T-1} × 100%`（600519 计算值与接口值精确匹配至小数12位） |
 | northbound_hold.date | 北向持股快照报告期(YYYY-MM-DD) | ✅ **东财 datacenter 实证**：如 `2026-06-30` |
-| northbound_hold.hold_ratio | 北向持股占流通股本比例(%) | ✅ **东财 datacenter 实证**：如 4.2967% |
-| northbound_hold.market_cap | 北向持股市值(元) | ✅ **东财 datacenter 实证**：严格 = hold_shares × 收盘价（600519 market_cap≈53711656×收盘价） |
-| northbound_hold.hold_shares | 北向持股总数(股) | ✅ **东财 datacenter 实证**：如 53711656 股（香港中央结算有限公司持股份额） |
-| northbound_hold.change_ratio | 较上一期持股比例增减变动幅度(%) | ✅ **东财 datacenter 实证** |
-| northbound_hold.change_shares | 较上一期持股增减变动数(股) | ✅ **东财 datacenter 实证** |
+| northbound_hold.hold_ratio | 北向持股比例（优先 `FREE_SHARES_RATIO`；回退键命中时分母口径随实际键确定） | ✅ **东财 datacenter 实证**：百分数刻度；如 4.4208% |
+| northbound_hold.market_cap | 北向持股市值（元） | ✅ **东财 datacenter 实证**：与 `HOLD_SHARES × CLOSE_PRICE` 精确相符 |
+| northbound_hold.hold_shares | 北向持股数量（股） | ✅ **东财 datacenter 实证**：600519 于 2026-09-30 为 55,263,682 股 |
+| northbound_hold.change_ratio | 持股记录日对应证券当日涨跌幅（`CHANGE_RATE`，%） | ✅ **东财 datacenter 实证**：不是持股比例的期际增减 |
+| northbound_hold.change_shares | 当前采集器输出占位：直接核验的 600519、601288 两条 2026-09-30 响应未提供 `CHANGE_SHARES`；历史默认 0 不代表持股未变化 | ❌ **证伪为上游字段身份**：项目派生占位，见 2026-11-16 来源核验 |
 
 > ⚠️ **北向持股（northbound_hold）是 datacenter 独立报表，§12.8.3 原仅覆盖龙虎榜/两融/大宗/股东/分红/解禁，需补录该报表字段契约。**
 

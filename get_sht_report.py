@@ -1358,6 +1358,14 @@ async def generate_report_async(
 
             _shares = d.get("hold_shares", 0) or 0
 
+            _change_shares = d.get("change_shares")
+
+            _change_shares_text = (
+                f"{float(_change_shares) / 1e4:+12.0f}"
+                if _change_shares is not None
+                else f"{'—':>12}"
+            )
+
             if _mcap == 0 and _shares > 0 and price_today > 0:
 
                 _mcap = _shares * price_today
@@ -1372,7 +1380,7 @@ async def generate_report_async(
                 )
 
             L(
-                f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}"
+                f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {_change_shares_text}"
             )
 
     else:

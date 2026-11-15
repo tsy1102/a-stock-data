@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 510 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 512 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2786,46 +2786,6 @@
 | TDX(双命名源) · `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | — | `disproved` |
 | 同花顺-fuyao · `net_profit` | net_profit | 合并净利润（含少数股东损益） | 原币元 | `verified` |
 
-### `northbound_hold.change_ratio` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.change_ratio` | northbound_hold.change_ratio | 较上一期持股比例增减变动幅度(%) | — | `conflict` |
-
-### `northbound_hold.change_shares` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.change_shares` | northbound_hold.change_shares | 较上一期持股增减变动数(股) | — | `conflict` |
-
-### `northbound_hold.hold_ratio` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.hold_ratio` | northbound_hold.hold_ratio | 北向持股占流通股本比例(%) | — | `conflict` |
-
-### `northbound_hold.hold_shares` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.hold_shares` | northbound_hold.hold_shares | 北向持股总数(股) | — | `conflict` |
-
-### `northbound_hold.market_cap` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `northbound_hold.market_cap` | northbound_hold.market_cap | 北向持股市值(元) | — | `conflict` |
-
 ### `open` — ambiguous
 
 聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
@@ -3592,6 +3552,8 @@
 | 东财-datacenter(英文键) | `SELL` | BUY / SELL | 买入额 / 卖出额 | `verified` |
 | 东财-datacenter(英文键) | `SELLER_NAME` | BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | `verified` |
 | 东财-datacenter(英文键) | `SELL_AMT` | BILLBOARD_BUY_AMT / SELL_AMT | 买入/卖出资 | `verified` |
+| 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 直接核验的 600519、601288 两条 2026-09-30 响应均未提供 CHANGE_SHARES；旧适配器将缺失填为 0，本路径是项目占位输出，不代表持股未变化。 | `disproved` |
+| 东财-datacenter(英文键) | `northbound_hold.hold_ratio` | northbound_hold.hold_ratio | 北向持股比例（当前接口样本优先键为 FREE_SHARES_RATIO；回退键命中时分母口径随实际上游键确定），数值为百分数刻度。 | `verified` |
 | 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | `verified` |
 | 东财-push2(stock/get) | `f107` | f107 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | `verified` |

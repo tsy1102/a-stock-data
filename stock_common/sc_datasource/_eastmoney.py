@@ -407,18 +407,37 @@ def get_cyq_distribution(code: str, days: int = 240) -> Dict[str, Any]:
         return {}
 
 
-@cached(category="northbound", ttl_seconds=TTL["northbound"])
-def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
-    """北向资金持仓动态（SKILL.md V3.2 增强：本地CSV缓存回退）。
+def _optional_finite_float(value: Any) -> Optional[float]:
+    """Parse an optional numeric response field without turning absence into zero."""
+    if value is None or value == "":
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) else None
 
-    注意：东财北向资金数据自2024-08后部分字段可能返回NaN，本函数已添加本地CSV缓存回退。
+
+def _legacy_cached_change_value(value: Any) -> Optional[float]:
+    """Treat zero in the legacy CSV as unknown because it cannot distinguish omission."""
+    parsed = _optional_finite_float(value)
+    return None if parsed == 0 else parsed
+
+
+@cached(category="northbound_v2", ttl_seconds=TTL["northbound_v2"])
+def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
+    """北向资金持仓动态；上游缺失的变动值保留为 None。
+
+    注意：本函数保留本地 CSV 缓存回退。上游未返回的字段或 NaN 不会伪装为零；
+    `change_shares` / `change_ratio` 的显式零值仍按 0 返回。
 
     Args:
         code: 股票代码。
         days: 查询天数。
 
     Returns:
-        list: [{date, hold_shares, market_cap, hold_ratio, change_shares, change_ratio}, ...]。
+        list: 每行包含 date、hold_shares、market_cap、hold_ratio、change_shares、change_ratio；
+        缺失的 change_shares / change_ratio 为 None。
     """
 
     data = eastmoney_datacenter(
@@ -450,8 +469,8 @@ def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
                 "hold_shares": hold_shares,
                 "market_cap": float(row.get("HOLD_MARKET_CAP") or row.get("MARKET_CAP") or 0),
                 "hold_ratio": hold_ratio,
-                "change_shares": float(row.get("CHANGE_SHARES") or 0),
-                "change_ratio": float(row.get("CHANGE_RATE") or 0),
+                "change_shares": _optional_finite_float(row.get("CHANGE_SHARES")),
+                "change_ratio": _optional_finite_float(row.get("CHANGE_RATE")),
             }
         )
 
@@ -471,7 +490,7 @@ def _northbound_cache_path(code: str) -> str:
 
 
 def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
-    """从本地CSV缓存加载北向资金数据"""
+    """加载旧版本地 CSV；无法区分默认零与真实零的变动值按未知处理。"""
     import os
 
     path = _northbound_cache_path(code)
@@ -491,8 +510,8 @@ def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
                             "hold_shares": float(parts[1]),
                             "market_cap": float(parts[2]),
                             "hold_ratio": float(parts[3]),
-                            "change_shares": float(parts[4]),
-                            "change_ratio": float(parts[5]),
+                            "change_shares": _legacy_cached_change_value(parts[4]),
+                            "change_ratio": _legacy_cached_change_value(parts[5]),
                         }
                     )
     except Exception as _e:
@@ -539,8 +558,8 @@ async def get_northbound_hold_async(
                 "hold_shares": hold_shares,
                 "market_cap": float(row.get("HOLD_MARKET_CAP") or row.get("MARKET_CAP") or 0),
                 "hold_ratio": hold_ratio,
-                "change_shares": float(row.get("CHANGE_SHARES") or 0),
-                "change_ratio": float(row.get("CHANGE_RATE") or 0),
+                "change_shares": _optional_finite_float(row.get("CHANGE_SHARES")),
+                "change_ratio": _optional_finite_float(row.get("CHANGE_RATE")),
             }
         )
 

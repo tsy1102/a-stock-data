@@ -238,6 +238,7 @@ _SOFT_EXPIRY_WINDOW: "Dict[str, int]" = {
     "lockup_expiry_shares_v4": 7 * 86400,
     "announcements": 7 * 86400,
     "northbound": 7 * 86400,
+    "northbound_v2": 7 * 86400,
     "reports": 1 * 86400,
     "industry_reports": 1 * 86400,
     "stock_news": 6 * 3600,
@@ -306,6 +307,7 @@ TTL: Dict[str, int] = {
     # 日频数据（收盘后固定，历史数据不变可延长TTL）
     "dragon_tiger": 7 * 86400,  # 龙虎榜（历史数据不变，V10.0: 1天→7天）
     "northbound": 30 * 86400,  # 北向资金持股（历史数据不变，V10.0: 7天→30天）
+    "northbound_v2": 30 * 86400,  # 缺失变动字段改为 None，隔离旧缓存中的伪零值
     "margin_trading": 14 * 86400,  # 融资融券（历史数据不变，V10.0: 3天→14天）
     "block_trade": 14 * 86400,  # 大宗交易（历史数据不变，V10.0: 3天→14天）
     "lockup_expiry": 90 * 86400,  # 限售解禁（日期固定，V10.0: 7天→90天）

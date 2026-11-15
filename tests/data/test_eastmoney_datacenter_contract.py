@@ -93,3 +93,83 @@ def test_async_datacenter_keeps_retry_adapter_and_market_filter_contract(monkeyp
     }
     assert kwargs["headers"] == {"User-Agent": _eastmoney.UA}
     assert kwargs["timeout"] == 15
+
+
+def test_sync_northbound_keeps_missing_change_values_distinct_from_zero(monkeypatch):
+    rows = [
+        {
+            "TRADE_DATE": "2026-09-30 00:00:00",
+            "HOLD_SHARES": 100,
+            "HOLD_MARKET_CAP": 250,
+            "FREE_SHARES_RATIO": 1.25,
+            "CHANGE_RATE": 0,
+        },
+        {
+            "TRADE_DATE": "2026-06-30 00:00:00",
+            "HOLD_SHARES": 90,
+            "HOLD_MARKET_CAP": 200,
+            "FREE_SHARES_RATIO": 1.0,
+            "CHANGE_SHARES": 0,
+            "CHANGE_RATE": "NaN",
+        },
+    ]
+    monkeypatch.setattr(_eastmoney, "eastmoney_datacenter", lambda *_args, **_kwargs: rows)
+
+    result = _eastmoney.get_northbound_hold.__wrapped__("600519", days=2)
+
+    assert result[0]["change_shares"] is None
+    assert result[0]["change_ratio"] == 0
+    assert result[1]["change_shares"] == 0
+    assert result[1]["change_ratio"] is None
+
+
+def test_async_northbound_keeps_missing_change_values_distinct_from_zero(monkeypatch):
+    rows = [
+        {
+            "TRADE_DATE": "2026-09-30 00:00:00",
+            "HOLD_SHARES": 100,
+            "HOLD_MARKET_CAP": 250,
+            "FREE_SHARES_RATIO": 1.25,
+            "CHANGE_RATE": 0,
+        },
+        {
+            "TRADE_DATE": "2026-06-30 00:00:00",
+            "HOLD_SHARES": 90,
+            "HOLD_MARKET_CAP": 200,
+            "FREE_SHARES_RATIO": 1.0,
+            "CHANGE_SHARES": 0,
+            "CHANGE_RATE": float("nan"),
+        },
+    ]
+
+    async def fake_datacenter(*_args, **_kwargs):
+        return rows
+
+    monkeypatch.setattr(_eastmoney, "eastmoney_datacenter_async", fake_datacenter)
+    request = _eastmoney.get_northbound_hold_async(object(), "600519", days=2)
+    with pytest.raises(StopIteration) as completed:
+        request.send(None)
+    result = completed.value.value
+
+    assert result[0]["change_shares"] is None
+    assert result[0]["change_ratio"] == 0
+    assert result[1]["change_shares"] == 0
+    assert result[1]["change_ratio"] is None
+
+
+def test_legacy_northbound_csv_does_not_treat_ambiguous_zero_as_real(monkeypatch, tmp_path):
+    cache_path = tmp_path / "northbound_600519.csv"
+    cache_path.write_text(
+        "date,hold_shares,market_cap,hold_ratio,change_shares,change_ratio\n"
+        "2026-09-30,100,250,1.25,0,0\n"
+        "2026-06-30,90,200,1.0,12,-0.5\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(_eastmoney, "_northbound_cache_path", lambda _code: str(cache_path))
+
+    result = _eastmoney._load_northbound_cache("600519", days=2)
+
+    assert result[0]["change_shares"] is None
+    assert result[0]["change_ratio"] is None
+    assert result[1]["change_shares"] == 12
+    assert result[1]["change_ratio"] == -0.5

@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 依据东财数据中心响应、同日 K 线和公司三季报纠正北向持仓字段：`CHANGE_RATE` 定为持股记录日个股涨跌幅；持股比例、数量和市值补齐单位与来源契约。在线响应缺失的 `CHANGE_SHARES` / `CHANGE_RATE` 不再被填成 0；旧 CSV 中无法区分默认零与真实零，回退时按未知处理。报告显示缺失为“—”，同步更换缓存分类以隔离旧伪零值。
 - 按项目锁定的 ELTDX v3.3.2 `KlineSeries` 契约，定案 `period_raw`、`period_param_raw`、`period_name`、`start`、`request_count`、`adjust_mode_raw`、`adjust_mode`、`anchor_date_raw`、`anchor_date` 九个适配层元数据字段；对 18 份保留模型归档核验调用参数，不将其误作行情值或来源日期。
 - 根据通达信官方 `get_gb_info_by_date` 接口字段表确认 `TDX(双命名源)::Zgb` 为总股本、`::Ltgb` 为流通股本；官方未注明单位，保持未知，不建立跨源映射或声称当前采集器调用该接口。
 - 按精确路径纠正 `TDX::quote_full.change_pct_1d/2d` 的历史来源归属：保留样本仅有的 2026-10-15 值来自 ZHB 复合回退；裸 `change_pct_1d/2d` 仍独立待核，不将嵌套路径结论推广过去。

@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-16",
+  "decisions": [
+    {
+      "id": "eastmoney-northbound-change-ratio-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "northbound_hold.change_ratio"
+      },
+      "canonical": "northbound_hold.change_ratio",
+      "meaning": "持股记录日对应证券的当日涨跌幅（CHANGE_RATE），不是北向持股比例的期际增减。",
+      "unit": "%",
+      "previous": {
+        "canonical": "northbound_hold.change_ratio",
+        "meaning": "较上一期持股比例增减变动幅度(%)",
+        "unit": ""
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "northbound_hold.change_ratio",
+          "meaning": "较上一期持股比例增减变动幅度(%)",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "northbound_hold.change_ratio",
+          "meaning": "持股记录日对应证券的当日涨跌幅（CHANGE_RATE），不是北向持股比例的期际增减。",
+          "unit": "%"
+        },
+        "rationale": "直接上游响应字段 CHANGE_RATE 与官方页面的当日涨跌幅列一致；600519 和 601288 的同日收盘价公式分别复算为 1.864711309668321% 和 0.4322766570605152%，与接口返回吻合。旧释义把证券涨跌幅误认为北向持股比例变化。"
+      },
+      "rationale": "项目适配器将 RPT_MUTUAL_HOLDSTOCKNORTH_STA 的 row.CHANGE_RATE 直接映射为 northbound_hold[].change_ratio。对 2026-09-30 的 600519、601288 上游记录，与同日官方 K 线收盘价计算结果分别吻合至接口返回精度。本决定纠正精确来源路径的语义和单位，不建立跨源映射。",
+      "source_contract": {
+        "authority": "东方财富数据中心 RPT_MUTUAL_HOLDSTOCKNORTH_STA 与东方财富日 K 线",
+        "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> RPT_MUTUAL_HOLDSTOCKNORTH_STA.row.CHANGE_RATE -> northbound_hold[].change_ratio",
+        "locator": "同步、异步适配器均将 CHANGE_RATE 原值映射至 change_ratio；页面列名为当日涨跌幅(%)；2026-09-30 同日收盘复算见证据文件。",
+        "revision": "官方页面与接口响应核验于 2026-11-16；数值配对日为 2026-09-30。",
+        "url": "https://data.eastmoney.com/hsgtcg/StockStatistics.html"
+      }
+    },
+    {
+      "id": "eastmoney-northbound-hold-ratio-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "northbound_hold.hold_ratio"
+      },
+      "canonical": "northbound_hold.hold_ratio",
+      "meaning": "北向持股比例（当前接口样本优先键为 FREE_SHARES_RATIO；回退键命中时分母口径随实际上游键确定），数值为百分数刻度。",
+      "unit": "%",
+      "previous": {
+        "canonical": "northbound_hold.hold_ratio",
+        "meaning": "北向持股占流通股本比例(%)",
+        "unit": ""
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "northbound_hold.hold_ratio",
+          "meaning": "北向持股占流通股本比例(%)",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "northbound_hold.hold_ratio",
+          "meaning": "北向持股比例（当前接口样本优先键为 FREE_SHARES_RATIO；回退键命中时分母口径随实际上游键确定），数值为百分数刻度。",
+          "unit": "%"
+        },
+        "rationale": "适配器按多个上游比例键回退，而同一响应可见的 FREE_SHARES_RATIO、A_SHARES_RATIO、TOTAL_SHARES_RATIO 数值并不总相同；将定义限定为实际命中的比例字段，避免把所有回退键假设为同一分母口径。"
+      },
+      "rationale": "适配器优先取 FREE_SHARES_RATIO，并按 A_SHARES_RATIO、TOTAL_SHARES_RATIO、HOLD_RATIO 依次回退；被采集值为百分数刻度。600519 的 4.4208 与公司三季报 4.42% 的展示舍入一致；601288 的 FREE_SHARES_RATIO=0.4782 与页面展示精度一致。回退键的分母口径仍按命中键保留，不扩大本次结论。",
+      "source_contract": {
+        "authority": "东方财富数据中心 RPT_MUTUAL_HOLDSTOCKNORTH_STA 与东方财富沪深港通持股页面",
+        "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> FREE_SHARES_RATIO / A_SHARES_RATIO / TOTAL_SHARES_RATIO / HOLD_RATIO -> northbound_hold[].hold_ratio",
+        "locator": "项目适配器中的实际取值优先级；官方页面按持股数量占 A 股百分比展示，数值为百分数刻度。",
+        "revision": "官方页面与接口响应核验于 2026-11-16；数值样本日为 2026-09-30。",
+        "url": "https://data.eastmoney.com/hsgtV2/hsgtDetail/ggzj.html"
+      }
+    },
+    {
+      "id": "eastmoney-northbound-hold-shares-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "northbound_hold.hold_shares"
+      },
+      "canonical": "northbound_hold.hold_shares",
+      "meaning": "北向持股总数(股)",
+      "unit": "股",
+      "previous": {
+        "canonical": "northbound_hold.hold_shares",
+        "meaning": "北向持股总数(股)",
+        "unit": ""
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "rationale": "适配器将上游 HOLD_SHARES 映射至 hold_shares。600519 的 2026-09-30 值 55,263,682 与公司 2026 年第三季度报告中香港中央结算有限公司持股数量完全一致；601288 的上游数值也与其对应个股持股记录一致。",
+      "source_contract": {
+        "authority": "东方财富数据中心 RPT_MUTUAL_HOLDSTOCKNORTH_STA；贵州茅台 2026 年第三季度报告作发行人交叉核验",
+        "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> row.HOLD_SHARES -> northbound_hold[].hold_shares",
+        "locator": "官方数据中心 HOLD_SHARES 字段映射及发行人报告前十大股东表；600519 2026-09-30 为 55,263,682 股。",
+        "revision": "接口与公司 2026 年第三季度报告核验于 2026-11-16。",
+        "url": "https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF"
+      }
+    },
+    {
+      "id": "eastmoney-northbound-market-cap-20261116",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "northbound_hold.market_cap"
+      },
+      "canonical": "northbound_hold.market_cap",
+      "meaning": "北向持股市值(元)",
+      "unit": "元",
+      "previous": {
+        "canonical": "northbound_hold.market_cap",
+        "meaning": "北向持股市值(元)",
+        "unit": ""
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "rationale": "适配器将 HOLD_MARKET_CAP（兼容回退 MARKET_CAP）作为持股市值返回。2026-09-30 的两条直接上游记录分别严格等于 55,263,682×1,258.62=69,555,975,438.84 元、1,526,471,802×6.97=10,639,508,459.94 元。",
+      "source_contract": {
+        "authority": "东方财富数据中心 RPT_MUTUAL_HOLDSTOCKNORTH_STA 与东方财富日 K 线",
+        "path": "stock_common/sc_datasource/_eastmoney.py::get_northbound_hold -> row.HOLD_MARKET_CAP (fallback MARKET_CAP) -> northbound_hold[].market_cap",
+        "locator": "接口持股市值按元返回；与同条 HOLD_SHARES 乘当日 CLOSE_PRICE 的结果严格相等。",
+        "revision": "官方接口响应与日 K 线核验于 2026-11-16；数值配对日为 2026-09-30。",
+        "url": "https://datacenter-web.eastmoney.com/"
+      }
+    }
+  ]
+}

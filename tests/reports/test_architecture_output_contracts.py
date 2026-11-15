@@ -321,6 +321,14 @@ def test_report_generator_writes_utf8_markdown_offline(
     monkeypatch.setattr(socket.socket, "connect_ex", guarded_connect_ex)
     monkeypatch.setattr(socket, "getaddrinfo", guarded_getaddrinfo)
     _patch_source_calls(monkeypatch, report_module)
+    northbound_row = {
+        "date": "2026-09-30",
+        "hold_shares": 10_000,
+        "market_cap": 10_000,
+        "hold_ratio": 1.0,
+        "change_shares": None,
+        "change_ratio": None,
+    }
     if report_module is sht_report:
 
         async def empty_datacenter(kind: str, *_args: Any, **_kwargs: Any) -> Any:
@@ -328,12 +336,20 @@ def test_report_generator_writes_utf8_markdown_offline(
                 return {"records": [], "institution": {}}
             if kind == "lockup":
                 return {"history": [], "upcoming": []}
+            if kind == "northbound":
+                return [northbound_row]
             return []
 
         monkeypatch.setattr(
             sc_datasource,
             "resolve_datacenter",
             mock.AsyncMock(side_effect=empty_datacenter),
+        )
+    elif report_module is med_report:
+        monkeypatch.setattr(
+            med_report,
+            "get_northbound_hold_async",
+            mock.AsyncMock(return_value=[northbound_row]),
         )
 
     def immediate_to_thread(function: Any, /, *args: Any, **kwargs: Any) -> _ImmediateAwaitable:
@@ -389,6 +405,18 @@ def test_report_generator_writes_utf8_markdown_offline(
         assert "空结果不代表没有符合标的" in content
         assert "27个策略（完成 26，超时 1，异常 0）" in content
         assert "完成策略共产出" in content
+    if report_type in {"sht", "med"}:
+        northbound_line = next(
+            (
+                line
+                for line in content.splitlines()
+                if "| 2026-09-30 |" in line
+            ),
+            None,
+        )
+        assert northbound_line is not None, content
+        assert "| 1.0000% |" in northbound_line
+        assert "| — |" in northbound_line
     assert content.strip()
     assert returned == content
     assert network_attempts == []

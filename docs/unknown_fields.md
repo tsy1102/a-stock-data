@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2633；日常来源路径 2489：unverified 881、candidate 1、conflict 28、disproved 90；历史来源路径 144。
+> 注册字段路径 2633；日常来源路径 2489：unverified 881、candidate 1、conflict 23、disproved 91；历史来源路径 144。
 > 另有 146 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -29,7 +29,7 @@
 | `registry_status_only_single_source` | 429 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 42 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（28）
+## 一、状态冲突（禁止作为锚点，优先复核）（23）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -46,11 +46,6 @@
 | 东财-datacenter(英文键) | `margin_trading.rzjme` | margin_trading.rzjme | 融资净买入额（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `margin_trading.rzmre_10d` | margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-datacenter(英文键) | `margin_trading.rzmre_5d` | margin_trading.rzmre_5d | 融资买入额近 5 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `northbound_hold.change_ratio` | northbound_hold.change_ratio | 较上一期持股比例增减变动幅度(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 较上一期持股增减变动数(股) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `northbound_hold.hold_ratio` | northbound_hold.hold_ratio | 北向持股占流通股本比例(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `northbound_hold.hold_shares` | northbound_hold.hold_shares | 北向持股总数(股) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `northbound_hold.market_cap` | northbound_hold.market_cap | 北向持股市值(元) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f137` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f139` | — | — | — | 含义栏为空/占位 | reference_status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -954,7 +949,7 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（90）
+## 四、已证伪（默认不重复破解）（91）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -995,6 +990,7 @@
 | ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | reports | `actualLastTwoYearEps` | actualLastYearEps | 保留期内全部非空样本与同条 actualLastYearEps 完全重复；不能作为独立的前两年实际 EPS 字段（当前接口响应行为） | 元/股 | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；2026-11-13 reports actualLastTwoYearEps 重复输出裁定 |
+| 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 直接核验的 600519、601288 两条 2026-09-30 响应均未提供 CHANGE_SHARES；旧适配器将缺失填为 0，本路径是项目占位输出，不代表持股未变化。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-push2ex | `HHMMSS` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-15 Push2EX HHMMSS token classification |
 | 东财-push2ex | `limit_broken_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |
 | 东财-push2ex | `limit_down_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |

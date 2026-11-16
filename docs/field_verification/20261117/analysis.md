@@ -61,3 +61,7 @@
 - 对保留边界内全部 19 份 Ulist raw 再扫描后，确认 7 份各含 20 条股票记录，共 140 条：`f192=-1` 有 133 条、`f192=116` 有 7 条；7 条 `116` 仍全为 601288。4 个 `f297` 与目录日一致的数据日提供 80 条合格样本；另 3 条 601288 的 `116` 位于 11 月 2–4 日 raw，但缺少 `f297`，已排除。逐目录摘要见 [`research/20261117_ulist239_f192_retention_scan.csv`](../research/20261117_ulist239_f192_retention_scan.csv)。
 
 **续研结论：**本次采集没有增加 `f192` 的来源样本，历史全量复扫也没有找到第二只正值股票。A/H 市场号仍是有第三方字段表和农行官方证券页面共同支持的强语义假设，但当前证据不能验证接口字段身份与一般适用性；注册表和主字典继续保持不变。下一项有区分力的证据应是另一只 A/H 发行人的合格 Ulist 原始记录，或东方财富对 `ulist.np/get` 的正式字段定义。
+
+## ZHB-tipinfo `[17]` / `[18]` 留存窗口复核
+
+扫描了保留起点 2026-10-15 之后全部 20 个 ZHB 日期包，`tipinfo.dat` 共 113,098 行；每行均为 22 列且代码唯一。原始列 `[17]`、`[18]` 均为 0 个非空值。它们在当前留存窗口内属于低信息字段，仍标记 `unverified`，不把通达信公式函数 `DYNAINFO(17/18)` 的定义误套到 ZHB 文件列，也不推断为永久无意义占位符。明细见 [`adjudications/20261117_zhb_tipinfo_17_18_low_information_review.md`](../adjudications/20261117_zhb_tipinfo_17_18_low_information_review.md) 和 [`research/20261117_zhb_tipinfo_17_18_retention_scan.csv`](../research/20261117_zhb_tipinfo_17_18_retention_scan.csv)。本次没有发现足以更新主字典语义的证据。

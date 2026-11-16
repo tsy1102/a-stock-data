@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "evidence_file": "docs/field_verification/adjudications/20261116_push2_f176_period_sales_multiple.md",
+  "evidence_sha256": "9544d923194d724eed822c2203b38cfbb620a9d9a1f75c4c802b2b93664551d4",
+  "decisions": [
+    {
+      "id": "push2-f176-20261116-period-sales-multiple",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f176"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f176",
+      "meaning": "按最新报告期年初至期末累计营收年化的市销率；在已观察到的季度中，按 f116 总市值 ÷ (f183 × 4 / q) 计算，q 为最新报告期季度序号。当前实证覆盖 Q2、Q3，不等同市销率 TTM，也不外推 Q1、Q4。发行人报告样本确认了 f183 对应的报告期累计营收，但本定义不统一各行业财报中的具体行项目名称。",
+      "unit": "倍",
+      "section": "东方财富 Push2 f176 市销率口径实证定案（2026-11-16）",
+      "rationale": "精确采集路径为 raw_push2.json.stocks.<code>.data.f176，collector 从东方财富 push2delay/push2 stock/get 透传 f1-f250；公式输入 f116/f183 来自同一条且 f86 北京日期与目标数据日一致的记录。194 条 2026-10-20 至 2026-11-10 的保留期可比记录中，季度 q 由同日有效 Fuyao 报告期元数据或发行人正式报告独立确定；按 ROUND_HALF_UP 复算 f116/(f183*4/q) 到两位小数为 194/194，无反例，最大未舍入绝对残差 0.004920889591857203074248978。9 条发行人报告逐项核实 f183 累计营收值无差额。东方财富官方估值页列有“市销率”；同股两日官方 PS_TTM (9.6107901、10.31331681) 与 Push2 f176 (9.02、10.12) 不同，排除 TTM 替代假设。该结论是来源内实证释义，不声称已获得 f176 的公开 wire 字段表，不建立跨源映射。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后，目标数据日 2026-10-20 至 2026-11-10；目录日、meta.data_date 与逐行 f86 北京日期对齐；可比 Push2 f116/f176/f183 同行样本 194 条、11 个数据日、20 只股票，独立报告期锚为 Fuyao 元数据 185 条和发行人正式报告 9 条。",
+        "comparison_count": 194,
+        "matched_count": 194,
+        "counterexample_count": 0,
+        "official_report_count": 9,
+        "excluded_count": 31,
+        "stock_count": 20,
+        "observation_count": 194
+      }
+    }
+  ]
+}

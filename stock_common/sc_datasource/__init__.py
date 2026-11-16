@@ -391,3 +391,4 @@ from ._st_list import *  # noqa: F401 - package re-exports; ST/*ST 名单(§6.8)
 from ._ticks import *  # noqa: F401 - package re-exports; 腾讯逐笔成交(§1.4, 替代失效 mootdx transaction)
 from ._futures_sina import *  # noqa: F401 - package re-exports; 新浪期货日K(§13.7, 补大商所历史日线)
 from ._axdata import *  # noqa: F401 - package re-exports; AxData 接口请求适配器(只读、无缓存、无重试)
+from ._kph import *  # noqa: F401 - package re-exports; KPH 历史涨停完整分页适配器

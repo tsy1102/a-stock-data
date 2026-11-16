@@ -30,7 +30,7 @@
 | 市场源(market_sources) | active | market_sources | 多源聚合 | 未确认（unconfirmed） | 否 | unconfirmed | pending |
 | 开盘啦(kpl) | active | market_sources | 开盘啦 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
 | 开盘啦(kpl_limit_up_detail) | active | kpl | 开盘啦 | kpl（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 开盘红 | active | kph | KPH / 开盘红（AxData source_code=kph） | kph（confirmed） | 是 | unconfirmed | pending |
+| 开盘红 | active | kph | KPH / 开盘红（项目自有分页适配器） | kph（confirmed） | 是 | unconfirmed | pending |
 | 新浪(hq.sinajs) | active | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 沪深交易所 | active | exchange | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
@@ -225,10 +225,12 @@
 
 ### 开盘红
 
-- 来源说明：独立的 KPH 历史涨停接口；AxData 仅为请求框架，KPH 自身 GitHub 上游尚未确认。。
-- 对话确认：pending。KPH 实际提供方由 AxData 接口目录与返回值确认；其上游 GitHub 仓库尚未与用户确认。
-- [https://github.com/electkismet/AxData](https://github.com/electkismet/AxData) — runtime_client_framework；confirmed。用户确认的 AxData 框架仓库；该关系不代表 KPH 上游服务的仓库。
-  - 项目内证据：requirements.txt, stock_common/sc_datasource/_axdata.py
+- 来源说明：独立的 KPH 历史涨停接口；当前采集由项目自有适配器按页请求，AxData 与 Levistock 仅作接口映射和分页实现参考；KPH 自身 GitHub 上游尚未确认。。
+- 对话确认：pending。KPH 提供方和 apphis.kaipanhong.com 接口路径由客户端实现与返回值确认；KPH 官方文档/仓库对应关系仍待核实。
+- [https://github.com/electkismet/AxData](https://github.com/electkismet/AxData) — interface_mapping_reference；confirmed。AxData 0.1.4 的 KPH parser/catalog 用作接口字段映射与首 50 行请求行为的核查参考；当前 KPH 历史采集不再经由该请求适配器。
+  - 项目内证据：requirements.txt, docs/field_verification/adjudications/20261117_kph_pagination_audit.md
+- [https://github.com/fleetinglife/levistock](https://github.com/fleetinglife/levistock) — pagination_implementation_reference；confirmed。Levistock 0.1.8 使用同一 KPH 历史端点并按 50 行继续翻页；作为分页行为参考，不代表独立数据源或 KPH 上游仓库。
+  - 项目内证据：requirements.txt, docs/field_verification/adjudications/20261117_kph_pagination_audit.md
 
 ### 新浪(hq.sinajs)
 

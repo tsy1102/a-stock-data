@@ -139,6 +139,49 @@ def test_kpl_and_kph_raw_files_flatten_as_separate_sources():
     assert not any("identity_observations" in field for field, _value in flattened)
 
 
+def test_kph_collision_requires_explicit_complete_pagination():
+    def snapshot(document):
+        return collision_dates.Snapshot(
+            source="kph",
+            domain=collision_dates.TRADING,
+            sample_date=date(2026, 10, 9),
+            capture_date=date(2026, 10, 9),
+            folder="20261009",
+            path="20261009/raw_kph.json",
+            document=document,
+            meta={},
+            phase="closed",
+            status="ok",
+            record_count=1,
+            captured_at=None,
+            date_origin="source_as_of",
+        )
+
+    document = {
+        "scheme": "kph.limit_up_history",
+        "stocks": {
+            "600519": {
+                "industry_limit_up_count": 3,
+                "__identity__": {"symbol": "600519", "instrument_id": "600519.SH"},
+            }
+        },
+    }
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    diagnostics = []
+
+    assert collide.load_snapshots([snapshot(document)], store, diagnostics) == 0
+    assert not store
+    assert any("pagination.complete=true" in item for item in diagnostics)
+
+    complete_document = {
+        **document,
+        "pagination": {"page_size": 50, "pages_fetched": 1, "returned_rows": 1, "complete": True},
+    }
+    complete_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    assert collide.load_snapshots([snapshot(complete_document)], complete_store, []) == 1
+    assert complete_store["kph.industry_limit_up_count"]["vals"]
+
+
 def test_verified_kph_kpl_dictionary_paths_are_independent_anchors():
     from scripts import collide
 

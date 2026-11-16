@@ -1609,6 +1609,34 @@ def test_incomplete_snapshot_sources_only_selects_sources_needing_supplement(tmp
     ) == {"future_source"}
 
 
+def test_kph_snapshot_without_complete_pagination_is_recaptured(tmp_path):
+    raw_path = tmp_path / "raw_kph.json"
+    raw_path.write_text(
+        '{"scheme":"kph.limit_up_history","stocks":{"600000":{' '"industry_limit_up_count":1}}}',
+        encoding="utf-8",
+    )
+    collectors = {"kph": capture_probe.collect_kph_history}
+    metadata = {"sources": {"kph": {"ok": True, "status": "ok"}}}
+
+    assert capture_probe._incomplete_snapshot_sources(collectors, metadata, str(tmp_path), []) == {
+        "kph"
+    }
+
+    raw_path.write_text("[]", encoding="utf-8")
+    assert capture_probe._incomplete_snapshot_sources(collectors, metadata, str(tmp_path), []) == {
+        "kph"
+    }
+
+    raw_path.write_text(
+        '{"scheme":"kph.limit_up_history","pagination":{"complete":true},'
+        '"stocks":{"600000":{"industry_limit_up_count":1}}}',
+        encoding="utf-8",
+    )
+    assert (
+        capture_probe._incomplete_snapshot_sources(collectors, metadata, str(tmp_path), []) == set()
+    )
+
+
 def test_default_repeat_supplements_missing_source_without_recollecting_complete_sources(
     tmp_path, monkeypatch
 ):
@@ -2159,8 +2187,8 @@ def test_collect_kph_history_preserves_all_source_fields_and_separates_identity(
     )
     calls = []
 
-    def fake_records(interface, *, params, fields=None):
-        calls.append((interface, params, fields))
+    def fake_records(trade_date):
+        calls.append(trade_date)
         return [
             {
                 "trade_date": "20260929",
@@ -2177,13 +2205,19 @@ def test_collect_kph_history_preserves_all_source_fields_and_separates_identity(
                 "future_numeric_candidate": 12.5,
                 "reason": "文本原因",
             }
-        ]
+        ], {
+            "page_size": 50,
+            "pages_fetched": 1,
+            "returned_rows": 1,
+            "complete": True,
+        }
 
-    monkeypatch.setattr(sc_datasource, "get_axdata_records", fake_records)
+    monkeypatch.setattr(sc_datasource, "get_kph_limit_up_history", fake_records)
     result = capture_probe.collect_kph_history("20260929")
 
-    assert calls == [("kph_limit_up_history", {"trade_date": "2026-09-29"}, None)]
+    assert calls == ["2026-09-29"]
     assert result["trade_date"] == "2026-09-29"
+    assert result["pagination"]["complete"] is True
     assert result["stocks"]["920779"] == {
         "limit_time": 1790645140,
         "seal_amount": 100.0,
@@ -2217,7 +2251,7 @@ def test_kph_ladder_rate_limit_skips_history_request(monkeypatch):
     )
     monkeypatch.setattr(
         sc_datasource,
-        "get_axdata_records",
+        "get_kph_limit_up_history",
         lambda *_args, **_kwargs: pytest.fail("request must be skipped after 429"),
     )
 

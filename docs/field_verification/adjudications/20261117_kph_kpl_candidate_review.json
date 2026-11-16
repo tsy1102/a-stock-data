@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T00:43:20+08:00",
+  "rationale": "候选对比了11个来源数据日、500个配对样本，整体命中90%，但2026-10-16为27/50、2026-11-02为23/50。AxData 0.1.4 对KPH历史接口固定只请求首个50行页面，现有恰好50行的KPH归档不能证明覆盖完整；AxData与Levistock的同行业涨停数说明属于客户端参考而非KPH官方契约。暂不建立跨源映射或证伪该关系，等待完整分页样本及能解释低命中日的外部证据。字段来源内释义继续单独审核，主字典不变。",
+  "evidence_refs": [
+    "collision_research_20261116/exploratory/20261116/after_capture_20261116_followup/20261116_collision_report.json",
+    "adjudications/20261117_kph_pagination_audit.md",
+    "https://pypi.org/project/axdata/0.1.4/",
+    "https://github.com/fleetinglife/levistock/blob/main/levistock/stock/stock_daban_his_kph.py"
+  ],
+  "duplicate_of": null
+}

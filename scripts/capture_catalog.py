@@ -26,7 +26,7 @@ SOURCE_SCHEME = {
     "em_fund_flow": "em.stock_get",  # 同样走 push2delay stock/get, 与 push2 同编号族
     "axdata": "axdata.shortline",  # collect_axdata 读取本地 ZHB/AxData 短线指标, 非 Eastmoney
     "kpl": "kpl.limit_up_detail",  # KPL 个股明细独立落盘，保留接口字段路径和来源日期
-    "kph": "kph.limit_up_history",  # AxData 传输层访问开盘红历史涨停明细
+    "kph": "kph.limit_up_history",  # 项目 KPH 适配器分页访问开盘红历史涨停明细
     "ulist239": "em.ulist_np",  # 独立 f 编号体系, 与 stock/get 不同号
     "zhb": "zhb",
     "tdx": "tdx",

@@ -1092,7 +1092,7 @@ def _cls_wait_process_interval() -> float:
 
 
 def _kph_wait_process_interval() -> float:
-    """Levistock KPH direct calls: reserve at most one request per second across processes."""
+    """KPH direct calls: reserve at most one request per second across processes."""
     import random as _rand
 
     if _levistock_provider_is_blocked("kph"):

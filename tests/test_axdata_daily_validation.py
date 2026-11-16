@@ -450,6 +450,12 @@ def test_passive_kph_kpl_compare_uses_explicit_trade_dates_and_confirmed_mapping
     output.mkdir()
     kph = {
         "trade_date": "2026-10-09",
+        "pagination": {
+            "page_size": 50,
+            "pages_fetched": 1,
+            "returned_rows": 1,
+            "complete": True,
+        },
         "stocks": {
             "600519": {
                 "limit_time": 1791530000,
@@ -482,6 +488,25 @@ def test_passive_kph_kpl_compare_uses_explicit_trade_dates_and_confirmed_mapping
     assert result["status"] == "compared"
     assert result["paired_stocks"] == 1
     assert all(counts["equal"] == 1 for counts in result["field_comparisons"].values())
+
+
+def test_passive_kph_kpl_compare_requires_complete_pagination(tmp_path):
+    output = tmp_path / "20261009"
+    output.mkdir()
+    (output / "raw_kph.json").write_text(
+        json.dumps({"trade_date": "2026-10-09", "stocks": {"600519": {}}}),
+        encoding="utf-8",
+    )
+    (output / "raw_kpl.json").write_text(
+        json.dumps({"trade_date": "2026-10-09", "stocks": {"600519": {}}}),
+        encoding="utf-8",
+    )
+
+    result = validation._kph_kpl_passive_evidence(output, "2026-10-09")
+
+    assert result["status"] == "sample_incomplete"
+    assert result["reason"] == "kph_pagination_unconfirmed"
+    assert result["requests_added"] == 0
 
 
 def test_daily_lock_reclaims_stale_file_and_rejects_a_live_lock(tmp_path, monkeypatch):

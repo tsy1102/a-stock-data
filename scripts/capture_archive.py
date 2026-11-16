@@ -193,6 +193,11 @@ def _incomplete_snapshot_sources(
         except (OSError, json.JSONDecodeError):
             incomplete.add(source)
             continue
+        if source == "kph":
+            pagination = document.get("pagination") if isinstance(document, dict) else None
+            if not isinstance(pagination, dict) or pagination.get("complete") is not True:
+                incomplete.add(source)
+                continue
         ok, _ = assess_result(
             document,
             expected_symbols=_source_expected_codes(source, pool),

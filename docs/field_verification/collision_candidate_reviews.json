@@ -6590,6 +6590,165 @@
         "schema_version": 1
       }
     },
+    "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec": {
+      "current": {
+        "candidate_id": "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "869806558a937c455ed9f97400accbcca5e9a2dc3fa65469d606d098955e7cd6",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261116/exploratory/20261116/after_capture_20261116_followup/20261116_collision_report.json",
+            "sha256": "ef39b396ac14d16d7da8186e8f6b0c5a3869639ab1b7c5a244dd02d3a93007e1"
+          },
+          {
+            "path": "adjudications/20261117_kph_pagination_audit.md",
+            "sha256": "696db9aa163085f0650a2fb553173d5598487201bc1178c9cb4c9abbc3018acf"
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/fleetinglife/levistock/blob/main/levistock/stock/stock_daban_his_kph.py",
+            "sha256": null
+          }
+        ],
+        "rationale": "候选对比了11个来源数据日、500个配对样本，整体命中90%，但2026-10-16为27/50、2026-11-02为23/50。AxData 0.1.4 对KPH历史接口固定只请求首个50行页面，现有恰好50行的KPH归档不能证明覆盖完整；AxData与Levistock的同行业涨停数说明属于客户端参考而非KPH官方契约。暂不建立跨源映射或证伪该关系，等待完整分页样本及能解释低命中日的外部证据。字段来源内释义继续单独审核，主字典不变。",
+        "reviewed_at": "2026-11-17T00:43:20+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "869806558a937c455ed9f97400accbcca5e9a2dc3fa65469d606d098955e7cd6",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261116/exploratory/20261116/after_capture_20261116_followup/20261116_collision_report.json",
+              "sha256": "ef39b396ac14d16d7da8186e8f6b0c5a3869639ab1b7c5a244dd02d3a93007e1"
+            },
+            {
+              "path": "adjudications/20261117_kph_pagination_audit.md",
+              "sha256": "696db9aa163085f0650a2fb553173d5598487201bc1178c9cb4c9abbc3018acf"
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/fleetinglife/levistock/blob/main/levistock/stock/stock_daban_his_kph.py",
+              "sha256": null
+            }
+          ],
+          "rationale": "候选对比了11个来源数据日、500个配对样本，整体命中90%，但2026-10-16为27/50、2026-11-02为23/50。AxData 0.1.4 对KPH历史接口固定只请求首个50行页面，现有恰好50行的KPH归档不能证明覆盖完整；AxData与Levistock的同行业涨停数说明属于客户端参考而非KPH官方契约。暂不建立跨源映射或证伪该关系，等待完整分页样本及能解释低命中日的外部证据。字段来源内释义继续单独审核，主字典不变。",
+          "reviewed_at": "2026-11-17T00:43:20+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 27,
+            "T:20261019": 40,
+            "T:20261021": 45,
+            "T:20261023": 50,
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 23,
+            "T:20261103": 41,
+            "T:20261104": 50,
+            "T:20261106": 30,
+            "T:20261109": 50
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45,
+            "T:20261023": 50,
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50,
+            "T:20261106": 30,
+            "T:20261109": 50
+          },
+          "daily_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45,
+            "T:20261023": 50,
+            "T:20261028": 50,
+            "T:20261030": 44,
+            "T:20261102": 50,
+            "T:20261103": 41,
+            "T:20261104": 50,
+            "T:20261106": 30,
+            "T:20261109": 50
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 9,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261021",
+            "T:20261023",
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261106",
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kph.industry_limit_up_count",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 11,
+          "n_informative_pairs": null,
+          "n_pairs": 500,
+          "official_contract_anchor": false,
+          "overall_hit": 0.9,
+          "ratio": null,
+          "right": "kpl.raw_columns.col_20",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 500
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 734
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d": {
       "current": {
         "candidate_id": "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d",
@@ -32402,5 +32561,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-12T10:03:53+08:00"
+  "updated_at": "2026-11-17T00:43:20+08:00"
 }

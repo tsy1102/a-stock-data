@@ -197,7 +197,7 @@ def collect_kph_history(
     prior_market_sources: Any = None,
     identity_policy: Optional[dict] = None,
 ) -> dict:
-    """Request one AxData KPH historical batch; never retry or persist it."""
+    """Request a complete KPH historical batch; never retry or persist it."""
     try:
         trade_date = deps.kph_history_trade_date(capture_date)
     except Exception as exc:
@@ -237,12 +237,9 @@ def collect_kph_history(
         }
 
     try:
-        from stock_common.sc_datasource import get_axdata_records
+        from stock_common.sc_datasource import get_kph_limit_up_history
 
-        records = get_axdata_records(
-            "kph_limit_up_history",
-            params={"trade_date": trade_date.isoformat()},
-        )
+        records, pagination = get_kph_limit_up_history(trade_date.isoformat())
     except Exception as exc:
         return {
             "trade_date": trade_date.isoformat(),
@@ -254,6 +251,7 @@ def collect_kph_history(
             "trade_date": trade_date.isoformat(),
             "stocks": {},
             "__error__": f"KPH history returned no records for {trade_date.isoformat()}",
+            "pagination": pagination,
         }
 
     stocks: Dict[str, Any] = {}
@@ -319,6 +317,7 @@ def collect_kph_history(
         "stocks": stocks,
         "row_count": len(stocks),
         "warnings": warnings,
+        "pagination": pagination,
     }
     deps.attach_identity_validation_suppression(output, identity_policy)
     if identity_observations:

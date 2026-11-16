@@ -961,6 +961,16 @@ def _kph_kpl_passive_evidence(
         return {"status": "not_run", "reason": issue, "requests_added": 0}
     kph_payload = _read_json(out_dir / "raw_kph.json") or {}
     kpl_payload = _read_json(out_dir / "raw_kpl.json") or {}
+    pagination = kph_payload.get("pagination")
+    if not isinstance(pagination, dict) or pagination.get("complete") is not True:
+        return {
+            "status": "sample_incomplete",
+            "reason": "kph_pagination_unconfirmed",
+            "target_trade_date": _date_key(latest_allowed_date) or latest_allowed_date,
+            "kph_trade_date": _date_key(kph_payload.get("trade_date")),
+            "kpl_trade_date": _date_key(kpl_payload.get("trade_date")),
+            "requests_added": 0,
+        }
     kph_date = _date_key(kph_payload.get("trade_date"))
     kpl_date = _date_key(kpl_payload.get("trade_date"))
     cutoff = _date_key(latest_allowed_date) or latest_allowed_date

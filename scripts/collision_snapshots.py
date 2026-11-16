@@ -316,6 +316,14 @@ def load_snapshots(
                     f"{snapshot.folder}/{snapshot.source}/{path}: 默认碰撞已排除上下文记录"
                     f"（{count} 条）"
                 )
+        if snapshot.source == "kph":
+            pagination = doc.get("pagination")
+            if not isinstance(pagination, dict) or pagination.get("complete") is not True:
+                diagnostics.append(
+                    f"{snapshot.folder}/kph: KPH 历史碰撞要求 pagination.complete=true；"
+                    "旧样本缺少完整分页证明，已排除"
+                )
+                continue
         scheme = doc.get("scheme")
         auction_meta = doc.get("auction_snapshot_meta")
         if isinstance(auction_meta, dict) and auction_meta.get("collision_eligible") is False:

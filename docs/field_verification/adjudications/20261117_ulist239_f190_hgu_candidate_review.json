@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
+  "disposition": "insufficient_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T03:22:15+08:00",
+  "rationale": "碰撞报告中的 95% 弱精确重合由零值支配：40 组中 38 组为 f190=0 且 hgu=0；其余两组是同一只 601288 的相邻来源日重复值，f190=3、TDX hgu=3,073,882.25（万股），不相等。TDX 来源实际数据日未确认，单只非零股票不能区分数量缩放与状态/类别编码。仅将这条弱精确值候选置为证据不足，不否定 f190 可能与 H 股有关，也不改变注册表状态。",
+  "evidence_refs": [
+    "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+    "adjudications/20261117_ulist239_f190_hgu_low_information_review.md",
+    "research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv",
+    "adjudications/20261110_tdx_finance_source_contract.md"
+  ],
+  "duplicate_of": null
+}

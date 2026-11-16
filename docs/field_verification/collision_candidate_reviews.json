@@ -8237,6 +8237,125 @@
         "schema_version": 1
       }
     },
+    "cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5": {
+      "current": {
+        "candidate_id": "cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "d87a6a06ccc63ba0ea5bc4a00fec95be5ed4c3c2a13c69ffe60eb3e8a308b0f4",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+            "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+          },
+          {
+            "path": "research/20261117_ulist239_f149_rolling_window_audit.csv",
+            "sha256": "8fd6bd88c7413c891093e3fa5a9b0e85d4d22e0f1a10ca5ac4c49d5c459236f3"
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2026-10-23/1225620807.PDF",
+            "sha256": null
+          }
+        ],
+        "rationale": "拒绝仅针对 ulist239.f149 与 ZHB change_mtd 的同义映射。碰撞报告的 20/20 命中只在来源日 2026-11-09 出现；按 f297 与 zhb_date 对齐的 2026-11-06 样本为 0/20。11-09 的滚动六个交易间隔恰好以 10-30 收盘为基准，因此偶然等于月初至今。保留数据的 K 线复算显示 f149 更接近滚动六个交易间隔的百分比变化，且需考虑 300788 于 2026-10-30 的除息，但官方 f149 标签和该公司两项 0.01 个百分点残差尚未完全解释，故只拒绝这条跨源关系，不定案 f149 自身语义，不将字段标记为 disproved。",
+        "reviewed_at": "2026-11-17T03:13:45+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "d87a6a06ccc63ba0ea5bc4a00fec95be5ed4c3c2a13c69ffe60eb3e8a308b0f4",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+              "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+            },
+            {
+              "path": "research/20261117_ulist239_f149_rolling_window_audit.csv",
+              "sha256": "8fd6bd88c7413c891093e3fa5a9b0e85d4d22e0f1a10ca5ac4c49d5c459236f3"
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2026-10-23/1225620807.PDF",
+              "sha256": null
+            }
+          ],
+          "rationale": "拒绝仅针对 ulist239.f149 与 ZHB change_mtd 的同义映射。碰撞报告的 20/20 命中只在来源日 2026-11-09 出现；按 f297 与 zhb_date 对齐的 2026-11-06 样本为 0/20。11-09 的滚动六个交易间隔恰好以 10-30 收盘为基准，因此偶然等于月初至今。保留数据的 K 线复算显示 f149 更接近滚动六个交易间隔的百分比变化，且需考虑 300788 于 2026-10-30 的除息，但官方 f149 标签和该公司两项 0.01 个百分点残差尚未完全解释，故只拒绝这条跨源关系，不定案 f149 自身语义，不将字段标记为 disproved。",
+          "reviewed_at": "2026-11-17T03:13:45+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261109": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261109": 20
+          },
+          "daily_sample_counts": {
+            "T:20261109": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tdx"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f149",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": null,
+          "n_pairs": 20,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "zhb.stat2.change_mtd",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_363712fd0628769d72a812d2ffad77fae58a41b2c855df760b86d57f67001345": {
       "current": {
         "candidate_id": "cc1_363712fd0628769d72a812d2ffad77fae58a41b2c855df760b86d57f67001345",
@@ -8813,6 +8932,123 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87": {
+      "current": {
+        "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "42f8921ff20c4faa89cec5ec644d8d933148ca644f59e910b5d94d06318d61ef",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f190_hgu_low_information_review.md",
+            "sha256": "2869ea3b6d99952918484208e11185f17c68b83ae36c473f01d69e66ba121651"
+          },
+          {
+            "path": "research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv",
+            "sha256": "069f5556737338b9ba1eaa99cd8e57b7a566181f172fee81539d1e444bd4dda3"
+          },
+          {
+            "path": "adjudications/20261110_tdx_finance_source_contract.md",
+            "sha256": "54b9b22066f33628285a9f824e8d897525201e70f54c9b18717de4bd168571da"
+          }
+        ],
+        "rationale": "碰撞报告中的 95% 弱精确重合由零值支配：40 组中 38 组为 f190=0 且 hgu=0；其余两组是同一只 601288 的相邻来源日重复值，f190=3、TDX hgu=3,073,882.25（万股），不相等。TDX 来源实际数据日未确认，单只非零股票不能区分数量缩放与状态/类别编码。仅将这条弱精确值候选置为证据不足，不否定 f190 可能与 H 股有关，也不改变注册表状态。",
+        "reviewed_at": "2026-11-17T03:22:15+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "42f8921ff20c4faa89cec5ec644d8d933148ca644f59e910b5d94d06318d61ef",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f190_hgu_low_information_review.md",
+              "sha256": "2869ea3b6d99952918484208e11185f17c68b83ae36c473f01d69e66ba121651"
+            },
+            {
+              "path": "research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv",
+              "sha256": "069f5556737338b9ba1eaa99cd8e57b7a566181f172fee81539d1e444bd4dda3"
+            },
+            {
+              "path": "adjudications/20261110_tdx_finance_source_contract.md",
+              "sha256": "54b9b22066f33628285a9f824e8d897525201e70f54c9b18717de4bd168571da"
+            }
+          ],
+          "rationale": "碰撞报告中的 95% 弱精确重合由零值支配：40 组中 38 组为 f190=0 且 hgu=0；其余两组是同一只 601288 的相邻来源日重复值，f190=3、TDX hgu=3,073,882.25（万股），不相等。TDX 来源实际数据日未确认，单只非零股票不能区分数量缩放与状态/类别编码。仅将这条弱精确值候选置为证据不足，不否定 f190 可能与 H 股有关，也不改变注册表状态。",
+          "reviewed_at": "2026-11-17T03:22:15+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {},
+          "daily_informative_sample_counts": {},
+          "daily_sample_counts": {
+            "T:20261109": 20,
+            "T:20261110": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 2,
+          "distinct_days": [
+            "T:20261109",
+            "T:20261110"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tdx"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 40,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f190",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 2,
+          "n_informative_pairs": null,
+          "n_pairs": 40,
+          "official_contract_anchor": false,
+          "overall_hit": 0.95,
+          "ratio": null,
+          "right": "tdx.finance_info.hgu",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "date_unconfirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 40
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "meta_data_date": 40
+              },
+              "date_status": "date_unconfirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -32688,5 +32924,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T01:30:34+08:00"
+  "updated_at": "2026-11-17T03:22:15+08:00"
 }

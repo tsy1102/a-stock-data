@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T03:13:45+08:00",
+  "rationale": "拒绝仅针对 ulist239.f149 与 ZHB change_mtd 的同义映射。碰撞报告的 20/20 命中只在来源日 2026-11-09 出现；按 f297 与 zhb_date 对齐的 2026-11-06 样本为 0/20。11-09 的滚动六个交易间隔恰好以 10-30 收盘为基准，因此偶然等于月初至今。保留数据的 K 线复算显示 f149 更接近滚动六个交易间隔的百分比变化，且需考虑 300788 于 2026-10-30 的除息，但官方 f149 标签和该公司两项 0.01 个百分点残差尚未完全解释，故只拒绝这条跨源关系，不定案 f149 自身语义，不将字段标记为 disproved。",
+  "evidence_refs": [
+    "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+    "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+    "research/20261117_ulist239_f149_rolling_window_audit.csv",
+    "https://static.cninfo.com.cn/finalpage/2026-10-23/1225620807.PDF"
+  ],
+  "duplicate_of": null
+}

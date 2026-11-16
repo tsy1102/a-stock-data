@@ -59,9 +59,9 @@
         "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
         "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
         "12.8.19 通达信问小达（wenda）四件套源字段结构（V17.2.7 新增, 2026-09-09）",
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "2.2 字段组分类与策略价值",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
       ],
       "status": "active"
@@ -9063,7 +9063,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "report_period_end_month",
       "meaning": "财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证",
       "unit": "月",
@@ -9137,7 +9137,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "bgu",
       "meaning": "B股",
       "unit": "万股",
@@ -20093,7 +20093,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "prior_year_parent_net_profit",
       "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
       "unit": "角",
@@ -20190,7 +20190,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "prior_year_parent_net_profit",
       "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
       "unit": "角",
@@ -20226,7 +20226,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "prior_year_operating_revenue",
       "meaning": "上年同期营业收入（报告比较数）",
       "unit": "角",
@@ -21573,7 +21573,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "gudingzichan",
       "meaning": "固定资产",
       "unit": "角",
@@ -21627,14 +21627,14 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
+      "section": "2026-11-16 TDX composite field-list identity audit",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -21687,7 +21687,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "guojiagu",
       "meaning": "国家股",
       "unit": "万股",
@@ -21858,7 +21858,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "hgu",
       "meaning": "H股",
       "unit": "万股",
@@ -24835,7 +24835,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "lirunzonghe",
       "meaning": "利润总额",
       "unit": "角",
@@ -25008,7 +25008,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "liudongzichan",
       "meaning": "流动资产",
       "unit": "角",
@@ -25827,14 +25827,14 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
+      "section": "2026-11-16 TDX composite field-list identity audit",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -33859,7 +33859,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "shuihoulirun",
       "meaning": "税后利润",
       "unit": "角",
@@ -37579,7 +37579,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "touzishouyu",
       "meaning": "投资收益",
       "unit": "角",
@@ -39195,7 +39195,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "wuxingzichan",
       "meaning": "无形资产",
       "unit": "角",
@@ -39491,7 +39491,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "yingyelirun",
       "meaning": "合并利润表“营业利润”行。",
       "unit": "角",
@@ -39638,7 +39638,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "zhigonggu",
       "meaning": "职工股",
       "unit": "万股",
@@ -39749,7 +39749,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "zhuyinglirun",
       "meaning": "主营业务利润",
       "unit": "角",
@@ -39996,7 +39996,7 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "zongxianjinliu",
       "meaning": "经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。",
       "unit": "角",
@@ -44146,9 +44146,6 @@
     ],
     "华证": [
       "AxData"
-    ],
-    "协议中未提及的 18 字段": [
-      "TDX-0x0010/F10"
     ],
     "卖一价": [
       "东财"
@@ -82250,9 +82247,9 @@
       "canonical": "report_period_end_month",
       "meaning": "财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证",
       "unit": "月",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -82293,7 +82290,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "baoliu2",
           "meaning": "保留字段2",
           "unit": "-",
@@ -82339,7 +82336,7 @@
         "canonical": "baoliu2",
         "meaning": "保留字段2",
         "unit": "-",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -82403,9 +82400,9 @@
       "canonical": "bgu",
       "meaning": "B股",
       "unit": "万股",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -82426,7 +82423,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "bgu",
           "meaning": "B股",
           "unit": "万股",
@@ -82445,7 +82442,7 @@
         "canonical": "bgu",
         "meaning": "B股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -83906,8 +83903,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -83929,7 +83926,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "changqifuzhai",
           "meaning": "长期负债",
           "unit": "角",
@@ -83937,7 +83934,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -83961,7 +83958,7 @@
         "canonical": "changqifuzhai",
         "meaning": "长期负债",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -84106,9 +84103,9 @@
       "canonical": "code",
       "meaning": "股票代码",
       "unit": "6位字符串",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -84139,7 +84136,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "code",
           "meaning": "股票代码",
           "unit": "6位字符串",
@@ -84168,7 +84165,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -84181,8 +84178,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -84204,7 +84201,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "cunhuo",
           "meaning": "存货",
           "unit": "角",
@@ -84212,7 +84209,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -84236,7 +84233,7 @@
         "canonical": "cunhuo",
         "meaning": "存货",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -84924,9 +84921,9 @@
       "canonical": "prior_year_parent_net_profit",
       "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -84961,7 +84958,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "prior_year_parent_net_profit",
           "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
           "unit": "角",
@@ -85201,9 +85198,9 @@
       "canonical": "prior_year_parent_net_profit",
       "meaning": "上年同期归属于上市公司股东的净利润（报告比较数）",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "TDX 0x0010 Easy-TDX 兜底别名财务语义实证（2026-11-13）"
       ],
       "status": "verified",
@@ -85241,7 +85238,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "faqirenfarengu",
           "meaning": "发起人法人股",
           "unit": "万股",
@@ -85294,7 +85291,7 @@
         "canonical": "faqirenfarengu",
         "meaning": "发起人法人股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -85484,10 +85481,10 @@
       "canonical": "prior_year_operating_revenue",
       "meaning": "上年同期营业收入（报告比较数）",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -85526,7 +85523,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "farengu",
           "meaning": "法人股",
           "unit": "万股",
@@ -85534,7 +85531,7 @@
           "status": "verified"
         },
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "prior_year_operating_revenue",
           "meaning": "上年同期营业收入（报告比较数）",
           "unit": "角",
@@ -85581,7 +85578,7 @@
         "canonical": "farengu",
         "meaning": "法人股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -86085,9 +86082,9 @@
       "canonical": "gudingzichan",
       "meaning": "固定资产",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -86108,7 +86105,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "gudingzichan",
           "meaning": "固定资产",
           "unit": "角",
@@ -86127,7 +86124,7 @@
         "canonical": "gudingzichan",
         "meaning": "固定资产",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -86252,8 +86249,8 @@
       "unit": "户",
       "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证"
       ],
       "status": "verified",
@@ -86292,7 +86289,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "gudongrenshu",
           "meaning": "股东户数",
           "unit": "户",
@@ -86300,7 +86297,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -86353,7 +86350,7 @@
         "canonical": "gudongrenshu",
         "meaning": "股东户数",
         "unit": "户",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -86413,19 +86410,20 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
+      "section": "2026-11-16 TDX composite field-list identity audit",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "not_field_schema_token",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "tdx-composite-field-list-nonfield-20261116:TDX(双命名源)::gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX(双命名源)"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "not_field_schema_token"
         ]
       },
       "reference_evidence": [],
@@ -86489,9 +86487,9 @@
       "canonical": "guojiagu",
       "meaning": "国家股",
       "unit": "万股",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -86512,7 +86510,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "guojiagu",
           "meaning": "国家股",
           "unit": "万股",
@@ -86531,7 +86529,7 @@
         "canonical": "guojiagu",
         "meaning": "国家股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -86580,9 +86578,9 @@
       "canonical": "hgu",
       "meaning": "H股",
       "unit": "万股",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -86603,7 +86601,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "hgu",
           "meaning": "H股",
           "unit": "万股",
@@ -86622,7 +86620,7 @@
         "canonical": "hgu",
         "meaning": "H股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -86775,8 +86773,8 @@
       "unit": "编码值（需查表）",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -86798,7 +86796,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "industry",
           "meaning": "通达信行业编码",
           "unit": "编码值（需查表）",
@@ -86806,7 +86804,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -86830,7 +86828,7 @@
         "canonical": "industry",
         "meaning": "通达信行业编码",
         "unit": "编码值（需查表）",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -86963,8 +86961,8 @@
       "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.ipo_date @ v3.3.2",
       "sections": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.ipo_date @ v3.3.2"
       ],
       "status": "verified",
@@ -86994,7 +86992,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "ipo_date",
           "meaning": "上市日期",
           "unit": "YYYYMMDD",
@@ -87002,7 +87000,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -87059,7 +87057,7 @@
         "canonical": "ipo_date",
         "meaning": "上市日期",
         "unit": "YYYYMMDD",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -87467,8 +87465,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -87509,7 +87507,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "jinglirun",
           "meaning": "净利润",
           "unit": "角",
@@ -87517,7 +87515,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -87561,7 +87559,7 @@
         "canonical": "jinglirun",
         "meaning": "净利润",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -87663,8 +87661,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -87686,7 +87684,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "jingyingxianjinliu",
           "meaning": "经营活动现金流",
           "unit": "角",
@@ -87694,7 +87692,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -87718,7 +87716,7 @@
         "canonical": "jingyingxianjinliu",
         "meaning": "经营活动现金流",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -87731,8 +87729,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -87754,7 +87752,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "jingzichan",
           "meaning": "净资产 / 股东权益",
           "unit": "角",
@@ -87762,7 +87760,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -87786,7 +87784,7 @@
         "canonical": "jingzichan",
         "meaning": "净资产 / 股东权益",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -88327,9 +88325,9 @@
       "canonical": "lirunzonghe",
       "meaning": "利润总额",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "20261014/20261014_collision_report.json"
       ],
       "status": "verified",
@@ -88354,7 +88352,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "lirunzonghe",
           "meaning": "利润总和",
           "unit": "角",
@@ -88398,7 +88396,7 @@
         "canonical": "lirunzonghe",
         "meaning": "利润总和",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -88763,8 +88761,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -88786,7 +88784,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "liudongfuzhai",
           "meaning": "流动负债",
           "unit": "角",
@@ -88794,7 +88792,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -88818,7 +88816,7 @@
         "canonical": "liudongfuzhai",
         "meaning": "流动负债",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -88829,9 +88827,9 @@
       "canonical": "liudongzichan",
       "meaning": "流动资产",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -88852,7 +88850,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "liudongzichan",
           "meaning": "流动资产",
           "unit": "角",
@@ -88871,7 +88869,7 @@
         "canonical": "liudongzichan",
         "meaning": "流动资产",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -88922,8 +88920,8 @@
       "unit": "万股",
       "section": "20261014/20261014_collision_report.json",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "20261014/20261014_collision_report.json"
       ],
       "status": "verified",
@@ -88949,7 +88947,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "liutongguben",
           "meaning": "流通股本",
           "unit": "万股",
@@ -88957,7 +88955,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -89006,7 +89004,7 @@
         "canonical": "liutongguben",
         "meaning": "流通股本",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -89230,9 +89228,9 @@
       "canonical": "market",
       "meaning": "市场代码",
       "unit": "0=深/1=沪/2=京",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -89259,7 +89257,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "market",
           "meaning": "市场代码",
           "unit": "0=深/1=沪/2=京",
@@ -89284,7 +89282,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -89295,19 +89293,20 @@
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "section": "",
+      "section": "2026-11-16 TDX composite field-list identity audit",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "not_field_schema_token",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "tdx-composite-field-list-nonfield-20261116:TDX(双命名源)::market/code/guojiagu/faqirenfarengu/farengu/bgu/hgu/zhigonggu/liudongzichan/gudingzichan/wuxingzichan/zhuyinglirun/yingyelirun/touzishouyu/zongxianjinliu/lirunzonghe/shuihoulirun/baoliu2",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "TDX(双命名源)"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "not_field_schema_token"
         ]
       },
       "reference_evidence": [],
@@ -89489,8 +89488,8 @@
       "unit": "元/股",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -89512,7 +89511,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "meigujingzichan",
           "meaning": "每股净资产",
           "unit": "元/股",
@@ -89520,7 +89519,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -89544,7 +89543,7 @@
         "canonical": "meigujingzichan",
         "meaning": "每股净资产",
         "unit": "元/股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -90872,8 +90871,8 @@
       "unit": "编码值（需查表）",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -90895,7 +90894,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "province",
           "meaning": "省份编码",
           "unit": "编码值（需查表）",
@@ -90903,7 +90902,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -90927,7 +90926,7 @@
         "canonical": "province",
         "meaning": "省份编码",
         "unit": "编码值（需查表）",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -92986,9 +92985,9 @@
       "canonical": "shuihoulirun",
       "meaning": "税后利润",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -93009,7 +93008,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "shuihoulirun",
           "meaning": "税后利润",
           "unit": "角",
@@ -93028,7 +93027,7 @@
         "canonical": "shuihoulirun",
         "meaning": "税后利润",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -93612,9 +93611,9 @@
       "canonical": "touzishouyu",
       "meaning": "投资收益",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -93635,7 +93634,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "touzishouyu",
           "meaning": "投资收益",
           "unit": "角",
@@ -93654,7 +93653,7 @@
         "canonical": "touzishouyu",
         "meaning": "投资收益",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -93798,8 +93797,8 @@
       "section": "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.updated_date @ v3.3.2",
       "sections": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "source contract: electkismet/eltdx · docs/FIELD_REFERENCE.md#FinanceRecord.updated_date @ v3.3.2"
       ],
       "status": "verified",
@@ -93829,7 +93828,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "updated_date",
           "meaning": "财报更新日期",
           "unit": "YYYYMMDD",
@@ -93837,7 +93836,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -93894,7 +93893,7 @@
         "canonical": "updated_date",
         "meaning": "财报更新日期",
         "unit": "YYYYMMDD",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -94628,8 +94627,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -94651,7 +94650,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "weifenpeilirun",
           "meaning": "未分配利润",
           "unit": "角",
@@ -94659,7 +94658,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -94683,7 +94682,7 @@
         "canonical": "weifenpeilirun",
         "meaning": "未分配利润",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -94732,9 +94731,9 @@
       "canonical": "wuxingzichan",
       "meaning": "无形资产",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -94755,7 +94754,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "wuxingzichan",
           "meaning": "无形资产",
           "unit": "角",
@@ -94774,7 +94773,7 @@
         "canonical": "wuxingzichan",
         "meaning": "无形资产",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -94825,8 +94824,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -94848,7 +94847,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "yingshouzhangkuan",
           "meaning": "应收账款",
           "unit": "角",
@@ -94856,7 +94855,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -94880,7 +94879,7 @@
         "canonical": "yingshouzhangkuan",
         "meaning": "应收账款",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -94989,9 +94988,9 @@
       "canonical": "yingyelirun",
       "meaning": "合并利润表“营业利润”行。",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证"
       ],
       "status": "verified",
@@ -95029,7 +95028,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "yingyelirun",
           "meaning": "营业利润",
           "unit": "角",
@@ -95082,7 +95081,7 @@
         "canonical": "yingyelirun",
         "meaning": "营业利润",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -95175,9 +95174,9 @@
       "canonical": "zhigonggu",
       "meaning": "职工股",
       "unit": "万股",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -95198,7 +95197,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zhigonggu",
           "meaning": "职工股",
           "unit": "万股",
@@ -95217,7 +95216,7 @@
         "canonical": "zhigonggu",
         "meaning": "职工股",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -95475,9 +95474,9 @@
       "canonical": "zhuyinglirun",
       "meaning": "主营业务利润",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -95498,7 +95497,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zhuyinglirun",
           "meaning": "主营业务利润",
           "unit": "角",
@@ -95517,7 +95516,7 @@
         "canonical": "zhuyinglirun",
         "meaning": "主营业务利润",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -95665,8 +95664,8 @@
       "unit": "角",
       "section": "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照",
         "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证"
       ],
       "status": "verified",
@@ -95705,7 +95704,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zhuyingshouru",
           "meaning": "主营业务收入",
           "unit": "角",
@@ -95713,7 +95712,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -95766,7 +95765,7 @@
         "canonical": "zhuyingshouru",
         "meaning": "主营业务收入",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -95926,8 +95925,8 @@
       "unit": "角",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -95949,7 +95948,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zibengongjijin",
           "meaning": "资本公积金",
           "unit": "角",
@@ -95957,7 +95956,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -95981,7 +95980,7 @@
         "canonical": "zibengongjijin",
         "meaning": "资本公积金",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -96488,8 +96487,8 @@
       "unit": "万股",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -96511,7 +96510,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zongguben",
           "meaning": "总股本",
           "unit": "万股",
@@ -96519,7 +96518,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -96543,7 +96542,7 @@
         "canonical": "zongguben",
         "meaning": "总股本",
         "unit": "万股",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -96554,9 +96553,9 @@
       "canonical": "zongxianjinliu",
       "meaning": "经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。",
       "unit": "角",
-      "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+      "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证"
       ],
       "status": "verified",
@@ -96594,7 +96593,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zongxianjinliu",
           "meaning": "总现金流",
           "unit": "角",
@@ -96647,7 +96646,7 @@
         "canonical": "zongxianjinliu",
         "meaning": "总现金流",
         "unit": "角",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -96704,8 +96703,8 @@
       "unit": "角（→元需角(/10得元)）",
       "section": "",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 36 个槽位",
-        "2.6 与 Gemini 核实 18 字段的对比"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "2.6 与 Gemini 核实字段清单的逐项对照"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -96727,7 +96726,7 @@
       },
       "reference_evidence": [
         {
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位",
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
           "canonical": "zongzichan",
           "meaning": "总资产",
           "unit": "角（→元需角(/10得元)）",
@@ -96735,7 +96734,7 @@
           "status": "verified"
         },
         {
-          "section": "2.6 与 Gemini 核实 18 字段的对比",
+          "section": "2.6 与 Gemini 核实字段清单的逐项对照",
           "canonical": "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
           "meaning": "",
           "unit": "",
@@ -96759,7 +96758,7 @@
         "canonical": "zongzichan",
         "meaning": "总资产",
         "unit": "角（→元需角(/10得元)）",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -100108,7 +100107,7 @@
           "canonical": "code",
           "meaning": "股票代码",
           "unit": "6位字符串",
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
         },
         "status_evidence": {
           "reference_statuses": [],
@@ -105851,7 +105850,7 @@
         "canonical": "ipo_date",
         "meaning": "上市日期",
         "unit": "YYYYMMDD",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -122086,7 +122085,7 @@
         "canonical": "updated_date",
         "meaning": "财报更新日期",
         "unit": "YYYYMMDD",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -128247,7 +128246,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -129009,7 +129008,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -135434,7 +135433,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -136609,7 +136608,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -141273,7 +141272,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -148953,7 +148952,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -173156,7 +173155,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "adjudications": [
         {
@@ -199030,7 +199029,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -199832,7 +199831,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -214860,7 +214859,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       },
       "attribute_ambiguities": {},
       "superseded_status_evidence": {
@@ -214902,7 +214901,7 @@
           "canonical": "market",
           "meaning": "市场代码",
           "unit": "0=深/1=沪/2=京",
-          "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+          "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
         },
         "reference_evidence": [
           {
@@ -225509,7 +225508,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -227350,7 +227349,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -229299,7 +229298,7 @@
         "canonical": "market",
         "meaning": "市场代码",
         "unit": "0=深/1=沪/2=京",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -235266,7 +235265,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {
@@ -254782,7 +254781,7 @@
         "canonical": "code",
         "meaning": "股票代码",
         "unit": "6位字符串",
-        "section": "2.1 TDX 0x0010 逆向解析的 36 个槽位"
+        "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
       }
     },
     {

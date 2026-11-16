@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261116_tdx_composite_field_list_paths.md`](adjudications/20261116_tdx_composite_field_list_paths.md) 与 [`research/20261116_tdx_composite_field_list_audit.csv`](research/20261116_tdx_composite_field_list_audit.csv)：复核 0x0010 偏移 0–36 的 37 个槽位，发现两组斜杠清单被误登记为单一未验证路径；19 份保留期 TDX raw、380 个 `finance_info` 对象中均无合并路径键，已将两个清单伪路径和一个矩阵分组标签移出字段目标并修正历史计数。
+
 - [`adjudications/20261116_push2ex_yesterday_pool_container.md`](adjudications/20261116_push2ex_yesterday_pool_container.md) 与 [`research/20261116_push2ex_yesterday_pool_container_audit.csv`](research/20261116_push2ex_yesterday_pool_container_audit.csv)：依据采集目录、适配器、测试及 11 月 16 日 raw 结构，将 `yesterday_limit_pool` 根路径标记为输出容器；空列表和缺失来源日期不用于推断池内字段含义或日期。
 - [`20261116_after_capture_review.md`](20261116_after_capture_review.md)：复核 11 月 16 日收盘采集及新样本全历史碰撞；完整报告覆盖 21 个交易日，L1/L1-C 为 0、L4 为 37、无新候选对。分开记录 ZHB 11 月 13 日旧来源日、东财本地熔断和 Sina `[32]` 状态码的低信息重叠。
 - [`adjudications/20261116_eltdx_theme_strength_alias.md`](adjudications/20261116_eltdx_theme_strength_alias.md) 与 [`research/20261116_eltdx_theme_strength_alias_audit.csv`](research/20261116_eltdx_theme_strength_alias_audit.csv)：核实锁定 ELTDX v3.3.2 的 `stock_theme_strength_rank` 是 `theme_strength_rank` 的直接别名，19/19 份归档完整输出相等；移除采集器重复调用，保留历史样本和兼容 API。

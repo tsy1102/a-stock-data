@@ -62,7 +62,7 @@ def _meaning_annotation_state(record: dict[str, Any]) -> str:
     if resolution == "collector_output_container":
         return "采集器输出容器（不是字段路径）"
     if resolution == "not_field_schema_token":
-        return "格式/类型标记（不是字段路径）"
+        return "非字段标记或清单（不是字段路径）"
     if record.get("status") == "disproved":
         return "已证伪记录（退出默认破解）"
     if "meaning_missing" in fra.source_field_semantic_issues(record):

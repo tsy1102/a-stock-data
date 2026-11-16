@@ -88,7 +88,12 @@ NON_FIELD_SEC = (
 # Overview groups are labels, not field identities. This label was formerly
 # used as a catch-all row for two TDX finance slots; those slots now have
 # distinct registry canonicals and must not leave a stale matrix key behind.
-NON_FIELD_ROW_LABELS = {"上年同期财务比较值"}
+# The TDX Gemini comparison rows are grouped field lists, not canonical names.
+NON_FIELD_ROW_LABELS = {
+    "上年同期财务比较值",
+    "Gemini 历史清单（19 项）",
+    "历史清单未列出的其余 18 项",
+}
 
 
 def sec_to_source(sec: str) -> str:

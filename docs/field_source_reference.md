@@ -300,9 +300,9 @@ flowchart TD
 
 通过 `tdx_client.py` 中的 `tdx_get_finance_info(code)` 提取，直连券商服务器，耗时 5~15ms，完全无 IP 封禁风险。
 
-**协议来源**：以下 36 个槽位来自 `tdxpy/parser/std/get_finance_info.py`（Python 环境 site-packages 内，非本仓库代码）的逆向解析布局，不是通达信发布的官方字段字典。mootdx 0.11.7 与 tdxpy 0.1.22 协同解析；其中字段名和中文标签首先是解析器命名，须结合接口响应与样本确认业务语义。
+**协议来源**：以下 37 个槽位（偏移 0–36）来自 `tdxpy/parser/std/get_finance_info.py`（Python 环境 site-packages 内，非本仓库代码）的逆向解析布局，不是通达信发布的官方字段字典。mootdx 0.11.7 与 tdxpy 0.1.22 协同解析；其中字段名和中文标签首先是解析器命名，须结合接口响应与样本确认业务语义。
 
-### 2.1 TDX 0x0010 逆向解析的 36 个槽位
+### 2.1 TDX 0x0010 逆向解析的 37 个槽位
 
 > **单位边界**：表中的协议槽位原值与项目适配器返回值是两个口径。0x0010 金额槽位原值按千元解读，适配器乘 10,000 转为角；股本槽位原值按万股解读，适配器乘 10,000 转为股。股东户数保持户数，每股净资产保持元/股。2026-11-11 的 17 个保留采集目录中，两个历史命名为“发起人法人股/法人股”的槽位实际与上年同期归母净利润、营业收入对应；这两个名称是旧解析器标签，不是已证实的当前业务释义，逐样本证据见 [`20261111_eltdx_share_slots_empirical_semantics.md`](field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
 
@@ -449,14 +449,16 @@ TDX 服务器 (端口 7709)
   业务模块调用（get_*_report.py / sc_datasource.py / strategy_config.yaml）
 ```
 
-### 2.6 与 Gemini 核实 18 字段的对比
+### 2.6 与 Gemini 核实字段清单的逐项对照（旧计数误写 18，实为 19 项）
 
-> Gemini 给出的 18 字段全部在协议中存在，且 key 命名 100% 一致。本文档 36 字段表是在 Gemini 18 字段基础上**补全**所有 36 字段（Gemini 覆盖率 50%）。
+> 历史清单的第一组实际列出 19 个代码（旧标题写作 18 项）；第二组补列另外 18 个代码，两组共覆盖 37 个不同代码，分别对应本表偏移 0–36。这里校正的是列表计数和字段路径身份；该清单不是通达信官方字段定义，也不单独证明中文业务含义。
 
-| Gemini 18 字段 | 核实状态 |
+| Gemini 历史字段清单（19 项） | 核实状态 |
 |:---|:---|
-| `gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry` | ✅ 全部正确，key 命名 100% 一致 |
-| 协议中**未提及**的 18 字段 | `market/code/guojiagu/faqirenfarengu/farengu/bgu/hgu/zhigonggu/liudongzichan/gudingzichan/wuxingzichan/zhuyinglirun/yingyelirun/touzishouyu/zongxianjinliu/lirunzonghe/shuihoulirun/baoliu2` | **新增**（TDX 0x0010 财务值的当前释义和适配器路径分别见 §2.1 与对应 E3 记录） |
+| `gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry` | 第一组实际含 19 个独立槽位代码。 |
+| 历史清单未列出的其余 18 项 | `market/code/guojiagu/faqirenfarengu/farengu/bgu/hgu/zhigonggu/liudongzichan/gudingzichan/wuxingzichan/zhuyinglirun/yingyelirun/touzishouyu/zongxianjinliu/lirunzonghe/shuihoulirun/baoliu2` |
+
+> 两个斜杠分隔清单是分组索引，不构成字段路径；第二组的 18 个代码与第一组无重复，合计 37 个不同槽位代码。字段语义仍以逐字段证据为准。
 
 > **2026-11-13 精确输出路径补证**：`TDX(双命名源)::zhuyinglyrun` 是独立键，实测对应合并利润表“营业成本”，单位为角；不要与已定案为主营业务利润的 `zhuyinglirun` 混同。`ipodate` 与 `updateddate` 分别是 `ipo_date`、`updated_date` 的无下划线兼容别名；后者表示财务记录更新日，不是报告期或采集日。具体样本与适配器格式边界见 [`20261113_tdx_finance_aliases_evidence.md`](field_verification/adjudications/20261113_tdx_finance_aliases_evidence.md)。
 

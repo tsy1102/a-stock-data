@@ -111,7 +111,7 @@ def test_unknown_queue_separates_meaning_annotations_from_status_resolution():
     assert "field.verified" not in rendered
 
 
-def test_unknown_queue_distinguishes_retired_paths_schema_tokens_and_containers():
+def test_unknown_queue_distinguishes_retired_paths_nonfield_lists_and_containers():
     registry = {
         "source_fields": [
             {
@@ -128,6 +128,15 @@ def test_unknown_queue_distinguishes_retired_paths_schema_tokens_and_containers(
                 "code": "YYYYMMDD",
                 "canonical": "",
                 "meaning": "",
+                "unit": "",
+                "status": "disproved",
+                "status_resolution": "not_field_schema_token",
+            },
+            {
+                "source": "source-a",
+                "code": "field_a/field_b",
+                "canonical": "",
+                "meaning": "历史文档清单，不是单一来源路径。",
                 "unit": "",
                 "status": "disproved",
                 "status_resolution": "not_field_schema_token",
@@ -165,17 +174,20 @@ def test_unknown_queue_distinguishes_retired_paths_schema_tokens_and_containers(
     rendered = render_unknown_fields(registry)
     retired_row = next(line for line in rendered.splitlines() if "`legacy.leaf`" in line)
     token_row = next(line for line in rendered.splitlines() if "`YYYYMMDD`" in line)
+    list_row = next(line for line in rendered.splitlines() if "`field_a/field_b`" in line)
     container_row = next(line for line in rendered.splitlines() if "`limit_up_pool`" in line)
     derived_row = next(line for line in rendered.splitlines() if "`change_pct`" in line)
     passthrough_row = next(line for line in rendered.splitlines() if "`amount_1d`" in line)
 
     assert "已退役路径身份（不进入默认破解）" in retired_row
-    assert "格式/类型标记（不是字段路径）" in token_row
+    assert "非字段标记或清单（不是字段路径）" in token_row
+    assert "非字段标记或清单（不是字段路径）" in list_row
     assert "采集器输出容器（不是字段路径）" in container_row
     assert "项目派生采集值（不是上游原始字段）" in derived_row
     assert "历史回退串源路径（不是该来源原始字段）" in passthrough_row
     assert "仍未验证" not in retired_row
     assert "仍未验证" not in token_row
+    assert "仍未验证" not in list_row
     assert "仍未验证" not in container_row
     assert "仍未验证" not in derived_row
     assert "仍未验证" not in passthrough_row

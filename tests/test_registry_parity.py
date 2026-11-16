@@ -8,6 +8,8 @@ from scripts import registry_parity
 
 def test_financial_comparison_group_label_is_not_a_field_matrix_key():
     assert registry_parity.gm.clean_field("**上年同期财务比较值**") == ""
+    assert registry_parity.gm.clean_field("Gemini 历史清单（19 项）") == ""
+    assert registry_parity.gm.clean_field("历史清单未列出的其余 18 项") == ""
 
 
 def test_field_matrix_treats_eltdx_adapter_as_the_same_source_family(monkeypatch):

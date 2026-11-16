@@ -248,15 +248,15 @@ SECTION_MAP = [
             "2.3 项目实际使用情况",
             "2.4 字段组在策略中的典型应用公式",
             "2.5 协议调用链路与数据流",
-            "2.6 与 Gemini 核实 18 字段的对比",
+            "2.6 与 Gemini 核实字段清单的逐项对照",
             "12.13.3 除权除息",
-            # 2026-09-20：补登 §2.1 协议完整 36 字段表（用户称 §2.2 静态股本节）。
+            # 2026-09-20：补登 §2.1 协议完整 37 字段表（用户称 §2.2 静态股本节）。
             # 该节 37 个拼音/英文名 token 早已经 RAW_FIELD_KEYS 注册于本源，
             # 但此前 SECTION_MAP 缺登 → section_to_sources 返回 [] → Layer2 永不处理
             # → meaning/status 全空。补登后 Layer2 据表头列名（token=col1 字段名、
             # meaning=col2 中文含义、status=col7 项目代码使用）回挂属性。
             # 0 新增 token（仅激活既有 token 的属性回挂），registered_field_sets 自洽、G1 parity-safe。
-            "2.1 协议完整 36 字段表",
+            "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         ],
     ),
     (

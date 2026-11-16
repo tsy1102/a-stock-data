@@ -27,19 +27,19 @@
 | Levistock历史未归属 | `stocks_em` | stocks_em / stocks_all_em | — | — | 含义为空/占位 | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
 | Levistock历史未归属 | `wind_stocks` | market_wind_cls / wind_stocks | — | — | 含义为空/占位 | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
 | Levistock历史未归属 | `wind_vane` | limit_up_his_kph / wind_vane | — | — | 含义为空/占位 | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| TDX(双命名源) | `changqifuzhai` | — | 长期负债 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `cunhuo` | — | 存货 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `industry` | — | 通达信行业编码 | 编码值（需查表） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `jingyingxianjinliu` | — | 经营活动现金流 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `liudongfuzhai` | — | 流动负债 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `meigujingzichan` | — | 每股净资产 | 元/股 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `province` | — | 省份编码 | 编码值（需查表） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `weifenpeilirun` | — | 未分配利润 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `yingshouzhangkuan` | — | 应收账款 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `zibengongjijin` | — | 资本公积金 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `zongguben` | — | 总股本 | 万股 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
-| TDX(双命名源) | `zongzichan` | — | 总资产 | 角（→元需角(/10得元)） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 36 个槽位；2.6 与 Gemini 核实 18 字段的对比 |
+| TDX(双命名源) | `changqifuzhai` | — | 长期负债 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `cunhuo` | — | 存货 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `industry` | — | 通达信行业编码 | 编码值（需查表） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `jingyingxianjinliu` | — | 经营活动现金流 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `liudongfuzhai` | — | 流动负债 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `meigujingzichan` | — | 每股净资产 | 元/股 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `province` | — | 省份编码 | 编码值（需查表） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `weifenpeilirun` | — | 未分配利润 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `yingshouzhangkuan` | — | 应收账款 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `zibengongjijin` | — | 资本公积金 | 角 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `zongguben` | — | 总股本 | 万股 | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
+| TDX(双命名源) | `zongzichan` | — | 总资产 | 角（→元需角(/10得元)） | 规范名为空 | 2.1 TDX 0x0010 逆向解析的 37 个槽位；2.6 与 Gemini 核实字段清单的逐项对照 |
 | ZHB-tdxstat | `[23]` | [23] | 待破解 | — | 含义为空/占位 | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | reports | `emRatingName` | emRatingName | — | — | 含义冲突；含义为空/占位 | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `industryCode` | — | — | — | 规范名为空；含义冲突；含义为空/占位 | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |

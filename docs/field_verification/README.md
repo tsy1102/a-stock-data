@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261116_tdx_latest_indicators_output_path.md`](adjudications/20261116_tdx_latest_indicators_output_path.md) 与 [`research/20261116_tdx_latest_indicators_path_inventory.csv`](research/20261116_tdx_latest_indicators_path_inventory.csv)：追踪 TDX F10「最新提示」解析器及采集器序列化路径，并复核保留期 18 个日期目录、两类 raw 各 360 条股票记录。将 `TDX(双命名源)::latest_indicators` 识别为项目解析容器而非上游原始字段；不据空归档定义其子项语义或来源实际日期。
 - [`20261116_cracking_closeout.md`](20261116_cracking_closeout.md)：复核 11 月 14–16 日的新浪/Fuyao、ELTDX、东财及 KPL 近期工作，区分来源内定案、路径清理、实现修复和探索碰撞；已补入新浪五档数量、腾讯卖盘数量与 `[87]` 字段裁决及腾讯买二/卖二价格索引修复。
 - [`adjudications/20261116_reports_pe_year_slots_evidence.md`](adjudications/20261116_reports_pe_year_slots_evidence.md)、[`adjudications/20261116_reports_pe_year_slots.json`](adjudications/20261116_reports_pe_year_slots.json) 与 [`adjudications/20261116_reports_pe_year_slots_samples.csv`](adjudications/20261116_reports_pe_year_slots_samples.csv)：依据三条不同研报 ID 的东方财富官方接口与详情页，定案 `reports::predictThisYearPe`、`predictNextYearPe`、`predictNextTwoYearPe` 分别对应响应 `currentYear`、后一年、后两年的预测 PE，单位倍；撤销因错用股本日期形成的旺能环境 EPS 反例，并将接口消费状态与字段语义分开记录。
 - [`adjudications/20261116_sina_depth_volume_semantics.md`](adjudications/20261116_sina_depth_volume_semantics.md) 与 [`research/20261116_sina_depth_volume_samples.csv`](research/20261116_sina_depth_volume_samples.csv)：用 18 个来源日、20 只股票复核新浪买三至买五及卖三至卖五数量路径；六字段各 360/360 按股数换算手数后命中腾讯同档数量，同档价格锚各 360/360 精确一致。定案新浪路径单位为股，不建立跨源映射；同时确认腾讯买二/卖二价格槽为 `[11]/[21]`，相邻 `[12]/[22]` 为数量。

@@ -23833,20 +23833,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "TDX F10 输出路径审计（2026-11-16）",
+      "canonical": "reminders.latest_indicators",
+      "meaning": "项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "lbc",
@@ -87531,22 +87528,25 @@
       "code": "latest_indicators",
       "identity": "TDX(双命名源)::latest_indicators",
       "path": "latest_indicators",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "reminders.latest_indicators",
+      "meaning": "项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。",
       "unit": "",
-      "section": "",
+      "section": "TDX F10 输出路径审计（2026-11-16）",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
+        "adjudication_evidence_id": "tdx-latest-indicators-output-20261116:latest_indicators",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_latest_indicators_output_path.md",
         "reference_statuses": [],
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "TDX(双命名源)"
         ],
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -87562,6 +87562,58 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "registry_status_only_single_source",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": "unverified",
+          "registry_aggregate_sources": [
+            "TDX(双命名源)"
+          ],
+          "values": [
+            "unverified"
+          ]
+        },
+        "reference_evidence": [],
+        "attribute_conflicts": {},
+        "registry_aggregate": {
+          "code": "latest_indicators",
+          "sources": [
+            "TDX(双命名源)"
+          ],
+          "status": "unverified",
+          "status_raw": "",
+          "canonical": "",
+          "meaning": "",
+          "unit": "",
+          "section": ""
+        }
+      },
+      "adjudication_evidence": {
+        "id": "tdx-latest-indicators-output-20261116:latest_indicators",
+        "decision": "disproved",
+        "decision_date": "2026-11-16",
+        "decision_note": "docs/field_verification/adjudications/20261116_tdx_latest_indicators_output_path.md",
+        "reason": "tdx_get_latest_reminders 从 F10 分类文本构造 latest_indicators 字典，collect_tdx_f10_more 再把函数返回值写入 reminders 容器；该身份不是上游原始字段。2026-10-15 起 18 个保留目录、raw_tdx 与 raw_tdx_f10_more 共 720 条股票记录均无此键路径。F10 raw 没有来源 as_of_date 且核心 TDX 有 partial 日，因此样本仅作结构旁证，不作语义/数值结论。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261116_tdx_latest_indicators_output_path.md",
+          "docs/field_verification/research/20261116_tdx_latest_indicators_path_inventory.csv",
+          "core/tdx_client.py",
+          "scripts/capture_tcp_collectors.py",
+          "stock_common/sc_capital_cache.py",
+          "docs/field_source_reference.md"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 18,
+        "stock_record_count": 720,
+        "structured_evidence": "docs/field_verification/research/20261116_tdx_latest_indicators_path_inventory.csv"
       }
     },
     {

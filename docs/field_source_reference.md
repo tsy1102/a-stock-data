@@ -398,7 +398,7 @@ flowchart TD
 | `gudong_renshu` | `gudongrenshu` | [sc_datasource.py:228](../stock_common/sc_datasource.py#L228) `_holder_fetch_tdx_optimized` | **股东户数永远拿不到**（拼写错误，多了下划线） |
 | `total_capital` | `zongguben` | [sc_capital_cache.py:125](../stock_common/sc_capital_cache.py#L125) `_fetch_share_capital` | **TDX 总股本永远拿不到**（错用股本 cache 的 key） |
 | `float_capital` | `liutongguben` | [sc_capital_cache.py:126](../stock_common/sc_capital_cache.py#L126) `_fetch_share_capital` | **TDX 流通股本永远拿不到** |
-| `latest_indicators` | **F10 接口字段**（非 0x0010） | [sc_capital_cache.py:123](../stock_common/sc_capital_cache.py#L123) | **完全错配接口**：期望 dict 含 `latest_indicators`，但 0x0010 返回的 dict 无此 key |
+| `latest_indicators` | **项目对 TDX F10「最新提示」文本解析生成的容器**（不是上游响应字段） | 历史错配记录：旧股本缓存曾从 0x0010 读取此键，现已修复 | 容器写在个股记录的提醒子对象中；容器子项的业务口径须分别核验 |
 | `short_term_debt` | `liudongfuzhai` | 仅在 [docs/field_dict.md](../docs/field_dict.md) 文档 | 文档错误，代码未引用 |
 | `long_term_debt` | `changqifuzhai` | 同上 | 文档错误，代码未引用 |
 | `meigugongji` | `zibengongjijin / 10000` | 同上 | 文档错误，应是 zibengongjijin 除以 10000 |

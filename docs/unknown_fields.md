@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2634；日常来源路径 2490：unverified 868、candidate 1、conflict 20、disproved 92；历史来源路径 144。
+> 注册字段路径 2634；日常来源路径 2490：unverified 867、candidate 1、conflict 20、disproved 93；历史来源路径 144。
 > 另有 146 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 726 |
+| 含义栏为空/占位 | 725 |
 | 含义栏有文本（仍未验证） | 142 |
 
 ### 历史状态证据的解析结果
@@ -26,7 +26,7 @@
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 58 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 427 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 426 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 42 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（20）
@@ -60,7 +60,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（868）
+## 三、待破解字段（867）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -90,7 +90,6 @@
 | TDX(双命名源) | `jing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `jingying_xianjinliu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `last_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `latest_indicators` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `limit_down` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `limit_down_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `limit_up` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -933,13 +932,14 @@
 | 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（92）
+## 四、已证伪（默认不重复破解）（93）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | TDX(双命名源) | `YYYYMMDD` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
 | TDX(双命名源) | `byte` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
 | TDX(双命名源) | `float` | — | — | — | 格式/类型标记（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `latest_indicators` | reminders.latest_indicators | 项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX F10 输出路径审计（2026-11-16） |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | — |
 | TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | 万元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | 万元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |

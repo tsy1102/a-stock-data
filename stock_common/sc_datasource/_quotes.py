@@ -148,10 +148,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "bid_ask_net": _tv(
                 "bid_ask_net"
             ),  # Tencent[50]; push2 f192 is a separate source candidate
-            # V17.2.x(2026-09-10) 调整 C/D: 委比/买二卖二价/内盘外盘（字典 §12.8.12e canonical 实装）
+            # 腾讯盘口价格/数量交替排列：买二价[11]、卖二价[21]；[12]/[22] 是对应数量。
             "entrust_ratio": _tv("entrust_ratio"),  # 委比%(腾讯[74]；push2 f191 / TDX快照 同义)
-            "bid2": _tv("bid2"),  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
-            "ask2": _tv("ask2"),  # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
+            "bid2": _tv("bid2"),  # 买二价(元, 腾讯[11]；TDX bid2 / 新浪[13])
+            "ask2": _tv("ask2"),  # 卖二价(元, 腾讯[21]；TDX ask2 / 新浪[23])
             "s_vol": _ssv,  # 内盘(主动卖, 手) — 腾讯[8]（科创板按股已÷_vdiv 归手）
             "b_vol": _bsv,  # 外盘(主动买, 手) — 腾讯[7]（科创板按股已÷_vdiv 归手）
             "bid1_vol": _safe_float(

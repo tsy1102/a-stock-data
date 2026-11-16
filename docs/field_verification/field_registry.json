@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 351,
+      "aggregate_status_scope_unresolved": 345,
       "candidate": 1,
       "collector_output_container": 9,
       "conflict": 23,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 999,
-      "verified": 1519,
-      "verified_by_empirical_addendum": 162,
+      "unverified": 993,
+      "verified": 1525,
+      "verified_by_empirical_addendum": 168,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -5628,7 +5628,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[14]",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -5637,15 +5637,12 @@
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -5691,7 +5688,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[16]",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -5700,15 +5697,12 @@
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -5754,7 +5748,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[18]",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -5763,14 +5757,12 @@
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "unverified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
         "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
@@ -5961,17 +5953,19 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -6012,17 +6006,19 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -6063,17 +6059,19 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -45856,6 +45854,24 @@
     ],
     "kpl_category_limit_up_stock_count": [
       "开盘啦(kpl_limit_up_detail)"
+    ],
+    "[14]": [
+      "新浪(hq.sinajs)"
+    ],
+    "[16]": [
+      "新浪(hq.sinajs)"
+    ],
+    "[18]": [
+      "新浪(hq.sinajs)"
+    ],
+    "[24]": [
+      "新浪(hq.sinajs)"
+    ],
+    "[26]": [
+      "新浪(hq.sinajs)"
+    ],
+    "[28]": [
+      "新浪(hq.sinajs)"
     ]
   },
   "mappings": [
@@ -242279,13 +242295,15 @@
       "code": "[14]",
       "identity": "新浪(hq.sinajs)::[14]",
       "path": "[14]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[14]",
+      "meaning": "买三档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -242299,9 +242317,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-14"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.5,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[14] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[14]",
+          "meaning": "买三档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-14",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[14]",
+              "meaning": "买三档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[14] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[14]",
@@ -242318,7 +242397,56 @@
         "meaning": "扣非净利润 (万元) = 官方 KfEarnMoney",
         "unit": "万元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-14",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[14]",
+              "meaning": "买三档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [14] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [14] 完全吻合（360/360）；最大残差 0.5 手。该档新浪价格 [15] 与腾讯价格 [13] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[14] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -242403,13 +242531,15 @@
       "code": "[16]",
       "identity": "新浪(hq.sinajs)::[16]",
       "path": "[16]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[16]",
+      "meaning": "买四档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -242423,9 +242553,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-16"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.48,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[16] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[16]",
+          "meaning": "买四档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-16",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[16]",
+              "meaning": "买四档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.48,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[16] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[16]",
@@ -242442,7 +242633,56 @@
         "meaning": "研发投入 RDInputFee（万元）",
         "unit": "元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-16",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[16]",
+              "meaning": "买四档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [16] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [16] 完全吻合（360/360）；最大残差 0.48 手。该档新浪价格 [17] 与腾讯价格 [15] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.48,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[16] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -242527,13 +242767,15 @@
       "code": "[18]",
       "identity": "新浪(hq.sinajs)::[18]",
       "path": "[18]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[18]",
+      "meaning": "买五档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -242547,9 +242789,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-18"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.49,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[18] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[18]",
+          "meaning": "买五档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-18",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[18]",
+              "meaning": "买五档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.49,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[18] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[18]",
@@ -242566,7 +242869,56 @@
         "meaning": "截至T-1的20根K线涨跌幅",
         "unit": "元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-18",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[18]",
+              "meaning": "买五档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [18] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [18] 完全吻合（360/360）；最大残差 0.49 手。该档新浪价格 [19] 与腾讯价格 [17] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.49,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[18] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -242995,13 +243347,15 @@
       "code": "[24]",
       "identity": "新浪(hq.sinajs)::[24]",
       "path": "[24]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[24]",
+      "meaning": "卖三档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -243013,9 +243367,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-24"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.49,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[24] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[24]",
+          "meaning": "卖三档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-24",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[24]",
+              "meaning": "卖三档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.49,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[24] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[24]",
@@ -243030,7 +243445,56 @@
         "meaning": "现金总额 CashZJ（万元）",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-24",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[24]",
+              "meaning": "卖三档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [24] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [24] 完全吻合（360/360）；最大残差 0.49 手。该档新浪价格 [25] 与腾讯价格 [23] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.49,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[24] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -243111,13 +243575,15 @@
       "code": "[26]",
       "identity": "新浪(hq.sinajs)::[26]",
       "path": "[26]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[26]",
+      "meaning": "卖四档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -243129,9 +243595,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-26"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.5,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[26] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[26]",
+          "meaning": "卖四档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-26",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[26]",
+              "meaning": "卖四档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[26] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[26]",
@@ -243146,7 +243673,56 @@
         "meaning": "年内涨停天数 YearZTDay",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-26",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[26]",
+              "meaning": "卖四档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [26] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [26] 完全吻合（360/360）；最大残差 0.5 手。该档新浪价格 [27] 与腾讯价格 [25] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[26] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -243227,13 +243803,15 @@
       "code": "[28]",
       "identity": "新浪(hq.sinajs)::[28]",
       "path": "[28]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[28]",
+      "meaning": "卖五档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪五档盘口数量来源内实证",
+      "sections": [
+        "2026-11-16 新浪五档盘口数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -243245,9 +243823,70 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-depth-volume-28"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+        "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+        "sample": {
+          "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+          "stock_count": 20,
+          "max_quantity_residual_hands": 0.5,
+          "source_date_count": 18,
+          "counterexample_count": 0,
+          "matched_count": 360,
+          "observation_count": 360,
+          "price_anchor_count": 360,
+          "comparison_count": 360,
+          "excluded_count": 0,
+          "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[28] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+          "price_anchor_match_count": 360
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 新浪五档盘口数量来源内实证",
+          "canonical": "[28]",
+          "meaning": "卖五档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-depth-volume-28",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[28]",
+              "meaning": "卖五档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[28] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[28]",
@@ -243262,7 +243901,56 @@
         "meaning": "近 5 日涨跌幅 (%)",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-depth-volume-28",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_sina_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_sina_depth_volume_semantics.md",
+          "evidence_sha256": "080111e609ce5d8f3deb1e787665caa4ff6f7799f9f417e04debe076a007f73a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[28]",
+              "meaning": "卖五档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新浪原始路径 [28] 在 18 个来源数据日、20 只股票的 360 个股票日中，按原始股数除以 100 并按 ROUND_HALF_UP 取整后，与同档腾讯数量 [28] 完全吻合（360/360）；最大残差 0.5 手。该档新浪价格 [29] 与腾讯价格 [27] 另有 360/360 精确锚定。确认该来源路径的盘口方向、档位和股单位；不建立跨源映射，不推断订单来源或刷新机制。",
+          "sample": {
+            "conversion": "ROUND_HALF_UP(Sina shares / 100) == Tencent integer hands",
+            "stock_count": 20,
+            "max_quantity_residual_hands": 0.5,
+            "source_date_count": 18,
+            "counterexample_count": 0,
+            "matched_count": 360,
+            "observation_count": 360,
+            "price_anchor_count": 360,
+            "comparison_count": 360,
+            "excluded_count": 0,
+            "scope": "2026-10-15 至 2026-11-12 的 18 个合格来源数据日；新浪(hq.sinajs)::[28] 与同档腾讯数量、价格锚逐股票日对照；日期和阶段以 raw 字段及 meta source_as_of_dates 核验",
+            "price_anchor_match_count": 360
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",

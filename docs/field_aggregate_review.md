@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 514 条逐源记录。
+> 聚合歧义 140 个 code；聚合定义不完整 192 个 code；疑似合并文本 514 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -259,14 +259,14 @@
 
 ### `[14]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[14]` | [14] | 扣非净利润 (万元) = 官方 KfEarnMoney | — | `verified` |
 | ZHB-tdxstat2 · `[14]` | [14] | 当日开盘集合竞价成交额 | 万元 | `verified` |
 | ZHB-tipinfo · `[14]` | [14] | 解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证） | — | `verified` |
-| 新浪(hq.sinajs) · `[14]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[14]` | [14] | 买三档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[14]` | [14] | 买3量 | 手 | `verified` |
 
 ### `[15]` — ambiguous
@@ -283,14 +283,14 @@
 
 ### `[16]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[16]` | [16] | 研发投入 RDInputFee（万元） | — | `verified` |
 | ZHB-tdxstat2 · `[16]` | [16] | IPO 发行价 = 官方 IPO_Price | 元 | `verified` |
 | ZHB-tipinfo · `[16]` | [16] | (老)增发募集金额(万元) | — | `verified` |
-| 新浪(hq.sinajs) · `[16]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[16]` | [16] | 买四档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[16]` | [16] | 买4量 | 手 | `verified` |
 
 ### `[17]` — ambiguous
@@ -307,14 +307,14 @@
 
 ### `[18]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[18]` | [18] | 截至T-1的20根K线涨跌幅 | — | `verified` |
 | ZHB-tdxstat2 · `[18]` | [18] | 52周最低价 = 官方 HisLow | 元 | `verified` |
 | ZHB-tipinfo · `[18]` | [18] | 恒空占位符 | — | `unverified` |
-| 新浪(hq.sinajs) · `[18]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[18]` | [18] | 买五档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[18]` | [18] | 买5量 | 手 | `verified` |
 
 ### `[19]` — ambiguous
@@ -384,14 +384,14 @@
 | 新浪(hq.sinajs) · `[23]` | [23] | 卖二价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[23]` | [23] | 卖三价 | 元 | `verified` |
 
-### `[24]` — incomplete
+### `[24]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[24]` | [24] | 现金总额 CashZJ（万元） | — | `verified` |
-| 新浪(hq.sinajs) · `[24]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[24]` | [24] | 卖三档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[24]` | — | — | — | `unverified` |
 
 ### `[25]` — ambiguous
@@ -404,14 +404,14 @@
 | 新浪(hq.sinajs) · `[25]` | [25] | 卖三价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[25]` | [25] | 卖四价 | 元 | `verified` |
 
-### `[26]` — incomplete
+### `[26]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[26]` | [26] | 年内涨停天数 YearZTDay | — | `verified` |
-| 新浪(hq.sinajs) · `[26]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[26]` | [26] | 卖四档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[26]` | — | — | — | `unverified` |
 
 ### `[27]` — ambiguous
@@ -424,14 +424,14 @@
 | 新浪(hq.sinajs) · `[27]` | [27] | 卖四价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[27]` | [27] | 卖五价 | 元 | `verified` |
 
-### `[28]` — incomplete
+### `[28]` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[28]` | [28] | 近 5 日涨跌幅 (%) | — | `verified` |
-| 新浪(hq.sinajs) · `[28]` | — | — | — | `unverified` |
+| 新浪(hq.sinajs) · `[28]` | [28] | 卖五档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[28]` | — | — | — | `unverified` |
 
 ### `[29]` — ambiguous

@@ -36,7 +36,12 @@ class _FakeResponse:
         self.encoding = "utf-8"
 
 
-def _fake_tencent_line(code: str, volume_raw: float, price: str = "10.30") -> str:
+def _fake_tencent_line(
+    code: str,
+    volume_raw: float,
+    price: str = "10.30",
+    order_book_values: dict[int, str] | None = None,
+) -> str:
     """构造一条腾讯行情响应（字段以 ~ 分隔，长度需 >= _TENCENT_MIN_FIELDS）"""
     f = [""] * 90
     f[1] = "测试股份"  # name
@@ -67,6 +72,8 @@ def _fake_tencent_line(code: str, volume_raw: float, price: str = "10.30") -> st
     f[67] = "12.00"  # high_52w
     f[68] = "8.00"  # low_52w
     f[85] = "10.29"  # panel_price
+    for index, value in (order_book_values or {}).items():
+        f[index] = value
     prefix = "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
     return f'v_{prefix}{code}="{"~".join(f)}";'
 
@@ -130,6 +137,22 @@ class TestGetTencentQuoteVolumeUnit(unittest.TestCase):
         """600519: 腾讯给 16,126 手 → 应原样输出 16,126 手"""
         got = self._call("600519", 16126)
         self.assertAlmostEqual(got.get("volume_hand"), 16126.0, places=2, msg="主板成交量被误换算")
+
+    def test_bid2_ask2_read_price_slots_not_adjacent_volume_slots(self):
+        """腾讯 [11]/[21] 是买二/卖二价，[12]/[22] 是数量。"""
+        import stock_common
+        from stock_common import sc_datasource
+
+        text = _fake_tencent_line(
+            "600519",
+            16126,
+            order_book_values={11: "10.11", 12: "111", 21: "10.21", 22: "222"},
+        )
+        with patch.object(stock_common, "_quick_request", return_value=_FakeResponse(text)):
+            got = sc_datasource.get_tencent_quote("600519")
+
+        self.assertEqual(got.get("bid2"), 10.11)
+        self.assertEqual(got.get("ask2"), 10.21)
 
     def test_bj_market_volume_unchanged(self):
         """920118: 北交所实测为手 → 原样输出"""

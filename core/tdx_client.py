@@ -931,10 +931,11 @@ _TENCENT_FIELD_INDEX = {
     # Tier2 research candidate only: Tencent[50] and push2 f192 have not been shown
     # to share normalized semantics or units; this key is excluded from Tier1.
     "bid_ask_net": 50,
-    # V17.2.x(2026-09-10) 统一层接线补全(字典 §12.8.12e canonical 实装):
+    # Tencent order-book slots alternate price then quantity. The second-level
+    # prices are [11]/[21]; [12]/[22] are their quantities.
     "entrust_ratio": 74,  # 委比%(腾讯[74]；push2 f191 / TDX快照 entrust_ratio 同义)
-    "bid2": 12,  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
-    "ask2": 22,  # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
+    "bid2": 11,  # 买二价(元, 腾讯[11]；新浪[13])
+    "ask2": 21,  # 卖二价(元, 腾讯[21]；新浪[23])
     # V17.0.12: 腾讯[7]=外盘(主动买)/[8]=内盘(主动卖) 单位随板块(科创板按股, 需÷_tencent_volume_divisor 归手)
     "s_vol": 8,  # 内盘(主动卖成交量, 手/股随板块) — 统一层键 s_vol（腾讯[8]）
     "b_vol": 7,  # 外盘(主动买成交量, 手/股随板块) — 统一层键 b_vol（腾讯[7]）

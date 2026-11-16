@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 513 条逐源记录。
+> 聚合歧义 137 个 code；聚合定义不完整 195 个 code；疑似合并文本 514 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3747,6 +3747,7 @@
 | 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_15` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；不是 N 天 M 板标签中的窗口涨停次数 M | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_19` | sector_code | 行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同） | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `raw_columns.col_20` | kpl_category_limit_up_stock_count | 同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_21` | price | 现价（元；数据日收盘后采集时对应当日收盘价） | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `turnover_real` | turnover_real | 实际换手率；与 KPH turnover_rate 两日逐值一致 | `verified` |

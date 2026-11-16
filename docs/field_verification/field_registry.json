@@ -32,8 +32,8 @@
       "status_missing": 41,
       "unresolved": 8,
       "unverified": 999,
-      "verified": 1518,
-      "verified_by_empirical_addendum": 161,
+      "verified": 1519,
+      "verified_by_empirical_addendum": 162,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -31219,6 +31219,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "raw_columns.col_20",
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "sources": [
+        "开盘啦(kpl_limit_up_detail)"
+      ],
+      "section": "2026-11-16 KPL raw_columns.col_20 来源内实证裁决",
+      "canonical": "kpl_category_limit_up_stock_count",
+      "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+      "unit": "家",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "开盘啦(kpl_limit_up_detail)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "raw_columns.col_21",
       "source": "开盘啦(kpl_limit_up_detail)",
       "sources": [
@@ -45835,6 +45853,9 @@
     ],
     "f176": [
       "东财-push2(stock/get)"
+    ],
+    "kpl_category_limit_up_stock_count": [
+      "开盘啦(kpl_limit_up_detail)"
     ]
   },
   "mappings": [
@@ -238662,6 +238683,135 @@
         {
           "file": "docs/field_verification/20261105/raw_kpl.json",
           "path": "stocks.[*].raw_columns.col_19"
+        }
+      ]
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "raw_columns.col_20",
+      "identity": "开盘啦(kpl_limit_up_detail)::raw_columns.col_20",
+      "path": "raw_columns.col_20",
+      "canonical": "kpl_category_limit_up_stock_count",
+      "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+      "unit": "家",
+      "section": "2026-11-16 KPL raw_columns.col_20 来源内实证裁决",
+      "sections": [
+        "2026-11-16 KPL raw_columns.col_20 来源内实证裁决"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "开盘啦(kpl_limit_up_detail)"
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261116-kpl-col20-category-limit-up-count"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+        "evidence_sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f",
+        "sample": {
+          "scope": "2026-10-16 至 2026-11-12 的 17 个 KPL 来源交易日；开盘啦(kpl_limit_up_detail)::raw_columns.col_20；同日按 raw_columns.col_19 分类码分组，对比每条值与 KPL PidType=1..5 合并返回记录数",
+          "comparison_count": 1096,
+          "matched_count": 1096,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 30,
+          "stock_count": 695
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 KPL raw_columns.col_20 来源内实证裁决",
+          "canonical": "kpl_category_limit_up_stock_count",
+          "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+          "unit": "家",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-kpl-col20-category-limit-up-count",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+          "evidence_sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_category_limit_up_stock_count",
+              "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+              "unit": "家"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-16 至 2026-11-12 的 17 个 KPL 来源交易日；开盘啦(kpl_limit_up_detail)::raw_columns.col_20；同日按 raw_columns.col_19 分类码分组，对比每条值与 KPL PidType=1..5 合并返回记录数",
+            "comparison_count": 1096,
+            "matched_count": 1096,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 30,
+            "stock_count": 695
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261116-kpl-col20-category-limit-up-count",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_kpl_col20_empirical_semantics.json",
+          "evidence_file": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+          "evidence_sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_category_limit_up_stock_count",
+              "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+              "unit": "家"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "适配器将上游响应 row[20] 精确保留为 raw_columns.col_20，采集器合并 PidType=1..5 并按股票代码去重归档。对来源日期合格的 17 个交易日全部 1,096 条记录，col_20 均精确等于同日同 col_19 分类码的唯一返回行数，未见反例；col_20 范围为 1–40。2026-10-15 的 30 条旧格式记录没有此路径，作为路径缺失排除。官方首页未提供原始列定义。KPL 与 KPH industry_limit_up_count 的 500 组共同股票日中有 50 组不同，故只确认 KPL 来源内含义，不建立跨源映射。",
+          "sample": {
+            "scope": "2026-10-16 至 2026-11-12 的 17 个 KPL 来源交易日；开盘啦(kpl_limit_up_detail)::raw_columns.col_20；同日按 raw_columns.col_19 分类码分组，对比每条值与 KPL PidType=1..5 合并返回记录数",
+            "comparison_count": 1096,
+            "matched_count": 1096,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 30,
+            "stock_count": 695
+          }
+        }
+      ],
+      "capture_evidence": [
+        {
+          "file": "docs/field_verification/20261016/raw_kpl.json",
+          "path": "stocks.[*].raw_columns.col_20"
         }
       ]
     },

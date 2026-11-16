@@ -903,13 +903,14 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     registry = registry_parity.fra.load_registry()
     captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
 
-    assert len(captured) == 40
+    assert len(captured) == 41
     verified = [row for row in captured if row["status"] == "verified"]
     assert {(row["source"], row["code"]) for row in verified} == {
         ("TDX(双命名源)", "ask1_vol"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_13"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_15"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_20"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_21"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_22"),
     }
@@ -946,6 +947,20 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
         {
             "file": "docs/field_verification/20261109/raw_kpl.json",
             "path": "stocks.[*].raw_columns.col_13",
+        }
+    ]
+    category_count = next(row for row in verified if row["code"] == "raw_columns.col_20")
+    assert category_count["canonical"] == "kpl_category_limit_up_stock_count"
+    assert category_count["meaning"].startswith("同一来源交易日内，按 raw_columns.col_19")
+    assert category_count["unit"] == "家"
+    assert category_count["status_resolution"] == "verified_by_empirical_addendum"
+    assert category_count["status_evidence"]["evidence_file"] == (
+        "adjudications/20261116_kpl_col20_category_limit_up_count.md"
+    )
+    assert category_count["capture_evidence"] == [
+        {
+            "file": "docs/field_verification/20261016/raw_kpl.json",
+            "path": "stocks.[*].raw_columns.col_20",
         }
     ]
 

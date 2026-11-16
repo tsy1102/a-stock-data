@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "evidence_file": "docs/field_verification/adjudications/20261116_kpl_col20_category_limit_up_count.md",
+  "evidence_sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f",
+  "decisions": [
+    {
+      "id": "20261116-kpl-col20-category-limit-up-count",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "raw_columns.col_20"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "kpl_category_limit_up_stock_count",
+      "meaning": "同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数",
+      "unit": "家",
+      "section": "2026-11-16 KPL raw_columns.col_20 来源内实证裁决",
+      "rationale": "适配器将上游响应 row[20] 精确保留为 raw_columns.col_20，采集器合并 PidType=1..5 并按股票代码去重归档。对来源日期合格的 17 个交易日全部 1,096 条记录，col_20 均精确等于同日同 col_19 分类码的唯一返回行数，未见反例；col_20 范围为 1–40。2026-10-15 的 30 条旧格式记录没有此路径，作为路径缺失排除。官方首页未提供原始列定义。KPL 与 KPH industry_limit_up_count 的 500 组共同股票日中有 50 组不同，故只确认 KPL 来源内含义，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-16 至 2026-11-12 的 17 个 KPL 来源交易日；开盘啦(kpl_limit_up_detail)::raw_columns.col_20；同日按 raw_columns.col_19 分类码分组，对比每条值与 KPL PidType=1..5 合并返回记录数",
+        "comparison_count": 1096,
+        "matched_count": 1096,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 30,
+        "stock_count": 695
+      }
+    }
+  ]
+}

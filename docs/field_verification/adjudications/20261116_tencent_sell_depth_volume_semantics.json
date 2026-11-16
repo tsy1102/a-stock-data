@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-16",
+  "evidence_file": "docs/field_verification/adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+  "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+  "decisions": [
+    {
+      "id": "20261116-tencent-sell-volume-22",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[22]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "[22]",
+      "meaning": "卖二档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [22] 均与新浪卖二数量 [22] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [21] 与新浪 [23] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [22] 的换算命中最多 26/360。确认精确路径为卖二档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [22]、raw_sina.json [22]/[23] 及来源日期元数据。",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "source_date_count": 18,
+        "price_anchor_match_count": 360,
+        "shares_equal_hands_times_100_match_count": 276,
+        "max_quantity_residual_hands": 0.5,
+        "alternate_sina_sell_level_match_counts": {
+          "sell2": 360,
+          "sell3": 26,
+          "sell4": 23,
+          "sell5": 21
+        }
+      }
+    },
+    {
+      "id": "20261116-tencent-sell-volume-24",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[24]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "[24]",
+      "meaning": "卖三档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [24] 均与新浪卖三数量 [24] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [23] 与新浪 [25] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [24] 的换算命中最多 26/360。确认精确路径为卖三档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [24]、raw_sina.json [24]/[25] 及来源日期元数据。",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "source_date_count": 18,
+        "price_anchor_match_count": 360,
+        "shares_equal_hands_times_100_match_count": 289,
+        "max_quantity_residual_hands": 0.49,
+        "alternate_sina_sell_level_match_counts": {
+          "sell2": 26,
+          "sell3": 360,
+          "sell4": 22,
+          "sell5": 22
+        }
+      }
+    },
+    {
+      "id": "20261116-tencent-sell-volume-26",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[26]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "[26]",
+      "meaning": "卖四档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [26] 均与新浪卖四数量 [26] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [25] 与新浪 [27] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [26] 的换算命中最多 23/360。确认精确路径为卖四档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [26]、raw_sina.json [26]/[27] 及来源日期元数据。",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "source_date_count": 18,
+        "price_anchor_match_count": 360,
+        "shares_equal_hands_times_100_match_count": 299,
+        "max_quantity_residual_hands": 0.5,
+        "alternate_sina_sell_level_match_counts": {
+          "sell2": 23,
+          "sell3": 22,
+          "sell4": 360,
+          "sell5": 21
+        }
+      }
+    },
+    {
+      "id": "20261116-tencent-sell-volume-28",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[28]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "[28]",
+      "meaning": "卖五档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [28] 均与新浪卖五数量 [28] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [27] 与新浪 [29] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [28] 的换算命中最多 22/360。确认精确路径为卖五档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [28]、raw_sina.json [28]/[29] 及来源日期元数据。",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "source_date_count": 18,
+        "price_anchor_match_count": 360,
+        "shares_equal_hands_times_100_match_count": 303,
+        "max_quantity_residual_hands": 0.5,
+        "alternate_sina_sell_level_match_counts": {
+          "sell2": 21,
+          "sell3": 22,
+          "sell4": 21,
+          "sell5": 360
+        }
+      }
+    },
+    {
+      "id": "20261116-sina-sell-volume-22-scope-correction",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "新浪(hq.sinajs)",
+        "code": "[22]"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "[22]-[29]",
+        "meaning": "卖二~卖五 量/价",
+        "unit": "股/元"
+      },
+      "canonical": "[22]",
+      "meaning": "卖二档委托数量",
+      "unit": "股",
+      "section": "2026-11-16 新浪卖盘路径范围纠正与单位实证",
+      "rationale": "现有注册表把精确 raw 路径 [22] 记为整个 [22]-[29] 范围；但原始响应的 [22] 是一个标量值，紧随已核卖一量/价 [20]/[21]，并与腾讯卖二数量 [22] 按股转手后 360/360 命中，后续同档价格 [23] 与腾讯 [21] 也 360/360 精确相等。将错误的范围级登记纠正为精确路径 [22] 的卖二数量，单位股；不创建跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_sina.json [22]/[23]、raw_tencent.json [22]/[21] 及来源日期元数据。",
+        "comparison_count": 360,
+        "matched_count": 360,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "source_date_count": 18,
+        "price_anchor_match_count": 360,
+        "shares_equal_hands_times_100_match_count": 276,
+        "max_quantity_residual_hands": 0.5,
+        "alternate_tencent_sell_level_match_counts": {
+          "sell2": 360,
+          "sell3": 26,
+          "sell4": 23,
+          "sell5": 21
+        }
+      }
+    }
+  ]
+}

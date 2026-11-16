@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 345,
+      "aggregate_status_scope_unresolved": 341,
       "candidate": 1,
       "collector_output_container": 9,
       "conflict": 23,
@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 104,
       "manual_semantic_retraction": 6,
-      "matched": 779,
+      "matched": 778,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 993,
-      "verified": 1525,
-      "verified_by_empirical_addendum": 168,
+      "unverified": 989,
+      "verified": 1529,
+      "verified_by_empirical_addendum": 173,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -5895,7 +5895,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[22]",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -5903,15 +5903,12 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_differs",
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -5949,7 +5946,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[24]",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -5957,14 +5954,12 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -6002,7 +5997,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[26]",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -6010,14 +6005,12 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -6055,7 +6048,7 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "[28]",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
@@ -6063,14 +6056,12 @@
       "source_statuses": {
         "ZHB-tdxstat": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -45865,13 +45856,20 @@
       "新浪(hq.sinajs)"
     ],
     "[24]": [
-      "新浪(hq.sinajs)"
+      "新浪(hq.sinajs)",
+      "腾讯(qt.gtimg)"
     ],
     "[26]": [
-      "新浪(hq.sinajs)"
+      "新浪(hq.sinajs)",
+      "腾讯(qt.gtimg)"
     ],
     "[28]": [
-      "新浪(hq.sinajs)"
+      "新浪(hq.sinajs)",
+      "腾讯(qt.gtimg)"
+    ],
+    "[22]": [
+      "新浪(hq.sinajs)",
+      "腾讯(qt.gtimg)"
     ]
   },
   "mappings": [
@@ -243196,15 +243194,16 @@
       "code": "[22]",
       "identity": "新浪(hq.sinajs)::[22]",
       "path": "[22]",
-      "canonical": "[22]-[29]",
-      "meaning": "卖二~卖五 量/价",
-      "unit": "股/元",
+      "canonical": "[22]",
+      "meaning": "卖二档委托数量",
+      "unit": "股",
       "section": "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
       "sections": [
-        "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）"
+        "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
+        "2026-11-16 新浪卖盘路径范围纠正与单位实证"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -243220,7 +243219,32 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-sina-sell-volume-22-scope-correction"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+        "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_sina.json [22]/[23]、raw_tencent.json [22]/[21] 及来源日期元数据。",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "source_date_count": 18,
+          "price_anchor_match_count": 360,
+          "shares_equal_hands_times_100_match_count": 276,
+          "max_quantity_residual_hands": 0.5,
+          "alternate_tencent_sell_level_match_counts": {
+            "sell2": 360,
+            "sell3": 26,
+            "sell4": 23,
+            "sell5": 21
+          }
+        }
       },
       "reference_evidence": [
         {
@@ -243230,6 +243254,49 @@
           "unit": "股/元",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-16 新浪卖盘路径范围纠正与单位实证",
+          "canonical": "[22]",
+          "meaning": "卖二档委托数量",
+          "unit": "股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-sina-sell-volume-22-scope-correction",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "metadata_change": {
+            "before": {
+              "canonical": "[22]-[29]",
+              "meaning": "卖二~卖五 量/价",
+              "unit": "股/元"
+            },
+            "after": {
+              "canonical": "[22]",
+              "meaning": "卖二档委托数量",
+              "unit": "股"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_sina.json [22]/[23]、raw_tencent.json [22]/[21] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 276,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_tencent_sell_level_match_counts": {
+              "sell2": 360,
+              "sell3": 26,
+              "sell4": 23,
+              "sell5": 21
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -243246,7 +243313,60 @@
         "meaning": "形态/板块代码 ShapeValue",
         "unit": "股/元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-sina-sell-volume-22-scope-correction",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "[22]-[29]",
+            "meaning": "卖二~卖五 量/价",
+            "unit": "股/元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[22]-[29]",
+              "meaning": "卖二~卖五 量/价",
+              "unit": "股/元"
+            },
+            "after": {
+              "canonical": "[22]",
+              "meaning": "卖二档委托数量",
+              "unit": "股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "现有注册表把精确 raw 路径 [22] 记为整个 [22]-[29] 范围；但原始响应的 [22] 是一个标量值，紧随已核卖一量/价 [20]/[21]，并与腾讯卖二数量 [22] 按股转手后 360/360 命中，后续同档价格 [23] 与腾讯 [21] 也 360/360 精确相等。将错误的范围级登记纠正为精确路径 [22] 的卖二数量，单位股；不创建跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_sina.json [22]/[23]、raw_tencent.json [22]/[21] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 276,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_tencent_sell_level_match_counts": {
+              "sell2": 360,
+              "sell3": 26,
+              "sell4": 23,
+              "sell5": 21
+            }
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",
@@ -248508,13 +248628,15 @@
       "code": "[22]",
       "identity": "腾讯(qt.gtimg)::[22]",
       "path": "[22]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[22]",
+      "meaning": "卖二档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "sections": [
+        "2026-11-16 腾讯卖盘数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -248526,9 +248648,78 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-tencent-sell-volume-22"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+        "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [22]、raw_sina.json [22]/[23] 及来源日期元数据。",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "source_date_count": 18,
+          "price_anchor_match_count": 360,
+          "shares_equal_hands_times_100_match_count": 276,
+          "max_quantity_residual_hands": 0.5,
+          "alternate_sina_sell_level_match_counts": {
+            "sell2": 360,
+            "sell3": 26,
+            "sell4": 23,
+            "sell5": 21
+          }
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 腾讯卖盘数量来源内实证",
+          "canonical": "[22]",
+          "meaning": "卖二档委托数量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-tencent-sell-volume-22",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[22]",
+              "meaning": "卖二档委托数量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [22]、raw_sina.json [22]/[23] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 276,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 360,
+              "sell3": 26,
+              "sell4": 23,
+              "sell5": 21
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[22]",
@@ -248543,7 +248734,60 @@
         "meaning": "形态/板块代码 ShapeValue",
         "unit": "股/元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-tencent-sell-volume-22",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[22]",
+              "meaning": "卖二档委托数量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [22] 均与新浪卖二数量 [22] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [21] 与新浪 [23] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [22] 的换算命中最多 26/360。确认精确路径为卖二档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [22]、raw_sina.json [22]/[23] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 276,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 360,
+              "sell3": 26,
+              "sell4": 23,
+              "sell5": 21
+            }
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",
@@ -248624,13 +248868,15 @@
       "code": "[24]",
       "identity": "腾讯(qt.gtimg)::[24]",
       "path": "[24]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[24]",
+      "meaning": "卖三档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "sections": [
+        "2026-11-16 腾讯卖盘数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -248642,9 +248888,78 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-tencent-sell-volume-24"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+        "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [24]、raw_sina.json [24]/[25] 及来源日期元数据。",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "source_date_count": 18,
+          "price_anchor_match_count": 360,
+          "shares_equal_hands_times_100_match_count": 289,
+          "max_quantity_residual_hands": 0.49,
+          "alternate_sina_sell_level_match_counts": {
+            "sell2": 26,
+            "sell3": 360,
+            "sell4": 22,
+            "sell5": 22
+          }
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 腾讯卖盘数量来源内实证",
+          "canonical": "[24]",
+          "meaning": "卖三档委托数量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-tencent-sell-volume-24",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[24]",
+              "meaning": "卖三档委托数量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [24]、raw_sina.json [24]/[25] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 289,
+            "max_quantity_residual_hands": 0.49,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 26,
+              "sell3": 360,
+              "sell4": 22,
+              "sell5": 22
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[24]",
@@ -248659,7 +248974,60 @@
         "meaning": "现金总额 CashZJ（万元）",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-tencent-sell-volume-24",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[24]",
+              "meaning": "卖三档委托数量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [24] 均与新浪卖三数量 [24] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [23] 与新浪 [25] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [24] 的换算命中最多 26/360。确认精确路径为卖三档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [24]、raw_sina.json [24]/[25] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 289,
+            "max_quantity_residual_hands": 0.49,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 26,
+              "sell3": 360,
+              "sell4": 22,
+              "sell5": 22
+            }
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",
@@ -248740,13 +249108,15 @@
       "code": "[26]",
       "identity": "腾讯(qt.gtimg)::[26]",
       "path": "[26]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[26]",
+      "meaning": "卖四档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "sections": [
+        "2026-11-16 腾讯卖盘数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -248758,9 +249128,78 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-tencent-sell-volume-26"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+        "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [26]、raw_sina.json [26]/[27] 及来源日期元数据。",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "source_date_count": 18,
+          "price_anchor_match_count": 360,
+          "shares_equal_hands_times_100_match_count": 299,
+          "max_quantity_residual_hands": 0.5,
+          "alternate_sina_sell_level_match_counts": {
+            "sell2": 23,
+            "sell3": 22,
+            "sell4": 360,
+            "sell5": 21
+          }
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 腾讯卖盘数量来源内实证",
+          "canonical": "[26]",
+          "meaning": "卖四档委托数量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-tencent-sell-volume-26",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[26]",
+              "meaning": "卖四档委托数量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [26]、raw_sina.json [26]/[27] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 299,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 23,
+              "sell3": 22,
+              "sell4": 360,
+              "sell5": 21
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[26]",
@@ -248775,7 +249214,60 @@
         "meaning": "年内涨停天数 YearZTDay",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-tencent-sell-volume-26",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[26]",
+              "meaning": "卖四档委托数量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [26] 均与新浪卖四数量 [26] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [25] 与新浪 [27] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [26] 的换算命中最多 23/360。确认精确路径为卖四档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [26]、raw_sina.json [26]/[27] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 299,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 23,
+              "sell3": 22,
+              "sell4": 360,
+              "sell5": 21
+            }
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",
@@ -248856,13 +249348,15 @@
       "code": "[28]",
       "identity": "腾讯(qt.gtimg)::[28]",
       "path": "[28]",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "[28]",
+      "meaning": "卖五档委托数量",
+      "unit": "手",
+      "section": "2026-11-16 腾讯卖盘数量来源内实证",
+      "sections": [
+        "2026-11-16 腾讯卖盘数量来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -248874,9 +249368,78 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-tencent-sell-volume-28"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+        "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [28]、raw_sina.json [28]/[29] 及来源日期元数据。",
+          "comparison_count": 360,
+          "matched_count": 360,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "source_date_count": 18,
+          "price_anchor_match_count": 360,
+          "shares_equal_hands_times_100_match_count": 303,
+          "max_quantity_residual_hands": 0.5,
+          "alternate_sina_sell_level_match_counts": {
+            "sell2": 21,
+            "sell3": 22,
+            "sell4": 21,
+            "sell5": 360
+          }
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-16 腾讯卖盘数量来源内实证",
+          "canonical": "[28]",
+          "meaning": "卖五档委托数量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-tencent-sell-volume-28",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[28]",
+              "meaning": "卖五档委托数量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [28]、raw_sina.json [28]/[29] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 303,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 21,
+              "sell3": 22,
+              "sell4": 21,
+              "sell5": 360
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[28]",
@@ -248891,7 +249454,60 @@
         "meaning": "近 5 日涨跌幅 (%)",
         "unit": "",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-tencent-sell-volume-28",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_sell_depth_volume_semantics.md",
+          "evidence_sha256": "1e6130c1617d77c1cc769f260936af175669c250abbd3129d6cc4610fe798aef",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[28]",
+              "meaning": "卖五档委托数量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "在 18 个经来源日期核实的数据日、20 只股票的 360 组原始配对中，腾讯 [28] 均与新浪卖五数量 [28] 的股转手 ROUND_HALF_UP 结果一致；同档价格腾讯 [27] 与新浪 [29] 另有 360/360 精确锚定。其他新浪卖档数量与腾讯 [28] 的换算命中最多 22/360。确认精确路径为卖五档委托数量、单位手；两源单位不同且采集时点未完全同步，不创建跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 18 个来源日期 × 20 只共同股票；直接读取 raw_tencent.json [28]、raw_sina.json [28]/[29] 及来源日期元数据。",
+            "comparison_count": 360,
+            "matched_count": 360,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "source_date_count": 18,
+            "price_anchor_match_count": 360,
+            "shares_equal_hands_times_100_match_count": 303,
+            "max_quantity_residual_hands": 0.5,
+            "alternate_sina_sell_level_match_counts": {
+              "sell2": 21,
+              "sell3": 22,
+              "sell4": 21,
+              "sell5": 360
+            }
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",

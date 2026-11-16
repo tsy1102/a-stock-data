@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tdx-inside-outside-axdata-path-semantics-20261116",
+  "reviewed_on": "2026-11-16",
+  "evidence_basis": "manual_public_data_semantic_adjudication",
+  "report": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+  "evidence": [
+    {
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+      "publisher": "通达信量化平台官方文档",
+      "retrieved_on": "2026-11-16"
+    },
+    {
+      "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+      "publisher": "通达信公式系统官方文档",
+      "retrieved_on": "2026-11-16"
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+      "publisher": "AxData public repository at pinned commit f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16"
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677",
+      "publisher": "AxData public repository at pinned commit f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "tdx-inside-volume-axdata-path-20261116",
+      "source": "TDX(双命名源)",
+      "code": "inside_volume",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "inside_volume",
+        "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版本将精确模型输出键 inside_volume 标为内盘量并从 TDX Ext 行情响应解码；通达信官方快照字段表及公式函数表独立定义 Inside/内盘，官方定义与该模型字段的名称及中文说明一致。该结论只核定模型字段表达的语义，不认定 AxData 键是官方 wire 字段、当前项目采集输出或与 s_vol 数值等价；官方契约未注明此路径单位，故留空。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+      ]
+    },
+    {
+      "id": "tdx-outside-volume-axdata-path-20261116",
+      "source": "TDX(双命名源)",
+      "code": "outside_volume",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "updated": {
+        "canonical": "outside_volume",
+        "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版本将精确模型输出键 outside_volume 标为外盘量并从 TDX Ext 行情响应解码；通达信官方快照字段表及公式函数表独立定义 Outside/外盘，官方定义与该模型字段的名称及中文说明一致。该结论只核定模型字段表达的语义，不认定 AxData 键是官方 wire 字段、当前项目采集输出或与 b_vol 数值等价；官方契约未注明此路径单位，故留空。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+      ]
+    }
+  ]
+}

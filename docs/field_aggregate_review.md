@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 140 个 code；聚合定义不完整 189 个 code；疑似合并文本 517 条逐源记录。
+> 聚合歧义 140 个 code；聚合定义不完整 189 个 code；疑似合并文本 519 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3331,11 +3331,13 @@
 | TDX(双命名源) | `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | `verified` |
 | TDX(双命名源) | `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | `verified` |
 | TDX(双命名源) | `gudongrenshu` | gudongrenshu | 股东户数；样本对应发行人报告期末普通股股东总数，按来源计数口径记录。 | `verified` |
+| TDX(双命名源) | `inside_volume` | inside_volume | 内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside） | `verified` |
 | TDX(双命名源) | `ipodate` | ipodate | ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。 | `verified` |
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
 | TDX(双命名源) | `latest_indicators` | reminders.latest_indicators | 项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。 | `disproved` |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | `disproved` |
 | TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
+| TDX(双命名源) | `outside_volume` | outside_volume | 外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside） | `verified` |
 | TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | `disproved` |

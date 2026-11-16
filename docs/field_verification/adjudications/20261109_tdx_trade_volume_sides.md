@@ -53,5 +53,5 @@
 
 - 总量关系验证了单位与两侧合计，但不能单独证明单侧分类语义；分类语义依据通达信官方字段定义与项目适配器赋值链。
 - TDX 与 Tencent 的内盘 / 外盘单侧数值不是逐值完全相等。两个采集源没有可确认的同一快照时间，且成交分类边界也可能不同，因此本次**不登记** `b_vol` / `s_vol` 与 Tencent 或东财单侧字段的映射。
-- 注册表中的 `inside_volume` / `outside_volume` 是不同的未验证路径；它们出现在历史字段参考与 AxData 研究中，但没有找到当前适配器把这两个路径作为运行字段输出的证据。本次不将其当成 `b_vol` / `s_vol` 的别名，也不据历史单样本定案；保留给后续路径溯源。
+- [`TDX(双命名源)::inside_volume` / `outside_volume`](20261116_tdx_inside_outside_axdata_semantics.md) 的后续复核确认了 AxData TDX 快照模型的内盘/外盘语义，但没有确认单位、wire 槽位或当前项目输出。不得将其视为 `b_vol` / `s_vol` 的数值别名；不据此建立跨源映射。
 - `quote_full.b_vol` / `quote_full.s_vol` 只在碰撞字段身份归一时并回各自已验证的 raw identity；其他 `quote_full` 路径保持独立。

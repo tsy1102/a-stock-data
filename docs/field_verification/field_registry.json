@@ -11,28 +11,28 @@
       "candidate": 1,
       "collector_output_container": 9,
       "conflict": 20,
-      "disproved": 92,
+      "disproved": 93,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
-      "manual_public_data_semantic_adjudication": 104,
+      "manual_public_data_semantic_adjudication": 106,
       "manual_semantic_retraction": 6,
       "matched": 778,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 16,
       "official_contract": 31,
-      "project_derived_capture_output": 7,
+      "project_derived_capture_output": 8,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 3,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 508,
+      "registry_status_only_single_source": 505,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 988,
-      "verified": 1533,
+      "unverified": 985,
+      "verified": 1535,
       "verified_by_empirical_addendum": 177,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
@@ -22797,20 +22797,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "canonical": "inside_volume",
+      "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "inst_increase_q1",
@@ -28027,20 +28024,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "canonical": "outside_volume",
+      "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "pankou",
@@ -86513,13 +86507,15 @@
       "code": "inside_volume",
       "identity": "TDX(双命名源)::inside_volume",
       "path": "inside_volume",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "inside_volume",
+      "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -86529,9 +86525,48 @@
         ],
         "values": [
           "unverified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-inside-volume-axdata-path-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-inside-volume-axdata-path-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+        "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+          "canonical": "inside_volume",
+          "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
+          "unit": "",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-inside-volume-axdata-path-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "inside_volume",
+              "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
+              "unit": ""
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "inside_volume",
@@ -86544,7 +86579,47 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-inside-volume-axdata-path-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "inside_volume",
+              "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
+              "unit": ""
+            }
+          },
+          "rationale": "AxData 固定版本将精确模型输出键 inside_volume 标为内盘量并从 TDX Ext 行情响应解码；通达信官方快照字段表及公式函数表独立定义 Inside/内盘，官方定义与该模型字段的名称及中文说明一致。该结论只核定模型字段表达的语义，不认定 AxData 键是官方 wire 字段、当前项目采集输出或与 s_vol 数值等价；官方契约未注明此路径单位，故留空。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -89563,13 +89638,15 @@
       "code": "outside_volume",
       "identity": "TDX(双命名源)::outside_volume",
       "path": "outside_volume",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "outside_volume",
+      "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -89579,9 +89656,48 @@
         ],
         "values": [
           "unverified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-outside-volume-axdata-path-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-outside-volume-axdata-path-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+        "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+          "canonical": "outside_volume",
+          "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
+          "unit": "",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-outside-volume-axdata-path-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "outside_volume",
+              "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
+              "unit": ""
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "outside_volume",
@@ -89594,7 +89710,47 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-outside-volume-axdata-path-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.json",
+          "evidence_sha256": "76b0e66402a10df1066ab8a971ba2dde9ba55e1a911aa943a220de646e049bbb",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "outside_volume",
+              "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
+              "unit": ""
+            }
+          },
+          "rationale": "AxData 固定版本将精确模型输出键 outside_volume 标为外盘量并从 TDX Ext 行情响应解码；通达信官方快照字段表及公式函数表独立定义 Outside/外盘，官方定义与该模型字段的名称及中文说明一致。该结论只核定模型字段表达的语义，不认定 AxData 键是官方 wire 字段、当前项目采集输出或与 b_vol 数值等价；官方契约未注明此路径单位，故留空。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L292-L320",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L677"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -259021,6 +259177,28 @@
       "evidence_file": "docs/field_verification/adjudications/20261114_fuyao_fixed_asset_growth_evidence.md",
       "matrix_field": "growth.fixed_asset_invest_expansion_ratio",
       "matrix_source": "同花顺-fuyao"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "inside_volume",
+      "canonical": "inside_volume",
+      "meaning": "内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside）",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "matrix_field": "inside_volume",
+      "matrix_source": "AxData"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "outside_volume",
+      "canonical": "outside_volume",
+      "meaning": "外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside）",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
+      "matrix_field": "outside_volume",
+      "matrix_source": "AxData"
     }
   ],
   "source_contract_addenda": [

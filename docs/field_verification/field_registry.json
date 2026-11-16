@@ -25,15 +25,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 6,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 509,
+      "registry_status_only_single_source": 508,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 989,
-      "verified": 1529,
-      "verified_by_empirical_addendum": 173,
+      "unverified": 988,
+      "verified": 1530,
+      "verified_by_empirical_addendum": 174,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -7372,18 +7372,16 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
-      "canonical": "",
-      "meaning": "科创板/两融标记（688 段值='100'）",
+      "canonical": "[87] 科创板标记",
+      "meaning": "科创板相关标记；本次 18 个来源日中，3 只上交所公告确认的科创板样本均为 100，15 只非 688 对照证券均为空。上交所融资融券标的贵州茅台在相同来源日均为空，不支持通用两融资格标记解释。未证实腾讯官方字段契约、完整市场全集规则或其他枚举值。",
       "unit": "-",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "[8]",
@@ -40972,9 +40970,6 @@
     "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）": [
       "腾讯"
     ],
-    "[87] 科创板": [
-      "腾讯"
-    ],
     "[verify": [
       "TDX-0x0010/F10"
     ],
@@ -43976,9 +43971,6 @@
     "两融 RZJME": [
       "akshare"
     ],
-    "两融标记": [
-      "腾讯"
-    ],
     "中单买入额": [
       "东财"
     ],
@@ -45869,6 +45861,12 @@
     ],
     "[22]": [
       "新浪(hq.sinajs)",
+      "腾讯(qt.gtimg)"
+    ],
+    "[87] 科创板相关标记": [
+      "腾讯"
+    ],
+    "[87] 科创板标记": [
       "腾讯(qt.gtimg)"
     ]
   },
@@ -253165,15 +253163,16 @@
       "code": "[87]",
       "identity": "腾讯(qt.gtimg)::[87]",
       "path": "[87]",
-      "canonical": "",
-      "meaning": "科创板/两融标记（688 段值='100'）",
+      "canonical": "[87] 科创板标记",
+      "meaning": "科创板相关标记；本次 18 个来源日中，3 只上交所公告确认的科创板样本均为 100，15 只非 688 对照证券均为空。上交所融资融券标的贵州茅台在相同来源日均为空，不支持通用两融资格标记解释。未证实腾讯官方字段契约、完整市场全集规则或其他枚举值。",
       "unit": "-",
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "sections": [
-        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
+        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
+        "2026-11-16 腾讯 [87] 科创板标记来源内实证"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -253182,8 +253181,24 @@
           "腾讯(qt.gtimg)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261116-tencent-field-87-star-marker"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_tencent_field_87_semantics.md",
+        "evidence_sha256": "ce2eef39c8f6fc4fde087dcdc0d52874665bf752bbe3b300fb54fbcccaccd90f",
+        "sample": {
+          "scope": "保留期 2026-10-15 起 18 个腾讯来源数据日；324 条路径[87]已返回的可比记录（3 只官方确认科创板证券×18日、15只非688代码对照证券×18日）；36 条920证券记录因路径[87]未返回而排除。",
+          "comparison_count": 324,
+          "matched_count": 324,
+          "counterexample_count": 0,
+          "official_report_count": 4,
+          "excluded_count": 36,
+          "stock_count": 18
+        }
       },
       "reference_evidence": [
         {
@@ -253201,14 +253216,43 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-16 腾讯 [87] 科创板标记来源内实证",
+          "canonical": "[87] 科创板标记",
+          "meaning": "科创板相关标记；本次 18 个来源日中，3 只上交所公告确认的科创板样本均为 100，15 只非 688 对照证券均为空。上交所融资融券标的贵州茅台在相同来源日均为空，不支持通用两融资格标记解释。未证实腾讯官方字段契约、完整市场全集规则或其他枚举值。",
+          "unit": "-",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-tencent-field-87-star-marker",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_tencent_field_87_semantics.md",
+          "evidence_sha256": "ce2eef39c8f6fc4fde087dcdc0d52874665bf752bbe3b300fb54fbcccaccd90f",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "科创板/两融标记（688 段值='100'）",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "[87] 科创板标记",
+              "meaning": "科创板相关标记；本次 18 个来源日中，3 只上交所公告确认的科创板样本均为 100，15 只非 688 对照证券均为空。上交所融资融券标的贵州茅台在相同来源日均为空，不支持通用两融资格标记解释。未证实腾讯官方字段契约、完整市场全集规则或其他枚举值。",
+              "unit": "-"
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 起 18 个腾讯来源数据日；324 条路径[87]已返回的可比记录（3 只官方确认科创板证券×18日、15只非688代码对照证券×18日）；36 条920证券记录因路径[87]未返回而排除。",
+            "comparison_count": 324,
+            "matched_count": 324,
+            "counterexample_count": 0,
+            "official_report_count": 4,
+            "excluded_count": 36,
+            "stock_count": 18
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "[87]",
-          "[87] 科创板/两融标记"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[87]",
         "sources": [
@@ -253220,7 +253264,56 @@
         "meaning": "科创板/两融标记（688 段值='100'）",
         "unit": "-",
         "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-tencent-field-87-star-marker",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_tencent_field_87_semantics.json",
+          "evidence_file": "adjudications/20261116_tencent_field_87_semantics.md",
+          "evidence_sha256": "ce2eef39c8f6fc4fde087dcdc0d52874665bf752bbe3b300fb54fbcccaccd90f",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "科创板/两融标记（688 段值='100'）",
+            "unit": "-"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "科创板/两融标记（688 段值='100'）",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "[87] 科创板标记",
+              "meaning": "科创板相关标记；本次 18 个来源日中，3 只上交所公告确认的科创板样本均为 100，15 只非 688 对照证券均为空。上交所融资融券标的贵州茅台在相同来源日均为空，不支持通用两融资格标记解释。未证实腾讯官方字段契约、完整市场全集规则或其他枚举值。",
+              "unit": "-"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "[87]",
+              "[87] 科创板/两融标记"
+            ]
+          },
+          "rationale": "采集器将 qt.gtimg.cn 响应主体按 ~ 分列并原样保留，故注册路径 [87] 精确映射为列表零基索引 87。保留边界内 18 个腾讯来源数据日的全部 324 条可比返回记录，3 只由上交所上市公告确认的科创板证券为 100（54/54），15 只非 688 对照证券为空（270/270），无反例；36 条 920 证券响应未包含该位置，按缺失排除。上交所 2026 年第三季度融资融券名单含贵州茅台，而该证券的 [87] 在 18 日均为空，因此旧释义中的通用两融资格解释不成立。无腾讯官方字段表，结论仅记录数据支持的科创板相关标记，不外推未观察证券或枚举，不创建跨源关系。",
+          "sample": {
+            "scope": "保留期 2026-10-15 起 18 个腾讯来源数据日；324 条路径[87]已返回的可比记录（3 只官方确认科创板证券×18日、15只非688代码对照证券×18日）；36 条920证券记录因路径[87]未返回而排除。",
+            "comparison_count": 324,
+            "matched_count": 324,
+            "counterexample_count": 0,
+            "official_report_count": 4,
+            "excluded_count": 36,
+            "stock_count": 18
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",

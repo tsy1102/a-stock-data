@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_5d69a92e08405bfcfcc024fabdb117ee0a85d5346fdacae12960ff1bc36150db",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T01:30:34+08:00",
+  "rationale": "新增完整分页日2026-11-16有31/31配对计数精确相同，industry_id/col_19为30/31相同，强化了同类行业涨停计数的解释。但本报告只有1个完整分页日；此前11日500组旧样本有50组差异，集中于2026-10-16和2026-11-02，且旧KPH归档没有完整分页证明。开盘红官网未公开API字段契约，AxData/Levistock定义仅是客户端说明。故保留KPH来源内字段待验证，不认定两条路径完全等价，不新增跨源映射。",
+  "evidence_refs": [
+    "20261117/20261117_collision_report.json",
+    "adjudications/20261117_kph_pagination_audit.md",
+    "adjudications/20261117_kph_industry_count_followup.md",
+    "https://www.kaipanhong.com/",
+    "https://pypi.org/project/levistock/0.1.8/"
+  ],
+  "duplicate_of": null
+}

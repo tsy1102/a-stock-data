@@ -11575,6 +11575,133 @@
         "schema_version": 1
       }
     },
+    "cc1_5d69a92e08405bfcfcc024fabdb117ee0a85d5346fdacae12960ff1bc36150db": {
+      "current": {
+        "candidate_id": "cc1_5d69a92e08405bfcfcc024fabdb117ee0a85d5346fdacae12960ff1bc36150db",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "db87f57986d8155c0aca8db288e3569be1f735e32f288d03109aeb2394b3743d",
+        "evidence_refs": [
+          {
+            "path": "20261117/20261117_collision_report.json",
+            "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+          },
+          {
+            "path": "adjudications/20261117_kph_pagination_audit.md",
+            "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+          },
+          {
+            "path": "adjudications/20261117_kph_industry_count_followup.md",
+            "sha256": "9659ef9c588ac524f0150ce8f91c9bfc67d1fce9956a542e376e54d651777ef4"
+          },
+          {
+            "path": "https://www.kaipanhong.com/",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/levistock/0.1.8/",
+            "sha256": null
+          }
+        ],
+        "rationale": "新增完整分页日2026-11-16有31/31配对计数精确相同，industry_id/col_19为30/31相同，强化了同类行业涨停计数的解释。但本报告只有1个完整分页日；此前11日500组旧样本有50组差异，集中于2026-10-16和2026-11-02，且旧KPH归档没有完整分页证明。开盘红官网未公开API字段契约，AxData/Levistock定义仅是客户端说明。故保留KPH来源内字段待验证，不认定两条路径完全等价，不新增跨源映射。",
+        "reviewed_at": "2026-11-17T01:30:34+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_5d69a92e08405bfcfcc024fabdb117ee0a85d5346fdacae12960ff1bc36150db",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "db87f57986d8155c0aca8db288e3569be1f735e32f288d03109aeb2394b3743d",
+          "evidence_refs": [
+            {
+              "path": "20261117/20261117_collision_report.json",
+              "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+            },
+            {
+              "path": "adjudications/20261117_kph_pagination_audit.md",
+              "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+            },
+            {
+              "path": "adjudications/20261117_kph_industry_count_followup.md",
+              "sha256": "9659ef9c588ac524f0150ce8f91c9bfc67d1fce9956a542e376e54d651777ef4"
+            },
+            {
+              "path": "https://www.kaipanhong.com/",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/levistock/0.1.8/",
+              "sha256": null
+            }
+          ],
+          "rationale": "新增完整分页日2026-11-16有31/31配对计数精确相同，industry_id/col_19为30/31相同，强化了同类行业涨停计数的解释。但本报告只有1个完整分页日；此前11日500组旧样本有50组差异，集中于2026-10-16和2026-11-02，且旧KPH归档没有完整分页证明。开盘红官网未公开API字段契约，AxData/Levistock定义仅是客户端说明。故保留KPH来源内字段待验证，不认定两条路径完全等价，不新增跨源映射。",
+          "reviewed_at": "2026-11-17T01:30:34+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 31
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261116"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kph.industry_limit_up_count",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": null,
+          "n_pairs": 31,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kpl.raw_columns.col_20",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 31
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 32
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_5dd02ad36a47c3b16bbbd7dee4e0d1061dffd410ed41f62b79999a4cfae870f4": {
       "current": {
         "candidate_id": "cc1_5dd02ad36a47c3b16bbbd7dee4e0d1061dffd410ed41f62b79999a4cfae870f4",
@@ -32561,5 +32688,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T00:43:20+08:00"
+  "updated_at": "2026-11-17T01:30:34+08:00"
 }

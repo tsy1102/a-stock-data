@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 140 个 code；聚合定义不完整 192 个 code；疑似合并文本 513 条逐源记录。
+> 聚合歧义 140 个 code；聚合定义不完整 189 个 code；疑似合并文本 516 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2927,30 +2927,6 @@
 | TDX-eltdx(适配层) · `pre_close_price` | pre_close_price | 昨收价 | — | `verified` |
 | 同花顺-fuyao · `pre_close_price` | pre_close_price | 集合竞价快照中的前收盘价。 | — | `verified` |
 
-### `predictNextTwoYearPe` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `predictNextTwoYearPe` | — | — | — | `conflict` |
-
-### `predictNextYearPe` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `predictNextYearPe` | — | — | — | `conflict` |
-
-### `predictThisYearPe` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| reports · `predictThisYearPe` | — | — | — | `conflict` |
-
 ### `prev_close` — ambiguous
 
 聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
@@ -3520,6 +3496,9 @@
 | reports | `newListingDate` | 上市日期 | 该股票在交易所上市交易的日期；逐值对应东方财富 F10 LISTING_DATE。空值表示 reportapi 记录未返回日期，不表示股票没有上市。 | `verified` |
 | reports | `newPeIssueA` | 首次公开发行市盈率 | 该股票首次公开发行时的发行市盈率；逐值对应东方财富 F10 AFTER_ISSUE_PE。 | `verified` |
 | reports | `orgId` | secName / orgId | 证券名 / 机构ID | `unverified` |
+| reports | `predictNextTwoYearPe` | predictNextTwoYearPe | 东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。 | `verified` |
+| reports | `predictNextYearPe` | predictNextYearPe | 东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。 | `verified` |
+| reports | `predictThisYearPe` | predictThisYearPe | 东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。 | `verified` |
 | reports | `reading_num` | reading_num / share_num | 阅读数/分享数 | `unverified` |
 | reports | `sRatingCode` | sRatingCode | 机构原始评级类别代码；须结合机构和同记录 sRatingName 解释，未确立跨机构代码表。 | `verified` |
 | reports | `secName` | secName / orgId | 证券名 / 机构ID | `unverified` |

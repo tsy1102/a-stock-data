@@ -4124,11 +4124,15 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | ZDF / SPJ / SZ | 涨跌幅 / 收盘价 / 市值 | ❌ 未用 |
 | RQYL | 融券余量 | ❌ 未用 |
 
-**reportapi 研报**（实测 51 字段，项目用 ~8 个，新发现）：
+**reportapi 研报**（实测 51 字段，项目主流程当前仅消费部分返回字段）：
 
-| 字段 | 含义 | 项目状态 |
+> 本节的“项目消费”只记录当前仓库生产调用方是否使用该返回字段，不代表接口是否返回，也不代表字段语义未经验证。`get_reports()`保留接口记录；`extract_report_valuation()`虽已导出，但当前仓库没有生产调用点。字段释义与消费状态应分别维护。
+
+| 字段 | 含义 | 项目消费 |
 |:---|:---|:---:|
-| predictNextTwoYearPe / predictNextYearPe / predictThisYearPe | 明后年/明年/今年 PE 预测 | ❌ 未用 |
+| predictThisYearPe | 今年 PE 预测 | 未消费 |
+| predictNextYearPe | 明年 PE 预测 | 未消费 |
+| predictNextTwoYearPe | 后年 PE 预测 | 未消费 |
 | newIssuePrice / newListingDate / newPeIssueA | IPO 价/上市日/IPO PE | ❌ 未用 |
 | emRatingCode / emRatingValue | 评级代码/值 | ❌ 未用 |
 | lastEmRatingName | 待破解| ❌ 未用 |

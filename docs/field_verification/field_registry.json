@@ -10,7 +10,7 @@
       "aggregate_status_scope_unresolved": 341,
       "candidate": 1,
       "collector_output_container": 9,
-      "conflict": 23,
+      "conflict": 20,
       "disproved": 92,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
@@ -23,7 +23,7 @@
       "official_contract": 31,
       "project_derived_capture_output": 7,
       "reference_scope_reconciled": 3,
-      "reference_status_conflict": 6,
+      "reference_status_conflict": 3,
       "reference_status_missing": 37,
       "registry_status_only_single_source": 508,
       "resolved_by_multiday_independent_cross_source_l1": 8,
@@ -32,8 +32,8 @@
       "status_missing": 41,
       "unresolved": 8,
       "unverified": 988,
-      "verified": 1530,
-      "verified_by_empirical_addendum": 174,
+      "verified": 1533,
+      "verified_by_empirical_addendum": 177,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -29237,21 +29237,17 @@
       "sources": [
         "reports"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+      "canonical": "predictNextTwoYearPe",
+      "meaning": "东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "reports": "conflict"
+        "reports": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "predictNextYearEps",
@@ -29277,21 +29273,17 @@
       "sources": [
         "reports"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+      "canonical": "predictNextYearPe",
+      "meaning": "东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "reports": "conflict"
+        "reports": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "predictThisYearEps",
@@ -29320,21 +29312,17 @@
       "sources": [
         "reports"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+      "canonical": "predictThisYearPe",
+      "meaning": "东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。",
+      "unit": "倍",
       "status_raw": "",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "reports": "conflict"
+        "reports": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "prev2_seal_amount",
@@ -42523,15 +42511,18 @@
       "AxData"
     ],
     "predictNextTwoYearPe": [
+      "reports",
       "东财"
     ],
     "predictNextYearPe": [
+      "reports",
       "东财"
     ],
     "predictThisYearEps": [
       "东财"
     ],
     "predictThisYearPe": [
+      "reports",
       "东财"
     ],
     "prev2_seal_amount": [
@@ -149119,16 +149110,17 @@
       "code": "predictNextTwoYearPe",
       "identity": "reports::predictNextTwoYearPe",
       "path": "predictNextTwoYearPe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "predictNextTwoYearPe",
+      "meaning": "东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。",
+      "unit": "倍",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
       "sections": [
         "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）",
+        "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
         "12.9.2 其他接口实测发现"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "unverified",
@@ -149143,9 +149135,24 @@
           "reports"
         ],
         "values": [
-          "unverified",
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-reports-predict-next-two-year-pe"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+        "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+        "sample": {
+          "scope": "同一三条官方研报记录中，比较 predictNextTwoYearPe 的非空值与 currentYear 后第 2 年的官方预测；两条报告未给出 2028 年预测、接口值为空，计为排除项。",
+          "comparison_count": 1,
+          "matched_count": 1,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 2,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -149163,18 +149170,43 @@
           "unit": "",
           "status_raw": "❌ 未用",
           "status": "unverified"
+        },
+        {
+          "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+          "canonical": "predictNextTwoYearPe",
+          "meaning": "东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。",
+          "unit": "倍",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-reports-predict-next-two-year-pe",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictNextTwoYearPe",
+              "meaning": "东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "sample": {
+            "scope": "同一三条官方研报记录中，比较 predictNextTwoYearPe 的非空值与 currentYear 后第 2 年的官方预测；两条报告未给出 2028 年预测、接口值为空，计为排除项。",
+            "comparison_count": 1,
+            "matched_count": 1,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "predictNextTwoYearPe",
-          "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe"
-        ],
-        "meaning": [
-          "后年 PE 预测",
-          "明后年/明年/今年 PE 预测"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "predictNextTwoYearPe",
         "sources": [
@@ -149186,7 +149218,60 @@
         "meaning": "后年 PE 预测",
         "unit": "",
         "section": "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-reports-predict-next-two-year-pe",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_reports_pe_year_slots.json",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "reference_status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictNextTwoYearPe",
+              "meaning": "东方财富 report/list 研报记录中，currentYear 后第 2 年的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "predictNextTwoYearPe",
+              "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe"
+            ],
+            "meaning": [
+              "后年 PE 预测",
+              "明后年/明年/今年 PE 预测"
+            ]
+          },
+          "rationale": "项目 get_reports() 将东方财富 report/list 响应 data 中的研报对象原样保存，故 reports::predictNextTwoYearPe 精确映射到该响应键。2026-11-16 在 Chrome 直接核对的三条不同 infoCode 记录中，currentYear 均为 2026；旺能环境 2026 年研报唯一非空的后两年槽位为 2028 年 EPS 1.80、PE 7.96，官方详情页预测净利润 9.31 亿元，以 2026-06-30 股本复算 EPS 为 1.801815，显示为 1.80。另两篇官方研报的预测区间截至 2027 年，对应 2028 年槽位为空，因此不作为数值比较，也不视为反例。该字段的非空样本量小于前两个字段，结论明确限于后两年预测 PE 这一槽位含义；不外推缺失值或 PE 参考价日期，不建立跨源映射。",
+          "sample": {
+            "scope": "同一三条官方研报记录中，比较 predictNextTwoYearPe 的非空值与 currentYear 后第 2 年的官方预测；两条报告未给出 2028 年预测、接口值为空，计为排除项。",
+            "comparison_count": 1,
+            "matched_count": 1,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 2,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "reports",
@@ -149246,16 +149331,17 @@
       "code": "predictNextYearPe",
       "identity": "reports::predictNextYearPe",
       "path": "predictNextYearPe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "predictNextYearPe",
+      "meaning": "东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。",
+      "unit": "倍",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
       "sections": [
         "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）",
+        "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
         "12.9.2 其他接口实测发现"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "unverified",
@@ -149270,9 +149356,24 @@
           "reports"
         ],
         "values": [
-          "unverified",
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-reports-predict-next-year-pe"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+        "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -149290,18 +149391,43 @@
           "unit": "",
           "status_raw": "❌ 未用",
           "status": "unverified"
+        },
+        {
+          "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+          "canonical": "predictNextYearPe",
+          "meaning": "东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。",
+          "unit": "倍",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-reports-predict-next-year-pe",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictNextYearPe",
+              "meaning": "东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe",
-          "predictNextYearPe"
-        ],
-        "meaning": [
-          "明后年/明年/今年 PE 预测",
-          "明年 PE 预测"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "predictNextYearPe",
         "sources": [
@@ -149313,7 +149439,60 @@
         "meaning": "明年 PE 预测",
         "unit": "",
         "section": "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-reports-predict-next-year-pe",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_reports_pe_year_slots.json",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "reference_status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictNextYearPe",
+              "meaning": "东方财富 report/list 研报记录中，currentYear 后第 1 年的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe",
+              "predictNextYearPe"
+            ],
+            "meaning": [
+              "明后年/明年/今年 PE 预测",
+              "明年 PE 预测"
+            ]
+          },
+          "rationale": "项目 get_reports() 将东方财富 report/list 响应 data 中的研报对象原样保存，故 reports::predictNextYearPe 精确映射到该响应键。2026-11-16 在 Chrome 直接核对三条不同 infoCode 的官方接口记录，三条外层 currentYear 均为 2026；接口的 next-year EPS/PE 槽位与官方详情页的年度预测序列按 currentYear+1 对齐。旺能环境 2025 年研报的 2027 年预测 EPS 使用 2025-09-30 股本复算为 1.845686，四舍五入至两位为接口值 1.85；2026 年研报的 2027 年 EPS 复算为 1.683758，显示为 1.68。泸州老窖研报正文给出 2027 年 EPS 9.83、PE 14 倍，接口值为 9.83、13.83。三个选定记录全部支持该字段是 currentYear 后第 1 年 PE；重复捕获快照仅用于稳定性核查，不计作独立报告。旧反例使用了不匹配的 2026H1 股本，已由 2025Q3 股本更正。字段消费状态与语义状态分开，不建立跨源映射；不推断 PE 的参考股价日期或更新算法。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "reports",
@@ -149391,16 +149570,17 @@
       "code": "predictThisYearPe",
       "identity": "reports::predictThisYearPe",
       "path": "predictThisYearPe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "predictThisYearPe",
+      "meaning": "东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。",
+      "unit": "倍",
+      "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
       "sections": [
         "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）",
+        "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
         "12.9.2 其他接口实测发现"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "unverified",
@@ -149415,9 +149595,24 @@
           "reports"
         ],
         "values": [
-          "unverified",
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261116-reports-predict-this-year-pe"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+        "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -149435,18 +149630,43 @@
           "unit": "",
           "status_raw": "❌ 未用",
           "status": "unverified"
+        },
+        {
+          "section": "12.8.4.1 东财 reportapi 全量 51 字段表；来源内实证定案（2026-11-16）",
+          "canonical": "predictThisYearPe",
+          "meaning": "东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。",
+          "unit": "倍",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-16",
+          "status": "verified",
+          "adjudication_id": "20261116-reports-predict-this-year-pe",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictThisYearPe",
+              "meaning": "东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe",
-          "predictThisYearPe"
-        ],
-        "meaning": [
-          "今年 PE 预测",
-          "明后年/明年/今年 PE 预测"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "predictThisYearPe",
         "sources": [
@@ -149458,7 +149678,60 @@
         "meaning": "今年 PE 预测",
         "unit": "",
         "section": "12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261116-reports-predict-this-year-pe",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "adjudications/20261116_reports_pe_year_slots.json",
+          "evidence_file": "adjudications/20261116_reports_pe_year_slots_evidence.md",
+          "evidence_sha256": "bba2e3ba9150414555640a002cf76a3509d3881113a6008acbb20a4c6f1e3fe6",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "reference_status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "predictThisYearPe",
+              "meaning": "东方财富 report/list 研报记录中，与响应 currentYear 同年度的预测市盈率。",
+              "unit": "倍"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "predictNextTwoYearPe / predictNextYearPe / predictThisYearPe",
+              "predictThisYearPe"
+            ],
+            "meaning": [
+              "今年 PE 预测",
+              "明后年/明年/今年 PE 预测"
+            ]
+          },
+          "rationale": "项目 get_reports() 将东方财富 report/list 响应 data 中的研报对象原样保存，故 reports::predictThisYearPe 精确映射到该响应键。2026-11-16 在 Chrome 直接核对三条不同 infoCode 的官方接口记录，三条外层 currentYear 均为 2026；接口的 predictThisYearEps/Pe 与官方详情页预测序列按该年度而非研报发布日期对齐。旺能环境 2025 年研报的 2026 年预测 EPS 使用 2025-09-30 股本复算为 1.751213，四舍五入至两位为接口值 1.75；2026 年研报的 2026 年 EPS 复算为 1.575379，显示为 1.58。泸州老窖 2025 年研报正文明确给出 2026 年 EPS 8.88、PE 15 倍，接口值为 8.88、15.30。三个选定记录全部支持该字段是 currentYear 年度 PE；重复捕获快照仅用于稳定性核查，不计作独立报告。旧反例使用了不匹配的 2026H1 股本，已由 2025Q3 股本更正。字段消费状态与语义状态分开，不建立跨源映射；不推断 PE 的参考股价日期或更新算法。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-12 的 17 份 raw_reports.json 中 6,476 行、444 个不同 infoCode；对三个不同 infoCode、两只股票逐项对齐 live report/list 外层 currentYear、原始 EPS/PE 槽位与东方财富研报正文；所有重复快照单独计数，不当作独立研报。",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "reports",

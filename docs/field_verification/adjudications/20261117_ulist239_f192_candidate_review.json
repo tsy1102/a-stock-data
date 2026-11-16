@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_21598c85c5c940f7c150ccf8c8aef301905ad7fa35fed2a2556a67a9041f0250",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_38f213b5d4390ea706c738ddfb47d604514ffd3cc08332cf123c9fb58d5d07ad",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_1cec9635ec334c346c0d582a01afbf6c75c20af08d47a84dea0c3048301d569e",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_21aeba80fde3a83568b13c888b798486bcf8f0141491600f0f16b57634f5481f",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_7a109a36070524253070017e1ee9f59c0a6cb2bb81b4109c299a9819c3f3e50e",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_d2e3eb5dbe245ca85c29e8fbeec565018a9a1781b0ac85e7453627f0598a0ab4",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_bbb238e65eeaa1e7e9b623866aa547eae890da19771b99ead52730897e43fe94",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_e3bd1605456399013d9df200dd8ee15613a72e089380e0ac736786b4e8ee07cb",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_6e5dfb8632379998f79c317182df89d21d55f5911a54231629dba346f6b48ae1",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_cb7e70d2cd88d0f2ca8786c85009f0055ee629585ca30add534d009347d1caf8",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_7167d651c5319e5d06f0a3ade0a67dd5cdb871f5c7fb358183d1a5cbe9f67ba5",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_92186cc8e05769306b48bfbb2787a7d4e275b3eac66076a1cefe164b5ab0d5e0",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_15663fc56e2628020beb994558c0193cee5c1bc8e9fe5f0eb11027a333cf5ea6",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_7479c1a3ebeed6bc9ebcfe7d38e84d6b98f501f5ad146d9ec4988e96ef22451a",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c6deb26f5e4b8e4942856cd878680170e0633968669396d48e8af6e7f28f0a3a",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_3da6bc6bd53a0cdf9821d9bc25f7d5602b13521b58bac4bcfad52c784c9591d3",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_8310afffdc4b82497228c7943e41dfdb2b926288248ef56e7c52bba0bdba23bf",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_583cc4fc7941380c0ce4aa4bbdd4f4706db0327c97776c3bd08dec331263aaa2",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_70ff31983508183510afa318135e6a061f196d9aa8f8e5dd662c04daafb5c001",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c5fca591ccc7fac89259797dd491ab11e1f78dbb0993e53810900792879a15c5",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_2ac11fd8613a3510dcabee58399166244130c0d3569346688e79444798754a19",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_680705127f63e8abb30afb1af5c4a799ae25cbf8ffea486602c8b504e68032ce",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_307d63ed3bb06ae2e39a045569809f03ffc9fcd2a683386ba62327bba366c2d8",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_75af843606bb5203bd2ddc042a201523d019fe4097d5cf5b352edb3f1f92a78c",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T03:57:48+08:00",
+      "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+      "evidence_refs": [
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+        "research/20261117_ulist239_f192_sample_audit.csv",
+        "research/20261117_ulist239_f192_candidate_inventory.csv"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

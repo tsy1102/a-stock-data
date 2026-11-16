@@ -3836,6 +3836,111 @@
         "schema_version": 1
       }
     },
+    "cc1_15663fc56e2628020beb994558c0193cee5c1bc8e9fe5f0eb11027a333cf5ea6": {
+      "current": {
+        "candidate_id": "cc1_15663fc56e2628020beb994558c0193cee5c1bc8e9fe5f0eb11027a333cf5ea6",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "1fad237580686aa02c1973f3868791383367169c44746aadb33671b1cbe00538",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_15663fc56e2628020beb994558c0193cee5c1bc8e9fe5f0eb11027a333cf5ea6",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "1fad237580686aa02c1973f3868791383367169c44746aadb33671b1cbe00538",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ftshare_rest",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.7204085e+09 × left + 3.6768231e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99962
+            }
+          ],
+          "right": "ftshare_rest.float_a_shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a": {
       "current": {
         "candidate_id": "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a",
@@ -4766,6 +4871,111 @@
         "schema_version": 1
       }
     },
+    "cc1_1cec9635ec334c346c0d582a01afbf6c75c20af08d47a84dea0c3048301d569e": {
+      "current": {
+        "candidate_id": "cc1_1cec9635ec334c346c0d582a01afbf6c75c20af08d47a84dea0c3048301d569e",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "0adaa845f291e34ff1195403bc4610458ec94f3f948e6873c78798d841b5f80e",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_1cec9635ec334c346c0d582a01afbf6c75c20af08d47a84dea0c3048301d569e",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "0adaa845f291e34ff1195403bc4610458ec94f3f948e6873c78798d841b5f80e",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tencent",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.9827725e+09 × left + 3.9814276e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99969
+            }
+          ],
+          "right": "tencent[73]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_201797fa43e1a578e8de58435088c092b0aebc2c6f1177dc0305375314046324": {
       "current": {
         "candidate_id": "cc1_201797fa43e1a578e8de58435088c092b0aebc2c6f1177dc0305375314046324",
@@ -5051,6 +5261,224 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_21598c85c5c940f7c150ccf8c8aef301905ad7fa35fed2a2556a67a9041f0250": {
+      "current": {
+        "candidate_id": "cc1_21598c85c5c940f7c150ccf8c8aef301905ad7fa35fed2a2556a67a9041f0250",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "6c4579926d99c8b6523509b5f7a45217d3abd6353ea20009dc53728c17110a36",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_21598c85c5c940f7c150ccf8c8aef301905ad7fa35fed2a2556a67a9041f0250",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "6c4579926d99c8b6523509b5f7a45217d3abd6353ea20009dc53728c17110a36",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 26272.498 × left + 26272.498",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            }
+          ],
+          "right": "tdx.finance_info.hgu",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
+    "cc1_21aeba80fde3a83568b13c888b798486bcf8f0141491600f0f16b57634f5481f": {
+      "current": {
+        "candidate_id": "cc1_21aeba80fde3a83568b13c888b798486bcf8f0141491600f0f16b57634f5481f",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "fa225e6c339dc4a1151e30631050e82dce47d081a4b8213f1c7214762c725023",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_21aeba80fde3a83568b13c888b798486bcf8f0141491600f0f16b57634f5481f",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "fa225e6c339dc4a1151e30631050e82dce47d081a4b8213f1c7214762c725023",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tencent",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.7204085e+09 × left + 3.6768231e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99962
+            }
+          ],
+          "right": "tencent[72]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -6838,6 +7266,110 @@
         "schema_version": 1
       }
     },
+    "cc1_2ac11fd8613a3510dcabee58399166244130c0d3569346688e79444798754a19": {
+      "current": {
+        "candidate_id": "cc1_2ac11fd8613a3510dcabee58399166244130c0d3569346688e79444798754a19",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "418de10d52bc3967ee437189d34ea51405a87a9341f5ef69b0f7f5323c64dc54",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_2ac11fd8613a3510dcabee58399166244130c0d3569346688e79444798754a19",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "418de10d52bc3967ee437189d34ea51405a87a9341f5ef69b0f7f5323c64dc54",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 418799.23 × left + 419289.12",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            }
+          ],
+          "right": "zhb.full.other_qy_jzc",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_2bc36509cf338f7484a869df982f5aa2545c0be2b5a0880a98e70b0e84f72ff2": {
       "current": {
         "candidate_id": "cc1_2bc36509cf338f7484a869df982f5aa2545c0be2b5a0880a98e70b0e84f72ff2",
@@ -7348,6 +7880,110 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_307d63ed3bb06ae2e39a045569809f03ffc9fcd2a683386ba62327bba366c2d8": {
+      "current": {
+        "candidate_id": "cc1_307d63ed3bb06ae2e39a045569809f03ffc9fcd2a683386ba62327bba366c2d8",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "a669c12e52d7890a2136b33c883c9eaadb055fcb570a5429d434da2de0db6baa",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_307d63ed3bb06ae2e39a045569809f03ffc9fcd2a683386ba62327bba366c2d8",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "a669c12e52d7890a2136b33c883c9eaadb055fcb570a5429d434da2de0db6baa",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 3777.5322 × left + 8719.269",
+              "method": "affine_formula",
+              "r_squared": 0.990267
+            }
+          ],
+          "right": "zhb.full.employee_count",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -9052,6 +9688,111 @@
         "schema_version": 1
       }
     },
+    "cc1_38f213b5d4390ea706c738ddfb47d604514ffd3cc08332cf123c9fb58d5d07ad": {
+      "current": {
+        "candidate_id": "cc1_38f213b5d4390ea706c738ddfb47d604514ffd3cc08332cf123c9fb58d5d07ad",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "724f9a522eb76bd4d8b8adf5accc29a2a5c5cc8f61997faea337ed1ddd30732f",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_38f213b5d4390ea706c738ddfb47d604514ffd3cc08332cf123c9fb58d5d07ad",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "724f9a522eb76bd4d8b8adf5accc29a2a5c5cc8f61997faea337ed1ddd30732f",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tencent",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.7204085e+09 × left + 3.6768231e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99962
+            }
+          ],
+          "right": "tencent[76]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_395b8be0bd97d482334bf27688824894d416b3e3d3189f9e0d844e9ec2a7cd0d": {
       "current": {
         "candidate_id": "cc1_395b8be0bd97d482334bf27688824894d416b3e3d3189f9e0d844e9ec2a7cd0d",
@@ -9569,6 +10310,110 @@
         },
         "kind": "formula_candidate",
         "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_3da6bc6bd53a0cdf9821d9bc25f7d5602b13521b58bac4bcfad52c784c9591d3": {
+      "current": {
+        "candidate_id": "cc1_3da6bc6bd53a0cdf9821d9bc25f7d5602b13521b58bac4bcfad52c784c9591d3",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "b50983a4a4fae8c8e66d9a93a51285ece64acc328158d6024774b9e1cda3bdad",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_3da6bc6bd53a0cdf9821d9bc25f7d5602b13521b58bac4bcfad52c784c9591d3",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "b50983a4a4fae8c8e66d9a93a51285ece64acc328158d6024774b9e1cda3bdad",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 16896.94 × left + 35922.224",
+              "method": "affine_formula",
+              "r_squared": 0.992323
+            }
+          ],
+          "right": "zhb.tipinfo.unlock_shares_wan",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -11545,6 +12390,110 @@
         "schema_version": 1
       }
     },
+    "cc1_583cc4fc7941380c0ce4aa4bbdd4f4706db0327c97776c3bd08dec331263aaa2": {
+      "current": {
+        "candidate_id": "cc1_583cc4fc7941380c0ce4aa4bbdd4f4706db0327c97776c3bd08dec331263aaa2",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "cbd78cc822c232c7592f3ea5074874c6a1ba83dac3535fe9380099d8f91f770e",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_583cc4fc7941380c0ce4aa4bbdd4f4706db0327c97776c3bd08dec331263aaa2",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "cbd78cc822c232c7592f3ea5074874c6a1ba83dac3535fe9380099d8f91f770e",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 24079.007 × left + 68941.306",
+              "method": "affine_formula",
+              "r_squared": 0.993763
+            }
+          ],
+          "right": "zhb.stat.free_ltgb",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_59972dfa6d6db67161cbc845f23b3441f5f0bbc11a689b845af8692c4c7e9bbf": {
       "current": {
         "candidate_id": "cc1_59972dfa6d6db67161cbc845f23b3441f5f0bbc11a689b845af8692c4c7e9bbf",
@@ -13518,6 +14467,110 @@
         "schema_version": 1
       }
     },
+    "cc1_680705127f63e8abb30afb1af5c4a799ae25cbf8ffea486602c8b504e68032ce": {
+      "current": {
+        "candidate_id": "cc1_680705127f63e8abb30afb1af5c4a799ae25cbf8ffea486602c8b504e68032ce",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "cd44108f14b294c88ac9c68c2bb4ef5bef3536e41d476190fe72bf234ea00a8c",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_680705127f63e8abb30afb1af5c4a799ae25cbf8ffea486602c8b504e68032ce",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "cd44108f14b294c88ac9c68c2bb4ef5bef3536e41d476190fe72bf234ea00a8c",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 24079.007 × left + 68941.306",
+              "method": "affine_formula",
+              "r_squared": 0.993763
+            }
+          ],
+          "right": "zhb.full.free_ltgb",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc": {
       "current": {
         "candidate_id": "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc",
@@ -14004,6 +15057,111 @@
         "schema_version": 1
       }
     },
+    "cc1_6e5dfb8632379998f79c317182df89d21d55f5911a54231629dba346f6b48ae1": {
+      "current": {
+        "candidate_id": "cc1_6e5dfb8632379998f79c317182df89d21d55f5911a54231629dba346f6b48ae1",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "7300773c7d26fefb6325ffb55cc28cd41165a70c5fa4337394a4359e80035df4",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_6e5dfb8632379998f79c317182df89d21d55f5911a54231629dba346f6b48ae1",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "7300773c7d26fefb6325ffb55cc28cd41165a70c5fa4337394a4359e80035df4",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 5.2790098e+09 × left + 5.7848609e+09",
+              "method": "affine_formula",
+              "r_squared": 0.999839
+            }
+          ],
+          "right": "tdx.finance_info.touzishouyu",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8": {
       "current": {
         "candidate_id": "cc1_6f9c2291f22fa168602a511ace575b34951ae84c34cf5cb82470f71ea18f4dd8",
@@ -14146,6 +15304,110 @@
         "schema_version": 1
       }
     },
+    "cc1_70ff31983508183510afa318135e6a061f196d9aa8f8e5dd662c04daafb5c001": {
+      "current": {
+        "candidate_id": "cc1_70ff31983508183510afa318135e6a061f196d9aa8f8e5dd662c04daafb5c001",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "f844a968f217fdf1a66d69dcbb72c805687e9c08dce464e5c315f7df953efb75",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_70ff31983508183510afa318135e6a061f196d9aa8f8e5dd662c04daafb5c001",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "f844a968f217fdf1a66d69dcbb72c805687e9c08dce464e5c315f7df953efb75",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 3777.5322 × left + 8719.269",
+              "method": "affine_formula",
+              "r_squared": 0.990267
+            }
+          ],
+          "right": "zhb.stat.employee_count",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_713941167bec55db32b1f90e59e9f4d496794f871766606fc6bd13d425805a6a": {
       "current": {
         "candidate_id": "cc1_713941167bec55db32b1f90e59e9f4d496794f871766606fc6bd13d425805a6a",
@@ -14269,6 +15531,111 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_7167d651c5319e5d06f0a3ade0a67dd5cdb871f5c7fb358183d1a5cbe9f67ba5": {
+      "current": {
+        "candidate_id": "cc1_7167d651c5319e5d06f0a3ade0a67dd5cdb871f5c7fb358183d1a5cbe9f67ba5",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "dd0529bdf16285059d03de5e33e95374ad667896744088bbac31d6a274f80602",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_7167d651c5319e5d06f0a3ade0a67dd5cdb871f5c7fb358183d1a5cbe9f67ba5",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "dd0529bdf16285059d03de5e33e95374ad667896744088bbac31d6a274f80602",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.8727963e+11 × left + 5.419922e+11",
+              "method": "affine_formula",
+              "r_squared": 0.992848
+            }
+          ],
+          "right": "tdx.finance_info.jingzichan",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -14694,6 +16061,111 @@
         "schema_version": 1
       }
     },
+    "cc1_7479c1a3ebeed6bc9ebcfe7d38e84d6b98f501f5ad146d9ec4988e96ef22451a": {
+      "current": {
+        "candidate_id": "cc1_7479c1a3ebeed6bc9ebcfe7d38e84d6b98f501f5ad146d9ec4988e96ef22451a",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "0cf55a4738a7a2dc4ccd87648338290ae97733ef944fbcd9d96b4e5761ad9803",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_7479c1a3ebeed6bc9ebcfe7d38e84d6b98f501f5ad146d9ec4988e96ef22451a",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "0cf55a4738a7a2dc4ccd87648338290ae97733ef944fbcd9d96b4e5761ad9803",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "eltdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.4079007e+08 × left + 6.8941306e+08",
+              "method": "affine_formula",
+              "r_squared": 0.993763
+            }
+          ],
+          "right": "eltdx.shortline.free_float_shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_753e613a037b7a9c15f382df8d20872988a6c6f7928e2a612cf403bdba40796b": {
       "current": {
         "candidate_id": "cc1_753e613a037b7a9c15f382df8d20872988a6c6f7928e2a612cf403bdba40796b",
@@ -14776,6 +16248,110 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_75af843606bb5203bd2ddc042a201523d019fe4097d5cf5b352edb3f1f92a78c": {
+      "current": {
+        "candidate_id": "cc1_75af843606bb5203bd2ddc042a201523d019fe4097d5cf5b352edb3f1f92a78c",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "6df54601c067697e28d233f98c973ec3b1126f49d07df7cd28da47db1671ee8a",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_75af843606bb5203bd2ddc042a201523d019fe4097d5cf5b352edb3f1f92a78c",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "6df54601c067697e28d233f98c973ec3b1126f49d07df7cd28da47db1671ee8a",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2600348.2 × left + 3346906.5",
+              "method": "affine_formula",
+              "r_squared": 0.999523
+            }
+          ],
+          "right": "zhb.full.cash_reserve_wan",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -15253,6 +16829,111 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_7a109a36070524253070017e1ee9f59c0a6cb2bb81b4109c299a9819c3f3e50e": {
+      "current": {
+        "candidate_id": "cc1_7a109a36070524253070017e1ee9f59c0a6cb2bb81b4109c299a9819c3f3e50e",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "173c5663e0570aeed263a56d0bb9f8799d99375219cc22c60bbdafa1b4098132",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_7a109a36070524253070017e1ee9f59c0a6cb2bb81b4109c299a9819c3f3e50e",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "173c5663e0570aeed263a56d0bb9f8799d99375219cc22c60bbdafa1b4098132",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 4.4513056e+12 × left + 4.8965414e+12",
+              "method": "affine_formula",
+              "r_squared": 0.999924
+            }
+          ],
+          "right": "tdx.finance_info.zongzichan",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -16236,6 +17917,110 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_8310afffdc4b82497228c7943e41dfdb2b926288248ef56e7c52bba0bdba23bf": {
+      "current": {
+        "candidate_id": "cc1_8310afffdc4b82497228c7943e41dfdb2b926288248ef56e7c52bba0bdba23bf",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "612fea739908d81ed87a13b335460e511e589fe601a9025f0d922f698569a4bc",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_8310afffdc4b82497228c7943e41dfdb2b926288248ef56e7c52bba0bdba23bf",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "612fea739908d81ed87a13b335460e511e589fe601a9025f0d922f698569a4bc",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 418799.23 × left + 419289.12",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            }
+          ],
+          "right": "zhb.stat.other_qy_jzc",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -18128,6 +19913,111 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_92186cc8e05769306b48bfbb2787a7d4e275b3eac66076a1cefe164b5ab0d5e0": {
+      "current": {
+        "candidate_id": "cc1_92186cc8e05769306b48bfbb2787a7d4e275b3eac66076a1cefe164b5ab0d5e0",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "2472144c6bd22bacb27b9134f4271b8673ad7cccee188fe354a3de6c6ea98b71",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_92186cc8e05769306b48bfbb2787a7d4e275b3eac66076a1cefe164b5ab0d5e0",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "2472144c6bd22bacb27b9134f4271b8673ad7cccee188fe354a3de6c6ea98b71",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ftshare_rest",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.9827725e+09 × left + 3.9814276e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99969
+            }
+          ],
+          "right": "ftshare_rest.shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -24022,6 +25912,111 @@
         "schema_version": 1
       }
     },
+    "cc1_bbb238e65eeaa1e7e9b623866aa547eae890da19771b99ead52730897e43fe94": {
+      "current": {
+        "candidate_id": "cc1_bbb238e65eeaa1e7e9b623866aa547eae890da19771b99ead52730897e43fe94",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "227e5646229ef9a11ecf91b588e6af03f1c0aa2414a2fd9541f92a669cd2b595",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_bbb238e65eeaa1e7e9b623866aa547eae890da19771b99ead52730897e43fe94",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "227e5646229ef9a11ecf91b588e6af03f1c0aa2414a2fd9541f92a669cd2b595",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 298277.25 × left + 398142.77",
+              "method": "affine_formula",
+              "r_squared": 0.99969
+            }
+          ],
+          "right": "tdx.finance_info.zhongguben",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_bdae1630e279eed1cf62bf122887b1617f9e2302b2a717011d2b27dd463b47d0": {
       "current": {
         "candidate_id": "cc1_bdae1630e279eed1cf62bf122887b1617f9e2302b2a717011d2b27dd463b47d0",
@@ -25099,6 +27094,215 @@
         "schema_version": 1
       }
     },
+    "cc1_c5fca591ccc7fac89259797dd491ab11e1f78dbb0993e53810900792879a15c5": {
+      "current": {
+        "candidate_id": "cc1_c5fca591ccc7fac89259797dd491ab11e1f78dbb0993e53810900792879a15c5",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "e097830264ef69bfc398c90d78ae88cc75e4aaeffed71d1f870c9823d5518012",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c5fca591ccc7fac89259797dd491ab11e1f78dbb0993e53810900792879a15c5",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "e097830264ef69bfc398c90d78ae88cc75e4aaeffed71d1f870c9823d5518012",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2600348.2 × left + 3346906.5",
+              "method": "affine_formula",
+              "r_squared": 0.999523
+            }
+          ],
+          "right": "zhb.stat.cash_reserve_wan",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 20,
+          "sample_dates": [
+            "T:20261109"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
+    "cc1_c6deb26f5e4b8e4942856cd878680170e0633968669396d48e8af6e7f28f0a3a": {
+      "current": {
+        "candidate_id": "cc1_c6deb26f5e4b8e4942856cd878680170e0633968669396d48e8af6e7f28f0a3a",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "ba097b5648e895ad99eb2ad9533ac18d28f145602eb95de69bca8b84a8c3779a",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c6deb26f5e4b8e4942856cd878680170e0633968669396d48e8af6e7f28f0a3a",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "ba097b5648e895ad99eb2ad9533ac18d28f145602eb95de69bca8b84a8c3779a",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "eltdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 2.7204086e+09 × left + 3.6768232e+09",
+              "method": "affine_formula",
+              "r_squared": 0.99962
+            }
+          ],
+          "right": "eltdx.shortline.float_shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_c7434b7948486db9f8e225a6a299ec809f1e750d105c885e5658d91e7b0301c7": {
       "current": {
         "candidate_id": "cc1_c7434b7948486db9f8e225a6a299ec809f1e750d105c885e5658d91e7b0301c7",
@@ -25970,6 +28174,111 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_cb7e70d2cd88d0f2ca8786c85009f0055ee629585ca30add534d009347d1caf8": {
+      "current": {
+        "candidate_id": "cc1_cb7e70d2cd88d0f2ca8786c85009f0055ee629585ca30add534d009347d1caf8",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "16ca1ea7a3eeb1ef43d51f4cdbc5fd439495fbd38a0f70fe6551a00c7d9dfc86",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cb7e70d2cd88d0f2ca8786c85009f0055ee629585ca30add534d009347d1caf8",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "16ca1ea7a3eeb1ef43d51f4cdbc5fd439495fbd38a0f70fe6551a00c7d9dfc86",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 272040.86 × left + 367682.32",
+              "method": "affine_formula",
+              "r_squared": 0.99962
+            }
+          ],
+          "right": "tdx.finance_info.liutongguben",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -27113,6 +29422,111 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_d2e3eb5dbe245ca85c29e8fbeec565018a9a1781b0ac85e7453627f0598a0ab4": {
+      "current": {
+        "candidate_id": "cc1_d2e3eb5dbe245ca85c29e8fbeec565018a9a1781b0ac85e7453627f0598a0ab4",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "032bf44e7af37801b8a1bdc306f9842cab51b05fdb31012f2a1f6f3e95503ea7",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_d2e3eb5dbe245ca85c29e8fbeec565018a9a1781b0ac85e7453627f0598a0ab4",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "032bf44e7af37801b8a1bdc306f9842cab51b05fdb31012f2a1f6f3e95503ea7",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 1.469349e+10 × left + 2.98152e+10",
+              "method": "affine_formula",
+              "r_squared": 0.998064
+            }
+          ],
+          "right": "tdx.finance_info.zibengongjijin",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -29308,6 +31722,111 @@
         "schema_version": 1
       }
     },
+    "cc1_e3bd1605456399013d9df200dd8ee15613a72e089380e0ac736786b4e8ee07cb": {
+      "current": {
+        "candidate_id": "cc1_e3bd1605456399013d9df200dd8ee15613a72e089380e0ac736786b4e8ee07cb",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "1143b3cdf8af7d9f310d25d9ea5b1cb83005f5f50c506161651b0fd8a445587f",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_e3bd1605456399013d9df200dd8ee15613a72e089380e0ac736786b4e8ee07cb",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "1143b3cdf8af7d9f310d25d9ea5b1cb83005f5f50c506161651b0fd8a445587f",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 1.1539888e+11 × left + 3.1488056e+11",
+              "method": "affine_formula",
+              "r_squared": 0.969946
+            }
+          ],
+          "right": "tdx.finance_info.weifenlirun",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_e4ef00fa9884bfecc56ab7bbebe38a4c5fc07d80e4661a401a8ab550a9f5d6e6": {
       "current": {
         "candidate_id": "cc1_e4ef00fa9884bfecc56ab7bbebe38a4c5fc07d80e4661a401a8ab550a9f5d6e6",
@@ -29566,6 +32085,111 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06": {
+      "current": {
+        "candidate_id": "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "06532ae3859cece8cedd1efb2b7817479be7fd48a05769fbf9e29be516cb52bf",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+            "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_sample_audit.csv",
+            "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+          },
+          {
+            "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+            "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+          }
+        ],
+        "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+        "reviewed_at": "2026-11-17T03:57:48+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "06532ae3859cece8cedd1efb2b7817479be7fd48a05769fbf9e29be516cb52bf",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f192_placeholder_outlier_review.md",
+              "sha256": "1d55dfdf0b576bd31285d7c5b53491d8a5956fc9683758d867a2f462985eb2ec"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_sample_audit.csv",
+              "sha256": "d3bb34fb582bf65f04ceaabf63462546e294aed24714448d39e9fc75fdea22f3"
+            },
+            {
+              "path": "research/20261117_ulist239_f192_candidate_inventory.csv",
+              "sha256": "a35b6166bf6083e86fd0c60ee8694f7d4f2a7527b2d93c8872568ede24993e83"
+            }
+          ],
+          "rationale": "此项数值关系候选不足以证明字段等价。报告中的 25 条 f192 相关公式/相关性候选都只覆盖 20 只股票中的同一只有效对应记录 601288；留存 Ulist 样本 80 行中，f192=116 仅此一只股票在 4 个数据日重复出现，其余 76 行均为 -1 占位。样本因此只有一个不同的有效股票值，重复日期不增加横截面区分力；多个右端字段与601288 的规模差异也可产生高拟合。该决定仅将该数值关系标为证据不足，不否定f192 可能表示对应证券市场号，不改变来源字段状态或注册表映射。",
+          "reviewed_at": "2026-11-17T03:57:48+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tdx",
+            "ulist239"
+          ],
+          "left": "ulist239.f192",
+          "methods": [
+            {
+              "formula": "right ≈ 6.8784617e+10 × left + 1.2693519e+11",
+              "method": "affine_formula",
+              "r_squared": 0.988937
+            }
+          ],
+          "right": "tdx.finance_info.jingyingxianjinliu",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v3",
         "schema_version": 1
       }
     },
@@ -32924,5 +35548,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T03:22:15+08:00"
+  "updated_at": "2026-11-17T03:57:48+08:00"
 }

@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261117_ulist239_f192_placeholder_outlier_review.md`](adjudications/20261117_ulist239_f192_placeholder_outlier_review.md)、[`research/20261117_ulist239_f192_sample_audit.csv`](research/20261117_ulist239_f192_sample_audit.csv)、[`research/20261117_ulist239_f192_candidate_inventory.csv`](research/20261117_ulist239_f192_candidate_inventory.csv) 与 [`adjudications/20261117_ulist239_f192_candidate_review.json`](adjudications/20261117_ulist239_f192_candidate_review.json)：核对 80 个 Ulist 来源日/股票样本，识别 `f192=116` 仅来自 601288；将 25 条单股票驱动的高拟合候选记为证据不足，保留“对应 A/H 市场号”假设，不更新主字典。
+
 - [`adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md`](adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md)、[`research/20261117_ulist239_f149_rolling_window_audit.csv`](research/20261117_ulist239_f149_rolling_window_audit.csv) 与 [`adjudications/20261117_ulist239_f149_mtd_candidate_review.json`](adjudications/20261117_ulist239_f149_mtd_candidate_review.json)：按 `f297` / `zhb_date` 对齐 80 个来源日股票样本，拒绝 `ulist239.f149` 等同 ZHB 月初至今涨幅的单日偶合；记录滚动六个交易间隔涨幅线索及 300788 除息后 0.01 个百分点残差，字段语义仍待核，不更新主字典。
 - [`adjudications/20261117_ulist239_f190_hgu_low_information_review.md`](adjudications/20261117_ulist239_f190_hgu_low_information_review.md) 与 [`research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv`](research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv)：拆解 `f190 ↔ TDX hgu` 的 95% L4 命中，确认 38/40 对为无信息的 0=0，唯一非零股票跨两个相邻日重复且数值不等；候选标为证据不足，不更新主字典。
 

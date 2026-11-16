@@ -48,3 +48,8 @@
 - 对碰撞报告中的 `ulist239.f149 ↔ zhb.stat2.change_mtd` 逐日核对后，2026-11-06 为 0/20、2026-11-09 为 20/20。11 月 9 日的滚动六个交易间隔恰好从 10 月 30 日起算，与月初至今使用同一基准，构成单日偶合。候选 `cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5` 已正式标记 `rejected`，只拒绝该跨源同义关系。
 - 80 个来源日股票值与未复权 K 线复算表现为滚动六个交易间隔涨幅的强线索；300788 官方除息记录支持调整该窗口的历史基准，但仍有两行各差 0.01 个百分点。因 `ulist.np/get` 未公开 `f149` 字段标签，且残差计算口径未完全解释，来源内字段保持 `unverified`，不修改主字典。完整分析、逐行 CSV 和候选审阅记录见 [`20261117_ulist239_f149_mtd_candidate_rejection.md`](../adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md)。
 - 同轮检查了 `ulist239.f190 ↔ tdx.finance_info.hgu` 的 L4 95% 重合：40 组里 38 组只是 0=0；两个非零项均为 601288 跨相邻日重复，`f190=3` 与 `hgu=3,073,882.25` 不等，且 TDX 的来源实际数据日未确认。已记为 `insufficient_evidence`；不能把零值比例解释成语义支持。逐值表与审阅见 [`20261117_ulist239_f190_hgu_low_information_review.md`](../adjudications/20261117_ulist239_f190_hgu_low_information_review.md)。
+
+## `ulist239.f192` 字段假设与拟合候选复核
+
+- 读取 2026-11-05、11-06、11-09、11-10 四个保留目录的 Ulist `f297` 后，80 行中 76 行为 `f192=-1`，4 行为 `116`；后者全是 601288，只有一个不同的非占位股票样本。该结构支持追查 A/H 对应证券的市场号，但仍不足以来源内定案。
+- 碰撞报告为此路径产生 25 条高相关/公式候选。它们只有一个不同的 `f192` 有效股票值，且 TDX/Tencent 的高拟合由同一 601288 样本驱动；25 项统一标为 `insufficient_evidence`，不等于证伪字段含义。第三方字段表把 f192 对应到 A/H 市场号，东方财富 A/H 页面核对了农行证券配对；官方字段契约或第二只 A/H 项目的原始样本仍缺。完整样本、候选清单和理由见 [`20261117_ulist239_f192_placeholder_outlier_review.md`](../adjudications/20261117_ulist239_f192_placeholder_outlier_review.md)。

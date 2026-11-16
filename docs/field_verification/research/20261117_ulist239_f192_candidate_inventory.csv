@@ -1,0 +1,26 @@
+candidate_id,left,right,sample_count,sample_dates,sample_codes_count,methods,prior_observation_count
+cc1_21598c85c5c940f7c150ccf8c8aef301905ad7fa35fed2a2556a67a9041f0250,ulist239.f192,tdx.finance_info.hgu,40,T:20261109|T:20261110,20,robust_correlation:1.0:1.0::; affine_formula:::1.0:right ≈ 26272.498 × left + 26272.498,22
+cc1_38f213b5d4390ea706c738ddfb47d604514ffd3cc08332cf123c9fb58d5d07ad,ulist239.f192,tencent[76],40,T:20261109|T:20261110,20,affine_formula:::0.99962:right ≈ 2.7204085e+09 × left + 3.6768231e+09,12
+cc1_1cec9635ec334c346c0d582a01afbf6c75c20af08d47a84dea0c3048301d569e,ulist239.f192,tencent[73],40,T:20261109|T:20261110,20,affine_formula:::0.99969:right ≈ 2.9827725e+09 × left + 3.9814276e+09,4
+cc1_21aeba80fde3a83568b13c888b798486bcf8f0141491600f0f16b57634f5481f,ulist239.f192,tencent[72],40,T:20261109|T:20261110,20,affine_formula:::0.99962:right ≈ 2.7204085e+09 × left + 3.6768231e+09,4
+cc1_7a109a36070524253070017e1ee9f59c0a6cb2bb81b4109c299a9819c3f3e50e,ulist239.f192,tdx.finance_info.zongzichan,40,T:20261109|T:20261110,20,affine_formula:::0.999924:right ≈ 4.4513056e+12 × left + 4.8965414e+12,3
+cc1_d2e3eb5dbe245ca85c29e8fbeec565018a9a1781b0ac85e7453627f0598a0ab4,ulist239.f192,tdx.finance_info.zibengongjijin,40,T:20261109|T:20261110,20,affine_formula:::0.998064:right ≈ 1.469349e+10 × left + 2.98152e+10,3
+cc1_bbb238e65eeaa1e7e9b623866aa547eae890da19771b99ead52730897e43fe94,ulist239.f192,tdx.finance_info.zhongguben,40,T:20261109|T:20261110,20,affine_formula:::0.99969:right ≈ 298277.25 × left + 398142.77,3
+cc1_e3bd1605456399013d9df200dd8ee15613a72e089380e0ac736786b4e8ee07cb,ulist239.f192,tdx.finance_info.weifenlirun,40,T:20261109|T:20261110,20,affine_formula:::0.969946:right ≈ 1.1539888e+11 × left + 3.1488056e+11,3
+cc1_6e5dfb8632379998f79c317182df89d21d55f5911a54231629dba346f6b48ae1,ulist239.f192,tdx.finance_info.touzishouyu,40,T:20261109|T:20261110,20,affine_formula:::0.999839:right ≈ 5.2790098e+09 × left + 5.7848609e+09,2
+cc1_cb7e70d2cd88d0f2ca8786c85009f0055ee629585ca30add534d009347d1caf8,ulist239.f192,tdx.finance_info.liutongguben,40,T:20261109|T:20261110,20,affine_formula:::0.99962:right ≈ 272040.86 × left + 367682.32,2
+cc1_7167d651c5319e5d06f0a3ade0a67dd5cdb871f5c7fb358183d1a5cbe9f67ba5,ulist239.f192,tdx.finance_info.jingzichan,40,T:20261109|T:20261110,20,affine_formula:::0.992848:right ≈ 2.8727963e+11 × left + 5.419922e+11,
+cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06,ulist239.f192,tdx.finance_info.jingyingxianjinliu,40,T:20261109|T:20261110,20,affine_formula:::0.988937:right ≈ 6.8784617e+10 × left + 1.2693519e+11,
+cc1_92186cc8e05769306b48bfbb2787a7d4e275b3eac66076a1cefe164b5ab0d5e0,ulist239.f192,ftshare_rest.shares,40,T:20261109|T:20261110,20,affine_formula:::0.99969:right ≈ 2.9827725e+09 × left + 3.9814276e+09,4
+cc1_15663fc56e2628020beb994558c0193cee5c1bc8e9fe5f0eb11027a333cf5ea6,ulist239.f192,ftshare_rest.float_a_shares,40,T:20261109|T:20261110,20,affine_formula:::0.99962:right ≈ 2.7204085e+09 × left + 3.6768231e+09,4
+cc1_7479c1a3ebeed6bc9ebcfe7d38e84d6b98f501f5ad146d9ec4988e96ef22451a,ulist239.f192,eltdx.shortline.free_float_shares,40,T:20261109|T:20261110,20,affine_formula:::0.993763:right ≈ 2.4079007e+08 × left + 6.8941306e+08,4
+cc1_c6deb26f5e4b8e4942856cd878680170e0633968669396d48e8af6e7f28f0a3a,ulist239.f192,eltdx.shortline.float_shares,40,T:20261109|T:20261110,20,affine_formula:::0.99962:right ≈ 2.7204086e+09 × left + 3.6768232e+09,4
+cc1_3da6bc6bd53a0cdf9821d9bc25f7d5602b13521b58bac4bcfad52c784c9591d3,ulist239.f192,zhb.tipinfo.unlock_shares_wan,20,T:20261109,20,affine_formula:::0.992323:right ≈ 16896.94 × left + 35922.224,
+cc1_8310afffdc4b82497228c7943e41dfdb2b926288248ef56e7c52bba0bdba23bf,ulist239.f192,zhb.stat.other_qy_jzc,20,T:20261109,20,affine_formula:::1.0:right ≈ 418799.23 × left + 419289.12,14
+cc1_583cc4fc7941380c0ce4aa4bbdd4f4706db0327c97776c3bd08dec331263aaa2,ulist239.f192,zhb.stat.free_ltgb,20,T:20261109,20,affine_formula:::0.993763:right ≈ 24079.007 × left + 68941.306,
+cc1_70ff31983508183510afa318135e6a061f196d9aa8f8e5dd662c04daafb5c001,ulist239.f192,zhb.stat.employee_count,20,T:20261109,20,affine_formula:::0.990267:right ≈ 3777.5322 × left + 8719.269,
+cc1_c5fca591ccc7fac89259797dd491ab11e1f78dbb0993e53810900792879a15c5,ulist239.f192,zhb.stat.cash_reserve_wan,20,T:20261109,20,affine_formula:::0.999523:right ≈ 2600348.2 × left + 3346906.5,
+cc1_2ac11fd8613a3510dcabee58399166244130c0d3569346688e79444798754a19,ulist239.f192,zhb.full.other_qy_jzc,20,T:20261109,20,affine_formula:::1.0:right ≈ 418799.23 × left + 419289.12,13
+cc1_680705127f63e8abb30afb1af5c4a799ae25cbf8ffea486602c8b504e68032ce,ulist239.f192,zhb.full.free_ltgb,20,T:20261109,20,affine_formula:::0.993763:right ≈ 24079.007 × left + 68941.306,
+cc1_307d63ed3bb06ae2e39a045569809f03ffc9fcd2a683386ba62327bba366c2d8,ulist239.f192,zhb.full.employee_count,20,T:20261109,20,affine_formula:::0.990267:right ≈ 3777.5322 × left + 8719.269,
+cc1_75af843606bb5203bd2ddc042a201523d019fe4097d5cf5b352edb3f1f92a78c,ulist239.f192,zhb.full.cash_reserve_wan,20,T:20261109,20,affine_formula:::0.999523:right ≈ 2600348.2 × left + 3346906.5,

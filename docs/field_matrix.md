@@ -6,7 +6,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1718 个字段 / 2031 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1718 个字段 / 2032 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -27,6 +27,7 @@
 | high | 4 | TDX-eltdx、FTShare REST、AxData、TDX-eltdx(适配层) |
 | low | 4 | TDX-eltdx、FTShare REST、AxData、TDX-eltdx(适配层) |
 | rank | 4 | TDX-0x0010/F10、TDX-eltdx、财联社、东财 |
+| rise_speed | 4 | TDX-eltdx、AxData、TDX(双命名源)、TDX-eltdx(适配层) |
 | time | 4 | TDX-0x0010/F10、TDX-eltdx、东财、TDX-eltdx(适配层) |
 | turnover | 4 | FTShare REST、新浪、开盘红、新浪(扩展API) |
 | auction_prev_volume_ratio | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
@@ -67,7 +68,6 @@
 | prev_open_amount | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
 | prev_open_volume_hand | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
 | prev_seal_amount | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
-| rise_speed | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
 | seal_prev_ratio | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
 | seal_to_amount_ratio | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |
 | seal_to_float_ratio | 3 | TDX-eltdx、AxData、TDX-eltdx(适配层) |

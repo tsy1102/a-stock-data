@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tdx-snapshot-model-derived-quote-fields-20261116",
+  "reviewed_on": "2026-11-16",
+  "evidence_basis": "manual_public_data_semantic_adjudication",
+  "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+  "research_audit": {
+    "file": "docs/field_verification/research/20261116_tdx_quote_model_derived_capture_path_audit.csv",
+    "sha256": "187899e9c48b0089dd1da74bca168745f0c9204c937d802da990aa901fdfb1c3",
+    "manifest_file": "docs/field_verification/research/20261116_tdx_inside_outside_capture_path_audit.csv",
+    "raw_files_examined": 561,
+    "tdx_raw_files_examined": 18,
+    "tdx_occurrences": {
+      "change": 0,
+      "change_pct": 358,
+      "amplitude_pct": 0,
+      "rise_speed": 0
+    },
+    "tdx_change_pct_path": "stocks.*.quote_full.change_pct",
+    "registered_change_pct_path": "change_pct"
+  },
+  "evidence": [
+    {
+      "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+      "publisher": "通达信公式系统官方文档",
+      "retrieved_on": "2026-11-16",
+      "claim": "DYNAINFO(12)、DYNAINFO(13)、DYNAINFO(14)、DYNAINFO(24) 分别描述日涨跌、振幅、涨跌幅和涨速；百分数值按文档要求缩放。"
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L107-L124",
+      "publisher": "AxData 固定提交 f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16",
+      "claim": "TDX quote model derives change, change_pct and amplitude_pct from last_price, pre_close, high and low; percentage properties return null for zero pre_close."
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/snapshot_normalize.py#L168-L196",
+      "publisher": "AxData 固定提交 f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16",
+      "claim": "TDX snapshot normalizer emits the four fields in the normalized quote model."
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L7960-L8175",
+      "publisher": "AxData 固定提交 f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16",
+      "claim": "stock_realtime_snapshot_tdx documents change/change_pct/amplitude_pct and rise_speed; percentage outputs are described as percentage values."
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/protocol/commands/quotes.py#L608-L617",
+      "publisher": "AxData 固定提交 f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16",
+      "claim": "AxData decodes rise_speed from a signed 16-bit wire value scaled by 100; this does not establish the official wire slot or calculation window."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "tdx-model-change-20261116",
+      "source": "TDX(双命名源)",
+      "code": "change",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "change",
+        "meaning": "涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版 TDX quote model 将 change 定义为 last_price - pre_close，官方通达信函数目录中的 DYNAINFO(12) 对应日涨跌。该来源内模型语义可以确认；模型跨品种，官方没有给出统一单位，因此单位留空。没有把本模型路径映射到项目的嵌套 quote_full.change 或其他来源路径。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L107-L112",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/snapshot_normalize.py#L168-L196"
+      ]
+    },
+    {
+      "id": "tdx-model-change-pct-20261116",
+      "source": "TDX(双命名源)",
+      "code": "change_pct",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "change_pct",
+        "meaning": "涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+        "unit": "%"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版模型公式与通达信 DYNAINFO(14) 的涨跌幅定义相符；模型将百分数值按百分比刻度输出，前收盘价为零时返回空值，单位记为 %。保留期 raw 中出现的是完整路径 stocks.*.quote_full.change_pct，而本次注册表目标是裸路径 change_pct；不以相同叶名推断路径相同、数据等价或建立映射。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L113-L117",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L7998-L8007"
+      ]
+    },
+    {
+      "id": "tdx-model-amplitude-pct-20261116",
+      "source": "TDX(双命名源)",
+      "code": "amplitude_pct",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "amplitude_pct",
+        "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+        "unit": "%"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版 TDX quote model 以（high - low）/pre_close*100 计算振幅百分数，与通达信 DYNAINFO(13) 定义相符；前收盘价为零时返回空值。单位为 %。没有证据证明此模型键就是当前项目采集器的 wire 字段或其他来源路径。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L119-L124",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8004-L8013"
+      ]
+    },
+    {
+      "id": "tdx-model-rise-speed-20261116",
+      "source": "TDX(双命名源)",
+      "code": "rise_speed",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "rise_speed",
+        "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+        "unit": "%"
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "AxData 固定版 TDX 字段目录将 rise_speed 明确描述为涨速百分数值，解析器把签名 16 位 wire 值按 100 缩放；通达信官方 DYNAINFO(24) 定义了涨速概念及百分比缩放。证据足以确认模型层的涨速百分数值语义，但没有证明该解析器字节槽位等于 DYNAINFO(24)，也没有给出具体计算时间窗。上述未确认项明确保留。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8160-L8175",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/protocol/commands/quotes.py#L608-L617"
+      ]
+    }
+  ]
+}

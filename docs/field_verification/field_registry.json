@@ -8003,20 +8003,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "canonical": "amplitude_pct",
+      "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "analyse",
@@ -10117,7 +10114,7 @@
       "source_statuses": {
         "FTShare REST": "verified",
         "Levistock历史未归属": "unverified",
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "同花顺-fuyao": "verified"
       },
       "aggregation_status": "ambiguous",
@@ -10405,7 +10402,7 @@
       "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "verified",
         "ZHB-tdxstat": "verified",
         "东财-push2ex": "verified",
@@ -31802,20 +31799,19 @@
         "TDX-eltdx(适配层)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "rise_speed",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_statuses_differ"
+        "meaning_differs",
+        "unit_incomplete"
       ]
     },
     {
@@ -42857,6 +42853,7 @@
     ],
     "rise_speed": [
       "AxData",
+      "TDX(双命名源)",
       "TDX-eltdx",
       "TDX-eltdx(适配层)"
     ],
@@ -81168,13 +81165,15 @@
       "code": "amplitude_pct",
       "identity": "TDX(双命名源)::amplitude_pct",
       "path": "amplitude_pct",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "amplitude_pct",
+      "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+      "unit": "%",
+      "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -81184,9 +81183,47 @@
         ],
         "values": [
           "unverified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-model-amplitude-pct-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-model-amplitude-pct-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+        "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "canonical": "amplitude_pct",
+          "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+          "unit": "%",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-model-amplitude-pct-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "amplitude_pct",
+              "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L119-L124",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8004-L8013"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "amplitude_pct",
@@ -81199,7 +81236,46 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-model-amplitude-pct-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "amplitude_pct",
+              "meaning": "振幅，按（最高价－最低价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "rationale": "AxData 固定版 TDX quote model 以（high - low）/pre_close*100 计算振幅百分数，与通达信 DYNAINFO(13) 定义相符；前收盘价为零时返回空值。单位为 %。没有证据证明此模型键就是当前项目采集器的 wire 字段或其他来源路径。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L119-L124",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8004-L8013"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -83301,13 +83377,15 @@
       "code": "change",
       "identity": "TDX(双命名源)::change",
       "path": "change",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "change",
+      "meaning": "涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -83319,9 +83397,47 @@
         ],
         "values": [
           "unverified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-model-change-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-model-change-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+        "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "canonical": "change",
+          "meaning": "涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+          "unit": "",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-model-change-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change",
+              "meaning": "涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": ""
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L107-L112",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/snapshot_normalize.py#L168-L196"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "change",
@@ -83336,7 +83452,46 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-model-change-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change",
+              "meaning": "涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": ""
+            }
+          },
+          "rationale": "AxData 固定版 TDX quote model 将 change 定义为 last_price - pre_close，官方通达信函数目录中的 DYNAINFO(12) 对应日涨跌。该来源内模型语义可以确认；模型跨品种，官方没有给出统一单位，因此单位留空。没有把本模型路径映射到项目的嵌套 quote_full.change 或其他来源路径。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L107-L112",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/snapshot_normalize.py#L168-L196"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -83478,13 +83633,15 @@
       "code": "change_pct",
       "identity": "TDX(双命名源)::change_pct",
       "path": "change_pct",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "change_pct",
+      "meaning": "涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+      "unit": "%",
+      "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -83500,9 +83657,47 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-model-change-pct-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-model-change-pct-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+        "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "canonical": "change_pct",
+          "meaning": "涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+          "unit": "%",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-model-change-pct-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_pct",
+              "meaning": "涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L113-L117",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L7998-L8007"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "change_pct",
@@ -83521,7 +83716,46 @@
         "meaning": "涨跌幅",
         "unit": "",
         "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-model-change-pct-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_pct",
+              "meaning": "涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "rationale": "AxData 固定版模型公式与通达信 DYNAINFO(14) 的涨跌幅定义相符；模型将百分数值按百分比刻度输出，前收盘价为零时返回空值，单位记为 %。保留期 raw 中出现的是完整路径 stocks.*.quote_full.change_pct，而本次注册表目标是裸路径 change_pct；不以相同叶名推断路径相同、数据等价或建立映射。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/models/quote.py#L113-L117",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L7998-L8007"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -92345,13 +92579,15 @@
       "code": "rise_speed",
       "identity": "TDX(双命名源)::rise_speed",
       "path": "rise_speed",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "rise_speed",
+      "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+      "unit": "%",
+      "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "sections": [
+        "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -92362,9 +92598,47 @@
         ],
         "values": [
           "unverified"
-        ]
+        ],
+        "adjudication_ids": [
+          "tdx-model-rise-speed-20261116"
+        ],
+        "adjudication_evidence_id": "tdx-model-rise-speed-20261116",
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+        "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec"
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "canonical": "rise_speed",
+          "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+          "unit": "%",
+          "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+          "status": "verified",
+          "adjudication_id": "tdx-model-rise-speed-20261116",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "rise_speed",
+              "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8160-L8175",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/protocol/commands/quotes.py#L608-L617"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "rise_speed",
@@ -92378,7 +92652,46 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "status_raw": "E3 public data semantic adjudication (2026-11-16)",
+      "adjudications": [
+        {
+          "id": "tdx-model-rise-speed-20261116",
+          "action": "manual_public_data_semantic_adjudication",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-16",
+          "decision_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+          "evidence_basis": "manual_public_data_semantic_adjudication",
+          "evidence_level": "E3",
+          "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.json",
+          "evidence_sha256": "afb64200c06509c9dfe560a0989596c38d2d262e8a37aeb4990d64e12ddb29ec",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "manual_public_data_semantic_adjudication"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "rise_speed",
+              "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+              "unit": "%"
+            }
+          },
+          "rationale": "AxData 固定版 TDX 字段目录将 rise_speed 明确描述为涨速百分数值，解析器把签名 16 位 wire 值按 100 缩放；通达信官方 DYNAINFO(24) 定义了涨速概念及百分比缩放。证据足以确认模型层的涨速百分数值语义，但没有证明该解析器字节槽位等于 DYNAINFO(24)，也没有给出具体计算时间窗。上述未确认项明确保留。",
+          "external_evidence": [
+            "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/axdata-provider.json#L8160-L8175",
+            "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/packages/axdata-source-tdx/src/axdata_source_tdx/_tdx_wire/protocol/commands/quotes.py#L608-L617"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -259512,6 +259825,17 @@
       "evidence_file": "docs/field_verification/adjudications/20261116_tdx_inside_outside_axdata_semantics.md",
       "matrix_field": "outside_volume",
       "matrix_source": "AxData"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "rise_speed",
+      "canonical": "rise_speed",
+      "meaning": "涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径）",
+      "unit": "%",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_derived_quote_fields.md",
+      "matrix_field": "rise_speed",
+      "matrix_source": "TDX(双命名源)"
     }
   ],
   "source_contract_addenda": [

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 141 个 code；聚合定义不完整 188 个 code；疑似合并文本 523 条逐源记录。
+> 聚合歧义 142 个 code；聚合定义不完整 187 个 code；疑似合并文本 524 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -700,21 +700,21 @@
 
 ### `change` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `change` | change | 价格涨跌额 | 元/股 | `verified` |
-| TDX(双命名源) · `change` | — | — | — | `unverified` |
+| TDX(双命名源) · `change` | change | 涨跌额，按最新价减前收盘价计算（AxData TDX 快照模型语义，不证明当前项目采集路径） | — | `verified` |
 | 同花顺-fuyao · `change` | change | 当日涨跌幅，小数形式。 | 比例（小数） | `verified` |
 
 ### `change_pct` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `change_pct` | — | — | — | `unverified` |
+| TDX(双命名源) · `change_pct` | change_pct | 涨跌幅，按（最新价－前收盘价）÷前收盘价×100 计算（AxData TDX 快照模型语义，不证明当前项目采集路径） | % | `verified` |
 | TDX-eltdx(适配层) · `change_pct` | change_pct | 涨跌幅 | % | `verified` |
 | ZHB-tdxstat · `change_pct` | change_pct | 当日涨跌幅 | % | `verified` |
 | 东财-push2ex · `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | % | `verified` |
@@ -3011,13 +3011,13 @@
 | 开盘红 · `reason` | limit_up_reason | 涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值 | — | `verified` |
 | 开盘红(Levistock适配) · `reason` | reason | 涨停原因 | — | `unverified` |
 
-### `rise_speed` — incomplete
+### `rise_speed` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `rise_speed` | — | — | — | `unverified` |
+| TDX(双命名源) · `rise_speed` | rise_speed | 涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径） | % | `verified` |
 | TDX-eltdx(适配层) · `rise_speed` | rise_speed | 涨速指标 | — | `verified` |
 
 ### `seal_amount` — ambiguous
@@ -3345,6 +3345,7 @@
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | `disproved` |
 | TDX(双命名源) | `quote_full.pe_ttm` | quote_full.pe_ttm | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
+| TDX(双命名源) | `rise_speed` | rise_speed | 涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径） | `verified` |
 | TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |

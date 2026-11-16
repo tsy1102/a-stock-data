@@ -296,7 +296,7 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
     exact_overall = exact_total_hits / exact_total if exact_total else 0.0
     exact_l1_ok = (
         len(l1_days) >= MULTI_DAY_MIN
-        and exact_days_ge >= MULTI_DAY_MIN
+        and exact_days_ge == len(l1_days)
         and exact_overall >= HIT_RATE_L1_RATIO
         and not L["is_constant"]
         and not R["is_constant"]
@@ -344,7 +344,7 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
             ratio_overall = ratio_total_hits / ratio_total if ratio_total else 0.0
             if not (
                 len(ratio_days) >= MULTI_DAY_MIN
-                and ratio_days_ge >= MULTI_DAY_MIN
+                and ratio_days_ge == len(ratio_days)
                 and ratio_overall >= HIT_RATE_L1_RATIO
             ):
                 ratio_info = None

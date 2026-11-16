@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正 L1/L1-U 统计候选门槛：每个达到样本下限的独立日都必须达到 90% 命中率，不能仅凭其中 3 日达标和整体 90% 晋为 L1。此前全历史报告中 KPH `industry_limit_up_count` 与 KPL `raw_columns.col_20` 的 90% 总命中率掩盖了两个低命中日；修复后重跑为 L4 诊断线索，不建立跨源映射。
 - 修正腾讯行情买二/卖二价误取相邻数量槽的问题：价格索引为 `[11]/[21]`、数量索引为 `[12]/[22]`；同步更正新浪/腾讯字段交叉说明并增加离线回归覆盖。
 - 依据东财数据中心响应、同日 K 线和公司三季报纠正北向持仓字段：`CHANGE_RATE` 定为持股记录日个股涨跌幅；持股比例、数量和市值补齐单位与来源契约。在线响应缺失的 `CHANGE_SHARES` / `CHANGE_RATE` 不再被填成 0；旧 CSV 中无法区分默认零与真实零，回退时按未知处理。报告显示缺失为“—”，同步更换缓存分类以隔离旧伪零值。
 - 按项目锁定的 ELTDX v3.3.2 `KlineSeries` 契约，定案 `period_raw`、`period_param_raw`、`period_name`、`start`、`request_count`、`adjust_mode_raw`、`adjust_mode`、`anchor_date_raw`、`anchor_date` 九个适配层元数据字段；对 18 份保留模型归档核验调用参数，不将其误作行情值或来源日期。

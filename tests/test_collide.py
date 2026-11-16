@@ -489,6 +489,33 @@ def test_l1_requires_minimum_samples_on_each_independent_day():
     assert set(result["daily_informative_sample_counts"].values()) == {18}
 
 
+def test_l1_rejects_a_qualifying_day_below_daily_match_rate_even_at_90_percent_overall():
+    days = [
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261001",
+        "20261002",
+        "20261005",
+        "20261006",
+        "20261007",
+        "20261008",
+    ]
+    left, right = _daily_fields(days, codes=20)
+    failed_day = days[0]
+    for key, value in left["vals"].items():
+        if key[1] == f"T:{failed_day}":
+            right["vals"][key] = value + 10_000
+
+    result = collide.collide_pair(left, right)
+
+    assert result is not None
+    assert result["level"] == "L4"
+    assert result["overall_hit"] == 0.9
+    assert result["days_ge_threshold"] == 9
+
+
 def test_l1_zero_and_missing_coincidences_do_not_meet_informative_floor():
     left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=20)
     for key in left["vals"]:

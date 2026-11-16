@@ -7,15 +7,15 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 341,
+      "aggregate_status_scope_unresolved": 335,
       "candidate": 1,
-      "collector_output_container": 9,
+      "collector_output_container": 10,
       "conflict": 20,
-      "disproved": 93,
+      "disproved": 94,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
-      "manual_public_data_semantic_adjudication": 106,
+      "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 6,
       "matched": 778,
       "mixed_source_capture_passthrough": 5,
@@ -25,14 +25,14 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 3,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 505,
+      "registry_status_only_single_source": 503,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 985,
-      "verified": 1535,
+      "unverified": 977,
+      "verified": 1543,
       "verified_by_empirical_addendum": 177,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
@@ -39323,6 +39323,27 @@
       "status": "unverified",
       "source_statuses": {
         "开盘啦(kpl)": "unverified"
+      },
+      "aggregation_status": "incomplete",
+      "aggregation_issues": [
+        "canonical_incomplete",
+        "meaning_incomplete"
+      ]
+    },
+    {
+      "code": "yesterday_limit_pool",
+      "source": "东财-push2ex",
+      "sources": [
+        "东财-push2ex"
+      ],
+      "section": "2026-11-16 Push2EX yesterday pool output container is not a field path",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "disproved",
+      "source_statuses": {
+        "东财-push2ex": "disproved"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -176831,6 +176852,68 @@
           "scripts/audit_field_completeness.py"
         ],
         "reason": "CAPTURE_UNIT_CATALOG 将 limit_up_pool、limit_down_pool、limit_broken_pool 登记为输出路径；collect_push2ex 把三个 adapter 返回列表分别放入这些根路径。保留期 18 个合格归档中三项均为列表容器。audit_field_completeness.py 只从列表项提取字段键，不把根容器名当作字段。归档缺少 source_as_of_date，故只作结构佐证，不用列表值进行数值碰撞或推断来源数据日。",
+        "sample_as_of_dates": [],
+        "sample_count_per_path": 0
+      }
+    },
+    {
+      "source": "东财-push2ex",
+      "code": "yesterday_limit_pool",
+      "identity": "东财-push2ex::yesterday_limit_pool",
+      "path": "yesterday_limit_pool",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "section": "2026-11-16 Push2EX yesterday pool output container is not a field path",
+      "sections": [
+        "2026-11-16 Push2EX yesterday pool output container is not a field path"
+      ],
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
+      "status_evidence": {
+        "adjudication_evidence_id": "push2ex-yesterday-pool-container-nonfield-20261116:东财-push2ex::yesterday_limit_pool",
+        "reference_status_raw": [],
+        "reference_statuses": [],
+        "registry_aggregate_sources": [],
+        "registry_aggregate_status": null,
+        "values": [
+          "collector_output_container"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "status": "unverified",
+        "status_resolution": "status_missing",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "status_evidence": {
+          "reference_statuses": [],
+          "reference_status_raw": [],
+          "registry_aggregate_status": null,
+          "registry_aggregate_sources": [],
+          "values": []
+        },
+        "registry_aggregate": null
+      },
+      "adjudication_evidence": {
+        "id": "push2ex-yesterday-pool-container-nonfield-20261116:东财-push2ex::yesterday_limit_pool",
+        "decision": "disproved",
+        "decision_date": "2026-11-16",
+        "decision_note": "docs/field_verification/adjudications/20261116_push2ex_yesterday_pool_container.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261116_push2ex_yesterday_pool_container.md",
+          "docs/field_verification/research/20261116_push2ex_yesterday_pool_container_audit.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_http_collectors.py",
+          "stock_common/sc_datasource/_pools.py",
+          "scripts/audit_field_completeness.py",
+          "tests/test_capture_catalog.py",
+          "tests/test_capture_field_probe.py"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将 yesterday_limit_pool 登记为 getYesterdayZTPool 的 output_path；collect_push2ex 把 get_yesterday_limit_pool 返回的列表整体写入该路径，测试也确认列表项才承载 y_first_seal、y_limit_count 等记录键。2026-11-16 raw 中该根路径为数组且为空；source_as_of_dates.push2ex 未回显。此样本仅用于结构判断，不用于池内字段语义或日期定案。",
         "sample_as_of_dates": [],
         "sample_count_per_path": 0
       }

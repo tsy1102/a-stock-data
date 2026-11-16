@@ -1262,9 +1262,6 @@ def test_eltdx_exposes_preopen_shortline_as_deferred(monkeypatch):
         def theme_strength_rank(self, **_kwargs):
             raise readiness_error
 
-        def stock_theme_strength_rank(self, **_kwargs):
-            raise readiness_error
-
         def realtime_rank(self):
             return []
 
@@ -1298,7 +1295,7 @@ def test_eltdx_exposes_preopen_shortline_as_deferred(monkeypatch):
     assert ok is False
     assert info["status"] == "partial"
     assert info["n_error"] == 0
-    assert info["n_deferred"] == 4
+    assert info["n_deferred"] == 3
 
 
 def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
@@ -1307,6 +1304,7 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
     requested_snapshots = []
     requested_bars = []
     requested_finance = []
+    requested_theme_strength = []
 
     class FakeHelpers:
         def limit_ladder(self, codes=None):
@@ -1315,11 +1313,11 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
 
         def theme_strength_rank(self, codes=None):
             assert codes == ["bj920118", "bj920508"]
+            requested_theme_strength.append(list(codes))
             return SimpleNamespace(rows=[])
 
         def stock_theme_strength_rank(self, codes=None):
-            assert codes == ["bj920118", "bj920508"]
-            return SimpleNamespace(rows=[])
+            raise AssertionError("stock_theme_strength_rank duplicates theme_strength_rank")
 
         def realtime_rank(self):
             return []
@@ -1363,6 +1361,7 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
     assert requested_snapshots == [(["bj920118", "bj920508"], "skip")]
     assert requested_bars == ["sh880005", "bj920118", "bj920508"]
     assert requested_finance == ["bj920118", "bj920508"]
+    assert requested_theme_strength == [["bj920118", "bj920508"]]
     for code in pool_codes:
         assert result["stocks"][code]["quote_snapshot"]["exchange"] == "bj"
         assert result["stocks"][code]["shortline"]["stats_date"] == "2026-10-09"
@@ -1378,9 +1377,6 @@ def test_eltdx_capture_keeps_partial_snapshot_batch_and_retries_only_missing_cod
             return SimpleNamespace(rows=[])
 
         def theme_strength_rank(self, **_kwargs):
-            return SimpleNamespace(rows=[])
-
-        def stock_theme_strength_rank(self, **_kwargs):
             return SimpleNamespace(rows=[])
 
         def realtime_rank(self):
@@ -1424,9 +1420,6 @@ def test_eltdx_capture_does_not_request_unused_f10_news(monkeypatch):
             return SimpleNamespace(rows=[])
 
         def theme_strength_rank(self, **_kwargs):
-            return SimpleNamespace(rows=[])
-
-        def stock_theme_strength_rank(self, **_kwargs):
             return SimpleNamespace(rows=[])
 
         def realtime_rank(self):

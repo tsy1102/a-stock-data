@@ -164,18 +164,15 @@ def collect_eltdx(pool: list, failure_marker_fn: Callable[[Any], Any], lite: boo
         _a = [e for e in ecodes if e not in _bse]
         _gh = out["global_helpers"]
         # ── 全局 Helpers(仅处理本次池内代码) ──
-        # V17.2.28 根因修正: limit_ladder/theme_strength_rank/stock_theme_strength_rank 默认 codes=None
+        # V17.2.28 根因修正: limit_ladder/theme_strength_rank 默认 codes=None
         # 会扫描全市场 A 股(~5000 只)的 shortline_indicators + F10 主题查询, 单只 ~50ms 累积→~660s 挂起。
         # 修复: 显式传入本池 ecodes(仅 ~20 只)将工作量降到本池, 秒级完成; eltdx 调用一律主线程直调
         # (线程护栏会死锁非线程安全的客户端, 已废弃)。volume_comparison/buy_sell_strength 是逐股辅助
-        # (需 code 参数), 不属于全局, 移除以免报错。
+        # (需 code 参数), 不属于全局, 移除以免报错。锁定版本中 stock_theme_strength_rank 是
+        # theme_strength_rank 的直接别名，保留一个调用以免重复遍历和重复序列化。
         _global_helpers: List[tuple[str, Callable[[], Any]]] = [
             ("limit_ladder", lambda: client.helpers.limit_ladder(codes=ecodes)),
             ("theme_strength_rank", lambda: client.helpers.theme_strength_rank(codes=ecodes)),
-            (
-                "stock_theme_strength_rank",
-                lambda: client.helpers.stock_theme_strength_rank(codes=ecodes),
-            ),
             ("realtime_rank", lambda: client.helpers.realtime_rank()),
             ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
         ]

@@ -1,0 +1,2 @@
+data_date,source,code_path,raw_type,item_count,source_as_of_date,qualification,raw_path,raw_sha256,meta_path,meta_sha256
+20261116,东财-push2ex,yesterday_limit_pool,array,0,,local_structure_only,docs/field_verification/20261116/raw_push2ex.json,f777805d035b3fb8b1fb2ebeb1b80792a4bc2dd53f757405c32ba2caae259fb1,docs/field_verification/20261116/meta.json,9b0ff4dc02b22128bdf4cb78309ff19c214d59e07d503ed9e59acff4be5c882a

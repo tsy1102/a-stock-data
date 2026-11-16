@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_14275bdca4ad2d0bb8fb1b111eb442b481dd90d00a8ecebdb8a329df16a5ea23",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T06:01:57+08:00",
+      "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[29] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+      "evidence_refs": [
+        "20261117/20261117_collision_report.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T06:01:57+08:00",
+      "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[55] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+      "evidence_refs": [
+        "20261117/20261117_collision_report.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

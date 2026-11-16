@@ -336,6 +336,37 @@ def test_report_separates_registered_mapping_revalidations_from_new_candidates()
     assert report.index("zhb.full.known_metric") > report.index("## 三、已登记映射的本窗口复验")
 
 
+def test_l4_report_shows_informative_pair_denominator():
+    l4_pair = {
+        "left": "tencent[29]",
+        "right": "zhb.tipinfo.forecast_type",
+        "level": "L4",
+        "overall_hit": 1.0,
+        "n_days": 1,
+        "n_pairs": 20,
+        "n_informative_pairs": 8,
+        "match_class": "weak_exact_overlap",
+        "evidence_basis": "independent_cross_source_value_comparison",
+        "adjudication_progress": "diagnostic_only",
+    }
+
+    report = collide.build_report_md(
+        "20261117",
+        ["20261116"],
+        2,
+        20,
+        [],
+        [],
+        [l4_pair],
+        0,
+        set(),
+        [],
+    )
+
+    assert "| 天数 | 配对数 | 信息配对数 |" in report
+    assert "| 100.00% | 1 | 20 | 8 |" in report
+
+
 def test_context_records_are_excluded_by_default_and_available_on_request(tmp_path):
     folder = tmp_path / "20260929"
     folder.mkdir()
@@ -559,7 +590,7 @@ def test_l1_rejects_a_qualifying_day_below_daily_match_rate_even_at_90_percent_o
     assert result["days_ge_threshold"] == 9
 
 
-def test_l1_zero_and_missing_coincidences_do_not_meet_informative_floor():
+def test_l1_and_l4_zero_and_missing_coincidences_do_not_meet_informative_floor():
     left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=20)
     for key in left["vals"]:
         code_index = int(key[0])
@@ -572,10 +603,43 @@ def test_l1_zero_and_missing_coincidences_do_not_meet_informative_floor():
 
     result = collide.collide_pair(left, right)
 
+    assert result is None
+
+
+def test_l4_requires_eight_informative_pairs_and_uses_their_match_rate():
+    left_values = {}
+    right_values = {}
+    for index in range(20):
+        key = (f"{index:06d}", "T:20260929")
+        if index < 12:
+            left_values[key] = 0
+            right_values[key] = 0
+        else:
+            value = float(index + 1)
+            left_values[key] = value
+            right_values[key] = value if index < 16 else value + 1
+
+    left, right = _field(left_values, "tdx"), _field(right_values, "sina")
+    result = collide.collide_pair(left, right)
+
     assert result is not None
     assert result["level"] == "L4"
-    assert set(result["daily_sample_counts"].values()) == {20}
-    assert set(result["daily_informative_sample_counts"].values()) == {3}
+    assert result["overall_hit"] == 0.5
+    assert result["n_pairs"] == 20
+    assert result["n_informative_pairs"] == 8
+    assert result["daily_sample_counts"] == {"T:20260929": 20}
+    assert result["daily_informative_sample_counts"] == {"T:20260929": 8}
+    assert result["daily_informative_hit_counts"] == {"T:20260929": 4}
+
+
+def test_l4_skips_fields_marked_constant():
+    left_values = {(f"{index:06d}", "T:20260929"): 5 for index in range(20)}
+    right_values = dict(left_values)
+    left, right = _field(left_values, "tdx"), _field(right_values, "sina")
+    left["is_constant"] = True
+    right["is_constant"] = True
+
+    assert collide.collide_pair(left, right) is None
 
 
 def test_l1_uses_informative_hit_rate_after_daily_sample_floor():
@@ -675,6 +739,7 @@ def test_daily_samples_with_folder_inferred_dates_do_not_count_toward_l1():
     assert result is not None
     assert result["level"] == "L4"
     assert result["excluded_unconfirmed_date_pairs"] == 60
+    assert set(result["daily_informative_sample_counts"].values()) == {20}
 
 
 def test_slow_changing_l1_marks_unconfirmed_dates_as_semantic_only():
@@ -2231,6 +2296,8 @@ def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs()
     assert "`evidence_basis`" in rendered
     assert "`adjudication_progress`" in rendered
     assert "合并精确命中率 ≥40%" in rendered
+    assert "每个计入日信息配对 ≥8" in rendered
+    assert "按信息配对计算" in rendered
     assert "不是 8~17 个命中数的区间" in rendered
     assert "L1/L1-U 是数值候选" in output.getvalue()
     assert "L1-L4 是兼容类别而非晋级阶梯" in output.getvalue()

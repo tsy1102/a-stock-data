@@ -1179,8 +1179,8 @@ class ZhbData:
             [10] dt_date_recent  最近跌停日（DTDate_Recent；2026-09-23 主数据 zhb_20260921.zip 解析实锤: 600519=20181029/000001=20150119/000002=20241009/000858=20200716/300750=空 全中；Gemini 终局候选值一致）
             [8]  shareholder_change_date 股东持股变动关联日期；可为交易日、区间截止日或协议签署日
             [9]  shareholder_change_shares_wan 股东持股变动数量(万股；正值增持/转入，负值减持/转出)
-            [13] unlock_date      最新解禁日（Gemini 20260921 终局 + 字典实例 茅台 col14=48867.90万 互证）
-            [14] unlock_shares_wan 最新解禁数量(万股)
+            [13] unlock_date      限售股上市流通/解禁事件日（YYYYMMDD；“最新”或未来事件的选取规则未核实）
+            [14] unlock_shares_wan 对应限售股上市流通数量（万股；样本按 0.01 万股精度）
             [19] hg_date          最近回购预案日（通达信官方 RecentHGDate；不代表实际公告时间）
             [20] hg_amount_yi     回购预案金额上限(亿元；TdxW 二进制提示 `回购预案:上限%.2f亿元`；不声明公开字段码映射）
             [21] equity_incentive_date 股权激励预案/草案公告日（通达信官方 RecentIncentDate）

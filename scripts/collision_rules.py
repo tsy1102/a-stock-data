@@ -41,7 +41,7 @@ PRECISION = "非整数浮点误差 |a−b| ≤ max(ulp_a, ulp_b)；整数/枚举
 HIT_RATE_L1 = 18  # 固定 20 股候选池中 18/20 对应 90%；不是运行时的固定命中数
 MIN_DAILY_SAMPLES_L1 = 18  # 单日样本不足 18，不参与 L1 日数/命中率
 MIN_INFORMATIVE_SAMPLES_L1 = 5  # 同日还需至少 5 个非 0/0、非双方缺失配对
-MIN_DAILY_SAMPLES_L4 = 8  # 少于 8 个配对样本的日子不参与 L4
+MIN_DAILY_INFORMATIVE_SAMPLES_L4 = 8  # L4 每日最少 8 个信息配对，0/0 和共同缺失不计
 L4_MIN_OVERALL_MATCH_RATE = 0.4  # L4 合格日合并后的最低精确命中率
 # 3. 比值族（单位/比例关系候选）
 RATIO_CV_MAX = 1e-4  # 变异系数阈值（CV = std/mean）
@@ -77,7 +77,7 @@ PAIR_RESULT_CATEGORIES = [
     (
         "L4",
         "较弱精确匹配线索",
-        f"每个计入日样本数≥{MIN_DAILY_SAMPLES_L4}，合并精确命中率≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；只供复核",
+        f"每个计入日信息配对 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4}，按信息配对计算的合并精确命中率 ≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；只供复核",
     ),
 ]
 
@@ -117,6 +117,7 @@ SKIP_RULES = [
     "同一原始来源或已知镜像/别名字段不得作为跨源定案证据",
     "盘中或采集时段未知的行情快照可进入候选分析，但不计入 L1 的日样本与独立日数",
     f"L1 每日须有 ≥{MIN_INFORMATIVE_SAMPLES_L1} 个信息配对；双方同时为 0 或同时缺失不计信息配对",
+    f"L4 每日须有 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4} 个信息配对；命中率只按信息配对计算，双方同时为 0 或同时缺失不计",
     "行情日按交易所日历与 ZHB 补充日历校验；新闻/公告按记录自然日对齐",
     "采集目录名、来源 as_of_date、记录事件日和实际采集时间分别保留；历史目录不自动改名或删除",
 ]
@@ -278,7 +279,7 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
         file=out,
     )
     print(
-        f"L4 线索: 每个计入日样本≥{MIN_DAILY_SAMPLES_L4}，合并精确命中率≥"
+        f"L4 线索: 每个计入日信息配对 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4}，按信息配对计算的合并精确命中率 ≥"
         f"{L4_MIN_OVERALL_MATCH_RATE:.0%}",
         file=out,
     )
@@ -335,11 +336,11 @@ def emit_markdown(path: str | None = None) -> str:
     L.append(f"| 4 | 多日复核 | ≥{MULTI_DAY_MIN} 个独立采集日是 L1/L1-U 候选门槛；单日快照不够 |")
     L.append(
         f"| 4a | 每日样本下限 | L1 每个独立日有效配对样本 ≥{MIN_DAILY_SAMPLES_L1}；"
-        f"L4 每日 ≥{MIN_DAILY_SAMPLES_L4} |"
+        f"L4 每日信息配对 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4} |"
     )
     L.append(
         f"| 4a-1 | 信息样本下限 | L1 每日还需 ≥{MIN_INFORMATIVE_SAMPLES_L1} 个信息配对；"
-        "双方同为 0 或双方缺失不参与精确命中率 |"
+        f"L4 每日需 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4} 个；双方同为 0 或双方缺失不计入命中率 |"
     )
     L.append("| 4b | 来源独立性 | 同源及已知镜像/别名不得作为跨源证据 |")
     L.append(
@@ -369,8 +370,8 @@ def emit_markdown(path: str | None = None) -> str:
     L.append("")
     L.append(
         f"L1/L1-U 只是独立来源的数值关系候选，必须经过字段身份、单位、日期与注册表裁决。"
-        f"L4 的运行门槛为每个计入日样本数 ≥{MIN_DAILY_SAMPLES_L4}，"
-        f"这些日子的合并精确命中率 ≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；"
+        f"L4 的运行门槛为每个计入日信息配对数 ≥{MIN_DAILY_INFORMATIVE_SAMPLES_L4}，"
+        f"这些日子只按信息配对计算合并精确命中率，且须 ≥{L4_MIN_OVERALL_MATCH_RATE:.0%}；"
         "它不是 8~17 个命中数的区间。"
     )
     L.append("\n### 独立分类维度\n")

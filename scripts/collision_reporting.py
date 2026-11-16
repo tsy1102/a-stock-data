@@ -993,13 +993,16 @@ def build_report_md(
         L.append("_本轮没有已登记关系进入复验窗口。_\n")
     L.append("\n## 四、L4 存疑候选（{0}）\n".format(len(l4)))
     if l4:
-        L.append("| 左字段 | 右字段 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 样本 |")
-        L.append("|:--|:--|:--|:--|:--|--:|--:|--:|")
+        L.append(
+            "| 左字段 | 右字段 | 关系类别 | 证据依据 | 处理进度 | 命中率 | 天数 | 配对数 | 信息配对数 |"
+        )
+        L.append("|:--|:--|:--|:--|:--|--:|--:|--:|--:|")
         for p in l4[:60]:
             L.append(
                 f"| `{p['left']}` | `{p['right']}` | {p.get('match_class', '—')} | "
                 f"{p.get('evidence_basis', '—')} | {p.get('adjudication_progress', '—')} | "
-                f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} |"
+                f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
+                f"{p.get('n_informative_pairs') if p.get('n_informative_pairs') is not None else '—'} |"
             )
         if len(l4) > 60:
             L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")

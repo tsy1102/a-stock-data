@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 142 个 code；聚合定义不完整 187 个 code；疑似合并文本 524 条逐源记录。
+> 聚合歧义 142 个 code；聚合定义不完整 187 个 code；疑似合并文本 525 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -253,7 +253,7 @@
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[13]` | [13] | 上市连板数（交易日） | — | `verified` |
 | ZHB-tdxstat2 · `[13]` | [13] | 通达信板块归属(881=行业板块稳定 / 880=概念·风格板块动态) | 6位字符串 | `verified` |
-| ZHB-tipinfo · `[13]` | [13] | 解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标"股权登记日/配股"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解） | — | `verified` |
+| ZHB-tipinfo · `[13]` | [13] | 对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。 | 日期（YYYYMMDD） | `verified` |
 | 新浪(hq.sinajs) · `[13]` | [13] | 买二价 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[13]` | [13] | 买三价 | 元 | `verified` |
 
@@ -265,7 +265,7 @@
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[14]` | [14] | 扣非净利润 (万元) = 官方 KfEarnMoney | — | `verified` |
 | ZHB-tdxstat2 · `[14]` | [14] | 当日开盘集合竞价成交额 | 万元 | `verified` |
-| ZHB-tipinfo · `[14]` | [14] | 解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证） | — | `verified` |
+| ZHB-tipinfo · `[14]` | [14] | 对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。 | 万股 | `verified` |
 | 新浪(hq.sinajs) · `[14]` | [14] | 买三档委托数量 | 股 | `verified` |
 | 腾讯(qt.gtimg) · `[14]` | [14] | 买3量 | 手 | `verified` |
 
@@ -3461,7 +3461,8 @@
 | ZHB-tdxstat2 | `zt_seal_amount` | [4] | 当日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
 | ZHB-tdxstat2 | `zt_seal_amount_1d` | [6] | 前一交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
 | ZHB-tdxstat2 | `zt_seal_amount_2d` | [8] | 前第二交易日涨跌停封单额；涨停为正、跌停为负。 | `verified` |
-| ZHB-tipinfo | `[13]` | [13] | 解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标"股权登记日/配股"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解） | `verified` |
+| ZHB-tipinfo | `[13]` | [13] | 对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。 | `verified` |
+| ZHB-tipinfo | `[14]` | [14] | 对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。 | `verified` |
 | ZHB-tipinfo | `[21]` | [21] | 股权激励预案/草案公告日 | `verified` |
 | ZHB-tipinfo | `[3]` | [3] | 报告期累计每股收益（基本/稀释/扣非口径未区分） | `verified` |
 | ZHB-tipinfo | `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | `verified` |

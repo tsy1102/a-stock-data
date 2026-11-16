@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+  "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+  "decisions": [
+    {
+      "id": "20261117-zhb-tipinfo-13-unlock-event-date",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "[13]"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "[13]",
+        "meaning": "解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标\"股权登记日/配股\"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解）",
+        "unit": ""
+      },
+      "canonical": "[13]",
+      "meaning": "对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。",
+      "unit": "日期（YYYYMMDD）",
+      "section": "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
+      "rationale": "解析器将精确来源列 [13] 映射至 tipinfo.unlock_date。贵州茅台与农业银行两个不同发行人的 ZHB 值分别精确对应发行人公告中的限售股上市流通日期；日期不是来源快照日、报告期末或股权登记日。仅确认值所代表的事件日期，不推断字段在多个事件中的排序/筛选逻辑。",
+      "sample": {
+        "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261117-zhb-tipinfo-14-unlock-share-amount",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "ZHB-tipinfo",
+        "code": "[14]"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "[14]",
+        "meaning": "解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证）",
+        "unit": ""
+      },
+      "canonical": "[14]",
+      "meaning": "对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。",
+      "unit": "万股",
+      "section": "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
+      "rationale": "解析器将精确来源列 [14] 映射至 tipinfo.unlock_shares_wan。发行人公告分别列出贵州茅台 488,679,034 股和农业银行 19,959,672,543 股的本次限售股上市流通总量；换算为万股并按 0.01 万股取两位小数后得到 48,867.90 与 1,995,967.25，与 ZHB 记录一致，残差分别为 34 股和 43 股，均小于半个量化步长 50 股。",
+      "sample": {
+        "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    }
+  ]
+}

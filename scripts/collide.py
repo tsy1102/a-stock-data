@@ -225,6 +225,7 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
     exact_all = defaultdict(lambda: [0, 0])
     exact_l1 = defaultdict(lambda: [0, 0])
     informative_l1 = defaultdict(lambda: [0, 0])
+    informative_all = defaultdict(lambda: [0, 0])
     ratios_by_day = defaultdict(list)
     for key in common:
         a, b = lv[key], rv[key]
@@ -246,6 +247,10 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
                     exact_l1[day_key][0] += 1
                     if informative:
                         informative_l1[day_key][0] += 1
+            if informative:
+                informative_all[day_key][1] += 1
+                if matched:
+                    informative_all[day_key][0] += 1
             continue
         left_num, right_num = to_num(a), to_num(b)
         day_key = key[1]
@@ -282,6 +287,10 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
                     exact_l1[day_key][0] += 1
                     if informative:
                         informative_l1[day_key][0] += 1
+        if informative:
+            informative_all[day_key][1] += 1
+            if matched:
+                informative_all[day_key][0] += 1
 
     l1_days = {
         day: counts
@@ -362,15 +371,24 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
         overall = ratio_overall
         days_ge = ratio_days_ge
     else:
-        l4_days = {day: counts for day, counts in exact_all.items() if counts[1] >= MIN_DAILY_L4}
-        l4_total = sum(total for _, total in l4_days.values())
-        l4_hits = sum(hits for hits, _ in l4_days.values())
+        l4_informative_days = {
+            day: counts for day, counts in informative_all.items() if counts[1] >= MIN_DAILY_L4
+        }
+        l4_total = sum(total for _, total in l4_informative_days.values())
+        l4_hits = sum(hits for hits, _ in l4_informative_days.values())
         l4_overall = l4_hits / l4_total if l4_total else 0.0
-        if l4_overall >= CR.L4_MIN_OVERALL_MATCH_RATE and l4_days:
+        if (
+            l4_overall >= CR.L4_MIN_OVERALL_MATCH_RATE
+            and l4_informative_days
+            and not L["is_constant"]
+            and not R["is_constant"]
+        ):
             level = "L4"
-            selected_days = l4_days
+            selected_days = {day: exact_all[day] for day in l4_informative_days}
             overall = l4_overall
-            days_ge = sum(hits / total >= HIT_RATE_L1_RATIO for hits, total in l4_days.values())
+            days_ge = sum(
+                hits / total >= HIT_RATE_L1_RATIO for hits, total in l4_informative_days.values()
+            )
         else:
             return None
 
@@ -403,6 +421,13 @@ def collide_pair(L, R, *, contract_anchor=False, official_contract_anchor=False)
     elif statistical_level == "L1-U":
         informative_report_days = ratio_days
         n_informative_pairs = None
+    elif statistical_level == "L4":
+        informative_report_days = informative_all
+        n_informative_pairs = sum(
+            informative_report_days[day][1]
+            for day in selected_days
+            if day in informative_report_days
+        )
     else:
         informative_report_days = informative_l1
         n_informative_pairs = None

@@ -6,13 +6,13 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1717 个字段 / 2031 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1718 个字段 / 2033 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
-**B.1 多来源字段（223 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
+**B.1 多来源字段（224 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
 
 | 字段 | 登记来源标签数 | 来源标签（按风险参考顺序） |
 |:---|:---:|:---|
@@ -235,6 +235,7 @@
 | fund_large_sell | 2 | 东财-push2(stock/get)、东财-资金流(em_fund_flow) |
 | fund_large_today | 2 | 东财-push2(stock/get)、东财-资金流(em_fund_flow) |
 | quote_price_precision_digits | 2 | 东财-push2(stock/get)、东财-ulist239(np/get) |
+| [14] | 2 | ZHB-tipinfo、新浪(hq.sinajs) |
 | [24] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [26] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [28] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |

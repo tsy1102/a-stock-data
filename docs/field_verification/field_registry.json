@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-16",
+    "updated": "2026-11-17",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -11,29 +11,29 @@
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 20,
-      "disproved": 94,
+      "disproved": 96,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 6,
-      "matched": 778,
+      "matched": 776,
       "mixed_source_capture_passthrough": 5,
-      "not_field_schema_token": 16,
+      "not_field_schema_token": 18,
       "official_contract": 31,
       "project_derived_capture_output": 8,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 3,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 503,
+      "registry_status_only_single_source": 501,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 977,
+      "unverified": 975,
       "verified": 1543,
-      "verified_by_empirical_addendum": 177,
+      "verified_by_empirical_addendum": 179,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -45833,6 +45833,7 @@
       "开盘啦(kpl_limit_up_detail)"
     ],
     "[14]": [
+      "ZHB-tipinfo",
       "新浪(hq.sinajs)"
     ],
     "[16]": [
@@ -45862,6 +45863,9 @@
     ],
     "[87] 科创板标记": [
       "腾讯(qt.gtimg)"
+    ],
+    "[13]": [
+      "ZHB-tipinfo"
     ]
   },
   "mappings": [
@@ -139304,14 +139308,15 @@
       "identity": "ZHB-tipinfo::[13]",
       "path": "[13]",
       "canonical": "[13]",
-      "meaning": "解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标\"股权登记日/配股\"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解）",
-      "unit": "",
+      "meaning": "对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。",
+      "unit": "日期（YYYYMMDD）",
       "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
       "sections": [
+        "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
         "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -139329,7 +139334,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-zhb-tipinfo-13-unlock-event-date"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+        "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+        "sample": {
+          "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 2,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -139339,6 +139360,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
+          "canonical": "[13]",
+          "meaning": "对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。",
+          "unit": "日期（YYYYMMDD）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-zhb-tipinfo-13-unlock-event-date",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+          "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+          "metadata_change": {
+            "before": {
+              "canonical": "[13]",
+              "meaning": "解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标\"股权登记日/配股\"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[13]",
+              "meaning": "对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。",
+              "unit": "日期（YYYYMMDD）"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -139357,7 +139412,51 @@
         "status": "conflict",
         "status_raw": "",
         "unit": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-zhb-tipinfo-13-unlock-event-date",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.json",
+          "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+          "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "[13]",
+            "meaning": "解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标\"股权登记日/配股\"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解）",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[13]",
+              "meaning": "解禁日 = 官方 RecentReleaseDate（二进制 `解禁数量:%.2f万` 实证；旧标\"股权登记日/配股\"为误译——Col[14] 量级=解禁股数万股, 与 Col[11]/[12] 配股重复赋值矛盾已解）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[13]",
+              "meaning": "对应限售股解禁/上市流通事件的日期，原始格式为 YYYYMMDD。两项发行人公告样本确认其为事件日期；多事件时的选取规则尚未确认。",
+              "unit": "日期（YYYYMMDD）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "解析器将精确来源列 [13] 映射至 tipinfo.unlock_date。贵州茅台与农业银行两个不同发行人的 ZHB 值分别精确对应发行人公告中的限售股上市流通日期；日期不是来源快照日、报告期末或股权登记日。仅确认值所代表的事件日期，不推断字段在多个事件中的排序/筛选逻辑。",
+          "sample": {
+            "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tipinfo",
@@ -139365,14 +139464,15 @@
       "identity": "ZHB-tipinfo::[14]",
       "path": "[14]",
       "canonical": "[14]",
-      "meaning": "解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证）",
-      "unit": "",
+      "meaning": "对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。",
+      "unit": "万股",
       "section": "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
       "sections": [
+        "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
         "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -139390,7 +139490,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-zhb-tipinfo-14-unlock-share-amount"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+        "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+        "sample": {
+          "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 2,
+          "excluded_count": 0,
+          "stock_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -139400,6 +139516,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-17 ZHB-tipinfo 限售股上市流通字段实证核验",
+          "canonical": "[14]",
+          "meaning": "对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。",
+          "unit": "万股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-zhb-tipinfo-14-unlock-share-amount",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+          "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+          "metadata_change": {
+            "before": {
+              "canonical": "[14]",
+              "meaning": "解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[14]",
+              "meaning": "对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。",
+              "unit": "万股"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -139418,7 +139568,51 @@
         "meaning": "扣非净利润 (万元) = 官方 KfEarnMoney",
         "unit": "万元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-zhb-tipinfo-14-unlock-share-amount",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.json",
+          "evidence_file": "adjudications/20261117_zhb_tipinfo_unlock_semantics.md",
+          "evidence_sha256": "2e784a84e2793b1bf4f3cf732f7c42cdadc79f7cc839958d387aeb33c7fe62d3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "[14]",
+            "meaning": "解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证）",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[14]",
+              "meaning": "解禁数量(万股) = 官方 ReleaseShares（二进制 `解禁数量:%.2f万` 实证）",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "[14]",
+              "meaning": "对应限售股上市流通事件的股份数量，单位万股。两个公告样本均与事件总数量吻合，ZHB 值按 0.01 万股粒度保留；多事件或分项数量的选取规则尚未确认。",
+              "unit": "万股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "解析器将精确来源列 [14] 映射至 tipinfo.unlock_shares_wan。发行人公告分别列出贵州茅台 488,679,034 股和农业银行 19,959,672,543 股的本次限售股上市流通总量；换算为万股并按 0.01 万股取两位小数后得到 48,867.90 与 1,995,967.25，与 ZHB 记录一致，残差分别为 34 股和 43 股，均小于半个量化步长 50 股。",
+          "sample": {
+            "scope": "2026-11-16 采集目录中来源实际日期为 2026-11-13 的 ZHB tipinfo 样本；对照两家发行人的限售股上市流通公告。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tipinfo",

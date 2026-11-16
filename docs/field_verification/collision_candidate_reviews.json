@@ -3694,6 +3694,101 @@
         "schema_version": 1
       }
     },
+    "cc1_14275bdca4ad2d0bb8fb1b111eb442b481dd90d00a8ecebdb8a329df16a5ea23": {
+      "current": {
+        "candidate_id": "cc1_14275bdca4ad2d0bb8fb1b111eb442b481dd90d00a8ecebdb8a329df16a5ea23",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "3b664233744f7770eb9be9eac6802e42b148749344bf6a9360d1e9a11ac58fae",
+        "evidence_refs": [
+          {
+            "path": "20261117/20261117_collision_report.json",
+            "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+          }
+        ],
+        "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[29] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+        "reviewed_at": "2026-11-17T06:01:57+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_14275bdca4ad2d0bb8fb1b111eb442b481dd90d00a8ecebdb8a329df16a5ea23",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "3b664233744f7770eb9be9eac6802e42b148749344bf6a9360d1e9a11ac58fae",
+          "evidence_refs": [
+            {
+              "path": "20261117/20261117_collision_report.json",
+              "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+            }
+          ],
+          "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[29] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+          "reviewed_at": "2026-11-17T06:01:57+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261109": 0
+          },
+          "daily_informative_sample_counts": {
+            "T:20261109": 0
+          },
+          "daily_sample_counts": {
+            "T:20261109": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "tdx",
+            "tencent"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "tencent[29]",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": null,
+          "n_pairs": 20,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "zhb.tipinfo.forecast_type",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_150e1daf5a991848d3aff2eeaa8c9c53064622fbc15c8af9c28b25a8fd1bc3fe": {
       "current": {
         "candidate_id": "cc1_150e1daf5a991848d3aff2eeaa8c9c53064622fbc15c8af9c28b25a8fd1bc3fe",
@@ -32088,6 +32183,101 @@
         "schema_version": 1
       }
     },
+    "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936": {
+      "current": {
+        "candidate_id": "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "a4955b190cdd9cf45389a2efc09a259252b44acebab12a374ce5540504000523",
+        "evidence_refs": [
+          {
+            "path": "20261117/20261117_collision_report.json",
+            "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+          }
+        ],
+        "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[55] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+        "reviewed_at": "2026-11-17T06:01:57+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "a4955b190cdd9cf45389a2efc09a259252b44acebab12a374ce5540504000523",
+          "evidence_refs": [
+            {
+              "path": "20261117/20261117_collision_report.json",
+              "sha256": "ecfd60ba9a79e84b4e506c0fd7af6ce15b01517cf127eaf923607546fbb7d873"
+            }
+          ],
+          "rationale": "该旧 v3 L4 候选在 2026-11-09 的 20 对样本中信息配对数为 0；当日 Tencent[55] 20/20 为空，ZHB forecast_type 20/20 为空。100% 仅来自共同空值，不能支持语义关系。此处将候选记录为证据不足，不证伪任何字段含义；修正后的 v4 不再产生该候选。",
+          "reviewed_at": "2026-11-17T06:01:57+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261109": 0
+          },
+          "daily_informative_sample_counts": {
+            "T:20261109": 0
+          },
+          "daily_sample_counts": {
+            "T:20261109": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "tdx",
+            "tencent"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "tencent[55]",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": null,
+          "n_pairs": 20,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "zhb.tipinfo.forecast_type",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
     "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06": {
       "current": {
         "candidate_id": "cc1_e9d4fbdfc28cc6ae7cc666347802de39b82f82b11c666188f719f1a9788ccc06",
@@ -35548,5 +35738,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T03:57:48+08:00"
+  "updated_at": "2026-11-17T06:01:57+08:00"
 }

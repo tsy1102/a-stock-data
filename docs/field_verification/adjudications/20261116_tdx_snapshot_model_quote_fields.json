@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "adjudication_id": "tdx-snapshot-model-quote-fields-20261116",
+  "reviewed_on": "2026-11-16",
+  "evidence_basis": "manual_public_data_semantic_adjudication",
+  "report": "docs/field_verification/adjudications/20261116_tdx_snapshot_model_quote_fields.md",
+  "research_audit": {
+    "file": "docs/field_verification/research/20261116_tdx_quote_model_capture_path_audit.csv",
+    "sha256": "b6858c5630561eaa1c22d2c769631a0952f1fcfe4c37da98f94102f61e3be570",
+    "raw_files_examined": 561,
+    "tdx_raw_files_examined": 18,
+    "tdx_exact_lowercase_key_occurrences": {
+      "last_price": 0,
+      "pre_close": 0,
+      "average_price": 0,
+      "volume": 0
+    }
+  },
+  "evidence": [
+    {
+      "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+      "publisher": "通达信量化平台官方文档",
+      "retrieved_on": "2026-11-16"
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L298-L320",
+      "publisher": "AxData public repository at pinned commit f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16"
+    },
+    {
+      "url": "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L681",
+      "publisher": "AxData public repository at pinned commit f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8",
+      "retrieved_on": "2026-11-16"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "tdx-model-last-price-20261116",
+      "source": "TDX(双命名源)",
+      "code": "last_price",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "last_price",
+        "meaning": "最新价或最新值（AxData TDX 实时快照模型语义；不表示当前项目采集路径）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "通达信官方快照将 Now 定义为现价；AxData 固定版 TDX 实时快照模型将 last_price 定义为最新价/值，且解析器把 TDX Ext 报价行的 close 写入该模型属性。这只核定模型字段语义，不确认 wire 槽位或当前项目 raw 路径，也不映射到其他 last_price 路径。官方未注明该模型路径单位，故留空。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L298-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L681"
+      ]
+    },
+    {
+      "id": "tdx-model-pre-close-20261116",
+      "source": "TDX(双命名源)",
+      "code": "pre_close",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "pre_close",
+        "meaning": "前收盘价或上一期值（AxData TDX 实时快照模型语义；不表示当前项目采集路径）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "通达信官方快照将 LastClose 定义为前收盘价；AxData 固定版 TDX 实时快照模型将 pre_close 定义为前收或上期值，解析器把 TDX Ext 报价行的 pre_close 写入该模型属性。这只核定模型字段语义，不确认 wire 槽位或当前项目 raw 路径，也不映射到短线数据的 pre_close 路径。官方未注明该模型路径单位，故留空。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L298-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L681"
+      ]
+    },
+    {
+      "id": "tdx-model-average-price-20261116",
+      "source": "TDX(双命名源)",
+      "code": "average_price",
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "average_price",
+        "meaning": "均价；源端有值时返回（AxData TDX 实时快照模型语义；不表示当前项目采集路径）",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "通达信官方快照将 Average 定义为均价；AxData 固定版模型以 average_price 表示有值时返回的均价，解析器把 TDX Ext 报价行的 avg 写入该属性。小写精确键未出现在项目保留 raw 中；本决定仅核定模型语义，不确认当前项目采集路径、wire 槽位或其他来源路径映射。官方未注明单位，故留空。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L298-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L681"
+      ]
+    },
+    {
+      "id": "tdx-model-volume-20261116",
+      "source": "TDX(双命名源)",
+      "code": "volume",
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {"canonical": "", "meaning": "", "unit": ""},
+      "updated": {
+        "canonical": "volume",
+        "meaning": "成交量，按 AxData TDX 快照模型的源端行情口径返回；不表示当前项目采集路径",
+        "unit": ""
+      },
+      "status": "verified",
+      "status_resolution": "manual_public_data_semantic_adjudication",
+      "rationale": "通达信官方快照将其官方字段 Volume 定义为总手；AxData 固定版模型将小写 volume 描述为沿用源端行情单位的成交量，解析器将 TDX Ext 报价行的 vol 写入该属性。两者概念相符，但未证明 AxData 模型键等价于官方字段或其单位为手，因此仅确认成交量语义并保持单位空白；不确认当前项目采集路径或其他来源映射。",
+      "external_evidence": [
+        "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/sources/tdx_ext/catalog.py#L298-L320",
+        "https://github.com/electkismet/AxData/blob/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8/libs/axdata_core/axdata_core/adapters/tdx_ext/client.py#L617-L681"
+      ]
+    }
+  ]
+}

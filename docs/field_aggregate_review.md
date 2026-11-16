@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 140 个 code；聚合定义不完整 189 个 code；疑似合并文本 519 条逐源记录。
+> 聚合歧义 141 个 code；聚合定义不完整 188 个 code；疑似合并文本 523 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2489,11 +2489,11 @@
 
 ### `last_price` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `last_price` | — | — | — | `unverified` |
+| TDX(双命名源) · `last_price` | last_price | 最新价或最新值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | — | `verified` |
 | TDX-eltdx(适配层) · `last_price` | last_price | 最新价 / 现价 | — | `verified` |
 | 同花顺-fuyao · `last_price` | snapshot.last_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.last_price。官方接口将 last_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | 元 | `disproved` |
 
@@ -2909,13 +2909,13 @@
 | 市场源(market_sources) · `plates` | plates | 相关板块列表 | — | `unverified` |
 | 财联社(cls) · `plates` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | `unverified` |
 
-### `pre_close` — incomplete
+### `pre_close` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `pre_close` | — | — | — | `unverified` |
+| TDX(双命名源) · `pre_close` | pre_close | 前收盘价或上一期值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | — | `verified` |
 | TDX-eltdx(适配层) · `pre_close` | shortline.pre_close | 已退役的未限定旧路径身份 | — | `disproved` |
 
 ### `pre_close_price` — ambiguous
@@ -3248,12 +3248,12 @@
 
 ### `volume` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `volume` | volume | 成交量 | 股 | `verified` |
-| TDX(双命名源) · `volume` | — | — | — | `unverified` |
+| TDX(双命名源) · `volume` | volume | 成交量，按 AxData TDX 快照模型的源端行情口径返回；不表示当前项目采集路径 | — | `verified` |
 | TDX-eltdx(适配层) · `volume` | volume | — | — | `unverified` |
 | 同花顺-fuyao · `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | 股 | `disproved` |
 
@@ -3323,6 +3323,7 @@
 | TDX(双命名源) | `ShapeValue` | ShapeValue | 短期形态+中期形态+长期形态编号 | `verified` |
 | TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
 | TDX(双命名源) | `amount_wan` | amount_wan | TDX 行情快照成交金额；由原始 amount 以元计值除以 10000 得到，输出单位为万元。 | `verified` |
+| TDX(双命名源) | `average_price` | average_price | 均价；源端有值时返回（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
 | TDX(双命名源) | `baoliu2` | report_period_end_month | 财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证 | `verified` |
 | TDX(双命名源) | `category_name` | category_name | ELTDX CapitalChangeRecord 中 XDXR 事件类别的可读名称；与 category_raw/category 类别编号区分。具体类别码表不在本次确认范围内。 | `verified` |
@@ -3334,10 +3335,12 @@
 | TDX(双命名源) | `inside_volume` | inside_volume | 内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside） | `verified` |
 | TDX(双命名源) | `ipodate` | ipodate | ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。 | `verified` |
 | TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
+| TDX(双命名源) | `last_price` | last_price | 最新价或最新值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `latest_indicators` | reminders.latest_indicators | 项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。 | `disproved` |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | `disproved` |
 | TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `outside_volume` | outside_volume | 外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside） | `verified` |
+| TDX(双命名源) | `pre_close` | pre_close | 前收盘价或上一期值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | `disproved` |
@@ -3346,6 +3349,7 @@
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `updateddate` | updateddate | updated_date 的无下划线兼容别名，表示该证券财务记录的更新日期；不等同报告期末、公告披露日、采集日或来源级数据日期。 | `verified` |
+| TDX(双命名源) | `volume` | volume | 成交量，按 AxData TDX 快照模型的源端行情口径返回；不表示当前项目采集路径 | `verified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
 | TDX(双命名源) | `zhuyinglyrun` | zhuyinglyrun | 财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。 | `verified` |
 | TDX(双命名源) | `zhuyingshouru` | zhuyingshouru | 主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。 | `verified` |

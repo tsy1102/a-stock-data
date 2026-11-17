@@ -10307,9 +10307,9 @@
     "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87": {
       "current": {
         "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
-        "disposition": "insufficient_evidence",
+        "disposition": "rejected",
         "duplicate_of": null,
-        "event_id": "42f8921ff20c4faa89cec5ec644d8d933148ca644f59e910b5d94d06318d61ef",
+        "event_id": "0077fc48a5598cd9cef369590ab55c42498663f136d0567d17c8906613fdd5fc",
         "evidence_refs": [
           {
             "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
@@ -10320,16 +10320,16 @@
             "sha256": "2869ea3b6d99952918484208e11185f17c68b83ae36c473f01d69e66ba121651"
           },
           {
-            "path": "research/20261117_ulist239_f190_hgu_zero_inflation_audit.csv",
-            "sha256": "069f5556737338b9ba1eaa99cd8e57b7a566181f172fee81539d1e444bd4dda3"
+            "path": "adjudications/20261118_ulist239_f190_precision_contract.md",
+            "sha256": "a4b2f1e79d74183d0ea161dca9f9c2b8334b90578d4526b4aee81263815ab1f8"
           },
           {
-            "path": "adjudications/20261110_tdx_finance_source_contract.md",
-            "sha256": "54b9b22066f33628285a9f824e8d897525201e70f54c9b18717de4bd168571da"
+            "path": "https://quote.eastmoney.com/center/static/build/index.js",
+            "sha256": null
           }
         ],
-        "rationale": "碰撞报告中的 95% 弱精确重合由零值支配：40 组中 38 组为 f190=0 且 hgu=0；其余两组是同一只 601288 的相邻来源日重复值，f190=3、TDX hgu=3,073,882.25（万股），不相等。TDX 来源实际数据日未确认，单只非零股票不能区分数量缩放与状态/类别编码。仅将这条弱精确值候选置为证据不足，不否定 f190 可能与 H 股有关，也不改变注册表状态。",
-        "reviewed_at": "2026-11-17T03:22:15+08:00",
+        "rationale": "新增东方财富官方行情中心前端契约已确认 Ulist f190 是 f186 价格的十进制缩放/显示精度参数；它不是 TDX hgu 所表示的 H 股股数。原 L4 的 95% 命中由 38/40 个 0/0 占位对造成；两组非零 f190=3 也不等于 hgu=3,073,882.25 万股。该候选映射与已核实的来源内语义相矛盾，现拒绝这条 f190↔hgu 映射候选，不否定其他 Ulist 字段与 H 股数据之间可能存在的独立关系。",
+        "reviewed_at": "2026-11-18T01:04:52+08:00",
         "reviewer": "Codex"
       },
       "history": [
@@ -10358,6 +10358,33 @@
           ],
           "rationale": "碰撞报告中的 95% 弱精确重合由零值支配：40 组中 38 组为 f190=0 且 hgu=0；其余两组是同一只 601288 的相邻来源日重复值，f190=3、TDX hgu=3,073,882.25（万股），不相等。TDX 来源实际数据日未确认，单只非零股票不能区分数量缩放与状态/类别编码。仅将这条弱精确值候选置为证据不足，不否定 f190 可能与 H 股有关，也不改变注册表状态。",
           "reviewed_at": "2026-11-17T03:22:15+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "0077fc48a5598cd9cef369590ab55c42498663f136d0567d17c8906613fdd5fc",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f190_hgu_low_information_review.md",
+              "sha256": "2869ea3b6d99952918484208e11185f17c68b83ae36c473f01d69e66ba121651"
+            },
+            {
+              "path": "adjudications/20261118_ulist239_f190_precision_contract.md",
+              "sha256": "a4b2f1e79d74183d0ea161dca9f9c2b8334b90578d4526b4aee81263815ab1f8"
+            },
+            {
+              "path": "https://quote.eastmoney.com/center/static/build/index.js",
+              "sha256": null
+            }
+          ],
+          "rationale": "新增东方财富官方行情中心前端契约已确认 Ulist f190 是 f186 价格的十进制缩放/显示精度参数；它不是 TDX hgu 所表示的 H 股股数。原 L4 的 95% 命中由 38/40 个 0/0 占位对造成；两组非零 f190=3 也不等于 hgu=3,073,882.25 万股。该候选映射与已核实的来源内语义相矛盾，现拒绝这条 f190↔hgu 映射候选，不否定其他 Ulist 字段与 H 股数据之间可能存在的独立关系。",
+          "reviewed_at": "2026-11-18T01:04:52+08:00",
           "reviewer": "Codex"
         }
       ],
@@ -37499,5 +37526,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T18:09:00+08:00"
+  "updated_at": "2026-11-18T01:04:52+08:00"
 }

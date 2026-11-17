@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-18",
+  "decisions": [
+    {
+      "id": "20261118-ulist239-f190-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f190"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "manual_semantic_retraction",
+      "previous": {
+        "canonical": "f190",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "H股关联A股价格缩放位数",
+      "meaning": "东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。",
+      "unit": "",
+      "rationale": "项目采集器对东财 api/qt/ulist.np/get 的 data.diff 项原样保存，目标路径为响应键 f190。东方财富官方行情中心将 H股对应的A股最新价映射到 fid [f186,f190,f187]，并把 f190 传给格式器；格式器明确按 10^f190 缩放价格并按 f190 位显示。该 bundle 的 getListQuoteNPList 也请求 ulist.np/get（fltt=1）。本项目使用 fltt=2；2026-11-17 原始样本中 601288 为 f186=6.905、f190=3，其他 19 条 f190=0，说明不能把 f190 当作 hgu 股数或再次缩放 fltt=2 的 f186。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f190_precision_contract.md。本裁决仅确认 Ulist f190 的来源内格式元数据含义，不建立跨源映射。",
+      "source_contract": {
+        "authority": "东方财富网官方行情中心前端",
+        "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+        "path": "quote.eastmoney.com/center/static/build/index.js",
+        "locator": "QuoteItem H股对应的A股最新价 uses fid [f186,f190,f187]; formatter i(e,t,...) divides e by 10^t and fixes t decimals; getListQuoteNPList requests api/qt/ulist.np/get",
+        "url": "https://quote.eastmoney.com/center/static/build/index.js"
+      }
+    }
+  ]
+}

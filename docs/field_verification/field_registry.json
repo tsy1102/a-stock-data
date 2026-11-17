@@ -16,7 +16,7 @@
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
-      "manual_semantic_retraction": 5,
+      "manual_semantic_retraction": 4,
       "matched": 772,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
@@ -31,12 +31,12 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 964,
-      "verified": 1556,
+      "unverified": 963,
+      "verified": 1557,
       "verified_by_empirical_addendum": 193,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 419
+      "verified_by_source_contract": 420
     },
     "updated_at": "2026-11-15"
   },
@@ -16682,19 +16682,19 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f190",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "canonical_differs",
+        "meaning_differs",
         "unit_incomplete"
       ]
     },
@@ -45683,6 +45683,9 @@
       "东财-ulist239(np/get)"
     ],
     "3分钟涨速": [
+      "东财-ulist239(np/get)"
+    ],
+    "H股关联A股价格缩放位数": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -189915,15 +189918,16 @@
       "code": "f190",
       "identity": "东财-ulist239(np/get)::f190",
       "path": "f190",
-      "canonical": "f190",
-      "meaning": "",
+      "canonical": "H股关联A股价格缩放位数",
+      "meaning": "东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。",
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem H股对应的A股最新价 uses fid [f186,f190,f187]; formatter i(e,t,...) divides e by 10^t and fixes t decimals; getListQuoteNPList requests api/qt/ulist.np/get @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b"
       ],
-      "status": "unverified",
-      "status_resolution": "manual_semantic_retraction",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "unverified"
@@ -189938,6 +189942,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261118-ulist239-f190-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261118-ulist239-f190-source-contract"
         ]
       },
       "reference_evidence": [
@@ -189949,6 +189959,35 @@
           "status": "unverified",
           "status_raw": "⚠️ 含义待破解；旧每股未分配利润语义已撤回",
           "adjudication_id": "historical-recrack-ulist-f190-retract-20261106"
+        },
+        {
+          "section": "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem H股对应的A股最新价 uses fid [f186,f190,f187]; formatter i(e,t,...) divides e by 10^t and fixes t decimals; getListQuoteNPList requests api/qt/ulist.np/get @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+          "canonical": "H股关联A股价格缩放位数",
+          "meaning": "东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-18：20261118-ulist239-f190-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261118-ulist239-f190-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem H股对应的A股最新价 uses fid [f186,f190,f187]; formatter i(e,t,...) divides e by 10^t and fixes t decimals; getListQuoteNPList requests api/qt/ulist.np/get",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f190",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H股关联A股价格缩放位数",
+              "meaning": "东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -189990,6 +190029,40 @@
             "n_pairs": 80,
             "informative_pairs": 4,
             "informative_exact_hits": 0
+          }
+        },
+        {
+          "id": "20261118-ulist239-f190-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_ulist239_f190_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "manual_semantic_retraction",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f190",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H股关联A股价格缩放位数",
+              "meaning": "东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目采集器对东财 api/qt/ulist.np/get 的 data.diff 项原样保存，目标路径为响应键 f190。东方财富官方行情中心将 H股对应的A股最新价映射到 fid [f186,f190,f187]，并把 f190 传给格式器；格式器明确按 10^f190 缩放价格并按 f190 位显示。该 bundle 的 getListQuoteNPList 也请求 ulist.np/get（fltt=1）。本项目使用 fltt=2；2026-11-17 原始样本中 601288 为 f186=6.905、f190=3，其他 19 条 f190=0，说明不能把 f190 当作 hgu 股数或再次缩放 fltt=2 的 f186。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f190_precision_contract.md。本裁决仅确认 Ulist f190 的来源内格式元数据含义，不建立跨源映射。",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem H股对应的A股最新价 uses fid [f186,f190,f187]; formatter i(e,t,...) divides e by 10^t and fixes t decimals; getListQuoteNPList requests api/qt/ulist.np/get",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
           }
         }
       ]

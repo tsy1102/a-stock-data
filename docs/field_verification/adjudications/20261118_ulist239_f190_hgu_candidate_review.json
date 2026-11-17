@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_37a567d5fa13b618d16da07fb1f6c9f83a5acdb558e2eb3253eb42beafd05f87",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-18T01:04:52+08:00",
+  "rationale": "新增东方财富官方行情中心前端契约已确认 Ulist f190 是 f186 价格的十进制缩放/显示精度参数；它不是 TDX hgu 所表示的 H 股股数。原 L4 的 95% 命中由 38/40 个 0/0 占位对造成；两组非零 f190=3 也不等于 hgu=3,073,882.25 万股。该候选映射与已核实的来源内语义相矛盾，现拒绝这条 f190↔hgu 映射候选，不否定其他 Ulist 字段与 H 股数据之间可能存在的独立关系。",
+  "evidence_refs": [
+    "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+    "adjudications/20261117_ulist239_f190_hgu_low_information_review.md",
+    "adjudications/20261118_ulist239_f190_precision_contract.md",
+    "https://quote.eastmoney.com/center/static/build/index.js"
+  ],
+  "duplicate_of": null
+}

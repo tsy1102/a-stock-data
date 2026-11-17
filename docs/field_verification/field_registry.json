@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 329,
+      "aggregate_status_scope_unresolved": 328,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 20,
@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 5,
-      "matched": 774,
+      "matched": 772,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 968,
-      "verified": 1551,
-      "verified_by_empirical_addendum": 189,
+      "unverified": 966,
+      "verified": 1553,
+      "verified_by_empirical_addendum": 192,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -15046,20 +15046,20 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f127",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "meaning_differs",
-        "source_statuses_differ",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -15691,16 +15691,14 @@
       "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "unverified",
+        "东财-ulist239(np/get)": "verified",
         "东财-资金流(em_fund_flow)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
+        "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -18295,18 +18293,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f33",
-      "meaning": "",
-      "unit": "",
+      "canonical": "order_imbalance_ratio",
+      "meaning": "委比",
+      "unit": "%",
       "status_raw": "✅ 跨源",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f34",
@@ -45676,6 +45672,15 @@
     ],
     "has_intraday_limit_up_break": [
       "开盘啦(kpl_limit_up_detail)"
+    ],
+    "order_imbalance_ratio": [
+      "东财-ulist239(np/get)"
+    ],
+    "change_3d": [
+      "东财-ulist239(np/get)"
+    ],
+    "ulist239_change_6_intervals_pct": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -45988,8 +45993,8 @@
         "source": "东财-push2",
         "code": "f191"
       },
-      "relation": "cross_number_diff_meaning",
-      "evidence": "ulist_push2_align.md"
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md"
     },
     {
       "from": {
@@ -185311,16 +185316,16 @@
       "code": "f127",
       "identity": "东财-ulist239(np/get)::f127",
       "path": "f127",
-      "canonical": "f127",
-      "meaning": "委比",
-      "unit": "",
-      "section": "",
+      "canonical": "change_3d",
+      "meaning": "3日涨跌幅",
+      "unit": "%",
+      "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
         "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -185331,7 +185336,24 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-ulist239-f127-meaning"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+        "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+        "sample": {
+          "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f127 对比同股票、同数据日 K 线三交易间隔收盘收益；仅当窗口跨 2026-10-30 中信出版除息日时按官方每股现金红利 0.102 元调整历史基准并按 0.01 元精度取整。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+          "comparison_count": 160,
+          "matched_count": 160,
+          "counterexample_count": 0,
+          "official_report_count": 1,
+          "excluded_count": 40,
+          "observation_count": 160,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -185349,6 +185371,41 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+          "canonical": "change_3d",
+          "meaning": "3日涨跌幅",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-ulist239-f127-meaning",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+          "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+          "metadata_change": {
+            "before": {
+              "canonical": "f127",
+              "meaning": "委比",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_3d",
+              "meaning": "3日涨跌幅",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f127 对比同股票、同数据日 K 线三交易间隔收盘收益；仅当窗口跨 2026-10-30 中信出版除息日时按官方每股现金红利 0.102 元调整历史基准并按 0.01 元精度取整。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 1,
+            "excluded_count": 40,
+            "observation_count": 160,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -185364,7 +185421,52 @@
         "meaning": "行业名称",
         "unit": "-",
         "section": "12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-ulist239-f127-meaning",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.json",
+          "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+          "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "f127",
+            "meaning": "委比",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f127",
+              "meaning": "委比",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_3d",
+              "meaning": "3日涨跌幅",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "同一 8 个来源日期、20 只股票共 160 组来源日期合格样本中，ulist239(np/get)::f127 与同日原始不复权 K 线的三交易间隔收盘涨跌幅按两位小数有 158/160 命中。仅 300788 在 2026-11-02、11-03 两个跨 2026-10-30 除息窗口的比较不命中。中信出版官方实施公告载明每股现金红利 0.102 元及 10-30 除息日；按除息基准扣除现金红利并按 0.01 元报价精度调整历史基准后，两例均命中，总计 160/160，最大未舍入残差 0.004886211512717536813922360 个百分点。f109 对 300788 的 8 日控制样本亦 8/8 命中。官方公告及深交所规则核实的是公司事件和除息基准，不直接定义 Ulist 内部算法；本决定将该事件调整注明为样本支持的经验解释，不声称发现 Eastmoney 未公开的计算实现。",
+          "sample": {
+            "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f127 对比同股票、同数据日 K 线三交易间隔收盘收益；仅当窗口跨 2026-10-30 中信出版除息日时按官方每股现金红利 0.102 元调整历史基准并按 0.01 元精度取整。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 1,
+            "excluded_count": 40,
+            "observation_count": 160,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -187198,16 +187300,17 @@
       "code": "f149",
       "identity": "东财-ulist239(np/get)::f149",
       "path": "f149",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "ulist239_change_6_intervals_pct",
+      "meaning": "相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。",
+      "unit": "%",
+      "section": "2026-11-17 Ulist239 f149 六个交易间隔涨跌幅实证",
       "sections": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-17 Ulist239 f149 六个交易间隔涨跌幅实证"
       ],
-      "status": "unverified",
-      "status_resolution": "matched",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "unverified"
@@ -187222,8 +187325,25 @@
           "东财-资金流(em_fund_flow)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261117-ulist239-f149-six-interval-change"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_ulist239_f149_six_interval_semantics.md",
+        "evidence_sha256": "f27292fef5a78a239cd08332c8d8f605b558e96af781fab50e98724a371be49f",
+        "sample": {
+          "scope": "2026-11-05、11-06、11-09、11-10、11-17五个Ulist f297来源日，每日20只股票；逐行比较Ulist f149与同一交易日Eastmoney fqt=0日K线收盘价相对前第六个交易日收盘价的涨跌幅；300788跨越2026-10-30除息日的两项按官方每股0.102元现金红利调整参考价。匹配容差为两位小数显示精度内，或绝对残差不超过0.01个百分点；完整精确/近似分类和残差见证据CSV。",
+          "comparison_count": 100,
+          "matched_count": 100,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "observation_count": 100
+        }
       },
       "reference_evidence": [
         {
@@ -187241,14 +187361,44 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-17 Ulist239 f149 六个交易间隔涨跌幅实证",
+          "canonical": "ulist239_change_6_intervals_pct",
+          "meaning": "相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-ulist239-f149-six-interval-change",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_ulist239_f149_six_interval_semantics.md",
+          "evidence_sha256": "f27292fef5a78a239cd08332c8d8f605b558e96af781fab50e98724a371be49f",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ulist239_change_6_intervals_pct",
+              "meaning": "相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-05、11-06、11-09、11-10、11-17五个Ulist f297来源日，每日20只股票；逐行比较Ulist f149与同一交易日Eastmoney fqt=0日K线收盘价相对前第六个交易日收盘价的涨跌幅；300788跨越2026-10-30除息日的两项按官方每股0.102元现金红利调整参考价。匹配容差为两位小数显示精度内，或绝对残差不超过0.01个百分点；完整精确/近似分类和残差见证据CSV。",
+            "comparison_count": 100,
+            "matched_count": 100,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "observation_count": 100
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
-          "f149"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f149",
         "sources": [
@@ -187262,7 +187412,57 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-ulist239-f149-six-interval-change",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_ulist239_f149_six_interval_semantics.json",
+          "evidence_file": "adjudications/20261117_ulist239_f149_six_interval_semantics.md",
+          "evidence_sha256": "f27292fef5a78a239cd08332c8d8f605b558e96af781fab50e98724a371be49f",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ulist239_change_6_intervals_pct",
+              "meaning": "相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
+              "f149"
+            ]
+          },
+          "rationale": "项目采集路径精确映射到东财 ulist.np/get 原始 f149。五个已确认来源交易日共100组去重股票样本，与同源 fqt=0 日K线按 t 日收盘价 / t-6 交易间隔收盘价重算；98组按 f149 两位小数精确吻合，余下两组均为300788在官方披露的现金分红除息窗口，按每股0.102元现金红利校正参考价后各差0.01个百分点，最大相对差0.237037%。两项差值作为近似匹配记录，不归因于已证明的舍入。该唯一公式跨五日支持字段为六个交易间隔涨跌幅；精确服务端复权因子、舍入算法和官方中文标签仍未确认，属于实现细节。本决定只确认东财-ulist239(np/get)::f149的来源内语义，不建立跨源映射；既有 f149 与 ZHB change_mtd 的关系拒绝裁决保持不变。",
+          "sample": {
+            "scope": "2026-11-05、11-06、11-09、11-10、11-17五个Ulist f297来源日，每日20只股票；逐行比较Ulist f149与同一交易日Eastmoney fqt=0日K线收盘价相对前第六个交易日收盘价的涨跌幅；300788跨越2026-10-30除息日的两项按官方每股0.102元现金红利调整参考价。匹配容差为两位小数显示精度内，或绝对残差不超过0.01个百分点；完整精确/近似分类和残差见证据CSV。",
+            "comparison_count": 100,
+            "matched_count": 100,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "observation_count": 100
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -194237,15 +194437,15 @@
       "code": "f33",
       "identity": "东财-ulist239(np/get)::f33",
       "path": "f33",
-      "canonical": "f33",
-      "meaning": "",
-      "unit": "",
+      "canonical": "order_imbalance_ratio",
+      "meaning": "委比",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
         "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -194259,7 +194459,24 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-ulist239-f33-meaning"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+        "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+        "sample": {
+          "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f33 对比 push2(stock/get)::f191；同股票、同数据日且 f124/f86 时间戳一致。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+          "comparison_count": 160,
+          "matched_count": 160,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 40,
+          "observation_count": 160,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -194269,6 +194486,41 @@
           "unit": "",
           "status_raw": "✅ 跨源",
           "status": "verified"
+        },
+        {
+          "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+          "canonical": "order_imbalance_ratio",
+          "meaning": "委比",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-ulist239-f33-meaning",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+          "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+          "metadata_change": {
+            "before": {
+              "canonical": "f33",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "order_imbalance_ratio",
+              "meaning": "委比",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f33 对比 push2(stock/get)::f191；同股票、同数据日且 f124/f86 时间戳一致。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 40,
+            "observation_count": 160,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -194283,7 +194535,52 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-ulist239-f33-meaning",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.json",
+          "evidence_file": "adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+          "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f33",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f33",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "order_imbalance_ratio",
+              "meaning": "委比",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "同一 Eastmoney 提供方的 ulist.np/get::f33 与 stock/get::f191 在 8 个来源日期合格交易日、20 只股票的 160 组样本中逐值 160/160 完全相等；160 组均有相同的已验证行情更新时间戳（Ulist f124 = Push2 f86），且有 152 个不同非零取值，排除常量退化相关。Push2 f191 已定案为委比（%），据此补齐 Ulist f33 的来源内含义、单位，并将既有 f33→f191 端点关系定为同值同义。两个端点来自同一提供方，不视为独立来源互证。",
+          "sample": {
+            "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f33 对比 push2(stock/get)::f191；同股票、同数据日且 f124/f86 时间戳一致。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 40,
+            "observation_count": 160,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

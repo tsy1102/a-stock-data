@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_ulist_f33_f127_empirical_semantics.md",
+  "evidence_sha256": "d69675d589c7bf4ddfb9b16db7e0b5bff58e4124cb0308cb474f6a094d7f685f",
+  "decisions": [
+    {
+      "id": "20261117-ulist239-f33-meaning",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f33"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f33",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "order_imbalance_ratio",
+      "meaning": "委比",
+      "unit": "%",
+      "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+      "rationale": "同一 Eastmoney 提供方的 ulist.np/get::f33 与 stock/get::f191 在 8 个来源日期合格交易日、20 只股票的 160 组样本中逐值 160/160 完全相等；160 组均有相同的已验证行情更新时间戳（Ulist f124 = Push2 f86），且有 152 个不同非零取值，排除常量退化相关。Push2 f191 已定案为委比（%），据此补齐 Ulist f33 的来源内含义、单位，并将既有 f33→f191 端点关系定为同值同义。两个端点来自同一提供方，不视为独立来源互证。",
+      "sample": {
+        "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f33 对比 push2(stock/get)::f191；同股票、同数据日且 f124/f86 时间戳一致。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+        "comparison_count": 160,
+        "matched_count": 160,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 40,
+        "observation_count": 160,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261117-ulist239-f127-meaning",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f127"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "f127",
+        "meaning": "委比",
+        "unit": ""
+      },
+      "canonical": "change_3d",
+      "meaning": "3日涨跌幅",
+      "unit": "%",
+      "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+      "rationale": "同一 8 个来源日期、20 只股票共 160 组来源日期合格样本中，ulist239(np/get)::f127 与同日原始不复权 K 线的三交易间隔收盘涨跌幅按两位小数有 158/160 命中。仅 300788 在 2026-11-02、11-03 两个跨 2026-10-30 除息窗口的比较不命中。中信出版官方实施公告载明每股现金红利 0.102 元及 10-30 除息日；按除息基准扣除现金红利并按 0.01 元报价精度调整历史基准后，两例均命中，总计 160/160，最大未舍入残差 0.004886211512717536813922360 个百分点。f109 对 300788 的 8 日控制样本亦 8/8 命中。官方公告及深交所规则核实的是公司事件和除息基准，不直接定义 Ulist 内部算法；本决定将该事件调整注明为样本支持的经验解释，不声称发现 Eastmoney 未公开的计算实现。",
+      "sample": {
+        "scope": "2026-11-02、11-03、11-04、11-05、11-06、11-09、11-10、11-17；ulist239(np/get)::f127 对比同股票、同数据日 K 线三交易间隔收盘收益；仅当窗口跨 2026-10-30 中信出版除息日时按官方每股现金红利 0.102 元调整历史基准并按 0.01 元精度取整。11-12 和 11-16 的失败采集共 40 个预期股票日无记录，11-13 无 Ulist 原始样本，均排除。",
+        "comparison_count": 160,
+        "matched_count": 160,
+        "counterexample_count": 0,
+        "official_report_count": 1,
+        "excluded_count": 40,
+        "observation_count": 160,
+        "stock_count": 20
+      }
+    }
+  ]
+}

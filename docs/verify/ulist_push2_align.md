@@ -4,6 +4,7 @@
 > 用途: ulist239 索引定位(ulist 索引≠push2 索引, 此为权威映射)
 > 2026-11-13 复核：保留期 7 个交易日、20 股共 140 条股票日样本确认资金流路径配对；修正 f62/f66/f72/f78 四条净额语义标签错移，并将“特大单”统一为东方财富页面名称“超大单”。字段路径配对不变；逐值证据见 [中单与资金流复核](../field_verification/adjudications/20261113_eastmoney_mid_flow_semantics_evidence.md)。
 > 2026-11-14 更正：移除 `ulist f1 → push2 f59` 与 `ulist f152 → push2 f59` 两条旧活动关系。前者的历史 A 股恒值相等不足以定映射；两个路径现分别以来源内证据解释为报价精度位数，但本轮未登记跨源关系。后者被同数据日 B 股反例否定：`ulist f152=2`、`push2 f59=3`；`ulist f152` 仍未知。另有旧 `push2 f152 ↔ ulist f1` L1 记录也被同一 B 股样本否定，Push2 f152 已退回候选。旧历史报告不改写；详见[证据与裁决](../field_verification/adjudications/20261114_eastmoney_price_precision_evidence.md)。
+> 2026-11-17 复核：Ulist `f33` 与 Push2 `f191` 在 8 个来源日期合格交易日、20 只股票的 160 组相同报价时间戳样本中逐值 160/160 相等，现确认委比（%）同义映射；Ulist `f127` 经 K 线三交易间隔复算并对两例中信出版除息窗口作事件校正后定案为 3 日涨跌幅（%）。详见[来源内实证与映射证据](../field_verification/adjudications/20261117_ulist_f33_f127_empirical_semantics.md)。
 
 | ulist | push2 | push2 语义 | | ulist | push2 | push2 语义 |
 |---|---|---|---|---|---|---|
@@ -32,7 +33,7 @@
 | ulist f26 | f189 | 上市日期 |
 | ulist f27 | f107 | 市场标记(布尔0/1,北交=0, ≡f107/f110, L1·第十轮复核) |
 | ulist f29 | f180 | ≡ulist:f29 同值(✅多日再确认 §12.3.1.2) |
-| ulist f33 | f191 | 委比% |
+| ulist f33 | f191 | 委比%（同义；2026-11-17 同报价时间戳 8 日×20 股 160/160） |
 | ulist f34 | f49 | 外盘 |
 | ulist f35 | f161 | 内盘 |
 | ulist f37 | f173 | ROE |

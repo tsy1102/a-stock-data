@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 148 个 code；聚合定义不完整 181 个 code；疑似合并文本 530 条逐源记录。
+> 聚合歧义 148 个 code；聚合定义不完整 181 个 code；疑似合并文本 531 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1124,12 +1124,12 @@
 
 ### `f127` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f127` | f127 | 行业名称 | - | `verified` |
-| 东财-ulist239(np/get) · `f127` | f127 | 委比 | — | `unverified` |
+| 东财-ulist239(np/get) · `f127` | change_3d | 3日涨跌幅 | % | `verified` |
 
 ### `f128` — ambiguous
 
@@ -1362,12 +1362,12 @@
 
 ### `f149` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f149` | fund_small_today | 小单类别资金净流入金额，等于流入金额减流出金额 | 元 | `verified` |
-| 东财-ulist239(np/get) · `f149` | — | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f149` | ulist239_change_6_intervals_pct | 相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。 | % | `verified` |
 | 东财-资金流(em_fund_flow) · `f149` | fund_small_today | 小单类别资金净流入金额，等于流入金额减流出金额。 | 元 | `verified` |
 
 ### `f15` — incomplete
@@ -3587,6 +3587,7 @@
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 东财-ulist239(np/get) | `f133` | dividend_yield_lfy_observed | 股息率（%）；在本次保留的善水科技、万华化学、贵州茅台样本中，数值符合最近已实施完整年度现金分红/当日价格的 LFY-like 口径。东方财富整体算法会按分红期切换 TTM/LFY 并可含预案；特别股利及切换条件未由本字段样本充分确认。 | `verified` |
 | 东财-ulist239(np/get) | `f144` | f144 | 最新价/现价 | `verified` |
+| 东财-ulist239(np/get) | `f149` | ulist239_change_6_intervals_pct | 相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。 | `verified` |
 | 东财-ulist239(np/get) | `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
 | 东财-ulist239(np/get) | `f192` | h_share_market_code | A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。 | `verified` |
 | 东财-ulist239(np/get) | `f193` | h_share_name | A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |

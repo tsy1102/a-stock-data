@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_ulist239_f149_six_interval_semantics.md",
+  "evidence_sha256": "f27292fef5a78a239cd08332c8d8f605b558e96af781fab50e98724a371be49f",
+  "decisions": [
+    {
+      "id": "20261117-ulist239-f149-six-interval-change",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f149"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
+          "f149"
+        ]
+      },
+      "canonical": "ulist239_change_6_intervals_pct",
+      "meaning": "相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。",
+      "unit": "%",
+      "section": "2026-11-17 Ulist239 f149 六个交易间隔涨跌幅实证",
+      "rationale": "项目采集路径精确映射到东财 ulist.np/get 原始 f149。五个已确认来源交易日共100组去重股票样本，与同源 fqt=0 日K线按 t 日收盘价 / t-6 交易间隔收盘价重算；98组按 f149 两位小数精确吻合，余下两组均为300788在官方披露的现金分红除息窗口，按每股0.102元现金红利校正参考价后各差0.01个百分点，最大相对差0.237037%。两项差值作为近似匹配记录，不归因于已证明的舍入。该唯一公式跨五日支持字段为六个交易间隔涨跌幅；精确服务端复权因子、舍入算法和官方中文标签仍未确认，属于实现细节。本决定只确认东财-ulist239(np/get)::f149的来源内语义，不建立跨源映射；既有 f149 与 ZHB change_mtd 的关系拒绝裁决保持不变。",
+      "sample": {
+        "scope": "2026-11-05、11-06、11-09、11-10、11-17五个Ulist f297来源日，每日20只股票；逐行比较Ulist f149与同一交易日Eastmoney fqt=0日K线收盘价相对前第六个交易日收盘价的涨跌幅；300788跨越2026-10-30除息日的两项按官方每股0.102元现金红利调整参考价。匹配容差为两位小数显示精度内，或绝对残差不超过0.01个百分点；完整精确/近似分类和残差见证据CSV。",
+        "comparison_count": 100,
+        "matched_count": 100,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "observation_count": 100
+      }
+    }
+  ]
+}

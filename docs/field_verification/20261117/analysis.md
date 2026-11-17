@@ -46,7 +46,7 @@
 
 - 随后的补采目标数据日仍为 2026-11-16。Eastmoney 返回 `ip_banned`，Ulist 没有新增来源日样本；因此本节使用留存的 Ulist、Eastmoney K 线和 ZHB raw，不把本次运行说成新增 Ulist 采集。
 - 对碰撞报告中的 `ulist239.f149 ↔ zhb.stat2.change_mtd` 逐日核对后，2026-11-06 为 0/20、2026-11-09 为 20/20。11 月 9 日的滚动六个交易间隔恰好从 10 月 30 日起算，与月初至今使用同一基准，构成单日偶合。候选 `cc1_3541505a690aeb171f9c6a16db22c25988351cdda7e941190e71572f4f1f37d5` 已正式标记 `rejected`，只拒绝该跨源同义关系。
-- 80 个来源日股票值与未复权 K 线复算表现为滚动六个交易间隔涨幅的强线索；300788 官方除息记录支持调整该窗口的历史基准，但仍有两行各差 0.01 个百分点。因 `ulist.np/get` 未公开 `f149` 字段标签，且残差计算口径未完全解释，来源内字段保持 `unverified`，不修改主字典。完整分析、逐行 CSV 和候选审阅记录见 [`20261117_ulist239_f149_mtd_candidate_rejection.md`](../adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md)。
+- 上述 80 组分析当时将 `f149` 来源内语义留作待核；随后扩大至 5 个来源日×20 股的 100 组样本，98 组按两位小数精确吻合，300788 除息窗口 2 组各差 0.01 个百分点。按来源内实证流程已定案 `东财-ulist239(np/get)::f149` 为六个交易间隔累计涨跌幅（%），近似残差保留且不归因于已证明的舍入；旧 `f149 ↔ ZHB change_mtd` 关系仍为拒绝。详见 [`20261117_ulist239_f149_six_interval_semantics.md`](../adjudications/20261117_ulist239_f149_six_interval_semantics.md) 和 [100 组逐行审计](../research/20261117_ulist239_f149_rolling_window_audit_v2.csv)。
 - 同轮检查了 `ulist239.f190 ↔ tdx.finance_info.hgu` 的 L4 95% 重合：40 组里 38 组只是 0=0；两个非零项均为 601288 跨相邻日重复，`f190=3` 与 `hgu=3,073,882.25` 不等，且 TDX 的来源实际数据日未确认。已记为 `insufficient_evidence`；不能把零值比例解释成语义支持。逐值表与审阅见 [`20261117_ulist239_f190_hgu_low_information_review.md`](../adjudications/20261117_ulist239_f190_hgu_low_information_review.md)。
 
 ## `ulist239.f192` 字段假设与拟合候选复核

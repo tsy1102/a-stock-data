@@ -2717,6 +2717,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | f128 | 板块龙头股名 | lead_stock | ✅ |
 | f140 | 板块龙头股代码 | lead_stock_code | ✅ |
 
+> **项目派生输出**：采集器另写入每只股票的 `n_boards`，其值为 `len(data.diff)`，用于记录返回板块列表的条目数；该键由项目计算，不是 Eastmoney 响应字段。空列表分支同时附 `__error__`，不作为真实的零板块样本。
+
 #### 12.8.6 东财 clist（板块排名/板块资金流）✅
 
 > 接口：`https://push2.eastmoney.com/api/qt/clist/get`

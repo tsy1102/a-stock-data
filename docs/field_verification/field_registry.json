@@ -11,7 +11,7 @@
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 19,
-      "disproved": 96,
+      "disproved": 97,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,7 +21,7 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
-      "project_derived_capture_output": 8,
+      "project_derived_capture_output": 9,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 2,
       "reference_status_missing": 37,
@@ -29,8 +29,7 @@
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
-      "status_missing": 41,
-      "unresolved": 7,
+      "status_missing": 48,
       "unverified": 962,
       "verified": 1581,
       "verified_by_empirical_addendum": 199,
@@ -38,7 +37,7 @@
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 455
     },
-    "updated_at": "2026-11-15"
+    "updated_at": "2026-11-18"
   },
   "sources": [
     {
@@ -26774,6 +26773,24 @@
         "canonical_incomplete",
         "meaning_incomplete"
       ]
+    },
+    {
+      "code": "n_boards",
+      "source": "东财-slist",
+      "sources": [
+        "东财-slist"
+      ],
+      "section": "项目采集器派生输出（非上游字段）",
+      "canonical": "n_boards",
+      "meaning": "项目派生的板块列表条目数：collect_slist 读取 Eastmoney 响应 data.diff，并以 len(diff) 生成此键；不是提供方响应字段。",
+      "unit": "条",
+      "status_raw": "",
+      "status": "disproved",
+      "source_statuses": {
+        "东财-slist": "disproved"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "name",
@@ -186763,6 +186780,83 @@
         "meaning": "涨跌幅",
         "unit": "%",
         "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）"
+      }
+    },
+    {
+      "source": "东财-slist",
+      "code": "n_boards",
+      "identity": "东财-slist::n_boards",
+      "path": "n_boards",
+      "canonical": "n_boards",
+      "meaning": "项目派生的板块列表条目数：collect_slist 读取 Eastmoney 响应 data.diff，并以 len(diff) 生成此键；不是提供方响应字段。",
+      "unit": "条",
+      "section": "项目采集器派生输出（非上游字段）",
+      "sections": [
+        "项目采集器派生输出（非上游字段）"
+      ],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
+      "status_evidence": {
+        "adjudication_evidence_id": "slist-derived-20261118:n_boards",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261118_slist_n_boards_provenance.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "东财-slist"
+        ],
+        "values": [
+          "disproved"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "record_present_before_adjudication": false,
+        "source": "东财-slist",
+        "code": "n_boards",
+        "pre_adjudication_git_commit": "9a3c920bc15646778c00995497f471782687f41c",
+        "snapshot_note": "该完整身份在本次裁决前不存在于 field_registry.json.source_fields。"
+      },
+      "adjudication_evidence": {
+        "id": "slist-derived-20261118:n_boards",
+        "decision": "disproved",
+        "decision_date": "2026-11-18",
+        "decision_note": "docs/field_verification/adjudications/20261118_slist_n_boards_provenance.md",
+        "reason": "采集器在读取响应 data.diff 后自行计算 len(diff) 并写入 n_boards；保留期 8 个归档日的 160 条成功记录均与 boards 数组长度逐条相等。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261118_slist_n_boards_provenance.md",
+          "docs/field_verification/research/20261118_slist_n_boards_provenance_samples.csv",
+          "scripts/capture_http_collectors.py",
+          "scripts/capture_catalog.py",
+          "docs/field_source_reference.md",
+          "docs/field_verification/source_lineage.json",
+          "docs/field_verification/20261102/raw_slist.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_slist.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_slist.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_slist.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_slist.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_slist.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_slist.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261117/raw_slist.json",
+          "docs/field_verification/20261117/meta.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 8,
+        "stock_record_count": 160,
+        "structured_evidence": "docs/field_verification/research/20261118_slist_n_boards_provenance_samples.csv",
+        "structured_evidence_sha256": "8656e42b596927be2608cef69479471ce17871ec5a8760efbfe7cfd71809636a",
+        "collector_code_sha256": "8ac6f32a374650366aaa6cafb3bcc67f554fce88255cd1a712711e0ad9f235ac"
       }
     },
     {

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 177 个 code；疑似合并文本 548 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 177 个 code；疑似合并文本 549 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3594,6 +3594,7 @@
 | 东财-push2ex | `zt_days` | limit_up_stat_days | 东财涨停股池“涨停统计”组合中的天数分量（对应原始 zttj.days；自然日/交易日口径、起算点及回看窗口未公开）。 | `verified` |
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-push2ex | `zttj.days` | zttj.days / zttj.ct | N天M板 | `verified` |
+| 东财-slist | `n_boards` | n_boards | 项目派生的板块列表条目数：collect_slist 读取 Eastmoney 响应 data.diff，并以 len(diff) 生成此键；不是提供方响应字段。 | `disproved` |
 | 东财-ulist239(np/get) | `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-ulist239(np/get) | `f11` | 5分钟涨跌幅 | 东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。 | `verified` |
 | 东财-ulist239(np/get) | `f114` | f114 | 市盈率(静态/年报 LYR) | `verified` |

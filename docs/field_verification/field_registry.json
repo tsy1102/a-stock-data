@@ -30,13 +30,13 @@
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
-      "unresolved": 8,
-      "unverified": 963,
-      "verified": 1557,
+      "unresolved": 7,
+      "unverified": 962,
+      "verified": 1558,
       "verified_by_empirical_addendum": 193,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 420
+      "verified_by_source_contract": 421
     },
     "updated_at": "2026-11-15"
   },
@@ -15772,17 +15772,18 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f152",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "⚠️ 旧跨源关系已撤回；字段语义待核",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "candidate",
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "meaning_incomplete",
         "source_statuses_differ"
       ]
@@ -45686,6 +45687,9 @@
       "东财-ulist239(np/get)"
     ],
     "H股关联A股价格缩放位数": [
+      "东财-ulist239(np/get)"
+    ],
+    "行情百分比/比例缩放位数": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -187706,16 +187710,17 @@
       "code": "f152",
       "identity": "东财-ulist239(np/get)::f152",
       "path": "f152",
-      "canonical": "f152",
-      "meaning": "",
+      "canonical": "行情百分比/比例缩放位数",
+      "meaning": "东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。",
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
         "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-        "2026-11-14 Eastmoney 报价精度关系撤回"
+        "2026-11-14 Eastmoney 报价精度关系撤回",
+        "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem mappings for 涨跌幅_5分钟, 涨速_3分钟 and 可转债对应的正股涨跌幅 pass f152 to formatter i; formatter scales by 10^t; getListQuoteNPList requests api/qt/ulist.np/get @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b"
       ],
-      "status": "unverified",
-      "status_resolution": null,
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -187729,7 +187734,13 @@
         ],
         "manual_correction_id": "20261114-ulist-f152-scope-resolution-reset",
         "correction_evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
-        "correction_evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
+        "correction_evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e",
+        "adjudication_ids": [
+          "20261118-ulist239-f152-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261118-ulist239-f152-source-contract"
+        ]
       },
       "reference_evidence": [
         {
@@ -187749,6 +187760,35 @@
           "status": "unverified",
           "evidence_file": "adjudications/20261114_eastmoney_quote_relation_withdrawal.md",
           "evidence_sha256": "88a7c51af13b6b734a33c8b162bc7f68770e91ef4a9c8f81f8b80402711ec27e"
+        },
+        {
+          "section": "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem mappings for 涨跌幅_5分钟, 涨速_3分钟 and 可转债对应的正股涨跌幅 pass f152 to formatter i; formatter scales by 10^t; getListQuoteNPList requests api/qt/ulist.np/get @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+          "canonical": "行情百分比/比例缩放位数",
+          "meaning": "东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-18：20261118-ulist239-f152-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261118-ulist239-f152-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem mappings for 涨跌幅_5分钟, 涨速_3分钟 and 可转债对应的正股涨跌幅 pass f152 to formatter i; formatter scales by 10^t; getListQuoteNPList requests api/qt/ulist.np/get",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f152",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "行情百分比/比例缩放位数",
+              "meaning": "东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -187778,6 +187818,40 @@
           "previous_status_resolution": "aggregate_status_scope_unresolved",
           "status_resolution_after": null,
           "rationale": "The prior unresolved aggregate scope was caused by the other source's unsupported verified status, which is now withdrawn; Ulist f152 remains semantically unknown."
+        },
+        {
+          "id": "20261118-ulist239-f152-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_ulist239_f152_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "status_missing",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f152",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "行情百分比/比例缩放位数",
+              "meaning": "东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目 collect_ulist239 精确请求东财 api/qt/ulist.np/get 并原样保存返回键。东方财富官方前端 QuoteItem 把 f152 作为 f11（5分钟涨跌幅）、f22（3分钟涨速）及其他比率的格式器参数；可转债对应正股涨跌幅的字段列表也包含 f152，但格式器将 f230 作为数值、f152 作为精度参数。官方格式器对第二参数 t>0 时按 e/10^t 还原并显示 t 位小数。官方 getListQuoteNPList 使用相同 Ulist 端点但 fltt=1；项目使用 fltt=2。保留的 2026-11-17 快照 20/20 行均含 f152=2，说明项目确有该格式元数据，但恒定样本不作为释义证据。详见 docs/field_verification/adjudications/20261118_ulist239_f152_precision_contract.md。本裁决只确认精确 Ulist 路径的格式参数含义，不建立跨源映射。",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem mappings for 涨跌幅_5分钟, 涨速_3分钟 and 可转债对应的正股涨跌幅 pass f152 to formatter i; formatter scales by 10^t; getListQuoteNPList requests api/qt/ulist.np/get",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          }
         }
       ]
     },

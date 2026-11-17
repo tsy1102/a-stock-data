@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_ulist_f139_board_type_evidence.md",
+  "evidence_sha256": "90b4c0e2dcf54e323b3bcc348228e08ed992341d9bc69d8674d0fae2867e1e5c",
+  "decisions": [
+    {
+      "id": "20261117-ulist-f139-listing-board-type",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f139"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
+          "f139"
+        ]
+      },
+      "canonical": "listing_board_type",
+      "meaning": "证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。",
+      "unit": "-",
+      "section": "2026-11-17 Ulist f139 板块类型来源内实证定案",
+      "rationale": "精确采集路径东财-ulist239(np/get)::f139与已验证的东财-push2(stock/get)::f182在2026-11-02、03、04、05、06、09、10、17八个来源数据日的160组日期合格配对中160/160精确相等，反例为0，样本覆盖主板、创业板、科创板和北交所。交易所官方资料核实四类代表股票的证券代码与上市板块相符。注册表旧冲突源于将短代码f139跨接口聚合：Push2和em_fund_flow的f139为超大单流出金额（元），Ulist的f139则与已验证的Push2 f182市场类型枚举一致。未找到Ulist f139的官方接口逐字段说明，因此本决定是来源内实证语义，不声称为官方API契约；不新增跨源映射，也不将结论推广到未观测枚举或非股票证券。",
+      "sample": {
+        "scope": "保留期2026-10-15之后，2026-11-02、03、04、05、06、09、10、17八个来源数据日；Ulist f297或f124北京时间日期与目标日相符且Push2 f86北京时间日期相符的相同20只股票；比较东财-ulist239(np/get)::f139与东财-push2(stock/get)::f182。",
+        "comparison_count": 160,
+        "matched_count": 160,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

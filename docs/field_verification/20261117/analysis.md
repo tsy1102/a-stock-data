@@ -137,3 +137,9 @@
 - `f63` 与成交额 `f6` 的总体 Pearson 为 0.8944；逐日横截面为 0.8322–0.9905，而逐股八日序列中仅 18/20 为正相关，中位数 0.5561（范围 -0.4669–0.8946）。总体相关受股票规模影响，且 `f63/f6` 比例不稳定，因此只支持成交规模共变线索。
 - `f63` 与已验证 ELTDX 开盘金额在 160 组同日样本中的 Pearson/Spearman 为 0.9004/0.9746，但仅 1/160 逐值相等；金额比范围 0.9997–30.9268，中位数 2.7880，不能解释成同义或固定单位换算。efinance 把 `f63` 标成“涨跌幅”的代码属于资金流 K 线端点，不是 Ulist 快照接口，不能迁移到 `ulist.np/get::f63`。
 - **结论：**扩充样本强化了金额/活跃度共变的探索线索，但没有区分 `f63` 的真实口径。字段继续 `unverified`，不更新主字典、不新增映射。逐行日期、raw 哈希和 160 组配对见 [`research/20261117_ulist239_f63_retained_160_sample_review.md`](../research/20261117_ulist239_f63_retained_160_sample_review.md) 与 [`research/20261117_ulist239_f63_retained_160_pairs.csv`](../research/20261117_ulist239_f63_retained_160_pairs.csv)。
+
+## Ulist `f139` 板块类型定案
+
+- 本轮复核时北京时间为 2026-11-17 22:32，实际处于收盘后；未再运行采集器。11 月 17 日可用的 Ulist/Push2 快照分别于 17:30:46、17:28:42 获取，均标记 `closed`。因此不把这些样本称作盘前采集；字段是稳定的上市板块类别，逐行来源日期仍以 Ulist `f297`/`f124` 与 Push2 `f86` 核对。
+- 保留期内 8 个来源数据日、20 只股票共 160 组配对，`ulist239.f139` 与已验证 `push2.f182` 160/160 精确相等、反例为 0；每个数据日均覆盖 2、5、32、80 四种代码。上交所、深交所和北交所官方上市资料核对了各类代表股票。来源内定案 `东财-ulist239(np/get)::f139` 为证券上市板块类型代码：2=主板、5=创业板、32=科创板、80=北交所；未找到 Ulist `f139` 的正式逐字段接口定义，因此证据等级为来源内实证，不冒充官方 API 契约，也不扩展到未观测枚举。
+- 注册表原冲突由跨接口复用短代码 `f139` 导致：Ulist `f139` 是板块类型，Push2 和 `em_fund_flow` 的 `f139` 是超大单流出金额（元）。现已仅解除 Ulist 完整路径的冲突；主字段注册表和未知队列已同步，不新增跨源映射。逐值、日期资格和官网链接见 [`../adjudications/20261117_ulist_f139_board_type_evidence.md`](../adjudications/20261117_ulist_f139_board_type_evidence.md)、[`../adjudications/20261117_ulist_f139_board_type.json`](../adjudications/20261117_ulist_f139_board_type.json) 与 [`../adjudications/20261117_ulist_f139_board_type_samples.csv`](../adjudications/20261117_ulist_f139_board_type_samples.csv)。

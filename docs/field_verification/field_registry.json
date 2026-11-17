@@ -10,7 +10,7 @@
       "aggregate_status_scope_unresolved": 328,
       "candidate": 1,
       "collector_output_container": 10,
-      "conflict": 20,
+      "conflict": 19,
       "disproved": 96,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
@@ -23,7 +23,7 @@
       "official_contract": 31,
       "project_derived_capture_output": 8,
       "reference_scope_reconciled": 3,
-      "reference_status_conflict": 3,
+      "reference_status_conflict": 2,
       "reference_status_missing": 37,
       "registry_status_only_single_source": 501,
       "resolved_by_multiday_independent_cross_source_l1": 8,
@@ -32,8 +32,8 @@
       "status_missing": 41,
       "unresolved": 8,
       "unverified": 966,
-      "verified": 1553,
-      "verified_by_empirical_addendum": 192,
+      "verified": 1554,
+      "verified_by_empirical_addendum": 193,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -15389,16 +15389,14 @@
       "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "conflict",
+        "东财-ulist239(np/get)": "verified",
         "东财-资金流(em_fund_flow)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete",
-        "source_status_conflict",
-        "source_statuses_differ",
-        "unit_incomplete"
+        "canonical_differs",
+        "meaning_differs",
+        "unit_differs"
       ]
     },
     {
@@ -45680,6 +45678,9 @@
       "东财-ulist239(np/get)"
     ],
     "ulist239_change_6_intervals_pct": [
+      "东财-ulist239(np/get)"
+    ],
+    "listing_board_type": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -186418,16 +186419,17 @@
       "code": "f139",
       "identity": "东财-ulist239(np/get)::f139",
       "path": "f139",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "listing_board_type",
+      "meaning": "证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。",
+      "unit": "-",
+      "section": "2026-11-17 Ulist f139 板块类型来源内实证定案",
       "sections": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-17 Ulist f139 板块类型来源内实证定案"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "unverified",
@@ -186444,9 +186446,24 @@
           "东财-资金流(em_fund_flow)"
         ],
         "values": [
-          "unverified",
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-ulist-f139-listing-board-type"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_ulist_f139_board_type_evidence.md",
+        "evidence_sha256": "90b4c0e2dcf54e323b3bcc348228e08ed992341d9bc69d8674d0fae2867e1e5c",
+        "sample": {
+          "scope": "保留期2026-10-15之后，2026-11-02、03、04、05、06、09、10、17八个来源数据日；Ulist f297或f124北京时间日期与目标日相符且Push2 f86北京时间日期相符的相同20只股票；比较东财-ulist239(np/get)::f139与东财-push2(stock/get)::f182。",
+          "comparison_count": 160,
+          "matched_count": 160,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -186464,14 +186481,43 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-17 Ulist f139 板块类型来源内实证定案",
+          "canonical": "listing_board_type",
+          "meaning": "证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。",
+          "unit": "-",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-ulist-f139-listing-board-type",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_ulist_f139_board_type_evidence.md",
+          "evidence_sha256": "90b4c0e2dcf54e323b3bcc348228e08ed992341d9bc69d8674d0fae2867e1e5c",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "listing_board_type",
+              "meaning": "证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。",
+              "unit": "-"
+            }
+          },
+          "sample": {
+            "scope": "保留期2026-10-15之后，2026-11-02、03、04、05、06、09、10、17八个来源数据日；Ulist f297或f124北京时间日期与目标日相符且Push2 f86北京时间日期相符的相同20只股票；比较东财-ulist239(np/get)::f139与东财-push2(stock/get)::f182。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
-          "f139"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f139",
         "sources": [
@@ -186485,7 +186531,56 @@
         "meaning": "",
         "unit": "元",
         "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-ulist-f139-listing-board-type",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_ulist_f139_board_type.json",
+          "evidence_file": "adjudications/20261117_ulist_f139_board_type_evidence.md",
+          "evidence_sha256": "90b4c0e2dcf54e323b3bcc348228e08ed992341d9bc69d8674d0fae2867e1e5c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "reference_status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "listing_board_type",
+              "meaning": "证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。",
+              "unit": "-"
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "f135/f136/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 (+f149)",
+              "f139"
+            ]
+          },
+          "rationale": "精确采集路径东财-ulist239(np/get)::f139与已验证的东财-push2(stock/get)::f182在2026-11-02、03、04、05、06、09、10、17八个来源数据日的160组日期合格配对中160/160精确相等，反例为0，样本覆盖主板、创业板、科创板和北交所。交易所官方资料核实四类代表股票的证券代码与上市板块相符。注册表旧冲突源于将短代码f139跨接口聚合：Push2和em_fund_flow的f139为超大单流出金额（元），Ulist的f139则与已验证的Push2 f182市场类型枚举一致。未找到Ulist f139的官方接口逐字段说明，因此本决定是来源内实证语义，不声称为官方API契约；不新增跨源映射，也不将结论推广到未观测枚举或非股票证券。",
+          "sample": {
+            "scope": "保留期2026-10-15之后，2026-11-02、03、04、05、06、09、10、17八个来源数据日；Ulist f297或f124北京时间日期与目标日相符且Push2 f86北京时间日期相符的相同20只股票；比较东财-ulist239(np/get)::f139与东财-push2(stock/get)::f182。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 148 个 code；聚合定义不完整 181 个 code；疑似合并文本 531 条逐源记录。
+> 聚合歧义 149 个 code；聚合定义不完整 180 个 code；疑似合并文本 532 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1247,14 +1247,14 @@
 | 东财-ulist239(np/get) · `f138` | — | — | — | `unverified` |
 | 东财-资金流(em_fund_flow) · `f138` | fund_super_buy | 东方财富“超大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 
-### `f139` — incomplete
+### `f139` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
-| 东财-ulist239(np/get) · `f139` | — | — | — | `conflict` |
+| 东财-ulist239(np/get) · `f139` | listing_board_type | 证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。 | - | `verified` |
 | 东财-资金流(em_fund_flow) · `f139` | fund_super_sell | 东方财富“超大单”类别资金流出金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 
 ### `f14` — ambiguous
@@ -3586,6 +3586,7 @@
 | 东财-ulist239(np/get) | `f13` | f13 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；保留期样本与 f27 同值。 | `verified` |
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 东财-ulist239(np/get) | `f133` | dividend_yield_lfy_observed | 股息率（%）；在本次保留的善水科技、万华化学、贵州茅台样本中，数值符合最近已实施完整年度现金分红/当日价格的 LFY-like 口径。东方财富整体算法会按分红期切换 TTM/LFY 并可含预案；特别股利及切换条件未由本字段样本充分确认。 | `verified` |
+| 东财-ulist239(np/get) | `f139` | listing_board_type | 证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。 | `verified` |
 | 东财-ulist239(np/get) | `f144` | f144 | 最新价/现价 | `verified` |
 | 东财-ulist239(np/get) | `f149` | ulist239_change_6_intervals_pct | 相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。 | `verified` |
 | 东财-ulist239(np/get) | `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |

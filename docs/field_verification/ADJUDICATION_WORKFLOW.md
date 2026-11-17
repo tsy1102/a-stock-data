@@ -209,6 +209,10 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 当解析器列映射、原始响应或跨日样本证明一个历史 `verified` 定义错误时，不能把它当作普通碰撞晋级，也不能让旧的 `reference_evidence` 静默覆盖新结论。当前碰撞决策工具没有通用的 `disprove` 动作；此类源级纠错需单独留存带日期的审计记录，并在 `field_registry.json.source_fields` 中按完整 `(source, code)` 身份将状态改为 `disproved`、注明正确的对应字段和证据路径，保留旧 `reference_evidence` 作为历史记录；同时移除所有指向已证伪身份的活动 `mappings`。随后重建 `fields` 聚合视图与 `meta.source_field_stats`，运行字典生成器和同步校验。不要修改只读历史档案来掩盖旧定义，也不要按短字段名批量证伪其他来源。示例见 [`change_30d_adjudication_20261017.md`](change_30d_adjudication_20261017.md)。
 
+## 撤回错误的来源身份归属
+
+当语义证据本身仍有效，但追踪发现它来自另一个运行别名、接口或完整字段路径时，撤回的是旧身份上的裁决效力，不是自动证伪该字段语义，也不是证明旧路径不存在。先按当前 `source_lineage.json`、采集元数据、适配器和 raw 路径确定证据实际所属的精确 `(source, 完整 code path)`；旧身份恢复到裁决前状态和 `status_resolution`，若原状态无法复原则保持 `unverified` 并记录具体归属缺口。保留旧裁决和证据作为历史，另建日期化更正记录，列出旧身份、新身份、来源链路、数据日期、被重用的样本及旧状态快照。若正确身份满足现行单源语义门槛，按对应正式流程定案；否则继续待核。只有被错误身份支持的活动 `mappings` 才移除；同一提供方的不同接口不自动建立映射。最后重建 registry 投影和生成视图、运行 parity 与同步校验，并按更正后的身份重跑受影响碰撞。
+
 ## 预览和应用
 
 在仓库根目录运行：

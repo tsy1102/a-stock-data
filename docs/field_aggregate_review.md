@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 151 个 code；聚合定义不完整 178 个 code；疑似合并文本 537 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 177 个 code；疑似合并文本 538 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -660,7 +660,8 @@
 | FTShare REST · `amplitude` | amplitude | 价格振幅 | — | `verified` |
 | 同花顺-fuyao · `amplitude` | — | — | — | `unverified` |
 | 市场源(market_sources) · `amplitude` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | % | `verified` |
+| 开盘啦(kpl) · `amplitude` | amplitude | 振幅% | % | `unverified` |
+| 开盘啦(kpl_limit_up_detail) · `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | % | `verified` |
 
 ### `ask1` — ambiguous
 
@@ -2618,7 +2619,8 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `main_buy` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `main_buy` | main_buy | 主力买入额 | 元 | `verified` |
+| 开盘啦(kpl) · `main_buy` | main_buy | 主力买入额 | 元 | `unverified` |
+| 开盘啦(kpl_limit_up_detail) · `main_buy` | main_buy | 主力买入额 | 元 | `verified` |
 
 ### `main_inflow` — incomplete
 
@@ -2638,14 +2640,15 @@
 | ZHB-tdxstat2 · `main_net_buy_hands` | [9] | 当日开盘集合竞价成交量；历史兼容键，不表示主力净买入手数。 | 手 | `verified` |
 | 同花顺-fuyao · `main_net_buy_hands` | — | — | — | `unverified` |
 
-### `main_sell` — incomplete
+### `main_sell` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `main_sell` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `main_sell` | main_sell | 主力卖出额（负值表示卖出流出） | 元 | `verified` |
+| 开盘啦(kpl) · `main_sell` | main_sell | 主力卖出额 | 元 | `unverified` |
+| 开盘啦(kpl_limit_up_detail) · `main_sell` | main_sell | 主力卖出额（负值表示卖出流出） | 元 | `verified` |
 
 ### `margin_trading.balance_gr` — consistent
 
@@ -3740,12 +3743,13 @@
 | 市场源(market_sources) | `up_ratio_num` | up_ratio / up_ratio_num | 封板率 / 封板数量 | `unverified` |
 | 市场源(market_sources) | `zt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 开盘啦(kpl) | `Theme` | Theme/InfoBKR | — | `unverified` |
-| 开盘啦(kpl) | `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_15` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；不是 N 天 M 板标签中的窗口涨停次数 M | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_16` | has_intraday_limit_up_break | 涨停个股在当日是否曾发生炸板的二值状态标记（1=东财官方涨停股池“炸板次数”>0，0=炸板次数=0）。2026-11-12、11-16、11-17 三个完整数据日全量逐股对照 106/106 命中；不代表炸板次数或具体时点，也不等同于进入东财“炸板股池”。开盘啦未公开该原始列标签，这是实证释义，不是 KPL 官方接口契约。 | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `raw_columns.col_17` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_19` | sector_code | 行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同） | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_20` | kpl_category_limit_up_stock_count | 同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_21` | price | 现价（元；数据日收盘后采集时对应当日收盘价） | `verified` |

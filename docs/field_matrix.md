@@ -47,7 +47,7 @@
 | [24] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [26] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [28] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
-| amplitude | 2 | FTShare REST、开盘啦(kpl) |
+| amplitude | 2 | FTShare REST、开盘啦(kpl_limit_up_detail) |
 | auction_prev_volume_ratio | 2 | TDX-eltdx、AxData |
 | category_name | 2 | TDX-eltdx、TDX(双命名源) |
 | change_rate | 2 | FTShare REST、东财 |
@@ -196,7 +196,7 @@
   - … 其余 93 个见正文
 - **新浪（19）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、iv、last、limit_down、limit_up、open_interest、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、vega、参数
 - **财联社（14）**：catalyst、cur_heat、limit_up_board、market_degree、performance、profit_ratio、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
-- **开盘啦(kpl)（5）**：actual_float_mv、main_buy、main_sell、sector_code、zt_time
+- **开盘啦(kpl)（3）**：actual_float_mv、sector_code、zt_time
 - **开盘红（35）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_tag、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
 - **akshare（13）**：BPS、EPS、PE 历史百分位、push2 f137、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、涨跌停价、股息率、龙虎榜 EXPLAIN
 - **AxData（65）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、finance_updated_date、float_share、free_float_share_z、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_ratio_pct、limit_rule、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount_ratio_pct、option_chain_tdx（期权T型）、outside_volume、pre_close_source、pre_close_trade_date、profit_ratio_pct、score、share_source、stock_allotment_cninfo（配股）、stock_financial_diagnosis_tdx（财务诊断）、stock_forecast_consensus_tdx（盈利预测）、stock_name、stock_realtime_rank_tdx（实时榜单）、stock_share_change_cninfo（股本变动）、stock_theme_strength_rank_tdx（题材强度排行）、tdx_code、theme_score、total_share、事件流、华证、开盘红复盘 ×3（天梯

@@ -905,13 +905,19 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     registry = registry_parity.fra.load_registry()
     captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
 
-    assert len(captured) == 42
+    assert len(captured) == 48
     verified = [row for row in captured if row["status"] == "verified"]
     assert {(row["source"], row["code"]) for row in verified} == {
         ("TDX(双命名源)", "ask1_vol"),
+        ("开盘啦(kpl_limit_up_detail)", "amplitude"),
+        ("开盘啦(kpl_limit_up_detail)", "main_buy"),
+        ("开盘啦(kpl_limit_up_detail)", "main_sell"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_09"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_10"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_13"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_15"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_16"),
+        ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_17"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_19"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_20"),
         ("开盘啦(kpl_limit_up_detail)", "raw_columns.col_21"),

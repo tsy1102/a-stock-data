@@ -2127,6 +2127,8 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f60 | 涨跌额 | 元 | ✅ 数值实证 |
 | **f61** | **换手率%** | **%** | ✅ |
 
+**响应级别元数据与项目派生量（2026-11-18 来源内复核）：**响应 `data.dktotal` 是 Eastmoney 日 K 接口在当前查询范围内报告的可用历史日 K 记录总数；项目固定请求 `klt=101`、`fqt=0`、不传 `beg`、`end=20500101`、`lmt=150`。它不是本次返回的 K 线数量，也不据此推断上市以来完整交易日数。项目输出 `n_klines` 则是 `len(data.klines)`，不是上游字段；当前成功样本都受 `lmt=150` 限制而返回 150 条。详细裁决和逐行证据见 [`dktotal 来源内语义裁决`](field_verification/adjudications/20261118_em_kline_dktotal_semantics.md) 与 [样本审计 CSV](field_verification/research/20261118_em_kline_dktotal_evidence.csv)。
+
 **🔑 f61 换手率的独占性（2026-08-30 探查结论，勿改换源）：**
 
 | 源 | 含换手率%? | 结论 |

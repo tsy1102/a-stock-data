@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-18",
+  "evidence_file": "docs/field_verification/adjudications/20261118_em_kline_dktotal_semantics.md",
+  "evidence_sha256": "4931c0e2f468058a1ddcaed1e4cfd5290207ccd58ef8722afede31eda068e3ba",
+  "decisions": [
+    {
+      "id": "20261118-em-kline-dktotal-meaning",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-em_kline_f61",
+        "code": "dktotal"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "status_missing",
+      "previous_attribute_conflicts": {},
+      "previous": {
+        "canonical": "dktotal",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "daily_kline_record_count",
+      "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+      "unit": "条（接口报告的历史日 K 记录）",
+      "section": "东财日 K 响应元数据来源内实证（2026-11-18）",
+      "rationale": "采集器精确追溯到 push2his /api/qt/stock/kline/get 的 data.dktotal 并原样写出；项目同时将 data.klines 限制为最多 150 条。保留期内 8 个来源成功日期、20 只股票共 160 条样本均满足 dktotal > n_klines=150，且最后返回 K 线日与数据日一致。相邻成功样本间 140 组逐股 dktotal 增量均与同一响应日期序列中新增日 K 根数一致，0 个反例。故确认其在当前固定查询范围内表示服务端报告的可用历史日 K 记录总数。没有找到 Eastmoney 正式公开字段定义，因此不标记为官方文档契约；不建立跨源映射。",
+      "sample": {
+        "scope": "保留期内 2026-11-02 至 2026-11-17 的 8 个来源状态为 ok 的归档日、20 只股票和 160 条记录；140 组相邻成功归档逐股增量比较。来源失败或缺 raw/meta 的归档未纳入。",
+        "comparison_count": 140,
+        "matched_count": 140,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

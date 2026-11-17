@@ -11,7 +11,7 @@
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 19,
-      "disproved": 97,
+      "disproved": 98,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,7 +21,7 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
-      "project_derived_capture_output": 9,
+      "project_derived_capture_output": 10,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 2,
       "reference_status_missing": 37,
@@ -29,10 +29,11 @@
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
-      "status_missing": 48,
+      "status_missing": 41,
+      "unresolved": 7,
       "unverified": 962,
-      "verified": 1581,
-      "verified_by_empirical_addendum": 199,
+      "verified": 1582,
+      "verified_by_empirical_addendum": 200,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 455
@@ -13190,6 +13191,24 @@
         "canonical_incomplete",
         "meaning_incomplete"
       ]
+    },
+    {
+      "code": "dktotal",
+      "source": "东财-em_kline_f61",
+      "sources": [
+        "东财-em_kline_f61"
+      ],
+      "section": "东财日 K 响应元数据来源内实证（2026-11-18）",
+      "canonical": "daily_kline_record_count",
+      "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+      "unit": "条（接口报告的历史日 K 记录）",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-em_kline_f61": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "down_0pct_to_1pct",
@@ -26788,6 +26807,24 @@
       "status": "disproved",
       "source_statuses": {
         "东财-slist": "disproved"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "n_klines",
+      "source": "东财-em_kline_f61",
+      "sources": [
+        "东财-em_kline_f61"
+      ],
+      "section": "项目采集器派生输出（非上游字段）",
+      "canonical": "n_klines",
+      "meaning": "项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。",
+      "unit": "条",
+      "status_raw": "",
+      "status": "disproved",
+      "source_statuses": {
+        "东财-em_kline_f61": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -46135,6 +46172,9 @@
     ],
     "limit_ladder.year_limit_up_days": [
       "TDX-eltdx(适配层)"
+    ],
+    "daily_kline_record_count": [
+      "东财-em_kline_f61"
     ]
   },
   "mappings": [
@@ -163032,6 +163072,215 @@
         "status": "unverified",
         "status_raw": "✅",
         "unit": ""
+      }
+    },
+    {
+      "source": "东财-em_kline_f61",
+      "code": "dktotal",
+      "identity": "东财-em_kline_f61::dktotal",
+      "path": "dktotal",
+      "canonical": "daily_kline_record_count",
+      "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+      "unit": "条（接口报告的历史日 K 记录）",
+      "section": "东财日 K 响应元数据来源内实证（2026-11-18）",
+      "sections": [
+        "东财日 K 响应元数据来源内实证（2026-11-18）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "东财-em_kline_f61"
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261118-em-kline-dktotal-meaning"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_em_kline_dktotal_semantics.md",
+        "evidence_sha256": "4931c0e2f468058a1ddcaed1e4cfd5290207ccd58ef8722afede31eda068e3ba",
+        "sample": {
+          "scope": "保留期内 2026-11-02 至 2026-11-17 的 8 个来源状态为 ok 的归档日、20 只股票和 160 条记录；140 组相邻成功归档逐股增量比较。来源失败或缺 raw/meta 的归档未纳入。",
+          "comparison_count": 140,
+          "matched_count": 140,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "东财日 K 响应元数据来源内实证（2026-11-18）",
+          "canonical": "daily_kline_record_count",
+          "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+          "unit": "条（接口报告的历史日 K 记录）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-em-kline-dktotal-meaning",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_em_kline_dktotal_semantics.md",
+          "evidence_sha256": "4931c0e2f468058a1ddcaed1e4cfd5290207ccd58ef8722afede31eda068e3ba",
+          "metadata_change": {
+            "before": {
+              "canonical": "dktotal",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "daily_kline_record_count",
+              "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+              "unit": "条（接口报告的历史日 K 记录）"
+            }
+          },
+          "sample": {
+            "scope": "保留期内 2026-11-02 至 2026-11-17 的 8 个来源状态为 ok 的归档日、20 只股票和 160 条记录；140 组相邻成功归档逐股增量比较。来源失败或缺 raw/meta 的归档未纳入。",
+            "comparison_count": 140,
+            "matched_count": 140,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "record_present_before_adjudication": false,
+        "source": "东财-em_kline_f61",
+        "code": "dktotal",
+        "pre_adjudication_git_commit": "b16c3e5df1b0abe8453ab19bc7ff4e4502e07414",
+        "snapshot_note": "该完整身份在本次裁决前不存在于 field_registry.json.source_fields。"
+      },
+      "adjudications": [
+        {
+          "id": "20261118-em-kline-dktotal-meaning",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_em_kline_dktotal_semantics.json",
+          "evidence_file": "adjudications/20261118_em_kline_dktotal_semantics.md",
+          "evidence_sha256": "4931c0e2f468058a1ddcaed1e4cfd5290207ccd58ef8722afede31eda068e3ba",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "status_missing",
+          "previous_metadata": {
+            "canonical": "dktotal",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "dktotal",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "daily_kline_record_count",
+              "meaning": "Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。",
+              "unit": "条（接口报告的历史日 K 记录）"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "采集器精确追溯到 push2his /api/qt/stock/kline/get 的 data.dktotal 并原样写出；项目同时将 data.klines 限制为最多 150 条。保留期内 8 个来源成功日期、20 只股票共 160 条样本均满足 dktotal > n_klines=150，且最后返回 K 线日与数据日一致。相邻成功样本间 140 组逐股 dktotal 增量均与同一响应日期序列中新增日 K 根数一致，0 个反例。故确认其在当前固定查询范围内表示服务端报告的可用历史日 K 记录总数。没有找到 Eastmoney 正式公开字段定义，因此不标记为官方文档契约；不建立跨源映射。",
+          "sample": {
+            "scope": "保留期内 2026-11-02 至 2026-11-17 的 8 个来源状态为 ok 的归档日、20 只股票和 160 条记录；140 组相邻成功归档逐股增量比较。来源失败或缺 raw/meta 的归档未纳入。",
+            "comparison_count": 140,
+            "matched_count": 140,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-em_kline_f61",
+      "code": "n_klines",
+      "identity": "东财-em_kline_f61::n_klines",
+      "path": "n_klines",
+      "canonical": "n_klines",
+      "meaning": "项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。",
+      "unit": "条",
+      "section": "项目采集器派生输出（非上游字段）",
+      "sections": [
+        "项目采集器派生输出（非上游字段）"
+      ],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
+      "status_evidence": {
+        "adjudication_evidence_id": "em-kline-derived-20261118:n_klines",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261118_em_kline_dktotal_semantics.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "东财-em_kline_f61"
+        ],
+        "values": [
+          "disproved"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "superseded_status_evidence": {
+        "record_present_before_adjudication": false,
+        "source": "东财-em_kline_f61",
+        "code": "n_klines",
+        "pre_adjudication_git_commit": "b16c3e5df1b0abe8453ab19bc7ff4e4502e07414",
+        "snapshot_note": "该完整身份在本次裁决前不存在于 field_registry.json.source_fields。"
+      },
+      "adjudication_evidence": {
+        "id": "em-kline-derived-20261118:n_klines",
+        "decision": "disproved",
+        "decision_date": "2026-11-18",
+        "decision_note": "docs/field_verification/adjudications/20261118_em_kline_dktotal_semantics.md",
+        "reason": "collect_em_kline_f61 直接将 len(data.klines) 写入 n_klines；保留期 8 个来源成功日期的 160 条记录均与 klines_all 数组长度相等，且均为 lmt=150 的返回长度。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261118_em_kline_dktotal_semantics.md",
+          "docs/field_verification/research/20261118_em_kline_dktotal_evidence.csv",
+          "scripts/capture_http_collectors.py",
+          "scripts/capture_catalog.py",
+          "docs/field_source_reference.md",
+          "docs/field_verification/source_lineage.json",
+          "docs/field_verification/20261102/raw_em_kline_f61.json",
+          "docs/field_verification/20261102/meta.json",
+          "docs/field_verification/20261103/raw_em_kline_f61.json",
+          "docs/field_verification/20261103/meta.json",
+          "docs/field_verification/20261104/raw_em_kline_f61.json",
+          "docs/field_verification/20261104/meta.json",
+          "docs/field_verification/20261105/raw_em_kline_f61.json",
+          "docs/field_verification/20261105/meta.json",
+          "docs/field_verification/20261106/raw_em_kline_f61.json",
+          "docs/field_verification/20261106/meta.json",
+          "docs/field_verification/20261109/raw_em_kline_f61.json",
+          "docs/field_verification/20261109/meta.json",
+          "docs/field_verification/20261110/raw_em_kline_f61.json",
+          "docs/field_verification/20261110/meta.json",
+          "docs/field_verification/20261117/raw_em_kline_f61.json",
+          "docs/field_verification/20261117/meta.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 8,
+        "stock_record_count": 160,
+        "structured_evidence": "docs/field_verification/research/20261118_em_kline_dktotal_evidence.csv",
+        "structured_evidence_sha256": "14fc264310aa86749db4c1740ca9a9bd482aad509b779fbd50143e300448d94d",
+        "collector_code_sha256": "8ac6f32a374650366aaa6cafb3bcc67f554fce88255cd1a712711e0ad9f235ac"
       }
     },
     {

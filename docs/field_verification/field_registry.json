@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 326,
+      "aggregate_status_scope_unresolved": 325,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 19,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 960,
-      "verified": 1560,
-      "verified_by_empirical_addendum": 195,
+      "unverified": 959,
+      "verified": 1561,
+      "verified_by_empirical_addendum": 196,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 421
@@ -7984,7 +7984,7 @@
         "Levistock历史未归属": "unverified",
         "同花顺-fuyao": "unverified",
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -41408,7 +41408,8 @@
       "TDX(双命名源)"
     ],
     "amplitude": [
-      "FTShare REST"
+      "FTShare REST",
+      "开盘啦(kpl)"
     ],
     "amplitude_pct": [
       "AxData"
@@ -238205,14 +238206,15 @@
       "identity": "开盘啦(kpl)::amplitude",
       "path": "amplitude",
       "canonical": "amplitude",
-      "meaning": "振幅%",
+      "meaning": "当日振幅=(当日最高价-最低价)/前一交易日收盘价×100%",
       "unit": "%",
       "section": "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）",
       "sections": [
-        "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）"
+        "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）",
+        "2026-11-18 KPL DailyLimitPerformance amplitude 来源内实证裁决"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -238224,8 +238226,25 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261118-kpl-daily-limit-amplitude"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_kpl_amplitude_empirical_semantics.md",
+        "evidence_sha256": "b988724f2e3d964aeb9c6a0568a572a299eb5c74733c143fd306cc7a7472237a",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-17 的 20 个 KPL 来源交易日；1,195 条 DailyLimitPerformance 记录；13 组与东财日 K f58 同股同日对照（11 个交易日、6 只股票）；完整明细见研究 CSV。",
+          "comparison_count": 13,
+          "matched_count": 13,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 1182,
+          "observation_count": 1195,
+          "stock_count": 6
+        }
       },
       "reference_evidence": [
         {
@@ -238235,6 +238254,41 @@
           "unit": "%",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-18 KPL DailyLimitPerformance amplitude 来源内实证裁决",
+          "canonical": "amplitude",
+          "meaning": "当日振幅=(当日最高价-最低价)/前一交易日收盘价×100%",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-kpl-daily-limit-amplitude",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_kpl_amplitude_empirical_semantics.md",
+          "evidence_sha256": "b988724f2e3d964aeb9c6a0568a572a299eb5c74733c143fd306cc7a7472237a",
+          "metadata_change": {
+            "before": {
+              "canonical": "amplitude",
+              "meaning": "振幅%",
+              "unit": "%"
+            },
+            "after": {
+              "canonical": "amplitude",
+              "meaning": "当日振幅=(当日最高价-最低价)/前一交易日收盘价×100%",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-17 的 20 个 KPL 来源交易日；1,195 条 DailyLimitPerformance 记录；13 组与东财日 K f58 同股同日对照（11 个交易日、6 只股票）；完整明细见研究 CSV。",
+            "comparison_count": 13,
+            "matched_count": 13,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 1182,
+            "observation_count": 1195,
+            "stock_count": 6
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -238252,7 +238306,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-kpl-daily-limit-amplitude",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_kpl_amplitude_empirical_semantics.json",
+          "evidence_file": "adjudications/20261118_kpl_amplitude_empirical_semantics.md",
+          "evidence_sha256": "b988724f2e3d964aeb9c6a0568a572a299eb5c74733c143fd306cc7a7472237a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "amplitude",
+            "meaning": "振幅%",
+            "unit": "%"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "amplitude",
+              "meaning": "振幅%",
+              "unit": "%"
+            },
+            "after": {
+              "canonical": "amplitude",
+              "meaning": "当日振幅=(当日最高价-最低价)/前一交易日收盘价×100%",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "东方财富公开定义给出当日振幅=(最高价-最低价)/昨收盘价×100%。项目 KPL 适配器将 DailyLimitPerformance row[17] 同时写入 amplitude 和保留列 raw_columns.col_17。保留期内 20 个 KPL 来源交易日、1,195 条记录中，1,165 条保留 raw col_17，且 1,165/1,165 的 raw 值与归一 amplitude 逐值一致。按行内明确的交易日期和股票代码与东财日 K f58 对照，13 组同股同日样本覆盖 11 个交易日和 6 只股票，KPL col_17、东财 f58 与 OHLC 振幅公式三者一致；12 组用前一交易日收盘价复算，另 1 组当日最高价等于最低价且双方结果为 0.00%。无振幅反例，相关 K 线归档间 OHLC/f58 无冲突。30 条无 raw 列记录及 1,152 条无同股同日东财 K 线记录不计作命中或反例。KPL 官方原始数组索引契约仍未公开；本裁决只确认精确来源字段的实证语义和单位，不建立跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-17 的 20 个 KPL 来源交易日；1,195 条 DailyLimitPerformance 记录；13 组与东财日 K f58 同股同日对照（11 个交易日、6 只股票）；完整明细见研究 CSV。",
+            "comparison_count": 13,
+            "matched_count": 13,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 1182,
+            "observation_count": 1195,
+            "stock_count": 6
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",

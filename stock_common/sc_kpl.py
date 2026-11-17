@@ -239,8 +239,10 @@ def get_kpl_limit_up_detail(
     2026-11-06 的历史实证裁决已将 raw_columns.col_15（当前连续涨停板数）、col_21（现价）
     和 col_22（当日涨跌幅）登记为来源内 E3 已验证语义。2026-11-16 将 col_20 定为同一来源日
     按 col_19 分类码分组后的涨停梯队返回行数；不等同于 KPH industry_limit_up_count。
-    开盘啦公开资料仍未说明 DailyLimitPerformance 的原始列号契约；这些列继续只保留在
-    raw_columns，不新增归一化输出。
+    2026-11-18 以 20 个来源交易日和 13 组同股同日历史行情核定 row[17]/col_17 为振幅%，
+    其值与东财日 K f58 及 OHLC 公式吻合；证据见 docs/field_verification/adjudications/
+    20261118_kpl_amplitude_empirical_semantics.md。开盘啦公开资料仍未说明 DailyLimitPerformance
+    的正式原始列号契约；其他未核列继续只保留在 raw_columns，不新增归一化输出。
     col_15 与 KPH.limit_count 不同义；与 Eastmoney push2ex 的逐值映射仍待其来源日期确认。
     col_20 证据见 docs/field_verification/adjudications/20261116_kpl_col20_category_limit_up_count.md；
     col_15/21/22 证据见 docs/field_verification/adjudications/20261106_kpl_raw_columns_semantics.md。

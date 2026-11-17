@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 151 个 code；聚合定义不完整 178 个 code；疑似合并文本 536 条逐源记录。
+> 聚合歧义 151 个 code；聚合定义不完整 178 个 code；疑似合并文本 537 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -660,7 +660,7 @@
 | FTShare REST · `amplitude` | amplitude | 价格振幅 | — | `verified` |
 | 同花顺-fuyao · `amplitude` | — | — | — | `unverified` |
 | 市场源(market_sources) · `amplitude` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `amplitude` | amplitude | 振幅% | % | `unverified` |
+| 开盘啦(kpl) · `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | % | `verified` |
 
 ### `ask1` — ambiguous
 
@@ -3740,6 +3740,7 @@
 | 市场源(market_sources) | `up_ratio_num` | up_ratio / up_ratio_num | 封板率 / 封板数量 | `unverified` |
 | 市场源(market_sources) | `zt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 开盘啦(kpl) | `Theme` | Theme/InfoBKR | — | `unverified` |
+| 开盘啦(kpl) | `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | `verified` |

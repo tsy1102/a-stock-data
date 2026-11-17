@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_ulist239_h_share_identity_evidence.md",
+  "evidence_sha256": "0f141abf1bfdd0a9d20c84e455d071610e3d740721b614f6e2d54913511bb74a",
+  "decisions": [
+    {
+      "id": "20261117-ulist239-f191-h-share-code",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f191"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f191",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "h_share_code",
+      "meaning": "A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应证券字段来源内实证",
+      "rationale": "保留期内 7 份完整 Ulist239 响应中，601288 的 f191 均为 01288。HKEX 官方双重上市名册确认 SSE 601288 与 SEHK 01288 为同一农业银行的 A/H 股；东方财富官方 01288 行情页和发行人公告也确认该 H 股代码。其余 133 条记录没有配套证券值，按占位样本排除。该证据足以补齐此前已验证但缺少元数据的字段；不外推其他股票，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 份保留期成功 Ulist239 响应；每份 20/20 股票完整；逐次核对 601288 的 f191 与官方 A/H 名册中的 01288；133 条无对应证券信息的占位记录排除",
+        "comparison_count": 7,
+        "matched_count": 7,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 133,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "20261117-ulist239-f192-h-share-market-code",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f192"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "manual_semantic_retraction",
+      "previous": {
+        "canonical": "f192",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "h_share_market_code",
+      "meaning": "A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应证券字段来源内实证",
+      "rationale": "保留期内 7 份完整 Ulist239 响应中，601288 的 f192 均为 116，并与同记录 f191=01288、f193=农业银行配套。HKEX 官方名册确认 601288 ↔ 01288；东方财富官方行情 API 以 secid=116.01288 查询返回 f57=01288、f58=农业银行，官方 H 股页面标题也标为农业银行(01288)。因此 116 在此记录中是对应 H 股的东方财富市场编号，而不是布尔标志。没有找到 Ulist239 官方字段字典，故以来源内实证登记；单一独立正样本的范围限制、占位排除和不外推边界均记录在证据文件。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 份保留期成功 Ulist239 响应；每份 20/20 股票完整；逐次核对 601288 的 f192=116 与同记录 H 股代码/名称，并以官方 HKEX 名册和东方财富 secid 查询交叉验证；133 条无对应证券信息的占位记录排除",
+        "comparison_count": 7,
+        "matched_count": 7,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 133,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "20261117-ulist239-f193-h-share-name",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f193"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f193",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "h_share_name",
+      "meaning": "A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应证券字段来源内实证",
+      "rationale": "保留期内 7 份完整 Ulist239 响应中，601288 的 f193 均为农业银行。该记录同时给出 f191=01288、f192=116；东方财富官方港股行情页的证券标题为农业银行(01288)，且官方行情 API secid=116.01288 返回代码 01288、简称农业银行。故 f193 在该完整来源路径中是对应 H 股证券名称。其余 133 条记录为无对应证券信息的占位，不作反例；不外推其他名称或来源。",
+      "sample": {
+        "scope": "2026-11-02 至 2026-11-10 的 7 份保留期成功 Ulist239 响应；每份 20/20 股票完整；逐次核对 601288 的 f193 与东方财富官方 01288 行情页及 secid 查询返回的名称；133 条无对应证券信息的占位记录排除",
+        "comparison_count": 7,
+        "matched_count": 7,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 133,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    }
+  ]
+}

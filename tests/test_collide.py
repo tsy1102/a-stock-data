@@ -1070,6 +1070,14 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
                         "meaning": "最近解禁日期",
                         "unit": "日期",
                     },
+                    {
+                        "source": "ZHB-tipinfo",
+                        "code": "[14]",
+                        "status": "verified",
+                        "canonical": "[14]",
+                        "meaning": "对应限售股上市流通事件的股份数量",
+                        "unit": "万股",
+                    },
                 ],
                 "mappings": [],
             }
@@ -1103,8 +1111,10 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert ("zhb", "stat2.high_52w") in context["anchors"]
     assert ("zhb", "tipinfo.dt_date_recent") in context["verified"]
     assert ("zhb", "tipinfo.unlock_date") in context["verified"]
+    assert ("zhb", "tipinfo.unlock_shares_wan") in context["verified"]
     assert ("zhb", "tipinfo.dt_date_recent") in context["verified_target_exclusions"]
     assert ("zhb", "tipinfo.unlock_date") in context["verified_target_exclusions"]
+    assert ("zhb", "tipinfo.unlock_shares_wan") in context["verified_target_exclusions"]
 
     store = {
         field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
@@ -1113,6 +1123,7 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
             "zhb.stat2.high_52w",
             "zhb.tipinfo.dt_date_recent",
             "zhb.tipinfo.unlock_date",
+            "zhb.tipinfo.unlock_shares_wan",
         )
     }
     left_ids, right_ids = collide.select_collision_fields(
@@ -1127,6 +1138,7 @@ def test_zhb_endpoint_verified_fields_map_to_nested_runtime_paths(monkeypatch, t
     assert left_ids == []
     assert "zhb.stat.pe_lyr" not in right_ids
     assert "zhb.stat2.high_52w" in right_ids
+    assert "zhb.tipinfo.unlock_shares_wan" in right_ids
 
     date_store = {
         field_id: {

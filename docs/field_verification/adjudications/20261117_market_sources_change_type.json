@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_market_sources_change_type_evidence.md",
+  "evidence_sha256": "a358ba3458e89d6728f738fffa9230589357066bcc51fd22cb30c34af0b663ae",
+  "decisions": [
+    {
+      "id": "20261117-market-sources-change-type",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "change_type"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "change_type",
+        "meaning": "变动类型",
+        "unit": ""
+      },
+      "canonical": "change_type",
+      "meaning": "盘口异动类型请求代码回显。market_sources.stock_changes_8201 采集单元固定回显字符串 8201，项目代码将其标为“火箭发射”；这是查询类别标记，不是上游逐条行情记录独立返回的业务字段。其他 type 代码未由本次证据确认。",
+      "unit": "字符串代码",
+      "section": "20261117 单源适配器参数回显核验",
+      "rationale": "项目适配器把 change_type 参数写入请求参数 type，并在构造每条结果记录时原样回填 change_type；capture_catalog 将当前采集单元明确绑定为 get_stock_changes(8201)。保留期 2026-11-16 raw 样本 567/567 条记录的值均为字符串 8201，核实了参数回显且无反例。适配器注释标记 8201 为火箭发射，东方财富官方盘口异动页也列出火箭发射类别；该页面没有公开数值代码映射，因此只确认当前项目采集单元的固定标记，不外推其他代码或官方完整枚举。来源实际日期仍为 null，本裁决不使用记录 date 推断数据日，也不涉及跨源映射。",
+      "sample": {
+        "scope": "docs/field_verification/20261116/raw_market_sources.json 的 stock_changes_8201[].change_type；对比每条适配器输出值与 get_stock_changes(8201) 固定请求参数，来源实际日期未确认。",
+        "comparison_count": 567,
+        "matched_count": 567,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "observation_count": 567,
+        "stock_count": 275
+      }
+    }
+  ]
+}

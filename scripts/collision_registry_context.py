@@ -20,12 +20,13 @@ _ZHB_RUNTIME_PATH_PREFIXES = {
 }
 
 # tipinfo's main dictionary uses the original TDX column positions for these
-# two fields, while the capture adapter exposes named convenience keys. Keep
-# that exact parser mapping here so verified source identities exclude their
+# fields, while the capture adapter exposes named convenience keys. Keep the
+# exact parser mappings here so verified source identities exclude their
 # runtime aliases from cracking targets and semantic-review queues.
 _ZHB_RUNTIME_FIELD_ALIASES = {
     ("ZHB-tipinfo", "[10]"): "tipinfo.dt_date_recent",
     ("ZHB-tipinfo", "[13]"): "tipinfo.unlock_date",
+    ("ZHB-tipinfo", "[14]"): "tipinfo.unlock_shares_wan",
 }
 
 

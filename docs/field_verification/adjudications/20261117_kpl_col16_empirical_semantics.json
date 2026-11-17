@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_kpl_col16_empirical_semantics.md",
+  "evidence_sha256": "14fd0f88244b7663c3eb47d04471f45ba681892786248564b219c3662682e9dd",
+  "decisions": [
+    {
+      "id": "20261117-kpl-col16-intraday-limit-break-flag",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "raw_columns.col_16"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "has_intraday_limit_up_break",
+      "meaning": "涨停个股在当日是否曾发生炸板的二值状态标记（1=东财官方涨停股池“炸板次数”>0，0=炸板次数=0）。2026-11-12、11-16、11-17 三个完整数据日全量逐股对照 106/106 命中；不代表炸板次数或具体时点，也不等同于进入东财“炸板股池”。开盘啦未公开该原始列标签，这是实证释义，不是 KPL 官方接口契约。",
+      "unit": "无量纲（0/1）",
+      "section": "2026-11-17 KPL raw_columns.col_16 实证语义定案",
+      "rationale": "项目适配器将 KPL DailyLimitPerformance 原始 row[16] 精确保留为本字段。2026-11-12、11-16、11-17 东财官方涨停股池页面均已展开至无更多数据；每个页面股票代码集合、行数与同日 KPL raw 完全相同。全体 106 条中 KPL col_16 均为 0/1，并精确满足col_16 == int(东财“炸板次数”>0)，无反例。次数大于 1 的记录证明 col_16 是状态而非次数，故不创建数值映射。此前 Push2EX 请求日对照因没有来源实际日期回显，只作诊断，不计入本次样本。KPL 官方公开资料未释义该 raw 列，结论仅为来源内经验语义，不是 KPL API 契约。",
+      "sample": {
+        "scope": "KPL raw_columns.col_16 与东财官方涨停股池“炸板次数”全量页面逐股对照；来源日期 2026-11-12、2026-11-16、2026-11-17；逐值见同目录 CSV。",
+        "comparison_count": 106,
+        "matched_count": 106,
+        "counterexample_count": 0,
+        "stock_count": 94
+      }
+    }
+  ]
+}

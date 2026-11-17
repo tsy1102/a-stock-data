@@ -35,11 +35,11 @@
 - 2026-11-16 当日 KPL 涨停明细中 18 行 `col_16=1`；东财另一个 `limit_broken_pool` 集合与这些股票无交集。该观察说明不能把 `col_16` 直接等同于该池成员；它与已验证的涨停池 `broken_count`（官方页面“炸板次数”）关系更直接。现有东财裁决文件已记录该字段路径、官方页面标签与采集路径。[Push2EX `broken_count` 官方页面观测记录](../adjudications/public_web/20261114_public_web_research.md)
 - KPL 官方主页只提供产品介绍和 App 入口，没有公开 `DailyLimitPerformance` 的字段字典；已查阅的第三方 [KPL 接口说明](https://github.com/LowellLee/kpl/blob/master/KPL%E6%8E%A5%E5%8F%A3.md)说明了该接口和 `PidType` 梯队，但没有定义第 16 列。因此它只能支持接口识别，不能当作 KPL 官方字段释义。[开盘啦官网](https://www.kaipanla.com/)
 
-**结论：**东财官方历史页面已在 2026-11-16 核验 6 只股票的“炸板次数”，这 6 例均与 KPL 第 16 列的 0/1 指示关系一致；另有 216 组按 Push2EX 请求日配对的历史探索数据，四天均无反例，但 Push2EX 未回显来源日期，不能把全部 216 组当成正式同日证据。当前最强的候选解释是：KPL 第 16 列表示“当日炸板次数是否大于零”的二值状态，仍需将官方页面值与 KPL 精确原始路径建立完整可复核对应。KPL 官方未公开该字段标签，且 `field_registry.json` 尚无精确身份 `开盘啦(kpl_limit_up_detail)::raw_columns.col_16`；已有 `开盘啦(kpl)::IsBoom` 与 `开盘啦(kpl)::limit_up_broken_count` 是其他完整来源路径，不能按名字合并。故本轮不改主字典、不建跨源映射。后续需补登记精确路径，并用来源契约或覆盖全部可比 KPL 样本的官方页面观测按单源实证流程裁决。
+**阶段结论（早期复核状态）：**当时只有 6 只股票的官方页面抽核，且尚未登记 `开盘啦(kpl_limit_up_detail)::raw_columns.col_16`；因此当时没有定案。后续完整页面复核与登记结果见本文末尾“收盘后 KPL `col_16` 定案与回归”，该更新取代本段的待办状态。
 
 ## 本轮定案结果
 
-- 主字典无新增字段定案：KPH 跨源候选缺少官方契约且仅有一日合格样本；KPL 第 16 列形成稳定的二值关系证据，但精确 KPL 官方字段释义和注册路径仍缺失；ETF 日期已由官方接口明确解释，但不属于当前注册表字段身份。
+- 截至这轮早期研究，主字典没有新增字段定案：KPH 跨源候选缺少官方契约且仅有一日合格样本；KPL 第 16 列的完整路径和全量官方页面对照尚未补齐；ETF 日期已由官方接口明确解释，但不属于当前注册表字段身份。KPL 结论后来已按下方续研完成来源内定案。
 - 下一轮如要继续 KPH 映射，优先补可将 KPH 原始字段与官方产品定义直接对应的证据；仅增加相同来源日期的重复采集不能替代独立日期样本或接口契约。
 
 ## 授权补采后的 `ulist239.f149` 候选复核
@@ -101,4 +101,12 @@
 
 - `东财-ulist239(np/get)::f11` 与已验证的 `腾讯(qt.gtimg)::[80]`“涨速（%）”有较强的跨源实证线索：7 个来源日期确认的交易日、140 对样本，122 对有信息量；80 对精确相等，Pearson 0.987、Spearman 0.9721。逐对值、两侧时间戳和 raw 哈希见 [`research/20261117_ulist239_f11_tencent_candidate_audit.csv`](../research/20261117_ulist239_f11_tencent_candidate_audit.csv)。但时间戳差异较大，且东方财富公开页面的 `zs` 标签没有映射到 Ulist 的 `f11`。网页研究见 [`adjudications/public_web/20261117_public_web_research.md`](../adjudications/public_web/20261117_public_web_research.md)；候选 `cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc` 已记为 `needs_external_evidence`。主字典不变，待补的是 `ulist.np/get` 精确响应键到官方涨速标签的映射或同日官方逐值样本。
 - `东财-ulist239(np/get)::f63` 在 2026-11-06、09、10 的 60 条可比样本中均为正，但没有与同日 `em_fund_flow f135–f149` 任一字段精确相等；其与成交额的比例只作为探索性量级指标，不确认单位或含义。11 月 10 日东方财富贵州茅台资金流页面显示的主力净流入与 `f62` 在页面显示精度内吻合，`f63` 不对应页面显示的主力/分档指标。逐值材料见 [`research/20261117_ulist239_f63_recent_window_audit.csv`](../research/20261117_ulist239_f63_recent_window_audit.csv)。`f63` 继续保持 `unverified`，没有更新主字典。
-- Chrome 浏览器核验尝试在工具安全层被终止：工具无法充分确认当前浏览器 URL，并要求停止本轮 Computer Use。没有绕过安全限制。本节网页结论以已读取的公开官方页面/页面脚本信息及历史留存样本为研究线索；Chrome 页内逐值复核仍未完成，因此不据此作字段语义定案。
+- Chrome 浏览器核验尝试在工具安全层被终止：工具无法充分确认当前浏览器 URL，并要求停止本轮 Computer Use。没有绕过安全限制。本节当时的网页结论以已读取的公开官方页面/页面脚本信息及历史留存样本为研究线索；后续 KPL 全量页面核验另见下文。
+
+## 2026-11-17 收盘后采集、KPL `col_16` 定案与回归
+
+- 本次单独运行采集的实际记录是 15:36:09 启动、`market_phase=closed`、`data_date=20261117`，耗时 450.9 秒；因此按运行记录归为收盘后采集。ZHB 返回 20/20，但来源实际日期是 2026-11-16；东财 Push2、K 线、资金流、Ulist 等端点都被既有 `ip_banned` 熔断器在请求前阻止（`attempts=0`），没有重试。KPL `DailyLimitPerformance` 返回 37 行，来源日期为 2026-11-17。完整运行状态见 [`meta.json`](meta.json)。
+- 在[东财官方涨停股池](https://quote.eastmoney.com/ztb/detail)将日期分别选为 2026-11-12、11-16、11-17，并展开至“无更多数据”。三个完整页面分别为 37、32、37 行，股票代码集合和同日 KPL raw 完全相同；106 条逐股记录均满足 `KPL col_16 == int(炸板次数 > 0)`，没有反例，94 只不同股票。`col_16` 仅为 0/1；炸板次数直接相等只有 65/106，因此不能把它登记为次数。
+- 按此证据将精确来源路径 `开盘啦(kpl_limit_up_detail)::raw_columns.col_16` 定案为当日是否曾发生炸板的二值状态（无量纲 0/1），canonical 为 `has_intraday_limit_up_break`。KPL 未公开原始列标签；这是来源内实证释义，不是 KPL 官方接口契约。此前 216 组 KPL/Push2EX 请求日配对仍因 Push2EX 来源实际日期未确认而仅作探索，不计入正式样本；未建立跨源数值映射。逐值、网页时间和 KPL raw 摘要见 [`adjudications/20261117_kpl_col16_empirical_semantics.md`](../adjudications/20261117_kpl_col16_empirical_semantics.md)、[`adjudications/20261117_kpl_col16_samples.csv`](../adjudications/20261117_kpl_col16_samples.csv) 与 [`adjudications/20261117_kpl_col16_empirical_semantics.json`](../adjudications/20261117_kpl_col16_empirical_semantics.json)。
+- 重新碰撞发现 `ZHB-tipinfo::[14]` 虽已验证为限售股上市流通数量（万股），但适配器键 `tipinfo.unlock_shares_wan` 未映射回该精确路径，仍以未知目标产生拟合候选。修复 [`scripts/collision_registry_context.py`](../../../scripts/collision_registry_context.py) 的原始列到运行时键映射并增加回归用例后，该键作为已验证锚而不再成为破解目标。
+- 最终 7 日报告覆盖 2026-11-09 至 11-17，完整性为 `complete`；主攻未知目标由 145 先因 KPL 定案降为 144，再因 ZHB 已验证别名回连降为 143。最终报告为 [`after_kpl_col16_and_zhb_tipinfo14_alias/20261117_collision_report.md`](after_kpl_col16_and_zhb_tipinfo14_alias/20261117_collision_report.md)：L1/L1-C 为 0，L4 为 3，未发现其他可据本轮数据直接定案的候选。

@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_ulist239_h_share_identity_scope_addendum.md",
+  "evidence_sha256": "a42cb71ab837b05b2cb431976ce8537e81fe9d3ec0701d7198a625a441d454b7",
+  "decisions": [
+    {
+      "id": "20261117-ulist239-f191-h-share-code-date-scope",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f191"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "h_share_code",
+        "meaning": "A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。",
+        "unit": ""
+      },
+      "canonical": "h_share_code",
+      "meaning": "A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应字段日期资格补记",
+      "rationale": "补记日期资格，不改变 f191 语义：正式实证仅计入 2026-11-05、11-06、11-09、11-10 四个 f297 与 meta.data_date 一致的来源日；601288 的 f191=01288 四次均吻合 HKEX 官方 A/H 名册。三份 f297 缺失归档仅作静态结构参考，不计入正式样本。占位行与日期不明行的排除范围及原始 SHA-256 见本次 evidence file。",
+      "sample": {
+        "scope": "2026-11-05、11-06、11-09、11-10 四个来源日期合格 Ulist239 数据日；每份 20/20 股票完整；比较 601288 f191 与 HKEX 官方 601288↔01288 A/H 名册；76 条无对应证券信息的占位行及 60 条来源日期不明观察排除",
+        "comparison_count": 4,
+        "matched_count": 4,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 136,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "20261117-ulist239-f192-h-share-market-code-date-scope",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f192"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "h_share_market_code",
+        "meaning": "A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。",
+        "unit": ""
+      },
+      "canonical": "h_share_market_code",
+      "meaning": "A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应字段日期资格补记",
+      "rationale": "补记日期资格，不改变 f192 语义：正式实证仅计入 2026-11-05、11-06、11-09、11-10 四个 f297 与 meta.data_date 一致的来源日；601288 的 f192=116 四次均与同记录 01288/农业银行配套。HKEX 名册及东方财富 secid=116.01288 的官方核对仍支持 116 为当前观察到的 H 股市场编号。三份 f297 缺失归档仅作静态结构参考，不计入正式样本；本次不外推其他编号或占位规则。",
+      "sample": {
+        "scope": "2026-11-05、11-06、11-09、11-10 四个来源日期合格 Ulist239 数据日；每份 20/20 股票完整；比较 601288 f192=116 与同记录 f191/f193 及官方 A/H 身份；76 条无对应证券信息的占位行及 60 条来源日期不明观察排除",
+        "comparison_count": 4,
+        "matched_count": 4,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 136,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "20261117-ulist239-f193-h-share-name-date-scope",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f193"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "h_share_name",
+        "meaning": "A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。",
+        "unit": ""
+      },
+      "canonical": "h_share_name",
+      "meaning": "A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。",
+      "unit": "",
+      "section": "2026-11-17 Ulist239 H 股对应字段日期资格补记",
+      "rationale": "补记日期资格，不改变 f193 语义：正式实证仅计入 2026-11-05、11-06、11-09、11-10 四个 f297 与 meta.data_date 一致的来源日；601288 的 f193=农业银行四次均与官方东方财富 01288 行情页及 secid 查询返回名称一致。三份 f297 缺失归档仅作静态结构参考，不计入正式样本。",
+      "sample": {
+        "scope": "2026-11-05、11-06、11-09、11-10 四个来源日期合格 Ulist239 数据日；每份 20/20 股票完整；比较 601288 f193 与东方财富官方 01288 页面和 secid 查询的证券简称；76 条无对应证券信息的占位行及 60 条来源日期不明观察排除",
+        "comparison_count": 4,
+        "matched_count": 4,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 136,
+        "observation_count": 140,
+        "stock_count": 1
+      }
+    }
+  ]
+}

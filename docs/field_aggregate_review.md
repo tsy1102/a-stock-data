@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 145 个 code；聚合定义不完整 184 个 code；疑似合并文本 525 条逐源记录。
+> 聚合歧义 148 个 code；聚合定义不完整 181 个 code；疑似合并文本 530 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1720,32 +1720,32 @@
 | 东财-push2(stock/get) · `f190` | f190 | 每股未分配利润 | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f190` | f190 | — | — | `unverified` |
 
-### `f191` — incomplete
+### `f191` — ambiguous
 
-聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f191` | f191 | 委比 | % | `verified` |
-| 东财-ulist239(np/get) · `f191` | f191 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | — | `verified` |
 
-### `f192` — incomplete
+### `f192` — ambiguous
 
-聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f192` | f192 | 委差 | 手 | `verified` |
-| 东财-ulist239(np/get) · `f192` | f192 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f192` | h_share_market_code | A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。 | — | `verified` |
 
-### `f193` — incomplete
+### `f193` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f193` | f193 | — | — | `verified` |
-| 东财-ulist239(np/get) · `f193` | f193 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f193` | h_share_name | A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。 | — | `verified` |
 
 ### `f194` — incomplete
 
@@ -3587,6 +3587,9 @@
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 东财-ulist239(np/get) | `f133` | dividend_yield_lfy_observed | 股息率（%）；在本次保留的善水科技、万华化学、贵州茅台样本中，数值符合最近已实施完整年度现金分红/当日价格的 LFY-like 口径。东方财富整体算法会按分红期切换 TTM/LFY 并可含预案；特别股利及切换条件未由本字段样本充分确认。 | `verified` |
 | 东财-ulist239(np/get) | `f144` | f144 | 最新价/现价 | `verified` |
+| 东财-ulist239(np/get) | `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
+| 东财-ulist239(np/get) | `f192` | h_share_market_code | A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。 | `verified` |
+| 东财-ulist239(np/get) | `f193` | h_share_name | A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
 | 东财-ulist239(np/get) | `f231` | f231 | 有转债标志（0=无/3=有） | `verified` |
 | 东财-ulist239(np/get) | `f27` | f27 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；与同源 f13 为实证别名。 | `verified` |
 | 东财-ulist239(np/get) | `f46` | ulist239_parent_net_profit_yoy_growth_pct | 归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留） | `verified` |
@@ -3712,6 +3715,7 @@
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |
+| 市场源(market_sources) | `change_type` | change_type | 盘口异动类型请求代码回显。market_sources.stock_changes_8201 采集单元固定回显字符串 8201，项目代码将其标为“火箭发射”；这是查询类别标记，不是上游逐条行情记录独立返回的业务字段。其他 type 代码未由本次证据确认。 | `verified` |
 | 市场源(market_sources) | `dt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 市场源(market_sources) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
 | 市场源(market_sources) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
@@ -3734,6 +3738,7 @@
 | 开盘啦(kpl_limit_up_detail) | `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_15` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；不是 N 天 M 板标签中的窗口涨停次数 M | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `raw_columns.col_16` | has_intraday_limit_up_break | 涨停个股在当日是否曾发生炸板的二值状态标记（1=东财官方涨停股池“炸板次数”>0，0=炸板次数=0）。2026-11-12、11-16、11-17 三个完整数据日全量逐股对照 106/106 命中；不代表炸板次数或具体时点，也不等同于进入东财“炸板股池”。开盘啦未公开该原始列标签，这是实证释义，不是 KPL 官方接口契约。 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_19` | sector_code | 行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同） | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_20` | kpl_category_limit_up_stock_count | 同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_21` | price | 现价（元；数据日收盘后采集时对应当日收盘价） | `verified` |

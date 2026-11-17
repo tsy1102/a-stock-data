@@ -11,6 +11,10 @@
 *.cfg text eol=lf
 *.csv text eol=lf
 
+# These hash-locked evidence pages use Markdown's two-space hard-break syntax.
+docs/field_verification/adjudications/20261117_ulist239_h_share_identity_evidence.md whitespace=-blank-at-eol
+docs/field_verification/adjudications/20261117_ulist239_h_share_identity_scope_addendum.md whitespace=-blank-at-eol
+
 # 二进制文件不做转换
 *.pyc binary
 *.db binary

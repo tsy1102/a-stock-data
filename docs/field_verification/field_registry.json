@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-17",
+    "updated": "2026-11-18",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -25,18 +25,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 2,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 501,
+      "registry_status_only_single_source": 499,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 966,
-      "verified": 1554,
+      "unverified": 964,
+      "verified": 1556,
       "verified_by_empirical_addendum": 193,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
-      "verified_by_source_contract": 417
+      "verified_by_source_contract": 419
     },
     "updated_at": "2026-11-15"
   },
@@ -14591,18 +14591,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f11",
-      "meaning": "",
-      "unit": "",
+      "canonical": "5分钟涨跌幅",
+      "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f110",
@@ -17376,18 +17374,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f22",
-      "meaning": "",
-      "unit": "",
+      "canonical": "3分钟涨速",
+      "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f220",
@@ -45681,6 +45677,12 @@
       "东财-ulist239(np/get)"
     ],
     "listing_board_type": [
+      "东财-ulist239(np/get)"
+    ],
+    "5分钟涨跌幅": [
+      "东财-ulist239(np/get)"
+    ],
+    "3分钟涨速": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -184120,15 +184122,16 @@
       "code": "f11",
       "identity": "东财-ulist239(np/get)::f11",
       "path": "f11",
-      "canonical": "f11",
-      "meaning": "",
-      "unit": "",
+      "canonical": "5分钟涨跌幅",
+      "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem mapping for 涨跌幅_5分钟 (fid f11); AB5MinChangePercent configuration; getListQuoteNPList ulist.np/get request @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -184138,6 +184141,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261118-ulist239-f11-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261118-ulist239-f11-source-contract"
         ]
       },
       "reference_evidence": [
@@ -184148,6 +184157,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 东方财富网官方行情中心前端 · quote.eastmoney.com/center/static/build/index.js#QuoteItem mapping for 涨跌幅_5分钟 (fid f11); AB5MinChangePercent configuration; getListQuoteNPList ulist.np/get request @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+          "canonical": "5分钟涨跌幅",
+          "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-18：20261118-ulist239-f11-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261118-ulist239-f11-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem mapping for 涨跌幅_5分钟 (fid f11); AB5MinChangePercent configuration; getListQuoteNPList ulist.np/get request",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f11",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "5分钟涨跌幅",
+              "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -184162,7 +184200,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-ulist239-f11-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_ulist239_f11_f22_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f11",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "5分钟涨跌幅",
+              "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+              "unit": "%"
+            }
+          },
+          "rationale": "项目 collect_ulist239 请求官方 api/qt/ulist.np/get 并将 data.diff 中的原始键直接保存，故路径 f11 精确对应接口响应键。东方财富官方行情中心前端脚本的 QuoteItem.涨跌幅_5分钟 明确引用 fid f11，AB5MinChangePercent 模块也以 f11 排序；同一脚本的 getListQuoteNPList 调用正是 ulist.np/get。项目保留的 2026-11-17 快照 20/20 行均含 f11，支持路径核对。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f11_f22_source_contract.md。本裁决仅确认该 Ulist 路径的来源内语义，不创建跨源映射。",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+            "path": "quote.eastmoney.com/center/static/build/index.js",
+            "locator": "QuoteItem mapping for 涨跌幅_5分钟 (fid f11); AB5MinChangePercent configuration; getListQuoteNPList ulist.np/get request",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -192131,15 +192205,16 @@
       "code": "f22",
       "identity": "东财-ulist239(np/get)::f22",
       "path": "f22",
-      "canonical": "f22",
-      "meaning": "",
-      "unit": "",
+      "canonical": "3分钟涨速",
+      "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "source contract: 东方财富网官方行情中心前端及金融终端 FAQ · quote.eastmoney.com/center/static/build/index.js; 金融终端常见问题第21问#QuoteItem mapping for 涨速_3分钟 (fid f22); ABSpeed configuration; FAQ answer says default list speed is 3 minutes @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b; FAQ page accessed 2026-11-18"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -192149,6 +192224,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261118-ulist239-f22-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261118-ulist239-f22-source-contract"
         ]
       },
       "reference_evidence": [
@@ -192159,6 +192240,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 东方财富网官方行情中心前端及金融终端 FAQ · quote.eastmoney.com/center/static/build/index.js; 金融终端常见问题第21问#QuoteItem mapping for 涨速_3分钟 (fid f22); ABSpeed configuration; FAQ answer says default list speed is 3 minutes @ 2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b; FAQ page accessed 2026-11-18",
+          "canonical": "3分钟涨速",
+          "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-18：20261118-ulist239-f22-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261118-ulist239-f22-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端及金融终端 FAQ",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b; FAQ page accessed 2026-11-18",
+            "path": "quote.eastmoney.com/center/static/build/index.js; 金融终端常见问题第21问",
+            "locator": "QuoteItem mapping for 涨速_3分钟 (fid f22); ABSpeed configuration; FAQ answer says default list speed is 3 minutes",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f22",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "3分钟涨速",
+              "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -192173,7 +192283,43 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-ulist239-f22-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_ulist239_f11_f22_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f22",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "3分钟涨速",
+              "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+              "unit": "%"
+            }
+          },
+          "rationale": "项目 collect_ulist239 请求官方 api/qt/ulist.np/get 并将 data.diff 中的原始键直接保存，故路径 f22 精确对应接口响应键。东方财富官方行情中心前端脚本的 QuoteItem.涨速_3分钟 明确引用 fid f22，ABSpeed 模块以 f22 排序；同一脚本的 getListQuoteNPList 调用正是 ulist.np/get。东方财富金融终端官方 FAQ 第 21 问确认行情列表默认涨速为3分钟。项目保留的 2026-11-17 快照 20/20 行均含 f22，支持路径核对。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f11_f22_source_contract.md。本裁决仅确认该 Ulist 路径的来源内语义，不创建跨源映射。",
+          "source_contract": {
+            "authority": "东方财富网官方行情中心前端及金融终端 FAQ",
+            "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b; FAQ page accessed 2026-11-18",
+            "path": "quote.eastmoney.com/center/static/build/index.js; 金融终端常见问题第21问",
+            "locator": "QuoteItem mapping for 涨速_3分钟 (fid f22); ABSpeed configuration; FAQ answer says default list speed is 3 minutes",
+            "url": "https://quote.eastmoney.com/center/static/build/index.js"
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

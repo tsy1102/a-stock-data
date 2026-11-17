@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-18",
+  "decisions": [
+    {
+      "id": "20261118-ulist239-f11-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f11"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f11",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "5分钟涨跌幅",
+      "meaning": "东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
+      "rationale": "项目 collect_ulist239 请求官方 api/qt/ulist.np/get 并将 data.diff 中的原始键直接保存，故路径 f11 精确对应接口响应键。东方财富官方行情中心前端脚本的 QuoteItem.涨跌幅_5分钟 明确引用 fid f11，AB5MinChangePercent 模块也以 f11 排序；同一脚本的 getListQuoteNPList 调用正是 ulist.np/get。项目保留的 2026-11-17 快照 20/20 行均含 f11，支持路径核对。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f11_f22_source_contract.md。本裁决仅确认该 Ulist 路径的来源内语义，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富网官方行情中心前端",
+        "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+        "path": "quote.eastmoney.com/center/static/build/index.js",
+        "locator": "QuoteItem mapping for 涨跌幅_5分钟 (fid f11); AB5MinChangePercent configuration; getListQuoteNPList ulist.np/get request",
+        "url": "https://quote.eastmoney.com/center/static/build/index.js"
+      }
+    },
+    {
+      "id": "20261118-ulist239-f22-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f22"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f22",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "3分钟涨速",
+      "meaning": "东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。",
+      "unit": "%",
+      "rationale": "项目 collect_ulist239 请求官方 api/qt/ulist.np/get 并将 data.diff 中的原始键直接保存，故路径 f22 精确对应接口响应键。东方财富官方行情中心前端脚本的 QuoteItem.涨速_3分钟 明确引用 fid f22，ABSpeed 模块以 f22 排序；同一脚本的 getListQuoteNPList 调用正是 ulist.np/get。东方财富金融终端官方 FAQ 第 21 问确认行情列表默认涨速为3分钟。项目保留的 2026-11-17 快照 20/20 行均含 f22，支持路径核对。详细证据见 docs/field_verification/adjudications/20261118_ulist239_f11_f22_source_contract.md。本裁决仅确认该 Ulist 路径的来源内语义，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富网官方行情中心前端及金融终端 FAQ",
+        "revision": "2026-11-18 captured JavaScript bundle UTF-8 SHA-256 1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b; FAQ page accessed 2026-11-18",
+        "path": "quote.eastmoney.com/center/static/build/index.js; 金融终端常见问题第21问",
+        "locator": "QuoteItem mapping for 涨速_3分钟 (fid f22); ABSpeed configuration; FAQ answer says default list speed is 3 minutes",
+        "url": "https://quote.eastmoney.com/center/static/build/index.js"
+      }
+    }
+  ]
+}

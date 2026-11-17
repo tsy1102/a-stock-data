@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 149 个 code；聚合定义不完整 180 个 code；疑似合并文本 532 条逐源记录。
+> 聚合歧义 149 个 code；聚合定义不完整 180 个 code；疑似合并文本 534 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3582,6 +3582,7 @@
 | 东财-push2ex | `zttj.ct` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-push2ex | `zttj.days` | zttj.days / zttj.ct | N天M板 | `verified` |
 | 东财-ulist239(np/get) | `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
+| 东财-ulist239(np/get) | `f11` | 5分钟涨跌幅 | 东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。 | `verified` |
 | 东财-ulist239(np/get) | `f114` | f114 | 市盈率(静态/年报 LYR) | `verified` |
 | 东财-ulist239(np/get) | `f13` | f13 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；保留期样本与 f27 同值。 | `verified` |
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
@@ -3592,6 +3593,7 @@
 | 东财-ulist239(np/get) | `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
 | 东财-ulist239(np/get) | `f192` | h_share_market_code | A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。 | `verified` |
 | 东财-ulist239(np/get) | `f193` | h_share_name | A 股记录所关联 H 股证券的简称。当前经核对样本为农业银行；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
+| 东财-ulist239(np/get) | `f22` | 3分钟涨速 | 东方财富金融终端默认行情列表涨速字段对应的3分钟涨速，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。 | `verified` |
 | 东财-ulist239(np/get) | `f231` | f231 | 有转债标志（0=无/3=有） | `verified` |
 | 东财-ulist239(np/get) | `f27` | f27 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；与同源 f13 为实证别名。 | `verified` |
 | 东财-ulist239(np/get) | `f46` | ulist239_parent_net_profit_yoy_growth_pct | 归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留） | `verified` |

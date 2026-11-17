@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2635；日常来源路径 2491：unverified 855、candidate 1、conflict 20、disproved 96；历史来源路径 144。
+> 注册字段路径 2635；日常来源路径 2491：unverified 850、candidate 1、conflict 20、disproved 96；历史来源路径 144。
 > 另有 146 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 713 |
-| 含义栏有文本（仍未验证） | 142 |
+| 含义栏为空/占位 | 710 |
+| 含义栏有文本（仍未验证） | 140 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 296 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 291 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `manual_semantic_retraction` | 2 | 按注册表原始状态判定代码保留 |
 | `matched` | 58 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
@@ -60,7 +60,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（855）
+## 三、待破解字段（850）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -284,7 +284,6 @@
 | 东财-push2(stock/get) | `f123` | f123 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f124` | f124 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f125` | f125 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
-| 东财-push2(stock/get) | `f126` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f129` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f13` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f130` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -299,7 +298,6 @@
 | 东财-push2(stock/get) | `f154` | f154 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f155` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2(stock/get) | `f157` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-push2(stock/get) | `f161` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f17` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f172` | f172 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.9.1 push2 stock/get 全字段破解（114 字段实测，项目只用 19 个） |
 | 东财-push2(stock/get) | `f178` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -322,7 +320,6 @@
 | 东财-push2(stock/get) | `f4` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f40` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f41` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f49` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f53` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 东财-push2(stock/get) | `f54` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 东财-push2(stock/get) | `f56` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
@@ -897,8 +894,6 @@
 | 百度(baidu) | `ma5avgprice` | ma5avgprice/ma10avgprice/ma20avgprice | 待破解 | — | 含义栏为空/占位 | matched | 12.8.16 百度股市通（K线带MA）❌→⏸️ |
 | 腾讯(qt.gtimg) | `[29]` | — | 最近逐笔成交 | - | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 | 腾讯(qt.gtimg) | `[55]` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 腾讯(qt.gtimg) | `[7]` | [7] | 外盘 | 手 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
-| 腾讯(qt.gtimg) | `[8]` | [8] | 内盘 | 手 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 | 财联社(cls) | `catalyst` | catalyst | 催化剂描述 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 | 财联社(cls) | `code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `cur_heat` | rank / cur_heat | 当前热度排名 / 热度值 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |

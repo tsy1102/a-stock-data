@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+  "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+  "decisions": [
+    {
+      "id": "20261117-tencent-outer-volume-7",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[7]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "[7]",
+        "meaning": "外盘",
+        "unit": "手"
+      },
+      "canonical": "[7]",
+      "meaning": "外盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 腾讯外盘内盘网页与响应逐值核对",
+      "rationale": "腾讯贵州茅台和农业银行页面均明确标注外盘，单位上下文为手；同日 qt.gtimg.cn 原始响应的精确路径 [7] 分别为 22973 和 2676576，均与页面逐值相等。两只股票的 [7]+[8] 均等于页面总成交量。将源内含义定为外盘成交量、单位手；不推断逐笔分类算法或跨源映射。",
+      "sample": {
+        "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2,
+        "source_date_count": 1,
+        "page_value_match_count": 2,
+        "total_volume_sum_match_count": 2
+      }
+    },
+    {
+      "id": "20261117-tencent-inner-volume-8",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[8]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "[8]",
+        "meaning": "内盘",
+        "unit": "手"
+      },
+      "canonical": "[8]",
+      "meaning": "内盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 腾讯外盘内盘网页与响应逐值核对",
+      "rationale": "腾讯贵州茅台和农业银行页面均明确标注内盘，单位上下文为手；同日 qt.gtimg.cn 原始响应的精确路径 [8] 分别为 16994 和 2184929，均与页面逐值相等。两只股票的 [7]+[8] 均等于页面总成交量。将源内含义定为内盘成交量、单位手；不推断逐笔分类算法或跨源映射。",
+      "sample": {
+        "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 2,
+        "source_date_count": 1,
+        "page_value_match_count": 2,
+        "total_volume_sum_match_count": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_push2_f126_dividend_yield_evidence.md",
+  "evidence_sha256": "8d912d4449550d51dcc4ae883231557d12db9c8136efadc128ae73c072b4f518",
+  "decisions": [
+    {
+      "id": "20261117-eastmoney-push2-f126-dividend-yield",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f126"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eastmoney_stock_get_dividend_yield",
+      "meaning": "东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值",
+      "unit": "%",
+      "section": "东方财富 stock/get f126 来源内释义核验",
+      "rationale": "项目 collect_push2 将东方财富官方 /api/qt/stock/get 响应 data 对象原样保存在 raw_push2.json 的 stocks[code].data 下。2026-11-17 官网观察中，贵州茅台和农业银行的 data.f126 分别为 1.93、3.42；同页 F10 分红融资指标均标为股息率，值、单位和官方计算口径逐只相符，且更新日期均为 2026-11-16。样本 2/2 命中且无反例。新采 ZHB 同日值仅作附加旁证。本裁决只覆盖东财 stock/get 的 f126 来源路径，不建立与 Tencent、Ulist239、ZHB 或其他端点的跨源映射；本轮失败并保留的旧 Push2 快照不计入样本。",
+      "sample": {
+        "scope": "2026-11-17 08:24:40 +08:00 直接核对东方财富官方 stock/get 接口和对应个股 F10 分红融资页；贵州茅台 600519 与农业银行 601288 两只股票、来源数据日均为 2026-11-16。完整比较表见 evidence_file 同名 CSV。新采 ZHB 数据仅为旁证，目标日 Push2 旧快照未计入。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "observation_count": 2,
+        "stock_count": 2,
+        "source_date_count": 1
+      }
+    }
+  ]
+}

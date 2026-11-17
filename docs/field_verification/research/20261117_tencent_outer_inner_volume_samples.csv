@@ -1,0 +1,3 @@
+data_date,stock_code,stock_name,page_url,response_url,quote_timestamp,web_total_volume_hand,web_outer_volume_hand,raw_field_6_total_volume_hand,raw_field_7_outer_volume_hand,web_inner_volume_hand,raw_field_8_inner_volume_hand,total_sum_matches
+20261116,600519,贵州茅台,https://gu.qq.com/sh600519/gp,https://qt.gtimg.cn/q=sh600519,20261116161453,39967,22973,39967,22973,16994,16994,true
+20261116,601288,农业银行,https://gu.qq.com/sh601288/gp,https://qt.gtimg.cn/q=sh601288,20261116161448,4861505,2676576,4861505,2676576,2184929,2184929,true

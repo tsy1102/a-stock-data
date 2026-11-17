@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 335,
+      "aggregate_status_scope_unresolved": 330,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 20,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 8,
-      "unverified": 975,
-      "verified": 1543,
-      "verified_by_empirical_addendum": 179,
+      "unverified": 970,
+      "verified": 1548,
+      "verified_by_empirical_addendum": 184,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 417
@@ -7224,12 +7224,11 @@
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -7404,13 +7403,12 @@
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
         "新浪(hq.sinajs)": "verified",
-        "腾讯(qt.gtimg)": "unverified"
+        "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs",
         "unit_incomplete"
       ]
@@ -15025,15 +15023,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -15933,16 +15933,16 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
+        "canonical_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "unit_incomplete"
       ]
     },
     {
@@ -18686,15 +18686,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -45866,6 +45868,21 @@
     ],
     "[13]": [
       "ZHB-tipinfo"
+    ],
+    "eastmoney_stock_get_outer_volume": [
+      "东财-push2(stock/get)"
+    ],
+    "eastmoney_stock_get_inner_volume": [
+      "东财-push2(stock/get)"
+    ],
+    "[7]": [
+      "腾讯(qt.gtimg)"
+    ],
+    "[8]": [
+      "腾讯(qt.gtimg)"
+    ],
+    "eastmoney_stock_get_dividend_yield": [
+      "东财-push2(stock/get)"
     ]
   },
   "mappings": [
@@ -161451,13 +161468,15 @@
       "code": "f126",
       "identity": "东财-push2(stock/get)::f126",
       "path": "f126",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "eastmoney_stock_get_dividend_yield",
+      "meaning": "东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值",
+      "unit": "%",
+      "section": "东方财富 stock/get f126 来源内释义核验",
+      "sections": [
+        "东方财富 stock/get f126 来源内释义核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -161467,10 +161486,61 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261117-eastmoney-push2-f126-dividend-yield"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_push2_f126_dividend_yield_evidence.md",
+        "evidence_sha256": "8d912d4449550d51dcc4ae883231557d12db9c8136efadc128ae73c072b4f518",
+        "sample": {
+          "scope": "2026-11-17 08:24:40 +08:00 直接核对东方财富官方 stock/get 接口和对应个股 F10 分红融资页；贵州茅台 600519 与农业银行 601288 两只股票、来源数据日均为 2026-11-16。完整比较表见 evidence_file 同名 CSV。新采 ZHB 数据仅为旁证，目标日 Push2 旧快照未计入。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "observation_count": 2,
+          "stock_count": 2,
+          "source_date_count": 1
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "东方财富 stock/get f126 来源内释义核验",
+          "canonical": "eastmoney_stock_get_dividend_yield",
+          "meaning": "东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-eastmoney-push2-f126-dividend-yield",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_push2_f126_dividend_yield_evidence.md",
+          "evidence_sha256": "8d912d4449550d51dcc4ae883231557d12db9c8136efadc128ae73c072b4f518",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_dividend_yield",
+              "meaning": "东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-17 08:24:40 +08:00 直接核对东方财富官方 stock/get 接口和对应个股 F10 分红融资页；贵州茅台 600519 与农业银行 601288 两只股票、来源数据日均为 2026-11-16。完整比较表见 evidence_file 同名 CSV。新采 ZHB 数据仅为旁证，目标日 Push2 旧快照未计入。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "observation_count": 2,
+            "stock_count": 2,
+            "source_date_count": 1
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f126",
@@ -161484,7 +161554,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-eastmoney-push2-f126-dividend-yield",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_push2_f126_dividend_yield.json",
+          "evidence_file": "adjudications/20261117_push2_f126_dividend_yield_evidence.md",
+          "evidence_sha256": "8d912d4449550d51dcc4ae883231557d12db9c8136efadc128ae73c072b4f518",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_dividend_yield",
+              "meaning": "东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目 collect_push2 将东方财富官方 /api/qt/stock/get 响应 data 对象原样保存在 raw_push2.json 的 stocks[code].data 下。2026-11-17 官网观察中，贵州茅台和农业银行的 data.f126 分别为 1.93、3.42；同页 F10 分红融资指标均标为股息率，值、单位和官方计算口径逐只相符，且更新日期均为 2026-11-16。样本 2/2 命中且无反例。新采 ZHB 同日值仅作附加旁证。本裁决只覆盖东财 stock/get 的 f126 来源路径，不建立与 Tencent、Ulist239、ZHB 或其他端点的跨源映射；本轮失败并保留的旧 Push2 快照不计入样本。",
+          "sample": {
+            "scope": "2026-11-17 08:24:40 +08:00 直接核对东方财富官方 stock/get 接口和对应个股 F10 分红融资页；贵州茅台 600519 与农业银行 601288 两只股票、来源数据日均为 2026-11-16。完整比较表见 evidence_file 同名 CSV。新采 ZHB 数据仅为旁证，目标日 Push2 旧快照未计入。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "observation_count": 2,
+            "stock_count": 2,
+            "source_date_count": 1
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -165196,13 +165310,15 @@
       "code": "f161",
       "identity": "东财-push2(stock/get)::f161",
       "path": "f161",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "eastmoney_stock_get_inner_volume",
+      "meaning": "内盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+      "sections": [
+        "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -165213,9 +165329,62 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-eastmoney-push2-f161-inner-volume"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+        "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+        "sample": {
+          "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "observation_count": 2,
+          "excluded_count": 1,
+          "stock_count": 2
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+          "canonical": "eastmoney_stock_get_inner_volume",
+          "meaning": "内盘成交量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-eastmoney-push2-f161-inner-volume",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+          "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_inner_volume",
+              "meaning": "内盘成交量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "observation_count": 2,
+            "excluded_count": 1,
+            "stock_count": 2
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f161",
@@ -165229,7 +165398,52 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-eastmoney-push2-f161-inner-volume",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_eastmoney_push2_volume_sides.json",
+          "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+          "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_inner_volume",
+              "meaning": "内盘成交量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目采集器将东方财富 stock/get 响应 data.f161 原样保留为精确来源路径。东方财富官方行情页在相同 2026-11-16 收盘行情下将对应值标为“内盘”；贵州茅台与农业银行的接口整数按页面显示精度换算后均吻合，且 f49+f161=f47。结论只确认该 Eastmoney 路径为内盘成交量、单位手，不确认逐笔主动买卖分类算法，也不建立到其他来源的映射。",
+          "sample": {
+            "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "observation_count": 2,
+            "excluded_count": 1,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -169022,13 +169236,15 @@
       "code": "f49",
       "identity": "东财-push2(stock/get)::f49",
       "path": "f49",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "eastmoney_stock_get_outer_volume",
+      "meaning": "外盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+      "sections": [
+        "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -169038,10 +169254,63 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261117-eastmoney-push2-f49-outer-volume"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+        "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+        "sample": {
+          "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "observation_count": 2,
+          "excluded_count": 1,
+          "stock_count": 2
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+          "canonical": "eastmoney_stock_get_outer_volume",
+          "meaning": "外盘成交量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-eastmoney-push2-f49-outer-volume",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+          "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_outer_volume",
+              "meaning": "外盘成交量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "observation_count": 2,
+            "excluded_count": 1,
+            "stock_count": 2
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f49",
@@ -169055,7 +169324,52 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-eastmoney-push2-f49-outer-volume",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_eastmoney_push2_volume_sides.json",
+          "evidence_file": "adjudications/20261117_eastmoney_push2_volume_sides.md",
+          "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "eastmoney_stock_get_outer_volume",
+              "meaning": "外盘成交量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目采集器将东方财富 stock/get 响应 data.f49 原样保留为精确来源路径。东方财富官方行情页在相同 2026-11-16 收盘行情下将对应值标为“外盘”；贵州茅台与农业银行的接口整数按页面显示精度换算后均吻合，且 f49+f161=f47。结论只确认该 Eastmoney 路径为外盘成交量、单位手，不确认逐笔主动买卖分类算法，也不建立到其他来源的映射。",
+          "sample": {
+            "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "observation_count": 2,
+            "excluded_count": 1,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -254081,14 +254395,15 @@
       "identity": "腾讯(qt.gtimg)::[7]",
       "path": "[7]",
       "canonical": "[7]",
-      "meaning": "外盘",
+      "meaning": "外盘成交量",
       "unit": "手",
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "sections": [
-        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
+        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
+        "2026-11-17 腾讯外盘内盘网页与响应逐值核对"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -254102,7 +254417,25 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-tencent-outer-volume-7"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+        "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+        "sample": {
+          "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2,
+          "source_date_count": 1,
+          "page_value_match_count": 2,
+          "total_volume_sum_match_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -254112,6 +254445,42 @@
           "unit": "手",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-17 腾讯外盘内盘网页与响应逐值核对",
+          "canonical": "[7]",
+          "meaning": "外盘成交量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-tencent-outer-volume-7",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+          "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+          "metadata_change": {
+            "before": {
+              "canonical": "[7]",
+              "meaning": "外盘",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[7]",
+              "meaning": "外盘成交量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "source_date_count": 1,
+            "page_value_match_count": 2,
+            "total_volume_sum_match_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -254130,7 +254499,53 @@
         "meaning": "T-1 日涨跌幅 (%)",
         "unit": "万元",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-tencent-outer-volume-7",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.json",
+          "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+          "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "[7]",
+            "meaning": "外盘",
+            "unit": "手"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[7]",
+              "meaning": "外盘",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[7]",
+              "meaning": "外盘成交量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "腾讯贵州茅台和农业银行页面均明确标注外盘，单位上下文为手；同日 qt.gtimg.cn 原始响应的精确路径 [7] 分别为 22973 和 2676576，均与页面逐值相等。两只股票的 [7]+[8] 均等于页面总成交量。将源内含义定为外盘成交量、单位手；不推断逐笔分类算法或跨源映射。",
+          "sample": {
+            "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "source_date_count": 1,
+            "page_value_match_count": 2,
+            "total_volume_sum_match_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",
@@ -254704,14 +255119,15 @@
       "identity": "腾讯(qt.gtimg)::[8]",
       "path": "[8]",
       "canonical": "[8]",
-      "meaning": "内盘",
+      "meaning": "内盘成交量",
       "unit": "手",
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "sections": [
-        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
+        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
+        "2026-11-17 腾讯外盘内盘网页与响应逐值核对"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -254725,7 +255141,25 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261117-tencent-inner-volume-8"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+        "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+        "sample": {
+          "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 2,
+          "source_date_count": 1,
+          "page_value_match_count": 2,
+          "total_volume_sum_match_count": 2
+        }
       },
       "reference_evidence": [
         {
@@ -254735,6 +255169,42 @@
           "unit": "手",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-17 腾讯外盘内盘网页与响应逐值核对",
+          "canonical": "[8]",
+          "meaning": "内盘成交量",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-17",
+          "status": "verified",
+          "adjudication_id": "20261117-tencent-inner-volume-8",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+          "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+          "metadata_change": {
+            "before": {
+              "canonical": "[8]",
+              "meaning": "内盘",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[8]",
+              "meaning": "内盘成交量",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "source_date_count": 1,
+            "page_value_match_count": 2,
+            "total_volume_sum_match_count": 2
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -254753,7 +255223,53 @@
         "meaning": "T-2 日涨跌幅 (%)",
         "unit": "float",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261117-tencent-inner-volume-8",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-17",
+          "decision_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.json",
+          "evidence_file": "adjudications/20261117_tencent_outer_inner_volume_semantics.md",
+          "evidence_sha256": "d1c927e8d1e7cf764e771398d919396941459d38e963c88cbaa205b393b82fb1",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "[8]",
+            "meaning": "内盘",
+            "unit": "手"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[8]",
+              "meaning": "内盘",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[8]",
+              "meaning": "内盘成交量",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "腾讯贵州茅台和农业银行页面均明确标注内盘，单位上下文为手；同日 qt.gtimg.cn 原始响应的精确路径 [8] 分别为 16994 和 2184929，均与页面逐值相等。两只股票的 [7]+[8] 均等于页面总成交量。将源内含义定为内盘成交量、单位手；不推断逐笔分类算法或跨源映射。",
+          "sample": {
+            "scope": "2026-11-16 来源数据日；贵州茅台 600519、农业银行 601288；逐值比较腾讯网页标签及页面值与 raw_tencent.json 的 [7]、[8] 和 [6]。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 2,
+            "source_date_count": 1,
+            "page_value_match_count": 2,
+            "total_volume_sum_match_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",

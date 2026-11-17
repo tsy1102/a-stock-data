@@ -77,3 +77,16 @@
 本轮发现旧规则将 `tencent[29]` / `tencent[55]` 与 `zhb.tipinfo.forecast_type` 的共同缺失配对显示为 100% L4。旧样本的 20 对没有信息配对；它们不构成语义证据。L4 现要求每个数据日至少 8 个信息配对，只按信息配对算命中率，并排除恒定字段；报告列出配对总数和信息配对数。候选身份版本升至 v4，旧 v1–v3 报告仍可校验。旧报告候选标记为证据不足，不作语义拒绝。
 
 修复后按同一份 2026-11-16 目标数据生成 v4 报告：5 个采集目录、7 个有效交易日、1,292 个字段和 313,896 个值；L1/L1-C 均为 0，L4 为 12。12 个关系每天至少有 8 个信息配对；此前两个 Tencent 共同空值项均已消失。完整报告见 [`capture_0508_v4_final/20261117_collision_report.md`](../collision_research_20261117/exploratory/20261117/capture_0508_v4_final/20261117_collision_report.md)。因身份算法升至 v4，新候选 ID 不继承 v3 人工审阅；报告机器完整性为 complete，尚未审阅项继续作为探索候选，不作定案。
+
+## 2026-11-17 08:14 开盘前采集与 `f126` 来源内定案
+
+- 本次运行自然日为 2026-11-17，开盘前目标交易数据日为 2026-11-16。ZHB 在 08:14 成功返回 20/20 股票，`as_of_date=20261116`，与 ZHB 文件日期一致；`raw_zhb.json` SHA-256 为 `EC1048D2F7E7DD4DF246A61D2B62D4F32ABB0A327D175E24C6C73425717CCF7E`。Eastmoney `push2`、`em_kline_f61`、`em_fund_flow`、`ulist239`、`clist`、`slist` 均在请求前被现有 `ip_banned` 熔断器拦截（`attempts=0`）。
+- `meta.json` 标记 `previous_probe_snapshot_preserved=true`：当前 `raw_push2.json` 是 2026-11-16 21:25:38 的旧快照，来源日期为 `null`；本轮 Push2 20/20 未发出请求。因此不将该快照冒充为 11 月 17 日新采集，也不把它纳入正式日期样本。
+- 新 ZHB 的茅台、农业银行 `full.dividend_yield` 分别为 1.93、3.42。结合本轮碰撞报告的股息率线索，我于 08:24:40 通过 Chrome 核对东方财富官方 `stock/get` 接口和两只股票的 F10 分红融资页：`data.f126` 同为 1.93、3.42，F10 标签为“股息率”，更新日均为 11 月 16 日，页面定义也与该字段口径相符。两项官网比较均精确命中。旧 Push2 快照中另有 10 个数值型 `f126`，与新 ZHB 值 9/10 相同、万华化学一项不同，另有 3 个 `-` 占位；因旧快照来源日期为空，这仅作为诊断线索，不进入裁决样本。
+- 依单源实证流程定案 `东财-push2(stock/get)::f126` 为股息率（%），证据和逐项链接见 [`adjudications/20261117_push2_f126_dividend_yield_evidence.md`](../adjudications/20261117_push2_f126_dividend_yield_evidence.md)。此决定仅确认 `stock/get` 精确路径，不确认 Tencent `[64]`、Ulist239 `f133`、ZHB 或其他接口映射；应用器报告 `mappings_added=0`。
+- 最新碰撞报告 [`capture_0814_after_push2_f126_semantics/20261116_collision_report.md`](../collision_research_20261116/exploratory/20261116/capture_0814_after_push2_f126_semantics/20261116_collision_report.md) 覆盖 7 个交易日、1,295 个字段及 392,531 条样本值。`f126` 从 `unverified` 主攻目标中退出，主攻未知字段从 128 降为 127；本轮 L1/L1-C 均为 0、L4 从 10 降为 7，未产生新的数值定案。`ulist239.f63` 仍是优先破解项，但当前 Ulist 没有新的来源日样本，不能据本次 ZHB 刷新宣称取得新的 `f63` 证据。
+
+## 2026-11-17 官方行情页内外盘核验
+
+- 按官方页面中文标签、项目精确响应路径和同日总成交量校验，来源内定案 `东财-push2(stock/get)::f49/f161` 为外盘/内盘成交量（手），以及 `腾讯(qt.gtimg)::[7]/[8]` 为外盘/内盘成交量（手）。茅台与农行两例分别匹配对应页面，且两组字段之和均等于页面总成交量。
+- 结论各自限定于对应来源路径。东财 `f49/f161` 与腾讯 `[7]/[8]` 标签相同，不代表逐笔分类算法相同或存在跨源等值映射；证据及不一致替代假设见 [`adjudications/20261117_eastmoney_push2_volume_sides.md`](../adjudications/20261117_eastmoney_push2_volume_sides.md) 和 [`adjudications/20261117_tencent_outer_inner_volume_semantics.md`](../adjudications/20261117_tencent_outer_inner_volume_semantics.md)。

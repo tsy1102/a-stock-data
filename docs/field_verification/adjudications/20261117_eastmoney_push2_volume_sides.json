@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-17",
+  "evidence_file": "docs/field_verification/adjudications/20261117_eastmoney_push2_volume_sides.md",
+  "evidence_sha256": "ec11648a1b13d2fcfa54880d8b55b1ed0b27d24b82e37023fece3a4a2563c453",
+  "decisions": [
+    {
+      "id": "20261117-eastmoney-push2-f49-outer-volume",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f49"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eastmoney_stock_get_outer_volume",
+      "meaning": "外盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+      "rationale": "项目采集器将东方财富 stock/get 响应 data.f49 原样保留为精确来源路径。东方财富官方行情页在相同 2026-11-16 收盘行情下将对应值标为“外盘”；贵州茅台与农业银行的接口整数按页面显示精度换算后均吻合，且 f49+f161=f47。结论只确认该 Eastmoney 路径为外盘成交量、单位手，不确认逐笔主动买卖分类算法，也不建立到其他来源的映射。",
+      "sample": {
+        "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "observation_count": 2,
+        "excluded_count": 1,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261117-eastmoney-push2-f161-inner-volume",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f161"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eastmoney_stock_get_inner_volume",
+      "meaning": "内盘成交量",
+      "unit": "手",
+      "section": "2026-11-17 Eastmoney stock/get f49/f161 官方行情页实证核验",
+      "rationale": "项目采集器将东方财富 stock/get 响应 data.f161 原样保留为精确来源路径。东方财富官方行情页在相同 2026-11-16 收盘行情下将对应值标为“内盘”；贵州茅台与农业银行的接口整数按页面显示精度换算后均吻合，且 f49+f161=f47。结论只确认该 Eastmoney 路径为内盘成交量、单位手，不确认逐笔主动买卖分类算法，也不建立到其他来源的映射。",
+      "sample": {
+        "scope": "2026-11-17 07:22:45 +08:00 在东方财富官网核对 2026-11-16 已收盘行情：贵州茅台 600519 与农业银行 601288 的官方 stock/get 响应和对应个股页；完整可比股票均已列入证据表。两个合格留存采集日（2026-11-09、2026-11-10）的 20 股记录仅用于同源/跨源替代假设审查。2026-11-17 06:56 的 Push2 尝试因熔断器未发出请求，不计作新样本。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "observation_count": 2,
+        "excluded_count": 1,
+        "stock_count": 2
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 142 个 code；聚合定义不完整 187 个 code；疑似合并文本 525 条逐源记录。
+> 聚合歧义 145 个 code；聚合定义不完整 184 个 code；疑似合并文本 525 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -573,7 +573,7 @@
 
 ### `[7]` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -581,7 +581,7 @@
 | ZHB-tdxstat2 · `[7]` | [7] | 前日成交额 | 万元 | `verified` |
 | ZHB-tipinfo · `[7]` | [7] | 重大事项停牌起始日 | — | `verified` |
 | 新浪(hq.sinajs) · `[7]` | [7] | 卖一价 | 元 | `verified` |
-| 腾讯(qt.gtimg) · `[7]` | [7] | 外盘 | 手 | `unverified` |
+| 腾讯(qt.gtimg) · `[7]` | [7] | 外盘成交量 | 手 | `verified` |
 
 ### `[86]` — incomplete
 
@@ -593,7 +593,7 @@
 
 ### `[8]` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -601,7 +601,7 @@
 | ZHB-tdxstat2 · `[8]` | [8] | 前第二交易日涨跌停封单额（涨停为正，跌停为负） | 万元 | `verified` |
 | ZHB-tipinfo · `[8]` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | `verified` |
 | 新浪(hq.sinajs) · `[8]` | [8] | 成交量 | 股 | `verified` |
-| 腾讯(qt.gtimg) · `[8]` | [8] | 内盘 | 手 | `unverified` |
+| 腾讯(qt.gtimg) · `[8]` | [8] | 内盘成交量 | 手 | `verified` |
 
 ### `[9]` — ambiguous
 
@@ -1113,13 +1113,13 @@
 | 东财-push2(stock/get) · `f125` | f125 | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f125` | f125 | — | — | `unverified` |
 
-### `f126` — incomplete
+### `f126` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f126` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f126` | eastmoney_stock_get_dividend_yield | 东方财富分红融资页定义的股息率：经调整后的最近四个季度分红总额相对于最近一个交易日总市值 | % | `verified` |
 | 东财-ulist239(np/get) · `f126` | f126 | — | — | `unverified` |
 
 ### `f127` — ambiguous
@@ -1416,13 +1416,13 @@
 | 东财-push2(stock/get) · `f160` | eps_annual(f160) | 上年度归母净利润按最新总股本折算的每股金额（不同于年报披露基本每股收益） | 元/股 | `verified` |
 | 东财-ulist239(np/get) · `f160` | change_10d | 10日涨跌幅 | % | `verified` |
 
-### `f161` — incomplete
+### `f161` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f161` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f161` | eastmoney_stock_get_inner_volume | 内盘成交量 | 手 | `verified` |
 | 东财-ulist239(np/get) · `f161` | f161 | — | — | `verified` |
 
 ### `f162` — incomplete
@@ -2004,13 +2004,13 @@
 | 东财-ulist239(np/get) · `f48` | f48 | — | — | `verified` |
 | 东财-资金流(em_fund_flow) · `f48` | — | — | — | `unverified` |
 
-### `f49` — incomplete
+### `f49` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f49` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f49` | eastmoney_stock_get_outer_volume | 外盘成交量 | 手 | `verified` |
 | 东财-ulist239(np/get) · `f49` | f49 | — | — | `unverified` |
 
 ### `f50` — ambiguous

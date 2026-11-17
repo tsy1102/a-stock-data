@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T15:16:47+08:00",
+      "rationale": "本轮仍是 ulist239.f11 ↔ tencent[80]，7 日窗口的高相关和 19 组信息性不一致没有补足精确接口路径映射或字段级时间证据。沿用此前 needs_external_evidence 结论，将本窗口复核记为待外部证据；继续保留为强涨速候选，不作为定案或跨源映射。",
+      "evidence_refs": [
+        "20261117/after_capture_1417/20261117_collision_report.json",
+        "20261117/preopen_all_history_0950/20261117_collision_report.json",
+        "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_23a169636e4f136abf8e22814037829f155d768a4df796bb57464ccc60f43515",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T15:11:40+08:00",
+      "rationale": "本轮 ulist239.f149 ↔ zhb.stat2.change_mtd 仍表现为 11 月 9 日 20/20 相等、11 月 6 日 0/20 相等，未推翻此前对该直接映射的拒绝。将本窗口的字段对复核记为 rejected；该拒绝只针对字段对，不定义或证伪 f149 自身语义。",
+      "evidence_refs": [
+        "20261117/after_capture_1417/20261117_collision_report.json",
+        "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+        "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T15:16:47+08:00",
+      "rationale": "kpl.raw_columns.col_16 ↔ push2ex.broken_count 的 248 组关系均因右侧来源日期未确认而被排除，不能作为有效碰撞证据。此决定仅记录字段对证据不足，不确认或否定两侧字段语义。",
+      "evidence_refs": [
+        "20261117/after_capture_1417/20261117_collision_report.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

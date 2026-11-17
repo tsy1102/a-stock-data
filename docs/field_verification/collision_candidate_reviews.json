@@ -425,6 +425,171 @@
         "schema_version": 1
       }
     },
+    "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38": {
+      "current": {
+        "candidate_id": "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "3c62930cd7d3dae4801e8fdfbf508b71003658718770ce257b06f15704ecc720",
+        "evidence_refs": [
+          {
+            "path": "20261117/after_capture_1417/20261117_collision_report.json",
+            "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+          },
+          {
+            "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+            "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+          },
+          {
+            "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "本轮仍是 ulist239.f11 ↔ tencent[80]，7 日窗口的高相关和 19 组信息性不一致没有补足精确接口路径映射或字段级时间证据。沿用此前 needs_external_evidence 结论，将本窗口复核记为待外部证据；继续保留为强涨速候选，不作为定案或跨源映射。",
+        "reviewed_at": "2026-11-17T15:16:47+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "b12285371c8eaf514bde063ea7d9d18571d06768a6f526f77e971e4a04cbf0cb",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+              "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+            },
+            {
+              "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "本轮仍是 ulist239.f11 ↔ tencent[80]，7 日窗口的高相关和 19 组信息性不一致没有补足精确接口路径映射或字段级时间证据。将该窗口候选归并到既有 needs_external_evidence 代表候选；继续保留为强涨速候选，不作为定案或跨源映射。",
+          "reviewed_at": "2026-11-17T15:04:37+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "5d0d74bd66c187542147602d50fd3daaf8655b4260a4e2bb89754b8c7bc4dbe5",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+              "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+            },
+            {
+              "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "本轮仍是 ulist239.f11 ↔ tencent[80]，7 日窗口的高相关和 19 组信息性不一致没有补足精确接口路径映射或字段级时间证据。沿用此前 needs_external_evidence 结论，将本窗口复核记为待外部证据；继续保留为强涨速候选，不作为定案或跨源映射。",
+          "reviewed_at": "2026-11-17T15:11:40+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_0212c634077ced168374616205ba160108890f08690004b1e055414c256bab38",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "3c62930cd7d3dae4801e8fdfbf508b71003658718770ce257b06f15704ecc720",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+              "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+            },
+            {
+              "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "本轮仍是 ulist239.f11 ↔ tencent[80]，7 日窗口的高相关和 19 组信息性不一致没有补足精确接口路径映射或字段级时间证据。沿用此前 needs_external_evidence 结论，将本窗口复核记为待外部证据；继续保留为强涨速候选，不作为定案或跨源映射。",
+          "reviewed_at": "2026-11-17T15:16:47+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261106": 10,
+            "T:20261109": 11,
+            "T:20261110": 12
+          },
+          "daily_informative_sample_counts": {
+            "T:20261106": 17,
+            "T:20261109": 18,
+            "T:20261110": 17
+          },
+          "daily_sample_counts": {
+            "T:20261106": 20,
+            "T:20261109": 20,
+            "T:20261110": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261106",
+            "T:20261109",
+            "T:20261110"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tencent"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f11",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 52,
+          "n_pairs": 60,
+          "official_contract_anchor": false,
+          "overall_hit": 0.6346,
+          "ratio": null,
+          "right": "tencent[80]",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 60
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 60
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_02bbcdaf7bb1af04b498bd29bc66bc35d671f2ce8dfd9fe71dce26d08156a4c9": {
       "current": {
         "candidate_id": "cc1_02bbcdaf7bb1af04b498bd29bc66bc35d671f2ce8dfd9fe71dce26d08156a4c9",
@@ -5846,6 +6011,144 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_23a169636e4f136abf8e22814037829f155d768a4df796bb57464ccc60f43515": {
+      "current": {
+        "candidate_id": "cc1_23a169636e4f136abf8e22814037829f155d768a4df796bb57464ccc60f43515",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "3b64ca100596a8d6084ea75c5a65e86d5d7123069080b897881703a3a5a3efb6",
+        "evidence_refs": [
+          {
+            "path": "20261117/after_capture_1417/20261117_collision_report.json",
+            "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+          },
+          {
+            "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+            "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+            "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+          }
+        ],
+        "rationale": "本轮 ulist239.f149 ↔ zhb.stat2.change_mtd 仍表现为 11 月 9 日 20/20 相等、11 月 6 日 0/20 相等，未推翻此前对该直接映射的拒绝。将本窗口的字段对复核记为 rejected；该拒绝只针对字段对，不定义或证伪 f149 自身语义。",
+        "reviewed_at": "2026-11-17T15:11:40+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_23a169636e4f136abf8e22814037829f155d768a4df796bb57464ccc60f43515",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "a4b1e4a72e2ab44a674ad9f9a1279a46e5c3a29a995524172c6897f540ad3c18",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+              "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+            }
+          ],
+          "rationale": "本轮 ulist239.f149 ↔ zhb.stat2.change_mtd 仍表现为 11 月 9 日 20/20 相等、11 月 6 日 0/20 相等，未推翻此前对该直接映射的拒绝。将重复窗口候选归并到既有 rejected 代表记录；该拒绝只针对字段对，不定义或证伪 f149 自身语义。",
+          "reviewed_at": "2026-11-17T15:04:37+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_23a169636e4f136abf8e22814037829f155d768a4df796bb57464ccc60f43515",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "3b64ca100596a8d6084ea75c5a65e86d5d7123069080b897881703a3a5a3efb6",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "collision_research_20261117/exploratory/20261117/post_capture_0230/20261117_collision_report.json",
+              "sha256": "5ecc90918f1e9e36430f6f0ef168087b50bed10e026120ee55e6c124f144fc3b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+              "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+            }
+          ],
+          "rationale": "本轮 ulist239.f149 ↔ zhb.stat2.change_mtd 仍表现为 11 月 9 日 20/20 相等、11 月 6 日 0/20 相等，未推翻此前对该直接映射的拒绝。将本窗口的字段对复核记为 rejected；该拒绝只针对字段对，不定义或证伪 f149 自身语义。",
+          "reviewed_at": "2026-11-17T15:11:40+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261106": 0,
+            "T:20261109": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261106": 20,
+            "T:20261109": 20
+          },
+          "daily_sample_counts": {
+            "T:20261106": 20,
+            "T:20261109": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261106",
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tdx"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f149",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 2,
+          "n_informative_pairs": 40,
+          "n_pairs": 40,
+          "official_contract_anchor": false,
+          "overall_hit": 0.5,
+          "ratio": null,
+          "right": "zhb.stat2.change_mtd",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 40
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 40
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -32512,6 +32815,155 @@
         "schema_version": 1
       }
     },
+    "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554": {
+      "current": {
+        "candidate_id": "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "cd928374834a63230c942d8d8538526447d166f36a366157875f3d35ea66850c",
+        "evidence_refs": [
+          {
+            "path": "20261117/after_capture_1417/20261117_collision_report.json",
+            "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+          }
+        ],
+        "rationale": "kpl.raw_columns.col_16 ↔ push2ex.broken_count 的 248 组关系均因右侧来源日期未确认而被排除，不能作为有效碰撞证据。此决定仅记录字段对证据不足，不确认或否定两侧字段语义。",
+        "reviewed_at": "2026-11-17T15:16:47+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "bc05027b38fa36bed5f1084983123f6d51c7401416a3679d9d8df7b41d8e5a1b",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "20261117/after_capture_1417/analysis.md",
+              "sha256": "99187e6b4d5da020fe7fc3d08304f28e7919dc4b527dd81628c1659d93cddf87"
+            }
+          ],
+          "rationale": "kpl.raw_columns.col_16 ↔ push2ex.broken_count 的 248 组关系均因右侧来源日期未确认而被排除，不能作为有效碰撞证据。此决定仅记录字段对证据不足，不确认或否定两侧字段语义。",
+          "reviewed_at": "2026-11-17T15:04:37+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "31a3d7f866b5638a3c2258d54e039644f3eb38dae27ddd3f5dd4e8e0e5dc3a41",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            },
+            {
+              "path": "20261117/after_capture_1417/analysis.md",
+              "sha256": "99187e6b4d5da020fe7fc3d08304f28e7919dc4b527dd81628c1659d93cddf87"
+            }
+          ],
+          "rationale": "kpl.raw_columns.col_16 ↔ push2ex.broken_count 的 248 组关系均因右侧来源日期未确认而被排除，不能作为有效碰撞证据。此决定仅记录字段对证据不足，不确认或否定两侧字段语义。",
+          "reviewed_at": "2026-11-17T15:11:40+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_e343775ce93b141e12e118b6b07e3125328f65ac447cbaf078a0ac2bd6a3e554",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "cd928374834a63230c942d8d8538526447d166f36a366157875f3d35ea66850c",
+          "evidence_refs": [
+            {
+              "path": "20261117/after_capture_1417/20261117_collision_report.json",
+              "sha256": "2cc031606f7a6bcfaa4f696e380bd44cb823ca96b4303f5ae2c9e9886ea43c78"
+            }
+          ],
+          "rationale": "kpl.raw_columns.col_16 ↔ push2ex.broken_count 的 248 组关系均因右侧来源日期未确认而被排除，不能作为有效碰撞证据。此决定仅记录字段对证据不足，不确认或否定两侧字段语义。",
+          "reviewed_at": "2026-11-17T15:16:47+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261106": 13,
+            "T:20261109": 14,
+            "T:20261110": 16,
+            "T:20261112": 10,
+            "T:20261116": 4
+          },
+          "daily_informative_sample_counts": {
+            "T:20261106": 22,
+            "T:20261109": 29,
+            "T:20261110": 36,
+            "T:20261112": 26,
+            "T:20261116": 18
+          },
+          "daily_sample_counts": {
+            "T:20261106": 32,
+            "T:20261109": 54,
+            "T:20261110": 93,
+            "T:20261112": 37,
+            "T:20261116": 32
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 248,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kpl.raw_columns.col_16",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 5,
+          "n_informative_pairs": 131,
+          "n_pairs": 248,
+          "official_contract_anchor": false,
+          "overall_hit": 0.4351,
+          "ratio": null,
+          "right": "push2ex.broken_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "date_unconfirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 248
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "meta_data_date": 376
+              },
+              "date_status": "date_unconfirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_e3b789b2c94c7c53a32cfbfe432ad2e24b437947efcf43efbdc89f3a04d18556": {
       "current": {
         "candidate_id": "cc1_e3b789b2c94c7c53a32cfbfe432ad2e24b437947efcf43efbdc89f3a04d18556",
@@ -36793,5 +37245,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T11:31:24+08:00"
+  "updated_at": "2026-11-17T15:16:47+08:00"
 }

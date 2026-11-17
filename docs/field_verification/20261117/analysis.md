@@ -110,3 +110,20 @@
 - 按此证据将精确来源路径 `开盘啦(kpl_limit_up_detail)::raw_columns.col_16` 定案为当日是否曾发生炸板的二值状态（无量纲 0/1），canonical 为 `has_intraday_limit_up_break`。KPL 未公开原始列标签；这是来源内实证释义，不是 KPL 官方接口契约。此前 216 组 KPL/Push2EX 请求日配对仍因 Push2EX 来源实际日期未确认而仅作探索，不计入正式样本；未建立跨源数值映射。逐值、网页时间和 KPL raw 摘要见 [`adjudications/20261117_kpl_col16_empirical_semantics.md`](../adjudications/20261117_kpl_col16_empirical_semantics.md)、[`adjudications/20261117_kpl_col16_samples.csv`](../adjudications/20261117_kpl_col16_samples.csv) 与 [`adjudications/20261117_kpl_col16_empirical_semantics.json`](../adjudications/20261117_kpl_col16_empirical_semantics.json)。
 - 重新碰撞发现 `ZHB-tipinfo::[14]` 虽已验证为限售股上市流通数量（万股），但适配器键 `tipinfo.unlock_shares_wan` 未映射回该精确路径，仍以未知目标产生拟合候选。修复 [`scripts/collision_registry_context.py`](../../../scripts/collision_registry_context.py) 的原始列到运行时键映射并增加回归用例后，该键作为已验证锚而不再成为破解目标。
 - 最终 7 日报告覆盖 2026-11-09 至 11-17，完整性为 `complete`；主攻未知目标由 145 先因 KPL 定案降为 144，再因 ZHB 已验证别名回连降为 143。最终报告为 [`after_kpl_col16_and_zhb_tipinfo14_alias/20261117_collision_report.md`](after_kpl_col16_and_zhb_tipinfo14_alias/20261117_collision_report.md)：L1/L1-C 为 0，L4 为 3，未发现其他可据本轮数据直接定案的候选。
+
+## 2026-11-17 17:28 收盘后补采与新候选复核
+
+- `meta.json` 的 `run_datetime=2026-11-17 17:28:41`、`market_phase=closed`；因此本轮实际是收盘后运行，不是开盘前。全局目标日为 2026-11-17，但 ZHB 保留样本的来源实际日为 2026-11-16，状态 `partial/stale`；不得将它与 11 月 17 日 Ulist 行拼作同日证据。
+- 新 Ulist239 响应在 17:30:46 返回 20/20 条，全部 `f297=20261117`。`f63` 20/20 为正，原始值范围 27,730–314,186,512；相对同条成交额 `f6` 的比例为 0.3676%–6.1671%（中位数 1.7504%，仅作量级诊断）。三日 60 行逐股对照文件 [`research/20261117_ulist239_f63_after_close_audit.csv`](../research/20261117_ulist239_f63_after_close_audit.csv)（SHA-256 `5740d0f26d43d8a9aba5690ecb74e1c4e0bac202e7e1b7847e0eb95e31d8cbcb`）显示，`f63` 对同日采集的 `em_fund_flow.f135`–`f149` 逐值均无命中，也没有 `f135-f136` 或已检查分档净额和命中；这仍是同一东方财富来源族内的排除线索，且 `em_fund_flow` 没有逐行数据日字段，不足以定案 `f63` 的语义或单位。东方财富[个股资金流页面](https://data.eastmoney.com/zjlx/600519.html)展示主力、超大单、大单、中单、小单净额分类，但没有公开 `ulist.np/get` 的 `f63` 键映射。`f63` 继续保持 `unverified`，不新增映射。
+- 候选分流将 `f63` 排为首要检查目标（166 条方法候选、40 个官方契约锚对照中 0 个逐值命中），并推荐 601288 作区分样本。该股三个来源日与已验证 Tencent 字段的对比如下；`[44]/[45]` 是流通/总市值（亿元），`[62]/[71]/[75]/[79]` 是 YTD/60/180/250 交易日涨幅（%）：
+
+  | 来源日 | Ulist `f63`（单位未知） | Tencent `[44]/[45]` | Tencent `[62]/[71]/[75]/[79]` |
+  |:--|--:|:--|:--|
+  | 2026-11-09 | 70,776,509 | 23,592.15 / 25,863.75 | -0.40 / 16.56 / 14.75 / -4.04 |
+  | 2026-11-10 | 49,539,735 | 23,464.45 / 25,723.75 | -0.94 / 16.11 / 14.66 / -5.05 |
+  | 2026-11-17 | 83,311,757 | 24,294.48 / 26,633.71 | 2.56 / 20.22 / 21.76 / -4.17 |
+
+  这些候选没有原值相等；即使允许换算，`f63/[44]` 的比值也分别约 3,000、2,111、3,429，不能支持固定单位比例。跨股票相关候选尚未解释 `f63` 的来源定义；这一抽样只排除上述字段的直接等值/简单固定倍数解释，不是对 `f63` 全部可能公式的证伪。
+- 最终碰撞报告 [`post_capture_1728_final_reviewed/20261117_collision_report.md`](post_capture_1728_final_reviewed/20261117_collision_report.md) 校验完整，覆盖 7 个有效交易日、143 个主攻未知目标；L1/L1-C 为 0，L4 为 3，未发现可据本轮数据直接定案的新字段。三条 L4 均已审阅；报告中 626 条方法候选仍属待人工筛查的探索线索。
+- v4 候选身份使同一 `f149` 字段对重新成为未审阅项。按原始 11 月 6 日 0/20 反例和 11 月 9 日滚动六个交易间隔偶合证据，已将新候选 `cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180` 单独复核为 `rejected`；只拒绝该跨源同义关系，不定案或证伪 `f149` 自身语义。审阅材料见 [`adjudications/20261117_ulist239_f149_mtd_v4_candidate_review.json`](../adjudications/20261117_ulist239_f149_mtd_v4_candidate_review.json)，审阅后的报告仍显示该候选为已拒绝，完整性为 `complete`。
+- 同样按 v4 身份续接 `ulist239.f11 ↔ Tencent[80]` 的旧审阅：当前 3 个来源日、60 对中有 50 个信息配对、31 个精确命中（62%）；缺少 Ulist `f11` 到东方财富官方“涨速”字段的精确映射，维持 `needs_external_evidence`。不写回主字典；记录见 [`adjudications/20261117_ulist239_f11_tencent_v4_candidate_review.json`](../adjudications/20261117_ulist239_f11_tencent_v4_candidate_review.json)。

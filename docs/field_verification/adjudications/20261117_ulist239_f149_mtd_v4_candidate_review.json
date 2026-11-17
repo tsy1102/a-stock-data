@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T18:06:00+08:00",
+  "rationale": "本 v4 候选与已审阅的 v3 候选具有相同字段对：ulist239.f149 ↔ ZHB stat2.change_mtd。当前报告仍只有来源日 2026-11-09 的 20/20 相等，旧审阅已用 2026-11-06 的 0/20 反例及滚动六个交易间隔恰好从月末起算解释该单日偶合。17 日新增 Ulist f297=20261117，而 ZHB 实际数据日仍为 20261116，不能组成同日样本，故不改变拒绝该跨源同义关系的结论。此裁决仅拒绝该字段对，不定义或证伪 Ulist f149 自身语义。",
+  "evidence_refs": [
+    "20261117/post_capture_1728/20261117_collision_report.json",
+    "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+    "adjudications/20261117_ulist239_f149_mtd_candidate_review.json",
+    "research/20261117_ulist239_f149_rolling_window_audit.csv",
+    "20261117/meta.json"
+  ],
+  "duplicate_of": null
+}

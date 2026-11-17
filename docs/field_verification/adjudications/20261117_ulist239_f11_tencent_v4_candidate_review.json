@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_461151eeab65d4d86ff6eee3aebc0cd5818cbc63e37b1b69cc9e6692437f46f4",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T18:09:00+08:00",
+  "rationale": "该 v4 候选仍是 ulist239.f11 ↔ Tencent[80]。当前报告含 2026-11-09、11-10、11-17 三个来源日，共 60 对，其中 50 对有信息量、31 对精确相等（62%）；方法候选的高相关只说明走势相近。既有公开资料确认东财产品存在“涨速”标签，但未将 ulist.np/get::f11 精确映射到该标签；更新时间不同也使同一时点数值语义未定。新样本没有补上接口键到官方定义的证据，因此维持 needs_external_evidence，不登记来源内含义或跨源映射。",
+  "evidence_refs": [
+    "20261117/post_capture_1728_reviewed/20261117_collision_report.json",
+    "adjudications/20261117_ulist239_f11_candidate_review.json",
+    "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+    "adjudications/public_web/20261117_public_web_research.md"
+  ],
+  "duplicate_of": null
+}

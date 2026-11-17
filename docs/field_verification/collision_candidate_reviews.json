@@ -11893,6 +11893,133 @@
         "schema_version": 1
       }
     },
+    "cc1_461151eeab65d4d86ff6eee3aebc0cd5818cbc63e37b1b69cc9e6692437f46f4": {
+      "current": {
+        "candidate_id": "cc1_461151eeab65d4d86ff6eee3aebc0cd5818cbc63e37b1b69cc9e6692437f46f4",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "77ed3d151d863905415887d2609dc4f4be3f579eb589b190c826661e603657e0",
+        "evidence_refs": [
+          {
+            "path": "20261117/post_capture_1728_reviewed/20261117_collision_report.json",
+            "sha256": "7c4c3dfedc2696a94f1618cf1066ae6cf6b5572d10a0cdb823fb88bacd1d881b"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f11_candidate_review.json",
+            "sha256": "d08d523da99eb2cb03efdba6e4c6d7e89cc9d536ff87043a48f990c4f7a3105c"
+          },
+          {
+            "path": "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+            "sha256": "b598b005aaf8815118ba2b41d038edf4a5a93943b0f39039d1818be149e56d8f"
+          },
+          {
+            "path": "adjudications/public_web/20261117_public_web_research.md",
+            "sha256": "3f3365483c619410eecc46ba47e50230451ec4f5b014312837cc1e23bd7c9e45"
+          }
+        ],
+        "rationale": "该 v4 候选仍是 ulist239.f11 ↔ Tencent[80]。当前报告含 2026-11-09、11-10、11-17 三个来源日，共 60 对，其中 50 对有信息量、31 对精确相等（62%）；方法候选的高相关只说明走势相近。既有公开资料确认东财产品存在“涨速”标签，但未将 ulist.np/get::f11 精确映射到该标签；更新时间不同也使同一时点数值语义未定。新样本没有补上接口键到官方定义的证据，因此维持 needs_external_evidence，不登记来源内含义或跨源映射。",
+        "reviewed_at": "2026-11-17T18:09:00+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_461151eeab65d4d86ff6eee3aebc0cd5818cbc63e37b1b69cc9e6692437f46f4",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "77ed3d151d863905415887d2609dc4f4be3f579eb589b190c826661e603657e0",
+          "evidence_refs": [
+            {
+              "path": "20261117/post_capture_1728_reviewed/20261117_collision_report.json",
+              "sha256": "7c4c3dfedc2696a94f1618cf1066ae6cf6b5572d10a0cdb823fb88bacd1d881b"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f11_candidate_review.json",
+              "sha256": "d08d523da99eb2cb03efdba6e4c6d7e89cc9d536ff87043a48f990c4f7a3105c"
+            },
+            {
+              "path": "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+              "sha256": "b598b005aaf8815118ba2b41d038edf4a5a93943b0f39039d1818be149e56d8f"
+            },
+            {
+              "path": "adjudications/public_web/20261117_public_web_research.md",
+              "sha256": "3f3365483c619410eecc46ba47e50230451ec4f5b014312837cc1e23bd7c9e45"
+            }
+          ],
+          "rationale": "该 v4 候选仍是 ulist239.f11 ↔ Tencent[80]。当前报告含 2026-11-09、11-10、11-17 三个来源日，共 60 对，其中 50 对有信息量、31 对精确相等（62%）；方法候选的高相关只说明走势相近。既有公开资料确认东财产品存在“涨速”标签，但未将 ulist.np/get::f11 精确映射到该标签；更新时间不同也使同一时点数值语义未定。新样本没有补上接口键到官方定义的证据，因此维持 needs_external_evidence，不登记来源内含义或跨源映射。",
+          "reviewed_at": "2026-11-17T18:09:00+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261109": 11,
+            "T:20261110": 12,
+            "T:20261117": 8
+          },
+          "daily_informative_sample_counts": {
+            "T:20261109": 18,
+            "T:20261110": 17,
+            "T:20261117": 15
+          },
+          "daily_sample_counts": {
+            "T:20261109": 20,
+            "T:20261110": 20,
+            "T:20261117": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261109",
+            "T:20261110",
+            "T:20261117"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tencent"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f11",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 50,
+          "n_pairs": 60,
+          "official_contract_anchor": false,
+          "overall_hit": 0.62,
+          "ratio": null,
+          "right": "tencent[80]",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 60
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 60
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06": {
       "current": {
         "candidate_id": "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06",
@@ -33690,6 +33817,133 @@
         "schema_version": 1
       }
     },
+    "cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180": {
+      "current": {
+        "candidate_id": "cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "9aec7fd5ad54228447db15fe638d17c8d71f8e9d0f67f97824642367e865e0a8",
+        "evidence_refs": [
+          {
+            "path": "20261117/post_capture_1728/20261117_collision_report.json",
+            "sha256": "d17fe3bc45bec1b5668c1026421fd327375ec411de21c97569a821695b748cad"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+            "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+          },
+          {
+            "path": "adjudications/20261117_ulist239_f149_mtd_candidate_review.json",
+            "sha256": "de12cf72ce5a5bd3cec19a6733c136d7426633c9a1bca6ca570e7bf3a8e645e1"
+          },
+          {
+            "path": "research/20261117_ulist239_f149_rolling_window_audit.csv",
+            "sha256": "8fd6bd88c7413c891093e3fa5a9b0e85d4d22e0f1a10ca5ac4c49d5c459236f3"
+          },
+          {
+            "path": "20261117/meta.json",
+            "sha256": "0eea265f4e0ad5979e1440da4d448b6303a1c8adf74b1d57abe7694b0414ff70"
+          }
+        ],
+        "rationale": "本 v4 候选与已审阅的 v3 候选具有相同字段对：ulist239.f149 ↔ ZHB stat2.change_mtd。当前报告仍只有来源日 2026-11-09 的 20/20 相等，旧审阅已用 2026-11-06 的 0/20 反例及滚动六个交易间隔恰好从月末起算解释该单日偶合。17 日新增 Ulist f297=20261117，而 ZHB 实际数据日仍为 20261116，不能组成同日样本，故不改变拒绝该跨源同义关系的结论。此裁决仅拒绝该字段对，不定义或证伪 Ulist f149 自身语义。",
+        "reviewed_at": "2026-11-17T18:06:00+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "9aec7fd5ad54228447db15fe638d17c8d71f8e9d0f67f97824642367e865e0a8",
+          "evidence_refs": [
+            {
+              "path": "20261117/post_capture_1728/20261117_collision_report.json",
+              "sha256": "d17fe3bc45bec1b5668c1026421fd327375ec411de21c97569a821695b748cad"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f149_mtd_candidate_rejection.md",
+              "sha256": "4fc669c076b16399032b24ea47d395204085f11ddcd59f916dfd878e20620f36"
+            },
+            {
+              "path": "adjudications/20261117_ulist239_f149_mtd_candidate_review.json",
+              "sha256": "de12cf72ce5a5bd3cec19a6733c136d7426633c9a1bca6ca570e7bf3a8e645e1"
+            },
+            {
+              "path": "research/20261117_ulist239_f149_rolling_window_audit.csv",
+              "sha256": "8fd6bd88c7413c891093e3fa5a9b0e85d4d22e0f1a10ca5ac4c49d5c459236f3"
+            },
+            {
+              "path": "20261117/meta.json",
+              "sha256": "0eea265f4e0ad5979e1440da4d448b6303a1c8adf74b1d57abe7694b0414ff70"
+            }
+          ],
+          "rationale": "本 v4 候选与已审阅的 v3 候选具有相同字段对：ulist239.f149 ↔ ZHB stat2.change_mtd。当前报告仍只有来源日 2026-11-09 的 20/20 相等，旧审阅已用 2026-11-06 的 0/20 反例及滚动六个交易间隔恰好从月末起算解释该单日偶合。17 日新增 Ulist f297=20261117，而 ZHB 实际数据日仍为 20261116，不能组成同日样本，故不改变拒绝该跨源同义关系的结论。此裁决仅拒绝该字段对，不定义或证伪 Ulist f149 自身语义。",
+          "reviewed_at": "2026-11-17T18:06:00+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261109": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261109": 20
+          },
+          "daily_sample_counts": {
+            "T:20261109": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261109"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tdx"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f149",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": 20,
+          "n_pairs": 20,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "zhb.stat2.change_mtd",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 20
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936": {
       "current": {
         "candidate_id": "cc1_e8bac25ccad194d5505dbd59af0690fb2338224b5be2f15d065537e74125d936",
@@ -37245,5 +37499,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T15:16:47+08:00"
+  "updated_at": "2026-11-17T18:09:00+08:00"
 }

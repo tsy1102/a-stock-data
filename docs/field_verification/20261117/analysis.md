@@ -127,3 +127,13 @@
 - 最终碰撞报告 [`post_capture_1728_final_reviewed/20261117_collision_report.md`](post_capture_1728_final_reviewed/20261117_collision_report.md) 校验完整，覆盖 7 个有效交易日、143 个主攻未知目标；L1/L1-C 为 0，L4 为 3，未发现可据本轮数据直接定案的新字段。三条 L4 均已审阅；报告中 626 条方法候选仍属待人工筛查的探索线索。
 - v4 候选身份使同一 `f149` 字段对重新成为未审阅项。按原始 11 月 6 日 0/20 反例和 11 月 9 日滚动六个交易间隔偶合证据，已将新候选 `cc1_e714dad8bf04e14ba99f7e94f91d33e604db089db5056c8efe8e27f7e8ed2180` 单独复核为 `rejected`；只拒绝该跨源同义关系，不定案或证伪 `f149` 自身语义。审阅材料见 [`adjudications/20261117_ulist239_f149_mtd_v4_candidate_review.json`](../adjudications/20261117_ulist239_f149_mtd_v4_candidate_review.json)，审阅后的报告仍显示该候选为已拒绝，完整性为 `complete`。
 - 同样按 v4 身份续接 `ulist239.f11 ↔ Tencent[80]` 的旧审阅：当前 3 个来源日、60 对中有 50 个信息配对、31 个精确命中（62%）；缺少 Ulist `f11` 到东方财富官方“涨速”字段的精确映射，维持 `needs_external_evidence`。不写回主字典；记录见 [`adjudications/20261117_ulist239_f11_tencent_v4_candidate_review.json`](../adjudications/20261117_ulist239_f11_tencent_v4_candidate_review.json)。
+
+## 2026-11-17 21:13 补采与 Ulist `f63` 八日样本复核
+
+- 用户称当前为开盘前，但机器记录为北京时间 21:13:54、`market_phase=closed`。采集器将数据日设为 `20261117`；默认同日重跑只补不完整来源。ZHB 再次返回 `as_of_date=20261116`，仍为 `partial/stale`；Ulist239 完整源没有被重新请求，当前 Ulist 快照仍是 17:30:46 成功返回的 20/20 样本。Levistock 每日候选探针请求了一个 KPH 市场情绪接口，但没有暴露实际日期，不用于日期对齐碰撞。
+- 本轮带标签碰撞报告完整，覆盖 7 个交易数据日、1,296 个字段、396,614 个样本值；L1/L1-C 为 0，L4 为 2。`ulist239.f63` 的方法候选仍是相关线索，不是字段定案。报告见 [`post_capture_2114/20261117_collision_report.md`](post_capture_2114/20261117_collision_report.md)。
+- 对保留期 Ulist raw 扩展复核至 8 个日期 × 20 股，共 160 组：每行 `f124` 日期都与北京时间目录日及 Push2 `f86` 相符；缺失 `f297` 的 11 月 2–4 日样本按已验证时间戳纳入。`f63` 160/160 为正，与同条其他 Ulist 数值字段没有精确相等。
+- 与已验证同源 `ulist239.f62`（主力净流入额，元）对照：`f62` 有 94/160 为负、64/160 为正、2/160 为零；与 `f63` 0/160 逐值相等，Pearson 相关为 -0.0552。这排除了把 `f63` 直接解释为 `f62`，但不能排除其他规模类或金额类指标；字段状态见[注册表](../field_registry.json)。
+- `f63` 与成交额 `f6` 的总体 Pearson 为 0.8944；逐日横截面为 0.8322–0.9905，而逐股八日序列中仅 18/20 为正相关，中位数 0.5561（范围 -0.4669–0.8946）。总体相关受股票规模影响，且 `f63/f6` 比例不稳定，因此只支持成交规模共变线索。
+- `f63` 与已验证 ELTDX 开盘金额在 160 组同日样本中的 Pearson/Spearman 为 0.9004/0.9746，但仅 1/160 逐值相等；金额比范围 0.9997–30.9268，中位数 2.7880，不能解释成同义或固定单位换算。efinance 把 `f63` 标成“涨跌幅”的代码属于资金流 K 线端点，不是 Ulist 快照接口，不能迁移到 `ulist.np/get::f63`。
+- **结论：**扩充样本强化了金额/活跃度共变的探索线索，但没有区分 `f63` 的真实口径。字段继续 `unverified`，不更新主字典、不新增映射。逐行日期、raw 哈希和 160 组配对见 [`research/20261117_ulist239_f63_retained_160_sample_review.md`](../research/20261117_ulist239_f63_retained_160_sample_review.md) 与 [`research/20261117_ulist239_f63_retained_160_pairs.csv`](../research/20261117_ulist239_f63_retained_160_pairs.csv)。

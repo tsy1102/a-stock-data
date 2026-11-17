@@ -18,3 +18,13 @@
 - 2026-11-10 东方财富个股资金流页面显示贵州茅台主力净流入 9,923.09 万元；同日 Ulist `f62=99,230,912`，换算为万元后落在页面两位小数显示精度内。页面的超大单、大单、中单、小单值也与 Ulist 对应净额路径相符；`f63=84,885,292` 不等于该页面显示的这些指标。[东方财富贵州茅台资金流页面](https://data.eastmoney.com/zjlx/600519.html)。该页面核验支持 `f62` 及已知分档路径，不能据此把 `f63` 命名为另一个资金流口径。
 
 **结论：**`东财-ulist239(np/get)::f63` 仍为 `unverified`，没有足够证据选定流入额、净额、比例或其他替代释义；不更新主字典、不建立映射。需要找到 Eastmoney 对该响应键的正式定义，或从另一官方页面/端点取得能区分上述解释的完整同日样本。
+
+## Ulist `f63` 上游代码同编号核查
+
+检查了用户指定的 efinance 上游实现，发现其不同端点都使用 `f63`，但这不能构成 Ulist 字段定义：
+
+- [`EASTMONEY_QUOTE_FIELDS`](https://github.com/Micro-sheep/efinance/blob/main/efinance/common/config.py) 对应 efinance 的 Ulist 快照查询，没有登记 `f63`。
+- 同一配置中的 `EASTMONEY_HISTORY_BILL_FIELDS` 将 `f63` 标为“涨跌幅”，但 `get_history_bill` 用该表请求的是 `/api/qt/stock/fflow/daykline/get`；`get_today_bill` 请求 `/api/qt/stock/fflow/kline/get`。两者均不同于项目身份 `东财-ulist239(np/get)::f63`。这是第三方接口调用线索，不是东方财富官方字段契约。
+- 对保留期八个 Ulist 数据日、160 条同股样本的补充审计，与已验证的 ELTDX `shortline.open_amount` 得到 Pearson 0.9004、Spearman 0.9746；但只有 1/160 逐值相等，数值比值从 0.9997 到 30.9268。它表明金额/活跃度可能共变，不证明语义相同或存在固定单位换算。逐行值和来源文件哈希见 [`20261117_ulist239_f63_retained_160_pairs.csv`](../../research/20261117_ulist239_f63_retained_160_pairs.csv)。
+
+**结论更新：**第三方代码中“`f63=涨跌幅`”的命名不能套用到 Ulist 路径。Ulist `f63` 仍缺精确官方定义；保持 `unverified`，不更新主字典。

@@ -252,6 +252,94 @@
         "schema_version": 1
       }
     },
+    "cc1_015ccc6061057ad9f347fb5de2ae9c959779393194b73391a1fe644e5081fd64": {
+      "current": {
+        "candidate_id": "cc1_015ccc6061057ad9f347fb5de2ae9c959779393194b73391a1fe644e5081fd64",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "4bea83982cc84a7b9ca4d0e6ca36b72899690b8210c88eb4ec26ff674c7a9186",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当前换手率量纲不同。报告相关性来自两个不同股票值被重复到 16 个日期键，不具字段等价证明力。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_015ccc6061057ad9f347fb5de2ae9c959779393194b73391a1fe644e5081fd64",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "4bea83982cc84a7b9ca4d0e6ca36b72899690b8210c88eb4ec26ff674c7a9186",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当前换手率量纲不同。报告相关性来自两个不同股票值被重复到 16 个日期键，不具字段等价证明力。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.8324,
+              "leave_one_out_min": 0.7922,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.7997,
+              "spearman": 0.8529
+            }
+          ],
+          "right": "ftshare_rest.turnover_rate",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_01b30b1a4da19e0290e8a1318548e4e77b395a025ee3bd393f7f18146e7013f6": {
       "current": {
         "candidate_id": "cc1_01b30b1a4da19e0290e8a1318548e4e77b395a025ee3bd393f7f18146e7013f6",
@@ -1652,6 +1740,94 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_07e05b9231a14182e01e591544559b62f1997a737a671658b7bcfcb3bcf935a9": {
+      "current": {
+        "candidate_id": "cc1_07e05b9231a14182e01e591544559b62f1997a737a671658b7bcfcb3bcf935a9",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "a59a77d852d00c702d3f5552ed5cb9812ea89d5eb5ebc8556eb158f9c7fa0ac7",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 60 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_07e05b9231a14182e01e591544559b62f1997a737a671658b7bcfcb3bcf935a9",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "a59a77d852d00c702d3f5552ed5cb9812ea89d5eb5ebc8556eb158f9c7fa0ac7",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 60 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.7244,
+              "leave_one_out_min": 0.658,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.6718,
+              "spearman": 0.7649
+            }
+          ],
+          "right": "ftshare_rest.change_rate_day60",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -11197,6 +11373,115 @@
         "schema_version": 1
       }
     },
+    "cc1_456347e261de7bfdfb5719f204713b5024a030e02f23b7579079f29f2ab039cd": {
+      "current": {
+        "candidate_id": "cc1_456347e261de7bfdfb5719f204713b5024a030e02f23b7579079f29f2ab039cd",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "470e9fe6f6ca527d9412dc1ac7d35b518200c32cfa1454b70dcc088caa779ed5",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+            "sha256": null
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF",
+            "sha256": null
+          }
+        ],
+        "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前流通股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。当前 FTShare float_a_shares 分别为 346,448,044 和 526,475,543，与 IPO 日历值的时间及口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_456347e261de7bfdfb5719f204713b5024a030e02f23b7579079f29f2ab039cd",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "470e9fe6f6ca527d9412dc1ac7d35b518200c32cfa1454b70dcc088caa779ed5",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+              "sha256": null
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF",
+              "sha256": null
+            }
+          ],
+          "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前流通股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。当前 FTShare float_a_shares 分别为 346,448,044 和 526,475,543，与 IPO 日历值的时间及口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 0.74490524 × left + 3.3465359e+08",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            }
+          ],
+          "right": "ftshare_rest.float_a_shares",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_45bdaceee327f2342c7b5d5e1d4984b3fca2ae9835a9ea26841a333a3082c60a": {
       "current": {
         "candidate_id": "cc1_45bdaceee327f2342c7b5d5e1d4984b3fca2ae9835a9ea26841a333a3082c60a",
@@ -12255,6 +12540,94 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_4cc7629c68a178f82c624be03f2fabdbb9bd86c73b30d4ad6a5d957f6f7129dd": {
+      "current": {
+        "candidate_id": "cc1_4cc7629c68a178f82c624be03f2fabdbb9bd86c73b30d4ad6a5d957f6f7129dd",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "16a0d7928a923659ee37e433aa178adfa565b5c9959b3f9419de13a8a65f6ab4",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量与年初至今涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_4cc7629c68a178f82c624be03f2fabdbb9bd86c73b30d4ad6a5d957f6f7129dd",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "16a0d7928a923659ee37e433aa178adfa565b5c9959b3f9419de13a8a65f6ab4",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量与年初至今涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.8976,
+              "leave_one_out_min": 0.8533,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.8584,
+              "spearman": 0.8394
+            }
+          ],
+          "right": "ftshare_rest.change_rate_ytd",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -13718,6 +14091,130 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_617a1b9341e947f3fe369784422ffed59d28e2e65317182ce8b547929329267f": {
+      "current": {
+        "candidate_id": "cc1_617a1b9341e947f3fe369784422ffed59d28e2e65317182ce8b547929329267f",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "989d439b8341a52fc6f735bc75bcaf768a12a53dd85bc2240dea0a7be10f8cd9",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+            "sha256": null
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF",
+            "sha256": null
+          },
+          {
+            "path": "https://static.cninfo.com.cn/finalpage/2019-03-30/1205965131.PDF",
+            "sha256": null
+          }
+        ],
+        "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前总股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。全新好与深物业的留存值分别为 15,833,500/346,448,044 和 257,511,890/595,979,092；官方股本资料进一步支持两侧的时间口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_617a1b9341e947f3fe369784422ffed59d28e2e65317182ce8b547929329267f",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "989d439b8341a52fc6f735bc75bcaf768a12a53dd85bc2240dea0a7be10f8cd9",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+              "sha256": null
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF",
+              "sha256": null
+            },
+            {
+              "path": "https://static.cninfo.com.cn/finalpage/2019-03-30/1205965131.PDF",
+              "sha256": null
+            }
+          ],
+          "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前总股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。全新好与深物业的留存值分别为 15,833,500/346,448,044 和 257,511,890/595,979,092；官方股本资料进一步支持两侧的时间口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 1.0324922 × left + 3.3010008e+08",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "shares"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.shares",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -18040,6 +18537,94 @@
         "schema_version": 1
       }
     },
+    "cc1_817376fdbbe8c11e83fb2715f8388ba54c87d9da670bed627e21f1763a5d113f": {
+      "current": {
+        "candidate_id": "cc1_817376fdbbe8c11e83fb2715f8388ba54c87d9da670bed627e21f1763a5d113f",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "2992af3d4db633ced59d9a8f57c7087b279ee531dab275747a96bf1c60d67262",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当日成交金额量纲不同。报告候选只有两个不同股票值，跨 16 个日期键的重复相关性不能证明语义关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_817376fdbbe8c11e83fb2715f8388ba54c87d9da670bed627e21f1763a5d113f",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "2992af3d4db633ced59d9a8f57c7087b279ee531dab275747a96bf1c60d67262",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当日成交金额量纲不同。报告候选只有两个不同股票值，跨 16 个日期键的重复相关性不能证明语义关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.8512,
+              "leave_one_out_min": 0.8122,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.8186,
+              "spearman": 0.8664
+            }
+          ],
+          "right": "ftshare_rest.turnover",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_820da24b7ac20747aa52016a50280d7f5389debce99c43db4cb6b8662c0a3dd0": {
       "current": {
         "candidate_id": "cc1_820da24b7ac20747aa52016a50280d7f5389debce99c43db4cb6b8662c0a3dd0",
@@ -19946,6 +20531,141 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_8f9d96e4cee780a405d64109c74e908f91518d29784845466d97847325f72f48": {
+      "current": {
+        "candidate_id": "cc1_8f9d96e4cee780a405d64109c74e908f91518d29784845466d97847325f72f48",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "ffb4aa3d79f3d7db30accc7d98f00103a3dd1f0ded10d80dbd60b99cfe18afed",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_1105_kph_industry_count_review.md",
+            "sha256": "ae3a02d802c880ab3ee7b81034d4e61b6a20f228e34f1da0c29d6e1f1bbb6413"
+          },
+          {
+            "path": "adjudications/20261117_kph_industry_count_followup.md",
+            "sha256": "9659ef9c588ac524f0150ce8f91c9bfc67d1fce9956a542e376e54d651777ef4"
+          },
+          {
+            "path": "adjudications/20261117_kph_pagination_audit.md",
+            "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+          },
+          {
+            "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+            "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+          },
+          {
+            "path": "https://www.kaipanhong.com/",
+            "sha256": null
+          }
+        ],
+        "rationale": "11月16日是当前唯一具完整分页证明的 KPH 来源日。该日 31/31 共有股票精确相同，且分类码 30/31 相同，支持继续核验；但一天不足以确立跨来源等价。历史 50 组不一致都集中在旧 KPH 分页不完整日期，因此也不能据此判为字段不等价。KPL col_20 已验证的定义只覆盖 KPL 的 col_19 分组返回集合；开盘红官网未提供 KPH 字段统计范围契约。保持待外部契约或新的合格来源日，不更新注册表、不创建映射。",
+        "reviewed_at": "2026-11-17T11:31:24+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_8f9d96e4cee780a405d64109c74e908f91518d29784845466d97847325f72f48",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "ffb4aa3d79f3d7db30accc7d98f00103a3dd1f0ded10d80dbd60b99cfe18afed",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_1105_kph_industry_count_review.md",
+              "sha256": "ae3a02d802c880ab3ee7b81034d4e61b6a20f228e34f1da0c29d6e1f1bbb6413"
+            },
+            {
+              "path": "adjudications/20261117_kph_industry_count_followup.md",
+              "sha256": "9659ef9c588ac524f0150ce8f91c9bfc67d1fce9956a542e376e54d651777ef4"
+            },
+            {
+              "path": "adjudications/20261117_kph_pagination_audit.md",
+              "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+            },
+            {
+              "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+              "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+            },
+            {
+              "path": "https://www.kaipanhong.com/",
+              "sha256": null
+            }
+          ],
+          "rationale": "11月16日是当前唯一具完整分页证明的 KPH 来源日。该日 31/31 共有股票精确相同，且分类码 30/31 相同，支持继续核验；但一天不足以确立跨来源等价。历史 50 组不一致都集中在旧 KPH 分页不完整日期，因此也不能据此判为字段不等价。KPL col_20 已验证的定义只覆盖 KPL 的 col_19 分组返回集合；开盘红官网未提供 KPH 字段统计范围契约。保持待外部契约或新的合格来源日，不更新注册表、不创建映射。",
+          "reviewed_at": "2026-11-17T11:31:24+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 31
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 1,
+          "distinct_days": [
+            "T:20261116"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kph.industry_limit_up_count",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 1,
+          "n_informative_pairs": 31,
+          "n_pairs": 31,
+          "official_contract_anchor": false,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kpl.raw_columns.col_20",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 31
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 32
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -26540,6 +27260,94 @@
         "schema_version": 1
       }
     },
+    "cc1_bfdcd6d49da192ec93f16e04fdf8a92edf762ff3076f6edb3608defb44bddc4d": {
+      "current": {
+        "candidate_id": "cc1_bfdcd6d49da192ec93f16e04fdf8a92edf762ff3076f6edb3608defb44bddc4d",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "73fa9b95b85bdfaf05d68a73c284625522a66e58226ae3b53816b2436c66cf3c",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 120 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_bfdcd6d49da192ec93f16e04fdf8a92edf762ff3076f6edb3608defb44bddc4d",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "73fa9b95b85bdfaf05d68a73c284625522a66e58226ae3b53816b2436c66cf3c",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 120 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.958,
+              "leave_one_out_min": 0.9271,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9295,
+              "spearman": 0.8664
+            }
+          ],
+          "right": "ftshare_rest.change_rate_day120",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_c0a6ba974c8b0ca40c9d4172ea91f06d8ed2630dac3397e0d6c96534658f056b": {
       "current": {
         "candidate_id": "cc1_c0a6ba974c8b0ca40c9d4172ea91f06d8ed2630dac3397e0d6c96534658f056b",
@@ -29676,6 +30484,94 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a": {
+      "current": {
+        "candidate_id": "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "811a017a951185d475cb29f1db4b0d2771d734463f489d73b3d236679d36d8b6",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+            "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+          },
+          {
+            "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+            "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+          }
+        ],
+        "rationale": "仅拒绝该字段对：IPO 日历的股本数量不能等同于每日成交量。报告样本只有两个不同股票值，并把静态历史值重复到 16 个日期键；这种重复不能证明跨日期关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+        "reviewed_at": "2026-11-17T11:26:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "811a017a951185d475cb29f1db4b0d2771d734463f489d73b3d236679d36d8b6",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_20261117_1105/20261117_collision_report.json",
+              "sha256": "9399bc82b19ffb96eac3cdec9d18795b3a7fc31072bf1b8fc68da046ecf7edcc"
+            },
+            {
+              "path": "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+              "sha256": "5fe5caed86858260c368dd40cf9b257b7b272a4091c10d3675c3787dcae597e8"
+            }
+          ],
+          "rationale": "仅拒绝该字段对：IPO 日历的股本数量不能等同于每日成交量。报告样本只有两个不同股票值，并把静态历史值重复到 16 个日期键；这种重复不能证明跨日期关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+          "reviewed_at": "2026-11-17T11:26:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.TOTAL_SHARES",
+          "methods": [
+            {
+              "leave_one_out_max": 0.8782,
+              "leave_one_out_min": 0.8476,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.8528,
+              "spearman": 0.8664
+            }
+          ],
+          "right": "ftshare_rest.volume",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 32,
+          "sample_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -35897,5 +36793,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T10:22:29+08:00"
+  "updated_at": "2026-11-17T11:31:24+08:00"
 }

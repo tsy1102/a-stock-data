@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_8f9d96e4cee780a405d64109c74e908f91518d29784845466d97847325f72f48",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T11:31:24+08:00",
+  "rationale": "11月16日是当前唯一具完整分页证明的 KPH 来源日。该日 31/31 共有股票精确相同，且分类码 30/31 相同，支持继续核验；但一天不足以确立跨来源等价。历史 50 组不一致都集中在旧 KPH 分页不完整日期，因此也不能据此判为字段不等价。KPL col_20 已验证的定义只覆盖 KPL 的 col_19 分组返回集合；开盘红官网未提供 KPH 字段统计范围契约。保持待外部契约或新的合格来源日，不更新注册表、不创建映射。",
+  "evidence_refs": [
+    "20261117/preopen_20261117_1105/20261117_collision_report.json",
+    "adjudications/20261117_1105_kph_industry_count_review.md",
+    "adjudications/20261117_kph_industry_count_followup.md",
+    "adjudications/20261117_kph_pagination_audit.md",
+    "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+    "https://www.kaipanhong.com/"
+  ],
+  "duplicate_of": null
+}

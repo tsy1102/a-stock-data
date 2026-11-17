@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_617a1b9341e947f3fe369784422ffed59d28e2e65317182ce8b547929329267f",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前总股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。全新好与深物业的留存值分别为 15,833,500/346,448,044 和 257,511,890/595,979,092；官方股本资料进一步支持两侧的时间口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+        "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+        "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF",
+        "https://static.cninfo.com.cn/finalpage/2019-03-30/1205965131.PDF"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_456347e261de7bfdfb5719f204713b5024a030e02f23b7579079f29f2ab039cd",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：左值来自 IPO 日历历史记录，右值是当前流通股数。两个股票仅产生两个不同数值，在 16 个日期键上重复形成 32 个观测；相关系数与二点仿射拟合不能证明等价。当前 FTShare float_a_shares 分别为 346,448,044 和 526,475,543，与 IPO 日历值的时间及口径不同。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md",
+        "https://static.cninfo.com.cn/finalpage/2025-04-25/1223275562.PDF",
+        "https://static.cninfo.com.cn/finalpage/2007-02-01/20603692.PDF"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量不能等同于每日成交量。报告样本只有两个不同股票值，并把静态历史值重复到 16 个日期键；这种重复不能证明跨日期关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_015ccc6061057ad9f347fb5de2ae9c959779393194b73391a1fe644e5081fd64",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当前换手率量纲不同。报告相关性来自两个不同股票值被重复到 16 个日期键，不具字段等价证明力。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_817376fdbbe8c11e83fb2715f8388ba54c87d9da670bed627e21f1763a5d113f",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量与当日成交金额量纲不同。报告候选只有两个不同股票值，跨 16 个日期键的重复相关性不能证明语义关系。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_4cc7629c68a178f82c624be03f2fabdbb9bd86c73b30d4ad6a5d957f6f7129dd",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量与年初至今涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_07e05b9231a14182e01e591544559b62f1997a737a671658b7bcfcb3bcf935a9",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 60 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_bfdcd6d49da192ec93f16e04fdf8a92edf762ff3076f6edb3608defb44bddc4d",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-17T11:26:09+08:00",
+      "rationale": "仅拒绝该字段对：IPO 日历的股本数量与 120 日涨幅量纲及时间语义不同。报告相关性仅由两个不同股票值跨 16 个日期键重复产生，不证明两路径相关或等价。event_dc.TOTAL_SHARES 的自身语义仍未定案。",
+      "evidence_refs": [
+        "20261117/preopen_20261117_1105/20261117_collision_report.json",
+        "adjudications/20261117_event_dc_total_shares_candidate_review.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

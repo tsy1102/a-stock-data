@@ -929,11 +929,15 @@ def build_report_md(
     L = []
     L.append(f"# 全源对撞报告（{today}）\n")
     if window_selection:
+        market_window_end = window_selection.get("market_window_end")
         if window_selection.get("mode") == "all_history":
-            L.append("> 交易数据窗口配置：全部历史日期（`--all`）")
+            window_config = "全部历史日期（`--all`）"
         else:
             requested_days = window_selection.get("requested_trading_days")
-            L.append(f"> 交易数据窗口配置：近 {requested_days} 个交易日（`--window`）")
+            window_config = f"近 {requested_days} 个交易日（`--window`）"
+        if market_window_end:
+            window_config += f"，行情数据截至 {market_window_end}"
+        L.append(f"> 交易数据窗口配置：{window_config}")
     trading_window = f"{window[0]} ~ {window[-1]}" if window else "无有效交易日样本"
     L.append(
         f"> 行情窗口：{trading_window}（{len(window)} 个不同交易日）｜"

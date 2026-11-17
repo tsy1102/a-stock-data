@@ -6182,6 +6182,165 @@
         "schema_version": 1
       }
     },
+    "cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc": {
+      "current": {
+        "candidate_id": "cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "d4c9071888aeebb4bc88ac31173e46ed3c6b79d46fa76c0ba10dedebd0643238",
+        "evidence_refs": [
+          {
+            "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+            "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+          },
+          {
+            "path": "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+            "sha256": "b598b005aaf8815118ba2b41d038edf4a5a93943b0f39039d1818be149e56d8f"
+          },
+          {
+            "path": "adjudications/public_web/20261117_public_web_research.md",
+            "sha256": "3f3365483c619410eecc46ba47e50230451ec4f5b014312837cc1e23bd7c9e45"
+          },
+          {
+            "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/ztb/",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/ztb/newstatic/build/index.js",
+            "sha256": null
+          }
+        ],
+        "rationale": "7个来源日期确认交易日共140对，其中122对有信息量、80对精确相等；Pearson=0.987、Spearman=0.9721，且时间戳显示异步。东方财富官方资料确认产品存在“涨速”标签/三分钟定义，但公开前端页面没有把ulist.np/get的f11映射到该标签；页面列使用zs，不能据此建立路径对应或跨源映射。保留为强候选，待精确接口映射或同日官方逐值证据。",
+        "reviewed_at": "2026-11-17T10:22:29+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "d4c9071888aeebb4bc88ac31173e46ed3c6b79d46fa76c0ba10dedebd0643238",
+          "evidence_refs": [
+            {
+              "path": "20261117/preopen_all_history_0950/20261117_collision_report.json",
+              "sha256": "8621ba049737900a708f4fa7edfd7ef7fda666b7ca6e7c8137cda4fd9ae16e44"
+            },
+            {
+              "path": "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+              "sha256": "b598b005aaf8815118ba2b41d038edf4a5a93943b0f39039d1818be149e56d8f"
+            },
+            {
+              "path": "adjudications/public_web/20261117_public_web_research.md",
+              "sha256": "3f3365483c619410eecc46ba47e50230451ec4f5b014312837cc1e23bd7c9e45"
+            },
+            {
+              "path": "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/ztb/",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/ztb/newstatic/build/index.js",
+              "sha256": null
+            }
+          ],
+          "rationale": "7个来源日期确认交易日共140对，其中122对有信息量、80对精确相等；Pearson=0.987、Spearman=0.9721，且时间戳显示异步。东方财富官方资料确认产品存在“涨速”标签/三分钟定义，但公开前端页面没有把ulist.np/get的f11映射到该标签；页面列使用zs，不能据此建立路径对应或跨源映射。保留为强候选，待精确接口映射或同日官方逐值证据。",
+          "reviewed_at": "2026-11-17T10:22:29+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261102": 10,
+            "T:20261103": 15,
+            "T:20261104": 11,
+            "T:20261105": 11,
+            "T:20261106": 10,
+            "T:20261109": 11,
+            "T:20261110": 12
+          },
+          "daily_informative_sample_counts": {
+            "T:20261102": 15,
+            "T:20261103": 18,
+            "T:20261104": 17,
+            "T:20261105": 20,
+            "T:20261106": 17,
+            "T:20261109": 18,
+            "T:20261110": 17
+          },
+          "daily_sample_counts": {
+            "T:20261102": 20,
+            "T:20261103": 20,
+            "T:20261104": 20,
+            "T:20261105": 20,
+            "T:20261106": 20,
+            "T:20261109": 20,
+            "T:20261110": 20
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "tencent"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "ulist239.f11",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 7,
+          "n_informative_pairs": 122,
+          "n_pairs": 140,
+          "official_contract_anchor": false,
+          "overall_hit": 0.6557,
+          "ratio": null,
+          "right": "tencent[80]",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.timestamp": 140
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 140
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_25eeee5d5e6aee7621c33dc80c066f4b9415150574fcf9eb69949314ad42cf7e": {
       "current": {
         "candidate_id": "cc1_25eeee5d5e6aee7621c33dc80c066f4b9415150574fcf9eb69949314ad42cf7e",
@@ -35738,5 +35897,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-17T06:01:57+08:00"
+  "updated_at": "2026-11-17T10:22:29+08:00"
 }

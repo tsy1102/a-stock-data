@@ -57,7 +57,7 @@
 ## 04:11 授权补采后的续研
 
 - 运行自然日/采集日为 2026-11-17，目标数据日为 2026-11-16。04:11:39 启动后，东财 `push2`、`em_kline_f61`、`em_fund_flow`、`ulist239`、`clist`、`slist` 均被既有 `ip_banned` 熔断拦截，诊断为 `attempts=0`；没有强制重试。`st_list` 返回 313 条，但没有来源实际日期且不含 Ulist 字段，不能增加 `f192` 证据。ZHB 没有在 08:00 前补采，归档来源日仍是 2026-11-13。运行和各源日期/状态见 [`20261116/meta.json`](../20261116/meta.json)。
-- 补采后新碰撞报告为 [`20261117_collision_report.md`](../collision_research_20261117/exploratory/20261117/capture_0411/20261117_collision_report.md)。机器报告完整；它选择 2026-11-09 至 11-17 的 7 个交易日窗口、使用 5 个采集目录，汇总 1,292 个字段和 313,896 个值。报告明确指出 11-11 与 11-17 没有对应日期目录且没有用更早交易日补位。没有新候选对或 L1/L1-C，保留 24 个 L4 关系及 477 条方法候选。`ulist239.f192` 的 25 条拟合候选仍是已审阅的证据不足项，没有新 Ulist 样本可推动裁决。
+- **窗口错误更正：**`capture_0411` 以及同日早先的 `post_capture_0230`、`capture_0508` 系列、`capture_0656_after_capture_v4` 和本轮初次生成的 `preopen_0908` 均把尚未完成的 2026-11-17 纳入 7 日窗口，实际遗漏了已完成的 2026-11-06。它们的 JSON 完整性状态只表示报告结构完整，不表示窗口选择正确；这些同日 7 日报告不得用于当前碰撞结论。保留原报告作为审计历史，正确窗口报告见 [`preopen_completed_0917/20261117_collision_report.md`](../20261117/preopen_completed_0917/20261117_collision_report.md)。该报告按 2026-11-16 最近已完成交易日取 7 个交易日；全历史初始复核见 [`preopen_all_history_0950/20261117_collision_report.md`](../20261117/preopen_all_history_0950/20261117_collision_report.md)，候选审阅后的最终报告见 [`preopen_all_history_reviewed/20261117_collision_report.md`](../20261117/preopen_all_history_reviewed/20261117_collision_report.md)。
 - 对保留边界内全部 19 份 Ulist raw 再扫描后，确认 7 份各含 20 条股票记录，共 140 条：`f192=-1` 有 133 条、`f192=116` 有 7 条；7 条 `116` 仍全为 601288。4 个 `f297` 与目录日一致的数据日提供 80 条合格样本；另 3 条 601288 的 `116` 位于 11 月 2–4 日 raw，但缺少 `f297`，已排除。逐目录摘要见 [`research/20261117_ulist239_f192_retention_scan.csv`](../research/20261117_ulist239_f192_retention_scan.csv)。
 
 **续研结论：**本次采集没有增加 `f192` 的来源样本，历史全量复扫也没有找到第二只正值股票。A/H 市场号仍是有第三方字段表和农行官方证券页面共同支持的强语义假设，但当前证据不能验证接口字段身份与一般适用性；注册表和主字典继续保持不变。下一项有区分力的证据应是另一只 A/H 发行人的合格 Ulist 原始记录，或东方财富对 `ulist.np/get` 的正式字段定义。
@@ -90,3 +90,15 @@
 
 - 按官方页面中文标签、项目精确响应路径和同日总成交量校验，来源内定案 `东财-push2(stock/get)::f49/f161` 为外盘/内盘成交量（手），以及 `腾讯(qt.gtimg)::[7]/[8]` 为外盘/内盘成交量（手）。茅台与农行两例分别匹配对应页面，且两组字段之和均等于页面总成交量。
 - 结论各自限定于对应来源路径。东财 `f49/f161` 与腾讯 `[7]/[8]` 标签相同，不代表逐笔分类算法相同或存在跨源等值映射；证据及不一致替代假设见 [`adjudications/20261117_eastmoney_push2_volume_sides.md`](../adjudications/20261117_eastmoney_push2_volume_sides.md) 和 [`adjudications/20261117_tencent_outer_inner_volume_semantics.md`](../adjudications/20261117_tencent_outer_inner_volume_semantics.md)。
+
+## 2026-11-17 09:09 开盘前补采与窗口校正
+
+- 运行自然日为 2026-11-17，目标数据日为 2026-11-16。09:09:13 的补采复用 08:14 已确认的 ZHB `as_of_date=20261116`、20/20 样本；东财 `push2`、`em_kline_f61`、`em_fund_flow`、`ulist239`、`clist`、`slist` 均被既有熔断器在请求前拦截，`attempts=0`。没有发出强制重试；Push2 旧快照的来源日期为 `null`，不作为新样本。其他已归档来源日期按 `meta.json` 中的来源字段核对，不能把运行自然日当成来源实际数据日。
+- 发现碰撞日期选择函数在报告日期等于当前自然日时，将当前尚未收盘交易日算作已完成日。修复后，报告日期与行情截止日分开计算：开盘前/盘中报告只截至最近已收盘交易日，历史显式报告日仍按该日处理。对应实现见 `scripts/collision_dates.py`、`scripts/collide.py`、`scripts/collision_reporting.py`；定向回归已通过（25 项日期测试、66 项碰撞测试）。
+- 修正后的 7 日报告选择 `20261106, 20261109, 20261110, 20261111, 20261112, 20261113, 20261116`，报告完整；全历史报告覆盖 2026-10-15 至 2026-11-16 共 21 个交易日，也报告完整。全历史报告有 153 个未知目标、1,344 个锚字段、1,413,022 个样本值；L1/L1-C 为 0、L4 为 5、方法候选 1,111 条，没有新候选对。碰撞报告先生成，再审阅 `f11` 候选并生成带审阅状态的最终全历史报告；该报告显示 1 条已审阅、1,115 条待审阅，`f11 ↔ 腾讯[80]` 为 `needs_external_evidence`。报告路径为 [`preopen_completed_0917/20261117_collision_report.md`](../20261117/preopen_completed_0917/20261117_collision_report.md) 与 [`preopen_all_history_reviewed/20261117_collision_report.md`](../20261117/preopen_all_history_reviewed/20261117_collision_report.md)。
+
+## Ulist `f11` / `f63` 本轮破解结果
+
+- `东财-ulist239(np/get)::f11` 与已验证的 `腾讯(qt.gtimg)::[80]`“涨速（%）”有较强的跨源实证线索：7 个来源日期确认的交易日、140 对样本，122 对有信息量；80 对精确相等，Pearson 0.987、Spearman 0.9721。逐对值、两侧时间戳和 raw 哈希见 [`research/20261117_ulist239_f11_tencent_candidate_audit.csv`](../research/20261117_ulist239_f11_tencent_candidate_audit.csv)。但时间戳差异较大，且东方财富公开页面的 `zs` 标签没有映射到 Ulist 的 `f11`。网页研究见 [`adjudications/public_web/20261117_public_web_research.md`](../adjudications/public_web/20261117_public_web_research.md)；候选 `cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc` 已记为 `needs_external_evidence`。主字典不变，待补的是 `ulist.np/get` 精确响应键到官方涨速标签的映射或同日官方逐值样本。
+- `东财-ulist239(np/get)::f63` 在 2026-11-06、09、10 的 60 条可比样本中均为正，但没有与同日 `em_fund_flow f135–f149` 任一字段精确相等；其与成交额的比例只作为探索性量级指标，不确认单位或含义。11 月 10 日东方财富贵州茅台资金流页面显示的主力净流入与 `f62` 在页面显示精度内吻合，`f63` 不对应页面显示的主力/分档指标。逐值材料见 [`research/20261117_ulist239_f63_recent_window_audit.csv`](../research/20261117_ulist239_f63_recent_window_audit.csv)。`f63` 继续保持 `unverified`，没有更新主字典。
+- Chrome 浏览器核验尝试在工具安全层被终止：工具无法充分确认当前浏览器 URL，并要求停止本轮 Computer Use。没有绕过安全限制。本节网页结论以已读取的公开官方页面/页面脚本信息及历史留存样本为研究线索；Chrome 页内逐值复核仍未完成，因此不据此作字段语义定案。

@@ -67,6 +67,30 @@ def test_parse_date_accepts_compact_iso_and_timestamp():
     assert collision_dates.parse_date("bad-date") is None
 
 
+def test_market_window_end_uses_latest_completed_session_in_china_time():
+    before_close = datetime(2026, 9, 29, 14, 59)
+    at_close_utc = datetime(2026, 9, 29, 7, 0, tzinfo=timezone.utc)
+    weekend_morning = datetime(2026, 9, 26, 9, 0)
+
+    assert collision_dates.market_window_end_for_report(
+        date(2026, 9, 29), before_close, _weekday
+    ) == date(2026, 9, 28)
+    assert collision_dates.market_window_end_for_report(
+        date(2026, 9, 29), at_close_utc, _weekday
+    ) == date(2026, 9, 29)
+    assert collision_dates.market_window_end_for_report(
+        date(2026, 9, 26), weekend_morning, _weekday
+    ) == date(2026, 9, 24)
+
+
+def test_explicit_historical_report_date_is_a_completed_market_cutoff():
+    now = datetime(2026, 9, 29, 9, 0)
+
+    assert collision_dates.market_window_end_for_report(date(2026, 9, 28), now, _weekday) == date(
+        2026, 9, 28
+    )
+
+
 def test_record_count_ignores_empty_metadata_but_counts_nested_event_rows():
     assert collision_dates._record_count({"stocks": {}, "scheme": {"name": "empty"}}) == 0
     assert collision_dates._record_count({"cctv_xwlb": [{"date": "2026-09-29"}]}) == 1
@@ -169,6 +193,24 @@ def test_window_counts_distinct_sessions_and_separate_natural_capture_days(tmp_p
     assert {folder.name for folder in window.folders} == {"20260928", "20260929"}
 
 
+def test_market_window_cutoff_does_not_advance_event_window(tmp_path):
+    for folder in ("20260924", "20260928", "20260929"):
+        _write_meta_only_capture(tmp_path, folder)
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+
+    window = collision_dates.select_folder_window(
+        folders,
+        2,
+        date(2026, 9, 29),
+        market_window_end=date(2026, 9, 28),
+    )
+
+    assert window.trading_dates == ("20260924", "20260928")
+    assert window.market_folders == frozenset({"20260924", "20260928"})
+    assert window.event_start == date(2026, 9, 28)
+    assert window.event_end == date(2026, 9, 29)
+
+
 def test_window_does_not_backfill_a_missing_trading_session(tmp_path, monkeypatch):
     for folder in ("20260925", "20260928"):
         _write_meta_only_capture(tmp_path, folder)
@@ -254,7 +296,7 @@ def test_all_history_does_not_include_future_market_dates(tmp_path):
 
     assert window.trading_dates == ("20260928",)
     assert "20260930" not in window.market_folders
-    assert any("晚于报告日" in warning for warning in window.warnings)
+    assert any("晚于行情窗口截止日" in warning for warning in window.warnings)
 
 
 def test_snapshot_selector_prefers_closed_complete_duplicate_source_date(tmp_path):

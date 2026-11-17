@@ -50,7 +50,7 @@ import math
 import argparse
 import re
 from collections import Counter, defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 if __package__ in (None, ""):
@@ -65,6 +65,7 @@ from scripts.collision_dates import (
     discover_capture_folders,
     event_record_date,
     is_calendar_event_source,
+    market_window_end_for_report,
     parse_date,
     sample_date_key,
     select_folder_window,
@@ -970,10 +971,13 @@ def save_state(st):
 
 
 def run(args):
-    report_day = parse_date(args.date) if args.date else date.today()
+    china_timezone = timezone(timedelta(hours=8))
+    run_now = datetime.now(china_timezone)
+    report_day = parse_date(args.date) if args.date else run_now.date()
     if report_day is None:
         raise ValueError(f"报告日期格式无效: {args.date}")
     today = report_day.strftime("%Y%m%d")
+    market_window_end = market_window_end_for_report(report_day, now=run_now)
 
     # 1) Use distinct source data sessions and a separate natural-day event window.
     folders, discovery_warnings = discover_capture_folders(DATA_DIR)
@@ -984,6 +988,7 @@ def run(args):
         report_day,
         args.all,
         excluded_trading_dates=EXCLUDE_DIRS,
+        market_window_end=market_window_end,
     )
     diagnostics.extend(folder_window.warnings)
     snapshots, snapshot_warnings = select_snapshots(
@@ -996,10 +1001,10 @@ def run(args):
     diagnostics.extend(snapshot_warnings)
     usable_snapshots = []
     for snapshot in snapshots:
-        if snapshot.domain == TRADING and snapshot.sample_date > report_day:
+        if snapshot.domain == TRADING and snapshot.sample_date > market_window_end:
             diagnostics.append(
                 f"{snapshot.folder}/{snapshot.source}: as_of_date {snapshot.sample_date:%Y%m%d} "
-                f"晚于报告日 {today}，行情快照不纳入本轮"
+                f"晚于行情窗口截止日 {market_window_end:%Y%m%d}，行情快照不纳入本轮"
             )
             continue
         if snapshot.domain == TRADING and snapshot.sample_date.strftime("%Y%m%d") in EXCLUDE_DIRS:
@@ -1633,6 +1638,7 @@ def run(args):
     window_selection = {
         "mode": "all_history" if args.all else "trading_days",
         "requested_trading_days": None if args.all else args.window,
+        "market_window_end": market_window_end.strftime("%Y%m%d"),
     }
     if args.exploratory:
         research_scope = "exploratory_with_context" if args.include_context else "exploratory"

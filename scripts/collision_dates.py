@@ -30,6 +30,7 @@ if PROJECT_ROOT not in sys.path:
 
 TRADING = "trading"
 CALENDAR = "calendar"
+CHINA_TIMEZONE = timezone(timedelta(hours=8))
 EVENT_SOURCES = frozenset(
     {
         "cninfo",
@@ -189,6 +190,37 @@ def previous_trading_session(
             return candidate
         candidate -= timedelta(days=1)
     raise CalendarResolutionError(f"{day.isoformat()} 前 {max_days} 日没有可确认的交易日")
+
+
+def market_window_end_for_report(
+    report_date: date,
+    now: datetime | None = None,
+    checker: Callable[[date], bool] | None = None,
+) -> date:
+    """Resolve the latest completed market session without changing report/event dates.
+
+    A past explicit report date is treated as an end-of-day historical cutoff. For
+    the current or a future report date, the market window ends at the latest
+    session closed by the current Asia/Shanghai clock.
+    """
+    is_session = checker or is_trading_session
+    current = now or datetime.now(CHINA_TIMEZONE)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=CHINA_TIMEZONE)
+    else:
+        current = current.astimezone(CHINA_TIMEZONE)
+    current = current.replace(tzinfo=None)
+
+    if report_date < current.date():
+        anchor = report_date
+        include_anchor = True
+    else:
+        anchor = min(report_date, current.date())
+        include_anchor = current.time() >= time(15, 0)
+
+    if include_anchor and is_session(anchor):
+        return anchor
+    return previous_trading_session(anchor, is_session)
 
 
 def _read_json(path: str) -> dict[str, Any] | None:
@@ -381,21 +413,25 @@ def select_folder_window(
     report_date: date,
     all_history: bool = False,
     excluded_trading_dates: set[str] | frozenset[str] = frozenset(),
+    market_window_end: date | None = None,
 ) -> FolderWindow:
-    """Select the latest N expected trading sessions and N natural capture days.
+    """Select completed market sessions and a separate report-date event window.
 
     The market window is derived from the exchange calendar, not from whichever
     capture folders happen to exist. Missing capture dates stay visible instead
-    of being silently replaced by older sessions.
+    of being silently replaced by older sessions. ``report_date`` continues to
+    anchor the natural-day event window; ``market_window_end`` bounds market data.
     """
+    market_cutoff = market_window_end or report_date
     all_folders = tuple(folders)
     event_dates_by_folder = {
         folder.name: _folder_event_capture_dates(folder) for folder in all_folders
     }
     warnings = [
-        f"{folder.name}: 行情数据日 {folder.market_date:%Y%m%d} 晚于报告日，行情快照不纳入本轮"
+        f"{folder.name}: 行情数据日 {folder.market_date:%Y%m%d} 晚于行情窗口截止日 "
+        f"{market_cutoff:%Y%m%d}，行情快照不纳入本轮"
         for folder in all_folders
-        if folder.market_date is not None and folder.market_date > report_date
+        if folder.market_date is not None and folder.market_date > market_cutoff
     ]
     is_excluded = lambda day: day.strftime("%Y%m%d") in excluded_trading_dates
     warnings.extend(
@@ -409,7 +445,7 @@ def select_folder_window(
                 folder.market_date
                 for folder in all_folders
                 if folder.market_date
-                and folder.market_date <= report_date
+                and folder.market_date <= market_cutoff
                 and not is_excluded(folder.market_date)
             }
         )
@@ -431,11 +467,11 @@ def select_folder_window(
             folder.market_date
             for folder in all_folders
             if folder.market_date
-            and folder.market_date <= report_date
+            and folder.market_date <= market_cutoff
             and not is_excluded(folder.market_date)
         }
         market_dates_descending: list[date] = []
-        cursor = report_date
+        cursor = market_cutoff
         while cursor >= MIN_CAPTURE_DATE and len(market_dates_descending) < n:
             if not is_excluded(cursor) and is_trading_session(cursor):
                 market_dates_descending.append(cursor)
@@ -443,7 +479,8 @@ def select_folder_window(
         market_dates = sorted(market_dates_descending)
         if len(market_dates) < n:
             warnings.append(
-                f"保留起点 {MIN_CAPTURE_DATE:%Y%m%d} 至报告日仅有 {len(market_dates)} 个"
+                f"保留起点 {MIN_CAPTURE_DATE:%Y%m%d} 至行情窗口截止日 "
+                f"{market_cutoff:%Y%m%d} 仅有 {len(market_dates)} 个"
                 f"可用交易日，少于请求的 {n} 日"
             )
         warnings.extend(

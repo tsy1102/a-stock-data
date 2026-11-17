@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_25aa1fb7bb4504e28c28ed1e5bcf386c4b576891bf95217f17af9b2e6c09e3bc",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-17T10:22:29+08:00",
+  "rationale": "7个来源日期确认交易日共140对，其中122对有信息量、80对精确相等；Pearson=0.987、Spearman=0.9721，且时间戳显示异步。东方财富官方资料确认产品存在“涨速”标签/三分钟定义，但公开前端页面没有把ulist.np/get的f11映射到该标签；页面列使用zs，不能据此建立路径对应或跨源映射。保留为强候选，待精确接口映射或同日官方逐值证据。",
+  "evidence_refs": [
+    "20261117/preopen_all_history_0950/20261117_collision_report.json",
+    "research/20261117_ulist239_f11_tencent_candidate_audit.csv",
+    "adjudications/public_web/20261117_public_web_research.md",
+    "https://emdesk.eastmoney.com/pc_activity/pages/viptrade/pages/answer.html",
+    "https://quote.eastmoney.com/ztb/",
+    "https://quote.eastmoney.com/ztb/newstatic/build/index.js"
+  ]
+}

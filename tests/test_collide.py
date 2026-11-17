@@ -361,10 +361,16 @@ def test_l4_report_shows_informative_pair_denominator():
         0,
         set(),
         [],
+        window_selection={
+            "mode": "trading_days",
+            "requested_trading_days": 7,
+            "market_window_end": "20261116",
+        },
     )
 
     assert "| 天数 | 配对数 | 信息配对数 |" in report
     assert "| 100.00% | 1 | 20 | 8 |" in report
+    assert "近 7 个交易日（`--window`），行情数据截至 20261116" in report
 
 
 def test_context_records_are_excluded_by_default_and_available_on_request(tmp_path):

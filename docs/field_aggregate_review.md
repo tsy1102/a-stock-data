@@ -2613,12 +2613,12 @@
 
 ### `main_buy` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `main_buy` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `main_buy` | main_buy | 主力买入额 | 元 | `unverified` |
+| 开盘啦(kpl) · `main_buy` | main_buy | 主力买入额 | 元 | `verified` |
 
 ### `main_inflow` — incomplete
 
@@ -2640,12 +2640,12 @@
 
 ### `main_sell` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `main_sell` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `main_sell` | main_sell | 主力卖出额 | 元 | `unverified` |
+| 开盘啦(kpl) · `main_sell` | main_sell | 主力卖出额（负值表示卖出流出） | 元 | `verified` |
 
 ### `margin_trading.balance_gr` — consistent
 

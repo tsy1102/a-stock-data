@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-18",
+  "evidence_file": "docs/field_verification/adjudications/20261118_kpl_main_buy_sell_empirical_semantics.md",
+  "evidence_sha256": "15036e5e86c3dcbc717f77f0a34dff5d4a223aa0682d3c7fdcf95ca0e3624bb3",
+  "decisions": [
+    {
+      "id": "20261118-kpl-daily-limit-main-buy",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "main_buy"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "main_buy",
+        "meaning": "主力买入额",
+        "unit": "元"
+      },
+      "canonical": "main_buy",
+      "meaning": "主力买入额",
+      "unit": "元",
+      "section": "2026-11-18 KPL DailyLimitPerformance 主力买卖字段实证裁决",
+      "rationale": "官网自身的市场风口个股页明确显示主力买入列，官方前端将字段 ZLBuy 渲染到该标签；第三方公开逆向资料对同名 DailyLimitPerformance 的数组位置给出 row[9]=主力买入，项目适配器恰将 row[9] 写入 main_buy 并保留 raw_columns.col_09。第三方资料不是官方接口合同，因此只用于定位原始位置；保留期全量 raw 复核中 1,165 条具有原始列的记录逐值与归一字段吻合，且 1,195/1,195 条满足主力净额等于买入与卖出之和、无反例。官网显示金额按万/亿缩放；结论限定为字段角色和元单位，不推断算法或跨源等价。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-17 的 20 个 KPL 来源交易日；DailyLimitPerformance main_buy / row[9] / raw_columns.col_09；另复核 main_inflow=main_buy+main_sell 算术关系",
+        "comparison_count": 1165,
+        "matched_count": 1165,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 30,
+        "stock_count": 730
+      }
+    },
+    {
+      "id": "20261118-kpl-daily-limit-main-sell",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "main_sell"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "main_sell",
+        "meaning": "主力卖出额",
+        "unit": "元"
+      },
+      "canonical": "main_sell",
+      "meaning": "主力卖出额（负值表示卖出流出）",
+      "unit": "元",
+      "section": "2026-11-18 KPL DailyLimitPerformance 主力买卖字段实证裁决",
+      "rationale": "官网自身的市场风口个股页明确显示主力卖出列，官方前端将字段 ZLSell 渲染到该标签；第三方公开逆向资料对同名 DailyLimitPerformance 的数组位置给出 row[10]=主力卖出，项目适配器恰将 row[10] 写入 main_sell 并保留 raw_columns.col_10。第三方资料不是官方接口合同，因此只用于定位原始位置；保留期全量 raw 复核中 1,165 条具有原始列的记录逐值与归一字段吻合，且 1,195/1,195 条满足主力净额等于买入与卖出之和、无反例，1,195/1,195 条 main_sell 为非正值。官网显示金额按万/亿缩放；结论限定为字段角色、负号表示流出及元单位，不推断算法或跨源等价。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-17 的 20 个 KPL 来源交易日；DailyLimitPerformance main_sell / row[10] / raw_columns.col_10；另复核 main_inflow=main_buy+main_sell 算术关系及符号",
+        "comparison_count": 1165,
+        "matched_count": 1165,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 30,
+        "stock_count": 730
+      }
+    }
+  ]
+}

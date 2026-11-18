@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f98_positive_days_5d.md",
+  "evidence_sha256": "a27b4596c97da14dc7a9940df003d6307890823bc184cdea6219aeebc48c2ffe",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f98-positive-days-5d",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f98"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f98",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f88_positive_days_5d",
+      "meaning": "最近5个连续交易数据日（含当前数据日）中，f88 大于 0 的交易日数量。",
+      "unit": "个交易日",
+      "section": "2026-11-19 Ulist239 f98 同源五交易日公式实证定案",
+      "rationale": "项目采集器请求 Eastmoney 官方 ulist.np/get 并将 diff item 原样写入 stocks[code].data；目标为精确 data.f98，输入为同一证券同一原始对象的 data.f88。保留边界 2026-10-15 起全量日期目录扫描后，仅九个 Ulist 数据日成功且各有 20/20 行按 f297 或已验证 Unix 秒 f124 确认实际来源日期。其中仅 2026-11-06、09、10 可组成完整五个连续交易数据日窗口，覆盖 20 只相同股票的 60 个股票日；f98 逐项等于窗口内 f88>0 的日数，60/60 精确匹配、零反例。替代阈值 f88>=0 为 58/60，f88!=0 为 3/60，f88<0 为 0/60；不含当前日的前五个交易日控制在可用的 40 项中为 25/40。三个窗口相互重叠，结论不把样本说成 60 个独立时间序列实验。11 月 17、18 日的 40 行因缺少中间 Ulist 来源日无法构成完整窗口而排除，既不作命中也不作反例。只确认来源内观测公式，不推断 f88 的业务标签或未观察服务端规则，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 起保留边界内全部 Ulist 日期目录；九个成功来源日、每日日 20 条来源日期合格记录。仅 2026-11-06、09、10 三个完整连续五交易日窗口可逐股比较，20 只股票共 60 个股票日；其他 120 条已观测 f98 记录因缺少完整同股五日来源序列排除。逐行证据见 CSV。",
+        "comparison_count": 60,
+        "matched_count": 60,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 120,
+        "stock_count": 20
+      }
+    }
+  ]
+}

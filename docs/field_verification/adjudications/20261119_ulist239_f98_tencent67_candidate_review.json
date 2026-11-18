@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_c1d2d29f48c0b8f63cfafa760f73456c5a7d23ddaa1b95e8fb095e57471edcdc",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T00:25:43+08:00",
+  "rationale": "拒绝将该候选作为同义/可互换字段映射。碰撞报告的依据仅为 2026-11-10、17、18 三个日期的逐股 Pearson 统计；8 只股票的相关方向从 -1.0 到 +0.9997 不等，单股只有三个时间点，不能证明字段等价。独立的来源内实证显示 Ulist f98 是最近五个交易日中 f88 正值的日数、单位个交易日；注册表已核实 Tencent [67] 为 52 周最高价、单位元，二者业务量纲不同。统计关系是否存在不在本裁决范围内；不建立映射。",
+  "evidence_refs": [
+    "20261118/after_user_capture_2350/20261118_collision_report.json",
+    "adjudications/20261119_ulist239_f98_positive_days_5d.md",
+    "research/20261119_ulist239_f98_positive_days_5d.csv"
+  ],
+  "duplicate_of": null
+}

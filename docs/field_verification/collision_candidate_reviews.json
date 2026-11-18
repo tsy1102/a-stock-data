@@ -28355,6 +28355,184 @@
         "schema_version": 1
       }
     },
+    "cc1_c1d2d29f48c0b8f63cfafa760f73456c5a7d23ddaa1b95e8fb095e57471edcdc": {
+      "current": {
+        "candidate_id": "cc1_c1d2d29f48c0b8f63cfafa760f73456c5a7d23ddaa1b95e8fb095e57471edcdc",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "5e71f91996949c52bc743c4c873c42f8ca71fa1f4ba702f77d706ca1341d850e",
+        "evidence_refs": [
+          {
+            "path": "20261118/after_user_capture_2350/20261118_collision_report.json",
+            "sha256": "5cb90086012623b9337bb518dd4b77782ebd9342e7cc43263caae28f2d612f49"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f98_positive_days_5d.md",
+            "sha256": "a27b4596c97da14dc7a9940df003d6307890823bc184cdea6219aeebc48c2ffe"
+          },
+          {
+            "path": "research/20261119_ulist239_f98_positive_days_5d.csv",
+            "sha256": "78616ef4faff932dc4522d9219ca454b4c72b9cf3b6b8abfc803a3021b61539c"
+          }
+        ],
+        "rationale": "拒绝将该候选作为同义/可互换字段映射。碰撞报告的依据仅为 2026-11-10、17、18 三个日期的逐股 Pearson 统计；8 只股票的相关方向从 -1.0 到 +0.9997 不等，单股只有三个时间点，不能证明字段等价。独立的来源内实证显示 Ulist f98 是最近五个交易日中 f88 正值的日数、单位个交易日；注册表已核实 Tencent [67] 为 52 周最高价、单位元，二者业务量纲不同。统计关系是否存在不在本裁决范围内；不建立映射。",
+        "reviewed_at": "2026-11-19T00:25:43+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c1d2d29f48c0b8f63cfafa760f73456c5a7d23ddaa1b95e8fb095e57471edcdc",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "5e71f91996949c52bc743c4c873c42f8ca71fa1f4ba702f77d706ca1341d850e",
+          "evidence_refs": [
+            {
+              "path": "20261118/after_user_capture_2350/20261118_collision_report.json",
+              "sha256": "5cb90086012623b9337bb518dd4b77782ebd9342e7cc43263caae28f2d612f49"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f98_positive_days_5d.md",
+              "sha256": "a27b4596c97da14dc7a9940df003d6307890823bc184cdea6219aeebc48c2ffe"
+            },
+            {
+              "path": "research/20261119_ulist239_f98_positive_days_5d.csv",
+              "sha256": "78616ef4faff932dc4522d9219ca454b4c72b9cf3b6b8abfc803a3021b61539c"
+            }
+          ],
+          "rationale": "拒绝将该候选作为同义/可互换字段映射。碰撞报告的依据仅为 2026-11-10、17、18 三个日期的逐股 Pearson 统计；8 只股票的相关方向从 -1.0 到 +0.9997 不等，单股只有三个时间点，不能证明字段等价。独立的来源内实证显示 Ulist f98 是最近五个交易日中 f88 正值的日数、单位个交易日；注册表已核实 Tencent [67] 为 52 周最高价、单位元，二者业务量纲不同。统计关系是否存在不在本裁决范围内；不建立映射。",
+          "reviewed_at": "2026-11-19T00:25:43+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tencent",
+            "ulist239"
+          ],
+          "left": "ulist239.f98",
+          "methods": [
+            {
+              "median_abs_pearson": 0.8836,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261110",
+                "T:20261117",
+                "T:20261118"
+              ],
+              "sign_consistency": 0.875,
+              "stock_correlations": [
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.9011
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -1.0
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.9987
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.0
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9997
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.866
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": -0.0
+                }
+              ],
+              "stocks": 8
+            }
+          ],
+          "right": "tencent[67]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 60,
+          "sample_dates": [
+            "T:20261110",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v6",
+        "schema_version": 1
+      }
+    },
     "cc1_c22e47da8af77f1a5595b9850a322eb5fcdeb8db1caa0a5ab1d7bb929e7d85e2": {
       "current": {
         "candidate_id": "cc1_c22e47da8af77f1a5595b9850a322eb5fcdeb8db1caa0a5ab1d7bb929e7d85e2",
@@ -38024,5 +38202,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-18T09:35:24+08:00"
+  "updated_at": "2026-11-19T00:25:43+08:00"
 }

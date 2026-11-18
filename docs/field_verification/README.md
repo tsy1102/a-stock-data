@@ -14,7 +14,7 @@
 
 ## 近期裁决与研究记录
 
-- [20261118_ulist239_f148_membership_review.md](adjudications/public_web/20261118_ulist239_f148_membership_review.md) 与 [逐股证据 JSON](adjudications/public_web/20261118_ulist239_f148_membership_witness.json)：2026-11-17 的 20 只股票对照官方两融、沪股通和深股通名单，bit6/bit9/bit10 均 20/20 匹配；bit0 在样本中恒为 1，含义未区分，因此 f148 仍未写入主注册表。
+- [20261118_ulist239_f148_membership_review.md](adjudications/public_web/20261118_ulist239_f148_membership_review.md) 与 [逐股证据 JSON](adjudications/public_web/20261118_ulist239_f148_membership_witness.json)：2026-11-17 的 20 只股票对照官方两融、沪股通和深股通名单，bit6/bit9/bit10 均 20/20 匹配；bit0 在 A 股、ETF、指数和 B 股样本中均为 1，尚不能区分通用证券标记与基位，因此 f148 仍未写入主注册表。
 
 - [`adjudications/20261118_tencent_field_86_semantics.md`](adjudications/20261118_tencent_field_86_semantics.md)、[`adjudications/20261118_tencent_field_86_semantics.json`](adjudications/20261118_tencent_field_86_semantics.json) 与 [`research/20261118_tencent_85_86_pair_audit.csv`](research/20261118_tencent_85_86_pair_audit.csv)：按 20 个 Tencent 来源日、20 只股票共 400 行保留样本，将 `腾讯(qt.gtimg)::[86]` 定案为方向级“竞价失衡信号”；359 条有信息样本 `sign([86]) == sign([3]-[85])`，41 条双零排除。历史“净未匹配手数/手”收窄为未证实的数量口径；单位留空，不建立跨源映射。
 - [`adjudications/20261118_em_kline_dktotal_semantics.md`](adjudications/20261118_em_kline_dktotal_semantics.md)、[`adjudications/20261118_em_kline_dktotal_semantics.json`](adjudications/20261118_em_kline_dktotal_semantics.json) 与 [`research/20261118_em_kline_dktotal_evidence.csv`](research/20261118_em_kline_dktotal_evidence.csv)：Eastmoney 日 K `data.dktotal` 在项目当前 `klt=101/fqt=0/lmt=150` 请求范围内定案为服务端报告的可用历史日 K 记录总数；8 个成功归档日、160 条记录均高于 150 根返回窗口，140/140 组逐股增量与新增 K 线数吻合。项目派生 `n_klines` 明确退出上游字段身份；不建立跨源映射。

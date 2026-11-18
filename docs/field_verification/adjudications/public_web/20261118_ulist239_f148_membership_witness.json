@@ -67,7 +67,12 @@
         "matched_count": 20,
         "mismatched_codes": []
       },
-      "authority_note": "Empirical membership match to the active exchange lists and registration-IPO rules; this is not an Eastmoney-authored field label and does not imply every broker enables every customer."
+      "authority_note": "Empirical membership match to the active exchange lists and registration-IPO rules; this is not an Eastmoney-authored field label and does not imply every broker enables every customer.",
+      "additional_control_match": {
+        "code": "510050",
+        "comparison": "SSE 2026 Q3 ETF margin-target attachment",
+        "matched": true
+      }
     },
     "bit_index_9_value_512": {
       "meaning": "eligible Shanghai Connect security for both buy and sell",
@@ -75,6 +80,11 @@
         "latest_data_date_comparison_count": 20,
         "matched_count": 20,
         "mismatched_codes": []
+      },
+      "additional_control_match": {
+        "code": "510050",
+        "comparison": "HKEX SSE both-buy-and-sell eligible list updated 2026-11-17",
+        "matched": true
       }
     },
     "bit_index_10_value_1024": {
@@ -86,10 +96,15 @@
       }
     },
     "bit_index_0_value_1": {
-      "value_in_all_20_sampled_securities": true,
+      "value_in_all_20_sampled_a_shares": true,
+      "value_in_additional_instrument_controls": {
+        "etf_510050": true,
+        "index_000001": true,
+        "b_share_900901": true
+      },
       "meaning": null,
       "status": "unresolved",
-      "reason": "No non-A-share/control-instrument sample and no Eastmoney field schema label distinguishes an A-share-type flag from a general stock/base marker."
+      "reason": "The bit is not A-share-exclusive: it is also set for an ETF, an index, and a B-share. All controls are active listed instruments, so they do not distinguish a universal valid-security marker from a mandatory base bit; no source label or bit0=0 control is available."
     },
     "unobserved_bits": "No meaning inferred for bits not set in retained values."
   },
@@ -608,8 +623,75 @@
         }
       },
       "claim_scope": "Official endpoint reports both sampled Beijing stocks as financing (rzbd=Y) and short-selling targets (rqbd=Y) for the target data date."
+    },
+    {
+      "name": "SSE index catalog (000001)",
+      "url": "https://www.sse.com.cn/market/sseindex/overview/",
+      "claim_scope": "Official SSE identifies 000001 as 上证指数."
+    },
+    {
+      "name": "SSE company profile (900901)",
+      "url": "https://www.sse.com.cn/assortment/stock/list/info/company/index.shtml?COMPANY_CODE=600602&FULLNAME=%E4%BA%91%E8%B5%9B%E6%99%BA%E8%81%94%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8",
+      "claim_scope": "Official SSE profile lists 云赛B股 code 900901."
+    },
+    {
+      "name": "SSE ETF list (510050)",
+      "url": "https://www.sse.com.cn/assortment/fund/list/?type=5",
+      "claim_scope": "Official SSE classifies 510050 as 上证50ETF华夏; the 2026 Q3 margin-target attachment includes 510050."
+    },
+    {
+      "name": "Eastmoney one-off Ulist control query",
+      "url": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=1.510050,1.000001,1.900901&fields=f12,f14,f148,f297",
+      "claim_scope": "Source response for three controls reports f148 values 577, 1 and 1, each with f297=20261118; not a project capture archive."
     }
   ],
-  "decision": "Do not update the main dictionary or registry yet. Evidence strongly resolves bits 6, 9 and 10 and the field shape as an integer flag mask, but bit 0 is constant in the captured A-share universe and remains semantically ambiguous. Keep the exact source path unverified until the remaining bit is distinguished.",
-  "collision_candidate_note": "The correlation candidates to Tencent[71], FTShare change_rate_day60, ELTDX active1 and ZHB change windows are not accepted as field mappings. A static, security-classification mask can correlate with cross-sectional groups; the strongest correlation is not identity evidence."
+  "decision": "Do not update the main dictionary or registry yet. The mask shape and bits 6, 9, and 10 have strong membership evidence. Additional active ETF/index/B-share controls show bit0 is not A-share-specific, but cannot distinguish a universal security-presence flag from a base encoding; keep the exact path unverified.",
+  "collision_candidate_note": "The correlation candidates to Tencent[71], FTShare change_rate_day60, ELTDX active1 and ZHB change windows are not accepted as field mappings. A static, security-classification mask can correlate with cross-sectional groups; the strongest correlation is not identity evidence.",
+  "public_control_query": {
+    "endpoint": "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
+    "request_url": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=1.510050,1.000001,1.900901&fields=f12,f14,f148,f297",
+    "retrieved_on": "2026-11-18",
+    "note": "One-off public semantic control query; not written into the project capture archive.",
+    "rows": [
+      {
+        "code": "510050",
+        "name": "上证50ETF华夏",
+        "instrument_type": "Shanghai-listed equity ETF",
+        "f148": 577,
+        "hex": "0x241",
+        "f297": 20261118,
+        "official_classification_url": "https://www.sse.com.cn/assortment/fund/list/?type=5",
+        "matches": {
+          "bit6_margin_target": true,
+          "bit9_sse_connect": true
+        }
+      },
+      {
+        "code": "000001",
+        "name": "上证指数",
+        "instrument_type": "Shanghai Composite Index",
+        "f148": 1,
+        "hex": "0x1",
+        "f297": 20261118,
+        "official_classification_url": "https://www.sse.com.cn/market/sseindex/overview/",
+        "matches": {
+          "bit6_margin_target": false,
+          "bit9_sse_connect": false
+        }
+      },
+      {
+        "code": "900901",
+        "name": "云赛B股",
+        "instrument_type": "Shanghai B share",
+        "f148": 1,
+        "hex": "0x1",
+        "f297": 20261118,
+        "official_classification_url": "https://www.sse.com.cn/assortment/stock/list/info/company/index.shtml?COMPANY_CODE=600602&FULLNAME=%E4%BA%91%E8%B5%9B%E6%99%BA%E8%81%94%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8",
+        "matches": {
+          "bit6_margin_target": false,
+          "bit9_sse_connect": false
+        }
+      }
+    ]
+  }
 }

@@ -26225,6 +26225,255 @@
         "schema_version": 1
       }
     },
+    "cc1_b2c5f5a65a2ce2914f8ff2cbd961d3c66f473e0ccb415e6b89911fd13cc8946e": {
+      "current": {
+        "candidate_id": "cc1_b2c5f5a65a2ce2914f8ff2cbd961d3c66f473e0ccb415e6b89911fd13cc8946e",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "1fd55f498919827465258c82bed0b8c51fbcf4ba2b0f74a418c37a90a96f9d3d",
+        "evidence_refs": [
+          {
+            "path": "20261118/20261118_collision_report.json",
+            "sha256": "3f34848ebec04307f37f2bdd63e208af5786530c0d722236c10e5f122da04869"
+          },
+          {
+            "path": "adjudications/public_web/20261118_public_web_research.md",
+            "sha256": "bc41a8743d092b9d83540f1d1c1aa52e77a89ad113c65e489f257d079bfc9f5a"
+          },
+          {
+            "path": "https://quote.eastmoney.com/sz000007.html",
+            "sha256": null
+          },
+          {
+            "path": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297",
+            "sha256": null
+          }
+        ],
+        "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Tencent[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+        "reviewed_at": "2026-11-18T09:35:24+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b2c5f5a65a2ce2914f8ff2cbd961d3c66f473e0ccb415e6b89911fd13cc8946e",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "1fd55f498919827465258c82bed0b8c51fbcf4ba2b0f74a418c37a90a96f9d3d",
+          "evidence_refs": [
+            {
+              "path": "20261118/20261118_collision_report.json",
+              "sha256": "3f34848ebec04307f37f2bdd63e208af5786530c0d722236c10e5f122da04869"
+            },
+            {
+              "path": "adjudications/public_web/20261118_public_web_research.md",
+              "sha256": "bc41a8743d092b9d83540f1d1c1aa52e77a89ad113c65e489f257d079bfc9f5a"
+            },
+            {
+              "path": "https://quote.eastmoney.com/sz000007.html",
+              "sha256": null
+            },
+            {
+              "path": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297",
+              "sha256": null
+            }
+          ],
+          "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Tencent[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+          "reviewed_at": "2026-11-18T09:35:24+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "tencent",
+            "ulist239"
+          ],
+          "left": "ulist239.f99",
+          "methods": [
+            {
+              "median_abs_pearson": 0.7349,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261109",
+                "T:20261110",
+                "T:20261117"
+              ],
+              "sign_consistency": 0.8,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.7349
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8649
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.4082
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.9776
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.9989
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.6917
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8188
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.4271
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.2324
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.9406
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.848
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8294
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.497
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.6016
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.1362
+                }
+              ],
+              "stocks": 15
+            }
+          ],
+          "right": "tencent[22]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 60,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110",
+            "T:20261117"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
+        "schema_version": 1
+      }
+    },
     "cc1_b301d4334736957657e5785dc3579b02b8fbd3122131f0711b3c0ecf68277ce1": {
       "current": {
         "candidate_id": "cc1_b301d4334736957657e5785dc3579b02b8fbd3122131f0711b3c0ecf68277ce1",
@@ -29253,6 +29502,255 @@
         },
         "kind": "l4_candidate",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_cac842c118d9b26852b2347b6b8a1df5f0bf12d8d8f5ede17090c1c833437285": {
+      "current": {
+        "candidate_id": "cc1_cac842c118d9b26852b2347b6b8a1df5f0bf12d8d8f5ede17090c1c833437285",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "093160a844e1985c42251c59df34f2de4dea65e82dfed64063984327c99b759b",
+        "evidence_refs": [
+          {
+            "path": "20261118/20261118_collision_report.json",
+            "sha256": "3f34848ebec04307f37f2bdd63e208af5786530c0d722236c10e5f122da04869"
+          },
+          {
+            "path": "adjudications/public_web/20261118_public_web_research.md",
+            "sha256": "bc41a8743d092b9d83540f1d1c1aa52e77a89ad113c65e489f257d079bfc9f5a"
+          },
+          {
+            "path": "https://quote.eastmoney.com/sz000007.html",
+            "sha256": null
+          },
+          {
+            "path": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297",
+            "sha256": null
+          }
+        ],
+        "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Sina[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+        "reviewed_at": "2026-11-18T09:35:24+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cac842c118d9b26852b2347b6b8a1df5f0bf12d8d8f5ede17090c1c833437285",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "093160a844e1985c42251c59df34f2de4dea65e82dfed64063984327c99b759b",
+          "evidence_refs": [
+            {
+              "path": "20261118/20261118_collision_report.json",
+              "sha256": "3f34848ebec04307f37f2bdd63e208af5786530c0d722236c10e5f122da04869"
+            },
+            {
+              "path": "adjudications/public_web/20261118_public_web_research.md",
+              "sha256": "bc41a8743d092b9d83540f1d1c1aa52e77a89ad113c65e489f257d079bfc9f5a"
+            },
+            {
+              "path": "https://quote.eastmoney.com/sz000007.html",
+              "sha256": null
+            },
+            {
+              "path": "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297",
+              "sha256": null
+            }
+          ],
+          "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Sina[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+          "reviewed_at": "2026-11-18T09:35:24+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "sina",
+            "ulist239"
+          ],
+          "left": "ulist239.f99",
+          "methods": [
+            {
+              "median_abs_pearson": 0.7349,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261109",
+                "T:20261110",
+                "T:20261117"
+              ],
+              "sign_consistency": 0.8,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.7349
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8649
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.4082
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.9776
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.9989
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": -0.6917
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8188
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.4273
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.2325
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.9406
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.848
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8304
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.496
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.6061
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.1328
+                }
+              ],
+              "stocks": 15
+            }
+          ],
+          "right": "sina[22]",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 60,
+          "sample_dates": [
+            "T:20261109",
+            "T:20261110",
+            "T:20261117"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v4",
         "schema_version": 1
       }
     },
@@ -37526,5 +38024,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-18T01:04:52+08:00"
+  "updated_at": "2026-11-18T09:35:24+08:00"
 }

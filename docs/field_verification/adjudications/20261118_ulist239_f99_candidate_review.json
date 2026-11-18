@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_b2c5f5a65a2ce2914f8ff2cbd961d3c66f473e0ccb415e6b89911fd13cc8946e",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-18T09:35:24+08:00",
+      "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Tencent[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+      "evidence_refs": [
+        "20261118/20261118_collision_report.json",
+        "adjudications/public_web/20261118_public_web_research.md",
+        "https://quote.eastmoney.com/sz000007.html",
+        "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cac842c118d9b26852b2347b6b8a1df5f0bf12d8d8f5ede17090c1c833437285",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-18T09:35:24+08:00",
+      "rationale": "该候选只有逐股时间序列相关线索（15 只股票，60 个样本，中位绝对 Pearson 0.7349，符号一致率 0.8），没有逐值映射。官方个股页只显示行业文字；官方 Ulist 响应在 2026-11-18 开盘竞价时 f99 为空，且未给 f99 的业务标签。该页面数据日/阶段与 2026-11-17 收盘样本不同，无法据此确认 f99 与 Sina[22] 同义。等待东财官方 f99 字段释义或能直接显示该指标的官方页面，再按来源日期和阶段对齐样本复核。",
+      "evidence_refs": [
+        "20261118/20261118_collision_report.json",
+        "adjudications/public_web/20261118_public_web_research.md",
+        "https://quote.eastmoney.com/sz000007.html",
+        "https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&secids=0.000007,0.000011,0.002242&fields=f12,f14,f99,f100,f297"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

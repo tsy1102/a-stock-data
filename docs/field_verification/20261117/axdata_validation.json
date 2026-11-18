@@ -275,10 +275,46 @@
       "requests_added": 0
     },
     "kph_limit_up_history_vs_kpl_detail": {
-      "status": "date_or_sample_unavailable",
+      "status": "compared",
       "target_trade_date": "2026-11-17",
-      "kph_trade_date": "2026-11-16",
+      "matched_trade_date": "2026-11-17",
+      "kph_trade_date": "2026-11-17",
       "kpl_trade_date": "2026-11-17",
+      "kph_rows": 34,
+      "kpl_rows": 37,
+      "paired_stocks": 34,
+      "field_comparisons": {
+        "limit_time": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        },
+        "seal_amount": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        },
+        "seal_money": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        },
+        "net_inflow": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        },
+        "turnover": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        },
+        "turnover_rate": {
+          "equal": 34,
+          "different": 0,
+          "missing": 0
+        }
+      },
       "requests_added": 0
     }
   },

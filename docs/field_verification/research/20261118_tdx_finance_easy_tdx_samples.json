@@ -1,0 +1,89 @@
+{
+  "source": "TDX Easy-TDX fallback adapter, project core.tdx_client._EasyTdxAdapter.finance",
+  "extract_kind": "selected adapter output fields transcribed from targeted probe output; not raw wire bytes",
+  "capture_purpose": "three retained-period financial samples; not merged into the daily production capture archive",
+  "read_events": [
+    {
+      "captured_at": "2026-11-18T17:20:30+08:00",
+      "stock_codes": [
+        "600519",
+        "000568"
+      ]
+    },
+    {
+      "captured_at": "2026-11-18T17:24:01+08:00",
+      "stock_codes": [
+        "600309"
+      ]
+    }
+  ],
+  "adapter_behavior": {
+    "original_keys": [
+      "zhuying_lirun",
+      "zhuying_shouru"
+    ],
+    "alias_rule": "core.tdx_client._EasyTdxAdapter.finance copies each column whose name changes after removing underscores to that no-underscore key",
+    "alias_pairs": [
+      [
+        "zhuying_lirun",
+        "zhuyinglirun"
+      ],
+      [
+        "zhuying_shouru",
+        "zhuyingshouru"
+      ]
+    ]
+  },
+  "daily_capture_reference": {
+    "data_date": "20261118",
+    "capture_run_datetime": "2026-11-18 16:55:03",
+    "capture_market_phase": "closed",
+    "meta_path": "docs/field_verification/20261118/meta.json",
+    "raw_tdx_path": "docs/field_verification/20261118/raw_tdx.json",
+    "note": "Production capture used the ELTDX primary adapter; its zhuyinglyrun and zhuyingshouru outputs match the targeted Easy-TDX fallback values exactly for these three stocks."
+  },
+  "results": [
+    {
+      "stock_code": "600519",
+      "issuer": "贵州茅台",
+      "financial_updated_date": "2026-10-31",
+      "easy_tdx_zhuying_lirun": "136457190000",
+      "easy_tdx_zhuyinglirun_alias": "136457190000",
+      "easy_tdx_zhuying_shouru": "1309707360000",
+      "easy_tdx_zhuyingshouru_alias": "1309707360000",
+      "archived_tdx_zhuyinglyrun": "136457190000",
+      "archived_tdx_zhuyingshouru": "1309707360000",
+      "official_cost_yuan": "13645718932.90",
+      "official_revenue_yuan": "130970743649.04",
+      "report_url": "https://static.cninfo.com.cn/finalpage/2026-10-31/1225649896.PDF"
+    },
+    {
+      "stock_code": "000568",
+      "issuer": "泸州老窖",
+      "financial_updated_date": "2026-10-30",
+      "easy_tdx_zhuying_lirun": "23999835000",
+      "easy_tdx_zhuyinglirun_alias": "23999835000",
+      "easy_tdx_zhuying_shouru": "146676160000",
+      "easy_tdx_zhuyingshouru_alias": "146676160000",
+      "archived_tdx_zhuyinglyrun": "23999835000",
+      "archived_tdx_zhuyingshouru": "146676160000",
+      "official_cost_yuan": "2399983662.33",
+      "official_revenue_yuan": "14667616562.73",
+      "report_url": "https://static.cninfo.com.cn/finalpage/2026-10-30/1225639079.PDF"
+    },
+    {
+      "stock_code": "600309",
+      "issuer": "万华化学",
+      "financial_updated_date": "2026-10-26",
+      "easy_tdx_zhuying_lirun": "1552333120000",
+      "easy_tdx_zhuyinglirun_alias": "1552333120000",
+      "easy_tdx_zhuying_shouru": "1858667040000",
+      "easy_tdx_zhuyingshouru_alias": "1858667040000",
+      "archived_tdx_zhuyinglyrun": "1552333120000",
+      "archived_tdx_zhuyingshouru": "1858667040000",
+      "official_cost_yuan": "155233319413.52",
+      "official_revenue_yuan": "185866695487.88",
+      "report_url": "https://static.cninfo.com.cn/finalpage/2026-10-27/1225622843.PDF"
+    }
+  ]
+}

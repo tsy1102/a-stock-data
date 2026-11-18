@@ -1402,6 +1402,36 @@ def test_empirical_source_semantics_accepts_one_complete_sample_and_corrects_met
     assert repaired["field_matrix"]["legacy_verified_metric"] == ["target-source"]
 
 
+def test_empirical_source_semantics_corrects_source_contract_verified_metadata(
+    tmp_path, monkeypatch
+):
+    registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path, verified=True)
+    record = registry["source_fields"][0]
+    record["status_resolution"] = "verified_by_source_contract"
+    document["decisions"][0]["previous_status_resolution"] = "verified_by_source_contract"
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+
+    updated, stats = apply_empirical_source_semantics_adjudications(
+        registry, document, "adjudications/e3_source_contract_correction.json", repo_root=tmp_path
+    )
+
+    row = updated["source_fields"][0]
+    adjudication = row["adjudications"][0]
+    assert stats["empirical_metadata_corrected"] == 1
+    assert row["status"] == "verified"
+    assert row["status_resolution"] == "verified_by_empirical_addendum"
+    assert row["meaning"] == "上年同期归母净利润"
+    assert adjudication["previous_status_resolution"] == "verified_by_source_contract"
+    assert adjudication["metadata_change"]["before"]["meaning"] == "旧释义"
+    assert updated["mappings"] == []
+
+    replayed, replay_stats = apply_empirical_source_semantics_adjudications(
+        updated, document, "adjudications/e3_source_contract_correction.json", repo_root=tmp_path
+    )
+    assert replay_stats["already_applied"] == 1
+    assert replayed == updated
+
+
 def test_empirical_source_semantics_removes_explicit_stale_matrix_projection(tmp_path, monkeypatch):
     registry, document, verify_dir = _empirical_source_semantics_inputs(tmp_path)
     registry["field_matrix"] = {"eps_deduct_ttm(f108)": ["stale-fuyao"]}

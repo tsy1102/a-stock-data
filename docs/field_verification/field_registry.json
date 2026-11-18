@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 755,
+      "matched": 754,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
@@ -25,18 +25,18 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 499,
+      "registry_status_only_single_source": 498,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 962,
-      "verified": 1584,
-      "verified_by_empirical_addendum": 201,
+      "unverified": 961,
+      "verified": 1585,
+      "verified_by_empirical_addendum": 204,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 455
+      "verified_by_source_contract": 454
     },
     "updated_at": "2026-11-18"
   },
@@ -40163,20 +40163,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+      "canonical": "zhuyinglirun",
+      "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zhuying_shouru",
@@ -40185,9 +40182,9 @@
         "TDX(双命名源)"
       ],
       "section": "source contract: 项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方资料与发行人报告仅作术语旁证 · Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键#FinanceInfo.zhuying_shouru 字段（利润指标，单位元）；GetFinanceInfoCmd.parse_response 中 zhuying_shouru 槽位及赋值 @ 项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验",
-      "canonical": "zhuying_shouru",
-      "meaning": "主营收入",
-      "unit": "元",
+      "canonical": "zhuyingshouru",
+      "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+      "unit": "角",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -40204,7 +40201,7 @@
       ],
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "zhuyinglirun",
-      "meaning": "主营业务利润",
+      "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
       "unit": "角",
       "status_raw": "✅",
       "status": "verified",
@@ -44978,9 +44975,6 @@
     "zhu_ying_li_run_raw_float": [
       "TDX-eltdx"
     ],
-    "zhuying_shouru": [
-      "TDX(双命名源)"
-    ],
     "zhuyinglyrun": [
       "TDX(双命名源)"
     ],
@@ -46193,6 +46187,9 @@
     ],
     "szse_etf_listing_date": [
       "沪深交易所"
+    ],
+    "zhuyinglirun": [
+      "TDX(双命名源)"
     ]
   },
   "mappings": [
@@ -95652,13 +95649,15 @@
       "code": "zhuying_lirun",
       "identity": "TDX(双命名源)::zhuying_lirun",
       "path": "zhuying_lirun",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "zhuyinglirun",
+      "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+      "unit": "角",
+      "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+      "sections": [
+        "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -95667,10 +95666,61 @@
           "TDX(双命名源)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261118-tdx-zhuying-lirun-operating-cost-e3"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+        "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+        "sample": {
+          "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 0,
+          "stock_count": 3
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+          "canonical": "zhuyinglirun",
+          "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+          "unit": "角",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tdx-zhuying-lirun-operating-cost-e3",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zhuyinglirun",
+              "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+              "unit": "角"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zhuying_lirun",
@@ -95683,22 +95733,67 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-tdx-zhuying-lirun-operating-cost-e3",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tdx_finance_path_semantics.json",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "zhuyinglirun",
+              "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+              "unit": "角"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "代码路径确认 Easy-TDX FinanceInfo 原字段 zhuying_lirun 与项目去下划线兼容别名 zhuyinglirun 逐股相等（3/3）。两条值除以 10 后均贴合三份不同发行人 2026Q3 合并利润表“营业成本”行；官方通达信公式帮助独立列出 FINANCE(21)=营业成本，但不提供此 0x0010 键到公式编号的官方映射。旧“主营业务利润”候选与观测值明显不符；保留旧来源证据，只定案此精确路径和样本范围，不建跨源映射。",
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "zhuying_shouru",
       "identity": "TDX(双命名源)::zhuying_shouru",
       "path": "zhuying_shouru",
-      "canonical": "zhuying_shouru",
-      "meaning": "主营收入",
-      "unit": "元",
+      "canonical": "zhuyingshouru",
+      "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+      "unit": "角",
       "section": "source contract: 项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方资料与发行人报告仅作术语旁证 · Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键#FinanceInfo.zhuying_shouru 字段（利润指标，单位元）；GetFinanceInfoCmd.parse_response 中 zhuying_shouru 槽位及赋值 @ 项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验",
       "sections": [
+        "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
         "source contract: 项目固定依赖 Easy-TDX 1.20.8 FinanceInfo / GetFinanceInfoCmd 0x0010 输出契约；通达信官方资料与发行人报告仅作术语旁证 · Easy-TDX TdxClient.get_finance_info -> GetFinanceInfoCmd.parse_response -> FinanceInfo DataFrame; core.tdx_client._EasyTdxAdapter.finance 保留原字段键#FinanceInfo.zhuying_shouru 字段（利润指标，单位元）；GetFinanceInfoCmd.parse_response 中 zhuying_shouru 槽位及赋值 @ 项目 requirements.txt 固定 vendor/easy_tdx-1.20.8-py3-none-any.whl；2026-11-11 核验"
       ],
       "status": "verified",
-      "status_resolution": "verified_by_source_contract",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -95707,14 +95802,28 @@
           "TDX(双命名源)"
         ],
         "values": [
-          "unverified"
+          "verified"
         ],
         "adjudication_ids": [
-          "20261111-easy-tdx-zhuying-shouru-source-contract"
+          "20261111-easy-tdx-zhuying-shouru-source-contract",
+          "20261118-tdx-zhuying-shouru-revenue-correction"
         ],
         "source_contract_adjudication_ids": [
           "20261111-easy-tdx-zhuying-shouru-source-contract"
-        ]
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+        "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+        "sample": {
+          "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 0,
+          "stock_count": 3
+        }
       },
       "reference_evidence": [
         {
@@ -95744,6 +95853,40 @@
               "meaning": "主营收入",
               "unit": "元"
             }
+          }
+        },
+        {
+          "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+          "canonical": "zhuyingshouru",
+          "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+          "unit": "角",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tdx-zhuying-shouru-revenue-correction",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuying_shouru",
+              "meaning": "主营收入",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
           }
         }
       ],
@@ -95794,6 +95937,48 @@
             "locator": "FinanceInfo.zhuying_shouru 字段（利润指标，单位元）；GetFinanceInfoCmd.parse_response 中 zhuying_shouru 槽位及赋值",
             "url": "https://github.com/yanwei99521/easy-tdx/blob/main/src/easy_tdx/models/finance.py"
           }
+        },
+        {
+          "id": "20261118-tdx-zhuying-shouru-revenue-correction",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tdx_finance_path_semantics.json",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "verified_by_source_contract",
+          "previous_metadata": {
+            "canonical": "zhuying_shouru",
+            "meaning": "主营收入",
+            "unit": "元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuying_shouru",
+              "meaning": "主营收入",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "既有 Easy-TDX 1.20.8 来源契约把 FinanceInfo.zhuying_shouru 记录为主营收入、元；但该路径输出与项目生成别名 zhuyingshouru 逐股相等（3/3），其输出值除以 10 后与三份不同发行人 2026Q3 合并利润表“营业收入”行吻合，且与茅台报表“营业总收入”合计区分。既有 zhuyingshouru E3 记录也确认此行项目及角单位。因此更正原路径的 canonical、释义和单位；原来源契约保留为历史证据，不新建跨源 mapping。",
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
         }
       ]
     },
@@ -95803,14 +95988,15 @@
       "identity": "TDX(双命名源)::zhuyinglirun",
       "path": "zhuyinglirun",
       "canonical": "zhuyinglirun",
-      "meaning": "主营业务利润",
+      "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
       "unit": "角",
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -95824,7 +96010,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261118-tdx-zhuyinglirun-operating-cost-correction"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+        "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+        "sample": {
+          "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+          "comparison_count": 3,
+          "matched_count": 3,
+          "counterexample_count": 0,
+          "official_report_count": 3,
+          "excluded_count": 0,
+          "stock_count": 3
+        }
       },
       "reference_evidence": [
         {
@@ -95834,6 +96036,40 @@
           "unit": "角",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+          "canonical": "zhuyinglirun",
+          "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+          "unit": "角",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tdx-zhuyinglirun-operating-cost-correction",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyinglirun",
+              "meaning": "主营业务利润",
+              "unit": "角"
+            },
+            "after": {
+              "canonical": "zhuyinglirun",
+              "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+              "unit": "角"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -95848,7 +96084,51 @@
         "meaning": "主营业务利润",
         "unit": "角",
         "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-tdx-zhuyinglirun-operating-cost-correction",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tdx_finance_path_semantics.json",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "zhuyinglirun",
+            "meaning": "主营业务利润",
+            "unit": "角"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyinglirun",
+              "meaning": "主营业务利润",
+              "unit": "角"
+            },
+            "after": {
+              "canonical": "zhuyinglirun",
+              "meaning": "营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。",
+              "unit": "角"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "代码路径确认 Easy-TDX FinanceInfo 原字段 zhuying_lirun 与项目去下划线兼容别名 zhuyinglirun 逐股相等（3/3）。两条值除以 10 后均贴合三份不同发行人 2026Q3 合并利润表“营业成本”行；官方通达信公式帮助独立列出 FINANCE(21)=营业成本，但不提供此 0x0010 键到公式编号的官方映射。旧“主营业务利润”候选与观测值明显不符；保留旧来源证据，只定案此精确路径和样本范围，不建跨源映射。该路径原有已验证释义明确为“主营业务利润”；此次按完整实证修正。",
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -95860,7 +96140,8 @@
       "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。",
       "section": "TDX 双命名源 zhuyinglyrun 营业成本实证定案（2026-11-13）",
       "sections": [
-        "TDX 双命名源 zhuyinglyrun 营业成本实证定案（2026-11-13）"
+        "TDX 双命名源 zhuyinglyrun 营业成本实证定案（2026-11-13）",
+        "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -95875,20 +96156,21 @@
           "verified"
         ],
         "adjudication_ids": [
-          "20261113-tdx-zhuyinglyrun-operating-cost-e3"
+          "20261113-tdx-zhuyinglyrun-operating-cost-e3",
+          "20261118-tdx-zhuyinglyrun-easytdx-corroboration"
         ],
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
-        "evidence_file": "adjudications/20261113_tdx_finance_aliases_evidence.md",
-        "evidence_sha256": "5fc51c1324807afff93f8009dbfefb4e17457e8c0b2277148cdcef6e0f317324",
+        "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+        "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
         "sample": {
-          "scope": "4 家发行人 2026Q3 合并报表营业成本样本；另用 data_date=20261112 的 20 股保留采集确认 TDX finance_info.zhuyinglyrun 等于 ELTDX finance_batch[].zhu_ying_li_run_raw_float×10,000。",
-          "comparison_count": 4,
-          "matched_count": 4,
+          "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+          "comparison_count": 3,
+          "matched_count": 3,
           "counterexample_count": 0,
-          "official_report_count": 4,
+          "official_report_count": 3,
           "excluded_count": 0,
-          "stock_count": 4
+          "stock_count": 3
         }
       },
       "reference_evidence": [
@@ -95924,6 +96206,40 @@
             "official_report_count": 4,
             "excluded_count": 0,
             "stock_count": 4
+          }
+        },
+        {
+          "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+          "canonical": "zhuyinglyrun",
+          "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+          "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tdx-zhuyinglyrun-easytdx-corroboration",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyinglyrun",
+              "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+              "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。"
+            },
+            "after": {
+              "canonical": "zhuyinglyrun",
+              "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+              "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
           }
         }
       ],
@@ -95982,6 +96298,48 @@
             "excluded_count": 0,
             "stock_count": 4
           }
+        },
+        {
+          "id": "20261118-tdx-zhuyinglyrun-easytdx-corroboration",
+          "action": "append_empirical_source_evidence",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tdx_finance_path_semantics.json",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "verified_by_empirical_addendum",
+          "previous_metadata": {
+            "canonical": "zhuyinglyrun",
+            "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+            "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyinglyrun",
+              "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+              "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。"
+            },
+            "after": {
+              "canonical": "zhuyinglyrun",
+              "meaning": "财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。",
+              "unit": "角（兼容输出）；来源原始值为千元，乘 10,000 转换为角。"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新增的同日 Easy-TDX fallback 逐值结果与 2026-11-18 生产归档中的 TDX zhuyinglyrun 在三只样本上完全相等，并与三份 2026Q3 合并利润表营业成本行一致。此为同一 TDX 源族两适配器的补充观察，不视为独立来源或独立采集日期；仅追加来源内证据，保持既有 metadata。",
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
+          }
         }
       ]
     },
@@ -95997,7 +96355,8 @@
       "sections": [
         "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "2.6 与 Gemini 核实字段清单的逐项对照",
-        "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证"
+        "TDX 0x0010 财务截图四字段 2026Q3 发行人报告实证",
+        "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
@@ -96017,20 +96376,21 @@
           "verified"
         ],
         "adjudication_ids": [
-          "20261113-tdx-zhuyingshouru-q3-official-report-e3"
+          "20261113-tdx-zhuyingshouru-q3-official-report-e3",
+          "20261118-tdx-zhuyingshouru-easytdx-corroboration"
         ],
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
-        "evidence_file": "adjudications/20261113_tdx_image_finance_fields_evidence.md",
-        "evidence_sha256": "6313e9b742929b3083e1a2d5fcfdc5d488bb05ac8239bab3b6eec209d93e9448",
+        "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+        "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
         "sample": {
-          "scope": "2026-11-10 保留采集目录；finance_info.zhuyingshouru 与同一请求 finance_batch[].zhu_ying_shou_ru_raw_float；两个股票；来源 updated_date=2026-10-31；发行人 2026Q3 报告期末 2026-09-30。",
-          "comparison_count": 2,
-          "matched_count": 2,
+          "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+          "comparison_count": 3,
+          "matched_count": 3,
           "counterexample_count": 0,
-          "official_report_count": 2,
+          "official_report_count": 3,
           "excluded_count": 0,
-          "stock_count": 2
+          "stock_count": 3
         }
       },
       "reference_evidence": [
@@ -96082,6 +96442,40 @@
             "official_report_count": 2,
             "excluded_count": 0,
             "stock_count": 2
+          }
+        },
+        {
+          "section": "TDX 财务字段 Easy-TDX 回退路径实证（2026-11-18）",
+          "canonical": "zhuyingshouru",
+          "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+          "unit": "角",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tdx-zhuyingshouru-easytdx-corroboration",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            },
+            "after": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
           }
         }
       ],
@@ -96144,6 +96538,48 @@
             "official_report_count": 2,
             "excluded_count": 0,
             "stock_count": 2
+          }
+        },
+        {
+          "id": "20261118-tdx-zhuyingshouru-easytdx-corroboration",
+          "action": "append_empirical_source_evidence",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tdx_finance_path_semantics.json",
+          "evidence_file": "adjudications/20261118_tdx_finance_path_semantics.md",
+          "evidence_sha256": "93f0c24a3074548969b09f7eb2caf68aff8fb4a7e95827a5c134ae8342b816e9",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "verified_by_empirical_addendum",
+          "previous_metadata": {
+            "canonical": "zhuyingshouru",
+            "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+            "unit": "角"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            },
+            "after": {
+              "canonical": "zhuyingshouru",
+              "meaning": "主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。",
+              "unit": "角"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "新增的同日 Easy-TDX fallback 逐值结果与 2026-11-18 生产归档中的 TDX zhuyingshouru 在三只样本上完全相等，并与三份 2026Q3 合并利润表营业收入行一致。此为同一 TDX 源族两适配器的补充观察，不视为独立来源或独立采集日期；仅追加来源内证据，保持既有 metadata。",
+          "sample": {
+            "scope": "2026-11-18 Easy-TDX fallback direct FinanceInfo reads and same-data-date TDX primary archive; 600519, 000568, 600309; compare 2026Q3 year-to-date consolidated income statements. This is one source data date, not multiple independent capture days.",
+            "comparison_count": 3,
+            "matched_count": 3,
+            "counterexample_count": 0,
+            "official_report_count": 3,
+            "excluded_count": 0,
+            "stock_count": 3
           }
         }
       ]

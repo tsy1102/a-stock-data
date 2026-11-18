@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 553 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 556 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3347,6 +3347,9 @@
 | TDX(双命名源) | `updateddate` | updateddate | updated_date 的无下划线兼容别名，表示该证券财务记录的更新日期；不等同报告期末、公告披露日、采集日或来源级数据日期。 | `verified` |
 | TDX(双命名源) | `volume` | volume | 成交量，按 AxData TDX 快照模型的源端行情口径返回；不表示当前项目采集路径 | `verified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
+| TDX(双命名源) | `zhuying_lirun` | zhuyinglirun | 营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。 | `verified` |
+| TDX(双命名源) | `zhuying_shouru` | zhuyingshouru | 主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。 | `verified` |
+| TDX(双命名源) | `zhuyinglirun` | zhuyinglirun | 营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。 | `verified` |
 | TDX(双命名源) | `zhuyinglyrun` | zhuyinglyrun | 财务输出值对应发行人合并利润表“营业成本”；当前官方报告核验样本为 2026 年第三季度年初至报告期末值。 | `verified` |
 | TDX(双命名源) | `zhuyingshouru` | zhuyingshouru | 主营收入槽位；样本对应合并利润表“营业收入”行，不对应“营业总收入”合计。 | `verified` |
 | TDX(双命名源) | `zongxianjinliu` | zongxianjinliu | 经营、投资、筹资活动产生的现金流量净额之和；不含汇率变动对现金及现金等价物的影响。 | `verified` |

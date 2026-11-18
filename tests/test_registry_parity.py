@@ -559,8 +559,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    # Includes the 17 ELTDX limit_ladder paths adjudicated in the 2026-11-18 batch.
-    assert len(pairs) == 111
+    # Includes the 17 ELTDX limit_ladder paths adjudicated in the 2026-11-18 batch;
+    # zhuying_shouru now has an empirical correction, so it is no longer counted here.
+    assert len(pairs) == 110
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs

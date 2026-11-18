@@ -91,6 +91,8 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 `verify_empirical_source_semantics` 只更新精确 `(source, 完整 code path)` 的来源内含义、单位和证据，不生成跨源 `mappings`。该实证流程可将 `reference_status_conflict`、`reference_semantic_attribute_conflict` 或 `status_conflict` 收敛为来源内定案，但决策必须记录原状态、元数据及完整的 `previous_attribute_conflicts` 快照；应用器会保留这些旧冲突作为审计证据。若同一裁决还要清理已核实的旧矩阵错投影，可提供 `matrix_projection_removals` 列表；应用器只会移除不存在对应活动来源字段记录的精确 `(canonical, source)` 投影，并将移除清单写入裁决历史。`append_empirical_source_evidence` 只允许为已有来源内定案追加证据并保留原元数据。来源身份仍不明确、来源路径无法映射或已证伪的字段不得借此覆盖。`source_field_addenda` 仍仅用于注册表 parity 所需的基线外字段投影，不是字段定案命令。
 
+全样本发行人报告实证也可纠正先前由来源契约确认的错误释义或单位。此时使用 `verify_empirical_source_semantics`，提交原 `verified_by_source_contract` 状态、完整原元数据和可复核的逐样本证据；应用后由实证证据作为当前定义，旧来源契约裁决继续留在历史记录中。
+
 ## 官方来源网站的标签与数值核验
 
 先按 `source_lineage.json` 确认字段所属的实际数据提供方，再访问该提供方的官方接口/协议文档、字段字典和官网股票查询页面。比较前按字段时间语义对齐：日快照匹配来源日期和交易阶段，财报值匹配报告期及披露版本，已完成历史事件匹配同一事件身份/状态/日期/数量，不要求事件日期等于采集日。每日采集与碰撞完整审阅后执行此项核验；样本、留证和访问规则见 [`PUBLIC_WEB_VERIFICATION.md`](PUBLIC_WEB_VERIFICATION.md)。

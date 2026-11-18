@@ -1077,10 +1077,11 @@ def apply_empirical_source_semantics_adjudications(
         if (
             previous_status == "verified"
             and not evidence_followup
-            and previous_resolution != "matched"
+            and previous_resolution not in {"matched", "verified_by_source_contract"}
         ):
             raise ValueError(
-                "verified metadata correction requires previous_status_resolution='matched'"
+                "verified metadata correction requires previous_status_resolution="
+                "'matched' or 'verified_by_source_contract'"
             )
         previous = _metadata_snapshot(decision.get("previous"), "decision.previous")
         matrix_projection_removals = decision.get("matrix_projection_removals", [])

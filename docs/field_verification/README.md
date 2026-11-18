@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261118_kph_industry_count_followup.md`](adjudications/20261118_kph_industry_count_followup.md) 与 [`research/20261118_kph_industry_limit_up_count_samples.csv`](research/20261118_kph_industry_limit_up_count_samples.csv)：按 2026-11-17 分页完整 KPH 返回样本与同日 KPL 对照；Levistock 同接口将 row[27] 映射为“同行业涨停数”，但 KPH/KPL 仅 14/34 逐股计数相同、KPH 返回列表内计数有 5 条差异。无开盘红正式字段契约，故 KPH 字段继续待核、不建立跨源映射。
 - [20261118_ulist239_f148_membership_review.md](adjudications/public_web/20261118_ulist239_f148_membership_review.md) 与 [逐股证据 JSON](adjudications/public_web/20261118_ulist239_f148_membership_witness.json)：2026-11-17 的 20 只股票对照官方两融、沪股通和深股通名单，bit6/bit9/bit10 均 20/20 匹配；bit0 在 A 股、ETF、指数和 B 股样本中均为 1，尚不能区分通用证券标记与基位，因此 f148 仍未写入主注册表。
 
 - [`adjudications/20261118_tencent_field_86_semantics.md`](adjudications/20261118_tencent_field_86_semantics.md)、[`adjudications/20261118_tencent_field_86_semantics.json`](adjudications/20261118_tencent_field_86_semantics.json) 与 [`research/20261118_tencent_85_86_pair_audit.csv`](research/20261118_tencent_85_86_pair_audit.csv)：按 20 个 Tencent 来源日、20 只股票共 400 行保留样本，将 `腾讯(qt.gtimg)::[86]` 定案为方向级“竞价失衡信号”；359 条有信息样本 `sign([86]) == sign([3]-[85])`，41 条双零排除。历史“净未匹配手数/手”收窄为未证实的数量口径；单位留空，不建立跨源映射。

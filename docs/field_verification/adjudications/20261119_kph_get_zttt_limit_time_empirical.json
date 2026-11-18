@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_kph_get_zttt_limit_time_empirical.md",
+  "evidence_sha256": "cff59cb51fcad79347c314babdde0f32d17534e3b4793bc4a4bc6692df306a8c",
+  "decisions": [
+    {
+      "id": "20261119-market-sources-limit-time",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "limit_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "limit_time",
+        "meaning": "涨停时间",
+        "unit": ""
+      },
+      "canonical": "limit_time",
+      "meaning": "涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。",
+      "unit": "Unix 秒",
+      "section": "2026-11-19 KPH get_zttt limit_time 来源内实证",
+      "rationale": "项目采集路径精确落在 market_sources.kph_limit_ladder[*].limit_time；Levistock 适配器将 KPH 梯队返回值映射到 limit_time。按时间戳东八区日期核实样本数据日后，与已验证的开盘红::limit_time 逐股票、逐来源日比较，198/198 完全相同。保留首次/末次封板语义未确认边界；不建立跨源映射。",
+      "sample": {
+        "scope": "保留期 2026-10-15 起；market_sources.kph_limit_ladder[*].limit_time 与已验证开盘红::limit_time 同股同数据日比较。全量 1,225 行中剔除 32 条时间戳落在前一日的旧行、973 条无同日 KPH 历史归档及 22 条无同日同股配对。",
+        "comparison_count": 198,
+        "matched_count": 198,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 1027,
+        "stock_count": 187
+      }
+    },
+    {
+      "id": "20261119-levistock-kph-limit-time",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘红(Levistock适配)",
+        "code": "limit_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "limit_time / open_time",
+        "meaning": "待破解",
+        "unit": ""
+      },
+      "canonical": "limit_time",
+      "meaning": "涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。",
+      "unit": "Unix 秒",
+      "section": "2026-11-19 KPH get_zttt limit_time 来源内实证",
+      "rationale": "项目采集路径精确落在 market_sources.kph_limit_ladder[*].limit_time；Levistock 适配器将 KPH 梯队返回值映射到 limit_time。按时间戳东八区日期核实样本数据日后，与已验证的开盘红::limit_time 逐股票、逐来源日比较，198/198 完全相同。保留首次/末次封板语义未确认边界；不建立跨源映射。",
+      "sample": {
+        "scope": "保留期 2026-10-15 起；market_sources.kph_limit_ladder[*].limit_time 与已验证开盘红::limit_time 同股同数据日比较。全量 1,225 行中剔除 32 条时间戳落在前一日的旧行、973 条无同日 KPH 历史归档及 22 条无同日同股配对。",
+        "comparison_count": 198,
+        "matched_count": 198,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 1027,
+        "stock_count": 187
+      }
+    }
+  ]
+}

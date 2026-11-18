@@ -85,10 +85,16 @@
         "popular"
       ],
       "sample_count": 40,
-      "date_status": "request_parameter_match",
-      "eligible_for_date_comparison": false,
+      "date_status": "record_timestamp_match",
+      "eligible_for_date_comparison": true,
       "eligible_for_request_aligned_comparison": true,
-      "requested_trade_date": "2026-11-18"
+      "requested_trade_date": "2026-11-18",
+      "source_as_of_date": "2026-11-18",
+      "source_dates": [
+        "2026-11-18"
+      ],
+      "source_timestamp_record_count": 40,
+      "source_record_count": 40
     }
   },
   "candidate_probe": {

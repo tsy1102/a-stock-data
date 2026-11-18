@@ -13,6 +13,7 @@ from typing import Any
 
 _date_utils_module = import_module(f"{__package__}.date_utils" if __package__ else "date_utils")
 _date_key = _date_utils_module.normalize_date_key
+_unix_seconds_date = _date_utils_module.normalize_unix_seconds_date
 import importlib
 
 _package_prefix = f"{__package__}." if __package__ else ""
@@ -143,7 +144,44 @@ def _method_evidence(
 
     explicit_dates = _explicit_dates(payload)
     requested_date = _date_key(method_meta.get("requested_trade_date"))
-    if len(explicit_dates) == 1:
+    kph_timestamp_dates: set[str] = set()
+    kph_timestamp_rows = 0
+    kph_total_rows = 0
+    kph_has_timestamp_field = False
+    if method == "kph_limit_ladder" and isinstance(payload, list):
+        kph_rows = [row for row in payload if isinstance(row, dict)]
+        kph_total_rows = len(kph_rows)
+        kph_has_timestamp_field = any("limit_time" in row for row in kph_rows)
+        for row in kph_rows:
+            timestamp_date = _unix_seconds_date(row.get("limit_time"))
+            if timestamp_date is not None:
+                kph_timestamp_rows += 1
+                kph_timestamp_dates.add(timestamp_date)
+    if method == "kph_limit_ladder" and kph_has_timestamp_field:
+        result["source_timestamp_record_count"] = kph_timestamp_rows
+        result["source_record_count"] = kph_total_rows
+        if kph_timestamp_dates:
+            result["source_dates"] = sorted(kph_timestamp_dates)
+        if len(kph_timestamp_dates) > 1:
+            result["date_status"] = "multiple_record_timestamp_dates"
+        elif kph_timestamp_rows < kph_total_rows:
+            result["date_status"] = "partial_record_timestamp_coverage"
+        elif len(kph_timestamp_dates) == 1:
+            timestamp_date = next(iter(kph_timestamp_dates))
+            result["source_as_of_date"] = timestamp_date
+            if explicit_dates and explicit_dates != {timestamp_date}:
+                result["date_status"] = "record_timestamp_date_conflict"
+            elif requested_date and requested_date != timestamp_date:
+                result["date_status"] = "request_response_mismatch"
+            else:
+                result["date_status"] = (
+                    "record_timestamp_match"
+                    if expected_trade_date == timestamp_date
+                    else "record_timestamp_mismatch"
+                )
+        else:
+            result["date_status"] = "record_timestamp_unavailable"
+    elif len(explicit_dates) == 1:
         explicit_date = next(iter(explicit_dates))
         result["source_as_of_date"] = explicit_date
         if requested_date and requested_date != explicit_date:
@@ -165,9 +203,13 @@ def _method_evidence(
     else:
         result["date_status"] = "not_exposed"
 
-    result["eligible_for_date_comparison"] = result["date_status"] == "explicit_match"
+    result["eligible_for_date_comparison"] = result["date_status"] in {
+        "explicit_match",
+        "record_timestamp_match",
+    }
     result["eligible_for_request_aligned_comparison"] = result["date_status"] in {
         "explicit_match",
+        "record_timestamp_match",
         "request_parameter_match",
     }
     return result

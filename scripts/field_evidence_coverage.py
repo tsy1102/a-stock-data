@@ -258,41 +258,60 @@ def build_field_coverage(
                         continue
                     sample_date_origin = "record.event_date"
                 else:
-                    market_trade_day = collide._ftshare_limit_up_trade_date(
-                        snapshot.source, container_code, record
+                    kph_ladder_trade_day = collide._kph_ladder_record_date(
+                        snapshot.source, path_prefix, record
                     )
-                    if collide._is_ftshare_limit_up_record(snapshot.source, container_code):
-                        if market_trade_day is None:
+                    if snapshot.source == "market_sources" and path_prefix == "kph_limit_ladder":
+                        if kph_ladder_trade_day is None:
                             missing_market_dates += 1
                             continue
                         if (
-                            market_trade_day not in trading_window_set
-                            or market_trade_day > report_date
-                            or market_trade_day > snapshot.sample_date
+                            kph_ladder_trade_day not in trading_window_set
+                            or kph_ladder_trade_day > report_date
+                            or kph_ladder_trade_day > snapshot.capture_date
                         ):
                             out_of_window_market_dates += 1
                             continue
-                        sample_day = market_trade_day
-                        sample_date_origin = "record.trade_date"
-                    elif snapshot.source == "etf":
-                        etf_trade_day = cdates.record_source_as_of_date(snapshot.source, record)
-                        if etf_trade_day is None:
-                            missing_market_dates += 1
-                            continue
-                        if (
-                            etf_trade_day not in trading_window_set
-                            or etf_trade_day > report_date
-                            or etf_trade_day > snapshot.capture_date
-                        ):
-                            out_of_window_market_dates += 1
-                            continue
-                        sample_day = etf_trade_day
-                        sample_date_origin = "record.as_of_date"
-                        if etf_trade_day < snapshot.capture_date:
+                        sample_day = kph_ladder_trade_day
+                        sample_date_origin = "record.limit_time_unix_seconds"
+                        if kph_ladder_trade_day < snapshot.capture_date:
                             sample_phase = "closed"
                     else:
-                        sample_day = snapshot.sample_date
-                        sample_date_origin = snapshot.date_origin
+                        market_trade_day = collide._ftshare_limit_up_trade_date(
+                            snapshot.source, container_code, record
+                        )
+                        if collide._is_ftshare_limit_up_record(snapshot.source, container_code):
+                            if market_trade_day is None:
+                                missing_market_dates += 1
+                                continue
+                            if (
+                                market_trade_day not in trading_window_set
+                                or market_trade_day > report_date
+                                or market_trade_day > snapshot.sample_date
+                            ):
+                                out_of_window_market_dates += 1
+                                continue
+                            sample_day = market_trade_day
+                            sample_date_origin = "record.trade_date"
+                        elif snapshot.source == "etf":
+                            etf_trade_day = cdates.record_source_as_of_date(snapshot.source, record)
+                            if etf_trade_day is None:
+                                missing_market_dates += 1
+                                continue
+                            if (
+                                etf_trade_day not in trading_window_set
+                                or etf_trade_day > report_date
+                                or etf_trade_day > snapshot.capture_date
+                            ):
+                                out_of_window_market_dates += 1
+                                continue
+                            sample_day = etf_trade_day
+                            sample_date_origin = "record.as_of_date"
+                            if etf_trade_day < snapshot.capture_date:
+                                sample_phase = "closed"
+                        else:
+                            sample_day = snapshot.sample_date
+                            sample_date_origin = snapshot.date_origin
                 if sample_day > report_date:
                     continue
                 day_key = cdates.sample_date_key(snapshot.domain, sample_day)
@@ -305,7 +324,11 @@ def build_field_coverage(
                     day_key,
                     pairs,
                     include_structured_values=True,
-                    path_prefix=path_prefix,
+                    path_prefix=(
+                        None
+                        if snapshot.source == "market_sources" and path_prefix == "kph_limit_ladder"
+                        else path_prefix
+                    ),
                 )
                 for fid, value in pairs:
                     if not _has_value(value):
@@ -332,7 +355,12 @@ def build_field_coverage(
                     closed_snapshot = event_source or sample_phase == "closed"
                     source_date_is_explicit = (
                         snapshot.date_origin == "source_as_of"
-                        or sample_date_origin in {"record.trade_date", "record.as_of_date"}
+                        or sample_date_origin
+                        in {
+                            "record.trade_date",
+                            "record.as_of_date",
+                            "record.limit_time_unix_seconds",
+                        }
                     )
                     status_is_usable = snapshot.status in {"ok", "partial"}
                     if scheme_ok and status_is_usable and event_date_is_explicit:

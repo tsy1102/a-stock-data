@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+import math
+import re
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
 
@@ -21,3 +23,26 @@ def normalize_date_key(value: Any) -> Optional[str]:
         except ValueError:
             continue
     return None
+
+
+def normalize_unix_seconds_date(value: Any) -> Optional[str]:
+    """Return the Asia/Shanghai date of a strict 10-digit Unix-second value."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, float):
+        if not math.isfinite(value) or not value.is_integer():
+            return None
+        value = int(value)
+    if isinstance(value, int):
+        normalized = str(value)
+    elif isinstance(value, str):
+        normalized = value.strip()
+    else:
+        return None
+    if re.fullmatch(r"\d{10}", normalized) is None:
+        return None
+    try:
+        utc_value = datetime.fromtimestamp(int(normalized), tz=timezone.utc)
+    except (OverflowError, OSError, ValueError):
+        return None
+    return utc_value.astimezone(timezone(timedelta(hours=8))).date().isoformat()

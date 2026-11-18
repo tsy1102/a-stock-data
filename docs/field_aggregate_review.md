@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 557 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 558 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2539,13 +2539,13 @@
 
 ### `limit_time` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 市场源(market_sources) · `limit_time` | limit_time | 涨停时间 | — | `unverified` |
+| 市场源(market_sources) · `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | Unix 秒 | `verified` |
 | 开盘红 · `limit_time` | limit_time | 涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致 | Unix 秒 | `verified` |
-| 开盘红(Levistock适配) · `limit_time` | limit_time / open_time | 待破解 | — | `unverified` |
+| 开盘红(Levistock适配) · `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | Unix 秒 | `verified` |
 
 ### `limit_up` — incomplete
 
@@ -3738,6 +3738,7 @@
 | 市场源(market_sources) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
 | 市场源(market_sources) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
 | 市场源(market_sources) | `flat` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
+| 市场源(market_sources) | `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | `verified` |
 | 市场源(market_sources) | `q_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | `unverified` |
 | 市场源(market_sources) | `qscln` | szln / qscln | 待破解 | `unverified` |
 | 市场源(market_sources) | `rise_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
@@ -3788,7 +3789,7 @@
 | 开盘红(Levistock适配) | `industry_zt` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | `unverified` |
 | 开盘红(Levistock适配) | `limit_count` | limit_tag / limit_count | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `limit_tag` | limit_tag / limit_count | 待破解 | `unverified` |
-| 开盘红(Levistock适配) | `limit_time` | limit_time / open_time | 待破解 | `unverified` |
+| 开盘红(Levistock适配) | `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | `verified` |
 | 开盘红(Levistock适配) | `net_inflow` | net_inflow / market_cap | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `open_time` | limit_time / open_time | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `q_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | `unverified` |

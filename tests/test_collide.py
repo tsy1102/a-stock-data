@@ -508,6 +508,83 @@ def test_ftshare_limit_up_context_uses_record_trade_date_and_stock_symbol(tmp_pa
     assert any("市场记录不在所选交易日窗口内" in item for item in diagnostics)
 
 
+def test_market_sources_kph_ladder_uses_limit_timestamp_trade_date():
+    snapshot = collision_dates.Snapshot(
+        source="market_sources",
+        domain=collision_dates.TRADING,
+        sample_date=date(2026, 11, 17),
+        capture_date=date(2026, 11, 17),
+        folder="20261117",
+        path="20261117/raw_market_sources.json",
+        document={
+            "kph_limit_ladder": [{"code": "002148", "limit_time": 1794792300, "limit_count": 1}],
+            "other_records": [{"code": "000001", "other_metric": 7}],
+        },
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=2,
+        captured_at=None,
+        date_origin="folder_inferred",
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+
+    total = collide.load_snapshots(
+        [snapshot],
+        store,
+        [],
+        allowed_trading_dates={"20261116", "20261117"},
+    )
+
+    key = ("002148", "T:20261116")
+    assert total == 5
+    assert store["market_sources.limit_time"]["vals"][key] == 1794792300
+    assert (
+        store["market_sources.limit_time"]["sample_meta"][key]["as_of_date_origin"]
+        == "record.limit_time_unix_seconds"
+    )
+    assert store["market_sources.other_metric"]["vals"] == {("000001", "T:20261117"): 7}
+
+    target_only_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    target_only_diagnostics = []
+    collide.load_snapshots(
+        [snapshot],
+        target_only_store,
+        target_only_diagnostics,
+        allowed_trading_dates={"20261117"},
+    )
+    assert "market_sources.limit_time" not in target_only_store
+    assert any("市场记录不在所选交易日窗口内" in item for item in target_only_diagnostics)
+
+
+def test_market_sources_kph_ladder_rejects_request_date_only_rows():
+    snapshot = collision_dates.Snapshot(
+        source="market_sources",
+        domain=collision_dates.TRADING,
+        sample_date=date(2026, 11, 17),
+        capture_date=date(2026, 11, 17),
+        folder="20261117",
+        path="20261117/raw_market_sources.json",
+        document={"kph_limit_ladder": [{"code": "002148", "limit_time": 93000}]},
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=1,
+        captured_at=None,
+        date_origin="folder_inferred",
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    diagnostics = []
+
+    total = collide.load_snapshots(
+        [snapshot], store, diagnostics, allowed_trading_dates={"20261117"}
+    )
+
+    assert total == 0
+    assert not store
+    assert any("缺少可解析的来源交易日" in item for item in diagnostics)
+
+
 def _field(values, source):
     phases = values.pop("_phases", {})
     return {

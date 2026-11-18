@@ -19,6 +19,7 @@ from scripts.collision_dates import (
     sample_date_key,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
+from scripts.date_utils import normalize_unix_seconds_date
 
 
 def _collision_value(value, *, include_structured=False):
@@ -219,6 +220,11 @@ def _record_containers(doc, source=None, include_context=False):
             "auction_snapshot_meta",
         ):
             continue
+        if source == "market_sources" and key == "kph_limit_ladder":
+            # The composite capture date is only the request date for this
+            # endpoint. Preserve its collection path so callers can qualify
+            # each row by the verified limit_time event timestamp.
+            continue
         if source == "ftshare" and key == "market":
             continue
         if (
@@ -274,7 +280,36 @@ def _record_containers_with_paths(doc, source=None, include_context=False):
                     )
                 )
         return containers
+    if source == "market_sources":
+        containers = []
+        ladder = doc.get("kph_limit_ladder") if isinstance(doc, dict) else None
+        if isinstance(ladder, list):
+            containers.append(
+                (
+                    "kph_limit_ladder",
+                    {
+                        f"__kph_limit_ladder_{index}": record
+                        for index, record in enumerate(ladder)
+                        if isinstance(record, dict)
+                    },
+                )
+            )
+        containers.extend(
+            (None, container) for container in _record_containers(doc, source, include_context)
+        )
+        return containers
     return [(None, container) for container in _record_containers(doc, source, include_context)]
+
+
+def _kph_ladder_record_date(source, path_prefix, record):
+    """Resolve one KPH ladder row's event date from its Unix-second timestamp."""
+    if source != "market_sources" or path_prefix != "kph_limit_ladder":
+        return None
+    value = record.get("limit_time") if isinstance(record, dict) else None
+    # The verified field unit is Unix seconds. Do not reinterpret compact
+    # HHMMSS values or silently accept a different timestamp precision.
+    normalized = normalize_unix_seconds_date(value)
+    return parse_date(normalized)
 
 
 def _event_identity(source, record, container_code, entity_code):
@@ -450,6 +485,37 @@ def load_snapshots(
                     else:
                         day_key = snapshot.day_key
                         sample_date_origin = snapshot.date_origin
+                    if snapshot.source == "market_sources" and path_prefix == "kph_limit_ladder":
+                        kph_ladder_trade_day = _kph_ladder_record_date(
+                            snapshot.source, path_prefix, rec
+                        )
+                        if kph_ladder_trade_day is None:
+                            undated_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        if kph_ladder_trade_day > snapshot.capture_date:
+                            future_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        kph_trade_day_text = kph_ladder_trade_day.strftime("%Y%m%d")
+                        if (
+                            allowed_trading_dates is not None
+                            and kph_trade_day_text not in allowed_trading_dates
+                        ):
+                            out_of_window_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        if allowed_trading_dates is None:
+                            try:
+                                is_session = is_trading_session(kph_ladder_trade_day)
+                            except CalendarResolutionError:
+                                calendar_error_counts[(snapshot.folder, snapshot.source)] += 1
+                                continue
+                            if not is_session:
+                                invalid_market_date_counts[(snapshot.folder, snapshot.source)] += 1
+                                continue
+                        sample_day = kph_ladder_trade_day
+                        day_key = sample_date_key(TRADING, kph_ladder_trade_day)
+                        sample_date_origin = "record.limit_time_unix_seconds"
+                        if kph_ladder_trade_day < snapshot.capture_date:
+                            sample_phase = "closed"
 
                 raw_code = (
                     rec.get("zqdm")
@@ -482,7 +548,11 @@ def load_snapshots(
                     include_structured_values=_is_ftshare_limit_up_record(
                         snapshot.source, container_code
                     ),
-                    path_prefix=path_prefix,
+                    path_prefix=(
+                        None
+                        if snapshot.source == "market_sources" and path_prefix == "kph_limit_ladder"
+                        else path_prefix
+                    ),
                 )
                 for fid, value in pairs:
                     key = (code, day_key)

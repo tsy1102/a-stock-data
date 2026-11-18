@@ -21,6 +21,15 @@ def test_capture_catalog_keeps_eastmoney_field_schemes_distinct():
     assert capture_catalog.EM_ULIST_RESEARCH_FIELDS == ("f297",)
 
 
+def test_kph_ladder_catalog_does_not_treat_request_date_as_source_date():
+    contract = capture_catalog.CAPTURE_UNIT_CATALOG["market_sources.kph_limit_ladder"][
+        "source_date_contract"
+    ]
+
+    assert "verified Unix-second limit_time" in contract
+    assert "request date is not response-date evidence" in contract
+
+
 def test_push2ex_pool_endpoints_are_individually_catalogued():
     expected = {
         "push2ex.limit_up_pool": ("getTopicZTPool", ("limit_up_pool",)),

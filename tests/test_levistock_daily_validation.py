@@ -69,6 +69,54 @@ def test_request_parameter_is_not_misreported_as_response_date(tmp_path):
     assert result["methods"]["cls_market_emotion"]["date_status"] == "not_exposed"
 
 
+def test_kph_ladder_uses_record_limit_time_to_detect_stale_rows(tmp_path):
+    _write_raw(
+        tmp_path,
+        {
+            "cls_market_emotion": {"emotion_index": 1},
+            "kph_limit_ladder": [{"code": "002148", "limit_time": 1794792300}],
+            "__source_meta__": {"kph_limit_ladder": {"requested_trade_date": "2026-11-17"}},
+        },
+    )
+
+    result = _run(
+        tmp_path,
+        data_date="20261117",
+        latest_completed_trade_date="2026-11-17",
+    )
+    kph = result["methods"]["kph_limit_ladder"]
+
+    assert kph["source_as_of_date"] == "2026-11-16"
+    assert kph["source_dates"] == ["2026-11-16"]
+    assert kph["date_status"] == "request_response_mismatch"
+    assert kph["source_timestamp_record_count"] == 1
+    assert kph["source_record_count"] == 1
+    assert kph["eligible_for_date_comparison"] is False
+    assert kph["eligible_for_request_aligned_comparison"] is False
+
+
+def test_kph_ladder_accepts_complete_matching_record_timestamp_dates(tmp_path):
+    _write_raw(
+        tmp_path,
+        {
+            "cls_market_emotion": {"emotion_index": 1},
+            "kph_limit_ladder": [{"code": "002148", "limit_time": 1794792300}],
+            "__source_meta__": {"kph_limit_ladder": {"requested_trade_date": "2026-11-16"}},
+        },
+    )
+
+    result = _run(
+        tmp_path,
+        data_date="20261116",
+        latest_completed_trade_date="2026-11-16",
+    )
+    kph = result["methods"]["kph_limit_ladder"]
+
+    assert kph["date_status"] == "record_timestamp_match"
+    assert kph["source_as_of_date"] == "2026-11-16"
+    assert kph["eligible_for_date_comparison"] is True
+
+
 def test_daily_validation_flags_response_date_mismatch(tmp_path):
     _write_raw(
         tmp_path,

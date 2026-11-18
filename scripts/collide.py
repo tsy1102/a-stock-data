@@ -125,6 +125,7 @@ from scripts.collision_snapshots import (
     _flatten,
     _is_ftshare_limit_up_record,
     _ftshare_limit_up_trade_date,
+    _kph_ladder_record_date,
     _record_code,
     _record_containers,
     _record_containers_with_paths,

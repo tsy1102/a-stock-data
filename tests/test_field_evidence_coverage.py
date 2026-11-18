@@ -255,6 +255,46 @@ def test_ftshare_context_fields_are_covered_by_explicit_record_trade_date():
     assert "10.4100" not in json.dumps(result, ensure_ascii=False)
 
 
+def test_kph_ladder_coverage_uses_limit_timestamp_date_not_request_folder():
+    registry = {
+        "source_fields": [
+            {
+                "source": "市场源(market_sources)",
+                "code": "limit_time",
+                "canonical": "limit_time",
+                "meaning": "涨停时间",
+                "status": "unverified",
+            }
+        ]
+    }
+    lineage = _lineage(("市场源(market_sources)", "market_sources"))
+    snapshot = _snapshot(
+        "market_sources",
+        {
+            "scheme": "market.mixed",
+            "kph_limit_ladder": [{"code": "002148", "limit_time": 1794792300, "limit_count": 1}],
+        },
+        origin="folder_inferred",
+    )
+    snapshot.sample_date = dt.date(2026, 11, 17)
+    snapshot.capture_date = dt.date(2026, 11, 17)
+    snapshot.folder = "20261117"
+
+    result = coverage.build_field_coverage(
+        [snapshot],
+        registry,
+        lineage,
+        dt.date(2026, 11, 17),
+        trading_window_dates=[dt.date(2026, 11, 16), dt.date(2026, 11, 17)],
+    )
+
+    row = result["fields"][0]
+    assert row["candidate_days"] == ["T:20261116"]
+    assert row["source_as_of_days"] == ["T:20261116"]
+    assert row["date_origins"] == ["record.limit_time_unix_seconds"]
+    assert result["summary"]["missing_market_record_trade_dates"] == 0
+
+
 def test_daily_refresh_merges_tuple_window_warnings_and_writes_local_index(tmp_path, monkeypatch):
     report_day = dt.date(2026, 10, 14)
     registry = {

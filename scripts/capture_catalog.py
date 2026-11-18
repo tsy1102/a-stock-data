@@ -82,7 +82,11 @@ CAPTURE_UNIT_CATALOG: dict[str, dict[str, Any]] = {
         "provider_hint": "KPH",
         "identity_status": "unconfirmed",
         "data_domain": "trading",
-        "source_date_contract": "inspect response trade_date; compare with the requested trade date",
+        "source_date_contract": (
+            "rows do not expose trade_date; derive each row date from the verified Unix-second "
+            "limit_time and compare with the requested trade date; the request date is not "
+            "response-date evidence"
+        ),
         "output_paths": [("kph_limit_ladder",)],
     },
     "market_sources.stock_changes_8201": {

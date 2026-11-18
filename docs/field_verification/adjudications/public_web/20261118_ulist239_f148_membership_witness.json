@@ -1,0 +1,615 @@
+{
+  "schema_version": 1,
+  "record_id": "20261118-ulist239-f148-official-membership-witness",
+  "reviewed_on": "2026-11-18",
+  "source_identity": "东财-ulist239(np/get)::f148",
+  "field_status_after_review": "unverified",
+  "capture_scope": {
+    "target_data_date": "2026-11-17",
+    "retained_dates_compared": [
+      "20261109",
+      "20261110",
+      "20261117"
+    ],
+    "retention_floor": "2026-10-15",
+    "rows": 60,
+    "distinct_securities": 20,
+    "source_files": [
+      {
+        "data_date": "20261109",
+        "path": "docs/field_verification/20261109/raw_ulist239.json",
+        "sha256": "7d8bfc4b6d12e4d8bce1aa1cb1e93b5fbe6abbf4b3b05126887775c9838afa4c",
+        "stock_count": 20
+      },
+      {
+        "data_date": "20261110",
+        "path": "docs/field_verification/20261110/raw_ulist239.json",
+        "sha256": "386416eaaf7a3e4146e5679f47e86dc8f6ec08dd117bb3c6d4f2e62845a396c0",
+        "stock_count": 20
+      },
+      {
+        "data_date": "20261117",
+        "path": "docs/field_verification/20261117/raw_ulist239.json",
+        "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf",
+        "stock_count": 20
+      }
+    ],
+    "f148_value_counts_by_date": {
+      "20261109": {
+        "1": 2,
+        "65": 4,
+        "577": 6,
+        "1025": 2,
+        "1089": 6
+      },
+      "20261110": {
+        "1": 2,
+        "65": 4,
+        "577": 6,
+        "1025": 2,
+        "1089": 6
+      },
+      "20261117": {
+        "1": 2,
+        "65": 4,
+        "577": 6,
+        "1025": 2,
+        "1089": 6
+      }
+    },
+    "per_security_value_stable_across_all_three_dates": true
+  },
+  "decoded_bits": {
+    "bit_index_6_value_64": {
+      "candidate_meaning": "exchange margin-target eligibility (融资融券标的资格)",
+      "latest_date_match": {
+        "latest_data_date_comparison_count": 20,
+        "matched_count": 20,
+        "mismatched_codes": []
+      },
+      "authority_note": "Empirical membership match to the active exchange lists and registration-IPO rules; this is not an Eastmoney-authored field label and does not imply every broker enables every customer."
+    },
+    "bit_index_9_value_512": {
+      "meaning": "eligible Shanghai Connect security for both buy and sell",
+      "latest_date_match": {
+        "latest_data_date_comparison_count": 20,
+        "matched_count": 20,
+        "mismatched_codes": []
+      }
+    },
+    "bit_index_10_value_1024": {
+      "meaning": "eligible Shenzhen Connect security for both buy and sell",
+      "latest_date_match": {
+        "latest_data_date_comparison_count": 20,
+        "matched_count": 20,
+        "mismatched_codes": []
+      }
+    },
+    "bit_index_0_value_1": {
+      "value_in_all_20_sampled_securities": true,
+      "meaning": null,
+      "status": "unresolved",
+      "reason": "No non-A-share/control-instrument sample and no Eastmoney field schema label distinguishes an A-share-type flag from a general stock/base marker."
+    },
+    "unobserved_bits": "No meaning inferred for bits not set in retained values."
+  },
+  "latest_date_rows": [
+    {
+      "code": "000007",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1,
+        "20261110": 1,
+        "20261117": 1
+      },
+      "f148_20261117": 1,
+      "hex": "0x1",
+      "bit0_value": true,
+      "bit6_margin_target_value": false,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": false,
+      "margin_basis": "not in active SZSE list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "000011",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1025,
+        "20261110": 1025,
+        "20261117": 1025
+      },
+      "f148_20261117": 1025,
+      "hex": "0x401",
+      "bit0_value": true,
+      "bit6_margin_target_value": false,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": false,
+      "margin_basis": "not in active SZSE list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "000037",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1,
+        "20261110": 1,
+        "20261117": 1
+      },
+      "f148_20261117": 1,
+      "hex": "0x1",
+      "bit0_value": true,
+      "bit6_margin_target_value": false,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": false,
+      "margin_basis": "not in active SZSE list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "000568",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SZSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "000678",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SZSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "002034",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SZSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "002242",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SZSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "300031",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SZSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "300788",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1025,
+        "20261110": 1025,
+        "20261117": 1025
+      },
+      "f148_20261117": 1025,
+      "hex": "0x401",
+      "bit0_value": true,
+      "bit6_margin_target_value": false,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": false,
+      "margin_basis": "not in active SZSE list",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "301190",
+      "market": "SZ",
+      "f148_by_data_date": {
+        "20261109": 1089,
+        "20261110": 1089,
+        "20261117": 1089
+      },
+      "f148_20261117": 1089,
+      "hex": "0x441",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": true,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "ChiNext registration-IPO from-listing-day rule",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": true,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "600309",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "600519",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "600675",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "600825",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "601288",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "SSE Q3 2026 stock list",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "688327",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 577,
+        "20261110": 577,
+        "20261117": 577
+      },
+      "f148_20261117": 577,
+      "hex": "0x241",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": true,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "STAR registration-IPO from-listing-day rule",
+      "hkex_sse_both_way_eligible_20261117": true,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "688553",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 65,
+        "20261110": 65,
+        "20261117": 65
+      },
+      "f148_20261117": 65,
+      "hex": "0x41",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "STAR registration-IPO from-listing-day rule",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "688589",
+      "market": "SH",
+      "f148_by_data_date": {
+        "20261109": 65,
+        "20261110": 65,
+        "20261117": 65
+      },
+      "f148_20261117": 65,
+      "hex": "0x41",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "STAR registration-IPO from-listing-day rule",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "920118",
+      "market": "BJ",
+      "f148_by_data_date": {
+        "20261109": 65,
+        "20261110": 65,
+        "20261117": 65
+      },
+      "f148_20261117": 65,
+      "hex": "0x41",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "BSE official target-stock query for 2026-11-17",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    },
+    {
+      "code": "920508",
+      "market": "BJ",
+      "f148_by_data_date": {
+        "20261109": 65,
+        "20261110": 65,
+        "20261117": 65
+      },
+      "f148_20261117": 65,
+      "hex": "0x41",
+      "bit0_value": true,
+      "bit6_margin_target_value": true,
+      "bit9_sse_connect_value": false,
+      "bit10_szse_connect_value": false,
+      "official_margin_eligible_20261117": true,
+      "margin_basis": "BSE official target-stock query for 2026-11-17",
+      "hkex_sse_both_way_eligible_20261117": false,
+      "hkex_szse_both_way_eligible_20261117": false,
+      "bit6_match": true,
+      "bit9_match": true,
+      "bit10_match": true
+    }
+  ],
+  "official_sources": [
+    {
+      "name": "HKEX SSE securities both buy and sell (CSV)",
+      "url": "https://www.hkex.com.hk/-/media/HKEX-Market/Mutual-Market/Stock-Connect/Eligible-Stocks/View-All-Eligible-Securities/SSE_Securities.csv",
+      "updated_on": "2026-11-17",
+      "claim_scope": "Stock Connect eligible Shanghai securities, both buy and sell; used to test bit9.",
+      "download_sha256": "03f60f08199ade04591d2a024e13849b32c707241d6cd9416b43f1ffe3811a1e"
+    },
+    {
+      "name": "HKEX SZSE securities both buy and sell (CSV)",
+      "url": "https://www.hkex.com.hk/-/media/HKEX-Market/Mutual-Market/Stock-Connect/Eligible-Stocks/View-All-Eligible-Securities/SZSE_Securities.csv",
+      "updated_on": "2026-11-17",
+      "claim_scope": "Stock Connect eligible Shenzhen securities, both buy and sell; used to test bit10.",
+      "download_sha256": "dc011f56000554c73d58ebd3cbdcc6f2fa0da0c0d6da78683f6d63a6d1288540"
+    },
+    {
+      "name": "SSE 2026 Q3 margin-target list attachment",
+      "url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/trade/specific/margin/c/c_20261016_10834885.shtml",
+      "attachment_url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/trade/specific/margin/c/10834885/files/4fa11ac0f0b94a5887414a9158adc1a8.docx",
+      "claim_scope": "Official 2026 Q3 SSE list; effective 2026-10-19. The notice excludes registration-based initial IPOs, which are covered separately by SSE Rule Article 24.",
+      "download_sha256": "e3faddbc37aeea43cf4016c4c17babc641e5e5f295369a3b2b63b98cc93980bc"
+    },
+    {
+      "name": "SZSE 2026 Q3 margin-target list attachment 1",
+      "url": "https://www.szse.cn/disclosure/margin/business/t20261016_623333.html",
+      "attachment_url": "https://docs.static.szse.cn/www/disclosure/margin/business/W020261016550297828445.pdf",
+      "claim_scope": "Official 2026 Q3 SZSE list of 1200 non-registration stocks; registration IPOs are eligible from listing under the cited rules.",
+      "download_sha256": "66bd3b6c16d409a9599d6153fc9bc25265dbb1eea3bfde5a4a9b5b42638cb246"
+    },
+    {
+      "name": "SSE margin trading implementation rule (2023 revision)",
+      "url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/trade/specific/margin/c/c_20250616_10782015.shtml",
+      "claim_scope": "Article 24: registration-based initial public offering stocks may be margin targets from first listing day."
+    },
+    {
+      "name": "SZSE margin trading implementation rule (2023 revision)",
+      "url": "https://docs.static.szse.cn/www/lawrules/rule/trade/W020230217568325595241.pdf",
+      "claim_scope": "Article 3.2: registration-based initial public offering stocks may be target securities from first listing day."
+    },
+    {
+      "name": "BSE 2026-11-17 target-stock lookup",
+      "ui_url": "https://www.bse.cn/disclosure/rzrq_bdzq_list.html",
+      "endpoint_url": "https://www.bse.cn/rzrqbdzqController/infoResult.do",
+      "request": {
+        "method": "POST",
+        "transDate": "2026-11-17",
+        "zqdm": [
+          "920118",
+          "920508"
+        ],
+        "page": 0
+      },
+      "responses": {
+        "920118": {
+          "rzbd": "Y",
+          "rqbd": "Y",
+          "status": 0,
+          "response_sha256": "ba63245d3783a49bb53474b44239c209b56d63637419407aed0619c4bcea53af",
+          "zqjc": "太湖远大",
+          "drkrq": "Y",
+          "drkrz": "Y"
+        },
+        "920508": {
+          "rzbd": "Y",
+          "rqbd": "Y",
+          "status": 0,
+          "response_sha256": "f9faeb693e10b037b465c8c52f76491bdf8fb444a22ea1768bb5ff4169fe7bd4",
+          "zqjc": "殷图网联",
+          "drkrq": "Y",
+          "drkrz": "Y"
+        }
+      },
+      "claim_scope": "Official endpoint reports both sampled Beijing stocks as financing (rzbd=Y) and short-selling targets (rqbd=Y) for the target data date."
+    }
+  ],
+  "decision": "Do not update the main dictionary or registry yet. Evidence strongly resolves bits 6, 9 and 10 and the field shape as an integer flag mask, but bit 0 is constant in the captured A-share universe and remains semantically ambiguous. Keep the exact source path unverified until the remaining bit is distinguished.",
+  "collision_candidate_note": "The correlation candidates to Tencent[71], FTShare change_rate_day60, ELTDX active1 and ZHB change windows are not accepted as field mappings. A static, security-classification mask can correlate with cross-sectional groups; the strongest correlation is not identity evidence."
+}

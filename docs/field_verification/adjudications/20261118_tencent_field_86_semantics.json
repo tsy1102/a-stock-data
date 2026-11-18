@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-18",
+  "evidence_file": "docs/field_verification/adjudications/20261118_tencent_field_86_semantics.md",
+  "evidence_sha256": "f1d7daa44046db1f7314564f350961ce17582826ce5335e04c4a63e2b4a8e875",
+  "decisions": [
+    {
+      "id": "20261118-tencent-field-86-direction-semantics",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[86]"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "reference_status_conflict",
+      "previous": {
+        "canonical": "",
+        "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+        "unit": "手"
+      },
+      "canonical": "[86] 竞价失衡方向信号",
+      "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+      "unit": "",
+      "section": "2026-11-18 腾讯 [86] 来源内方向语义核验",
+      "rationale": "采集器精确保留 qt.gtimg.cn 响应按 ~ 分列后的零基索引[86]。保留期20个Tencent来源日、20只股票每日的400行样本中，359行[85]/[86]均非零，sign([86])与sign([3]-[85])为359/359同向且无反例；41行双零不提供方向信息，单独排除。旧主力净买量解释已有来源内反证；2026-11-17茅台同刻原始响应[86]=-53而腾讯产品页委差=-27，否定两者数值恒等。交易所文档只证明竞价参考价、匹配量和未匹配量机制存在，不构成Tencent路径映射。因此只裁决可复核的方向级语义，清除把不同候选解释混在一起造成的status conflict；不确认数值幅度、单位或跨源映射。",
+      "matrix_projection_removals": [
+        {
+          "canonical": "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+          "source": "腾讯"
+        }
+      ],
+      "sample": {
+        "scope": "保留期2026-10-15至2026-11-17的20个Tencent来源日，每日固定样本池20只证券；400行中359行[85]和[86]均非零，比较sign([86])与sign([3]-[85])；41行双零作为无方向信息排除。",
+        "comparison_count": 359,
+        "matched_count": 359,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 41,
+        "stock_count": 20
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "[86]",
+          "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）"
+        ]
+      }
+    }
+  ]
+}

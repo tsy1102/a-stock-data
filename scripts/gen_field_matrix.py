@@ -58,6 +58,9 @@ SOURCE_ORDER = [
     "AxData",
     "东财",
 ]
+SINGLE_SOURCE_DISPLAY_ALIASES = {
+    "腾讯(qt.gtimg)": "腾讯",
+}
 # 非真实源（不参与字段×源投影）：聚合/对照标签 + 已退役源。
 # 2026-09-12: 追加 "同花顺-thsdk" —— 该源已于 V17.0.29(2026-09-07) 从项目彻底移除
 # （仅盘中可用，与盘后/盘前场景不符，且无不可替代字段），其 §12.8.12b 章节保留为退役追溯记录，
@@ -282,7 +285,9 @@ def render(name_sources, records) -> str:
     single = defaultdict(list)
     for f, srcs in name_sources.items():
         if len(srcs) == 1:
-            single[next(iter(srcs))].append(f)
+            source = next(iter(srcs))
+            display_source = SINGLE_SOURCE_DISPLAY_ALIASES.get(source, source)
+            single[display_source].append(f)
 
     out = []
     out.append("### 零·B 字段×源总表（自动生成，勿手改）\n")

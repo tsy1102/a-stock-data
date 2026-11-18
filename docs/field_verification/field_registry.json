@@ -10,7 +10,7 @@
       "aggregate_status_scope_unresolved": 328,
       "candidate": 1,
       "collector_output_container": 10,
-      "conflict": 19,
+      "conflict": 18,
       "disproved": 98,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
@@ -23,7 +23,7 @@
       "official_contract": 31,
       "project_derived_capture_output": 10,
       "reference_scope_reconciled": 3,
-      "reference_status_conflict": 2,
+      "reference_status_conflict": 1,
       "reference_status_missing": 37,
       "registry_status_only_single_source": 499,
       "resolved_by_multiday_independent_cross_source_l1": 8,
@@ -32,8 +32,8 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 962,
-      "verified": 1582,
-      "verified_by_empirical_addendum": 200,
+      "verified": 1583,
+      "verified_by_empirical_addendum": 201,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 23,
       "verified_by_source_contract": 455
@@ -7350,19 +7350,16 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
-      "canonical": "",
-      "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
-      "unit": "手",
+      "canonical": "[86] 竞价失衡方向信号",
+      "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+      "unit": "",
       "status_raw": "",
-      "status": "conflict",
+      "status": "verified",
       "source_statuses": {
-        "腾讯(qt.gtimg)": "conflict"
+        "腾讯(qt.gtimg)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "source_status_conflict"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "[87]",
@@ -41751,9 +41748,6 @@
     "[85] 收盘参考基准价（L2 机制确认）": [
       "腾讯"
     ],
-    "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）": [
-      "腾讯"
-    ],
     "[87] 科创板标记": [
       "腾讯(qt.gtimg)"
     ],
@@ -46175,6 +46169,9 @@
     ],
     "daily_kline_record_count": [
       "东财-em_kline_f61"
+    ],
+    "[86] 竞价失衡方向信号": [
+      "腾讯(qt.gtimg)"
     ]
   },
   "mappings": [
@@ -263285,15 +263282,16 @@
       "code": "[86]",
       "identity": "腾讯(qt.gtimg)::[86]",
       "path": "[86]",
-      "canonical": "",
-      "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
-      "unit": "手",
+      "canonical": "[86] 竞价失衡方向信号",
+      "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+      "unit": "",
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "sections": [
-        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
+        "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
+        "2026-11-18 腾讯 [86] 来源内方向语义核验"
       ],
-      "status": "conflict",
-      "status_resolution": "reference_status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "disproved",
@@ -263308,9 +263306,24 @@
           "腾讯(qt.gtimg)"
         ],
         "values": [
-          "disproved",
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261118-tencent-field-86-direction-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_tencent_field_86_semantics.md",
+        "evidence_sha256": "f1d7daa44046db1f7314564f350961ce17582826ce5335e04c4a63e2b4a8e875",
+        "sample": {
+          "scope": "保留期2026-10-15至2026-11-17的20个Tencent来源日，每日固定样本池20只证券；400行中359行[85]和[86]均非零，比较sign([86])与sign([3]-[85])；41行双零作为无方向信息排除。",
+          "comparison_count": 359,
+          "matched_count": 359,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 41,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -263328,14 +263341,43 @@
           "unit": "",
           "status_raw": "❓ L4（2026-09-02 订正：H12\"全锚定0\"证伪——20 股实测非零，600519=29、跨股散度19、范围[-57802,1473]，确为带符号量·存在，非恒0占位；2026-09-03 主动升级：候选=委差/盘口净量）→2026-09-19 升 L2 收盘集合竞价净未匹配手数(带符号)（机制确认，L1 待官方契约）",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-18 腾讯 [86] 来源内方向语义核验",
+          "canonical": "[86] 竞价失衡方向信号",
+          "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-tencent-field-86-direction-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_tencent_field_86_semantics.md",
+          "evidence_sha256": "f1d7daa44046db1f7314564f350961ce17582826ce5335e04c4a63e2b4a8e875",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[86] 竞价失衡方向信号",
+              "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留期2026-10-15至2026-11-17的20个Tencent来源日，每日固定样本池20只证券；400行中359行[85]和[86]均非零，比较sign([86])与sign([3]-[85])；41行双零作为无方向信息排除。",
+            "comparison_count": 359,
+            "matched_count": 359,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 41,
+            "stock_count": 20
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "[86]",
-          "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "[86]",
         "sources": [
@@ -263347,7 +263389,62 @@
         "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
         "unit": "手",
         "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-tencent-field-86-direction-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_tencent_field_86_semantics.json",
+          "evidence_file": "adjudications/20261118_tencent_field_86_semantics.md",
+          "evidence_sha256": "f1d7daa44046db1f7314564f350961ce17582826ce5335e04c4a63e2b4a8e875",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "conflict",
+          "previous_status_resolution": "reference_status_conflict",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+            "unit": "手"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+              "unit": "手"
+            },
+            "after": {
+              "canonical": "[86] 竞价失衡方向信号",
+              "meaning": "方向级的收盘竞价失衡信号：在保留期内359条有信息样本中，[86]的正负号均与同条[3]-[85]同向。该关系与交易所公开的竞价参考价及未匹配量机制相容，但不证明[86]的数值就是未匹配量。尚未确认买卖侧、精确算法、单位、具体竞价阶段或腾讯官方字段标签。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": {
+            "canonical": [
+              "[86]",
+              "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）"
+            ]
+          },
+          "rationale": "采集器精确保留 qt.gtimg.cn 响应按 ~ 分列后的零基索引[86]。保留期20个Tencent来源日、20只股票每日的400行样本中，359行[85]/[86]均非零，sign([86])与sign([3]-[85])为359/359同向且无反例；41行双零不提供方向信息，单独排除。旧主力净买量解释已有来源内反证；2026-11-17茅台同刻原始响应[86]=-53而腾讯产品页委差=-27，否定两者数值恒等。交易所文档只证明竞价参考价、匹配量和未匹配量机制存在，不构成Tencent路径映射。因此只裁决可复核的方向级语义，清除把不同候选解释混在一起造成的status conflict；不确认数值幅度、单位或跨源映射。",
+          "sample": {
+            "scope": "保留期2026-10-15至2026-11-17的20个Tencent来源日，每日固定样本池20只证券；400行中359行[85]和[86]均非零，比较sign([86])与sign([3]-[85])；41行双零作为无方向信息排除。",
+            "comparison_count": 359,
+            "matched_count": 359,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 41,
+            "stock_count": 20
+          },
+          "matrix_projection_removals": [
+            {
+              "canonical": "[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）",
+              "source": "腾讯"
+            }
+          ]
+        }
+      ]
     },
     {
       "source": "腾讯(qt.gtimg)",

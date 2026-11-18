@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-19",
+  "decisions": [
+    {
+      "id": "20261119-eltdx-shortline-ladder-level-contract-metadata",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "shortline.ladder_level"
+      },
+      "canonical": "shortline.ladder_level",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
+      "previous": {
+        "canonical": "shortline.ladder_level",
+        "meaning": "连板梯队等级",
+        "unit": "-"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "rationale": "ELTDX v3.3.2 ShortlineIndicator 官方字段表将 ladder_level 定义为当前连续封住涨停的板数，单位为板，且仅 limit_status=sealed 时返回；它是计数值，不是梯队分类等级。旧释义与单位会把字段误读为无量纲分类，故按固定上游契约修正。保留期 14 条有效 ELTDX 样本中，shortline.ladder_level 与 limit_ladder.ladder_level 在同一原始记录逐值相等；该相等只证明同源路径输出一致，不作为独立来源证据。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "shortline.ladder_level",
+          "meaning": "连板梯队等级",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "shortline.ladder_level",
+          "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+          "unit": "板"
+        },
+        "rationale": "ELTDX v3.3.2 ShortlineIndicator 官方字段表明 ladder_level 是当前连续封住涨停的板数，只有封板时有值，单位为板；因此将“梯队等级”更正为连续封板计数，并修正无量纲单位。"
+      },
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+        "path": "client.helpers.shortline_indicators(codes=ecodes).rows[*].ladder_level -> ShortlineIndicator.ladder_level -> stocks.<code>.shortline.ladder_level",
+        "locator": "短线指标文档 §计算字段 ladder_level；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261119-eltdx-limit-ladder-ladder-level-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.ladder_level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_only_source_pair",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.ladder_level",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
+      "rationale": "ELTDX v3.3.2 连板天梯文档说明 limit_ladder 返回 ShortlineIndicator 行；短线指标官方字段表定义 ladder_level 为当前连续封住涨停的板数，单位为板，仅 limit_status=sealed 时返回。项目采集器将该行原样写入 stocks.<code>.limit_ladder，14 条保留期样本的 target_trade_date 均与目录 meta.data_date 相同，stats_date 均按同日或上一实际交易日规则对齐；limit_ladder.ladder_level 与同一 raw 中的 shortline.ladder_level 14/14 精确一致。对照已验证的 KPL raw_columns.col_15，13 条同数据日可配对值 13/13 相等；另有一条 ELTDX 误标封板的数据质量异常单独记录，不据此否定字段释义或新增跨源映射。逐行日期、值与 raw/meta SHA-256 见 docs/field_verification/research/20261119_eltdx_limit_ladder_level_samples.csv。",
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].ladder_level -> LimitLadderTable.rows[*] (ShortlineIndicator.ladder_level) -> stocks.<code>.limit_ladder.ladder_level",
+        "locator": "短线指标文档 §计算字段 ladder_level；连板天梯文档 §数据来源与处理流程/§返回结构；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      },
+      "same_source_alias": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "shortline.ladder_level",
+        "evidence_path": "docs/field_verification/research/20261119_eltdx_limit_ladder_level_samples.csv",
+        "locator": "14 条数据日期合格的同 raw 股票行；比较 limit_ladder_value 与 shortline_value，14/14 精确相等",
+        "observed_pairs": 14,
+        "mismatches": 0
+      }
+    }
+  ]
+}

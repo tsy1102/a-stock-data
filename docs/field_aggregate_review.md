@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 558 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 560 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3386,6 +3386,7 @@
 | TDX-eltdx(适配层) | `limit_ladder.float_shares` | limit_ladder.float_shares | 普通流通股本；财务快照口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_market_value` | limit_ladder.free_float_market_value | 自由流通市值；自由流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_shares` | limit_ladder.free_float_shares | 自由流通股本；TDX 自由流通口径 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.ladder_level` | limit_ladder.ladder_level | 当前连续封住涨停的板数；仅 limit_status=sealed 时有值 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_turnover_z` | limit_ladder.open_turnover_z | 09:25 竞价成交量占自由流通股本 Z 的比例；Z 为自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_volume_ratio` | limit_ladder.open_volume_ratio | 开盘成交量相对最近 5 个完整交易日平均每分钟成交量的倍数；需至少 5 根完整日 K | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.pe_ttm` | limit_ladder.pe_ttm | 滚动市盈率；当前估值相对最近 12 个月利润的倍数 | `verified` |
@@ -3406,6 +3407,7 @@
 | TDX-eltdx(适配层) | `request_count` | request_count | K线请求条数元数据；单页结果记录请求条数，自动分页合并结果将其更新为合并后的K线总条数。 | `verified` |
 | TDX-eltdx(适配层) | `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `shortline.beta_60d` | shortline.beta_60d | 近 60 日 Beta；相对 TDX 统计资源使用的市场基准，具体基准未公开 | `verified` |
+| TDX-eltdx(适配层) | `shortline.ladder_level` | shortline.ladder_level | 当前连续封住涨停的板数；仅 limit_status=sealed 时有值 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_prev_seal_ratio` | shortline.open_prev_seal_ratio | 开盘额/昨封单额比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_turnover_z` | shortline.open_turnover_z | 09:25 竞价成交量占自由流通股本 Z 的比例；Z 为自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_volume_ratio` | shortline.open_volume_ratio | 开盘成交量相对最近 5 个完整交易日平均每分钟成交量的倍数；需至少 5 根完整日 K | `verified` |

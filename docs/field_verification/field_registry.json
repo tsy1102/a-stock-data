@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 753,
+      "matched": 752,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
@@ -32,13 +32,13 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 957,
-      "verified": 1589,
+      "verified": 1590,
       "verified_by_empirical_addendum": 209,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 454
+      "verified_by_source_contract": 456
     },
-    "updated_at": "2026-11-18"
+    "updated_at": "2026-11-19"
   },
   "sources": [
     {
@@ -24317,6 +24317,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "limit_ladder.ladder_level",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "2026-11-19 ELTDX limit_ladder exact-path source-contract review",
+      "canonical": "limit_ladder.ladder_level",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "limit_ladder.open_amount",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -33653,8 +33671,8 @@
       ],
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "canonical": "shortline.ladder_level",
-      "meaning": "连板梯队等级",
-      "unit": "-",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -46196,6 +46214,9 @@
     ],
     "cls_telegraph_publish_time": [
       "财联社(cls)"
+    ],
+    "limit_ladder.ladder_level": [
+      "TDX-eltdx(适配层)"
     ]
   },
   "mappings": [
@@ -52890,7 +52911,7 @@
       },
       "to": {
         "source": "eltdx",
-        "code": "ladder_level"
+        "code": "limit_ladder.ladder_level"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
@@ -108682,6 +108703,123 @@
     },
     {
       "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.ladder_level",
+      "identity": "TDX-eltdx(适配层)::limit_ladder.ladder_level",
+      "path": "limit_ladder.ladder_level",
+      "canonical": "limit_ladder.ladder_level",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
+      "section": "2026-11-19 ELTDX limit_ladder exact-path source-contract review",
+      "sections": [
+        "2026-11-19 ELTDX limit_ladder exact-path source-contract review",
+        "source contract: 项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义） · client.helpers.limit_ladder(codes=ecodes).rows[*].ladder_level -> LimitLadderTable.rows[*] (ShortlineIndicator.ladder_level) -> stocks.<code>.limit_ladder.ladder_level#短线指标文档 §计算字段 ladder_level；连板天梯文档 §数据来源与处理流程/§返回结构；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现 @ ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "unverified"
+        ],
+        "adjudication_ids": [
+          "20261119-eltdx-limit-ladder-ladder-level-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261119-eltdx-limit-ladder-ladder-level-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义） · client.helpers.limit_ladder(codes=ecodes).rows[*].ladder_level -> LimitLadderTable.rows[*] (ShortlineIndicator.ladder_level) -> stocks.<code>.limit_ladder.ladder_level#短线指标文档 §计算字段 ladder_level；连板天梯文档 §数据来源与处理流程/§返回结构；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现 @ ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+          "canonical": "limit_ladder.ladder_level",
+          "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-19：20261119-eltdx-limit-ladder-ladder-level-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261119-eltdx-limit-ladder-ladder-level-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+            "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].ladder_level -> LimitLadderTable.rows[*] (ShortlineIndicator.ladder_level) -> stocks.<code>.limit_ladder.ladder_level",
+            "locator": "短线指标文档 §计算字段 ladder_level；连板天梯文档 §数据来源与处理流程/§返回结构；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_ladder.ladder_level",
+              "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+              "unit": "板"
+            }
+          },
+          "same_source_alias": {
+            "source": "TDX-eltdx(适配层)",
+            "code": "shortline.ladder_level",
+            "evidence_path": "research/20261119_eltdx_limit_ladder_level_samples.csv",
+            "locator": "14 条数据日期合格的同 raw 股票行；比较 limit_ladder_value 与 shortline_value，14/14 精确相等",
+            "observed_pairs": 14,
+            "mismatches": 0
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261119-eltdx-limit-ladder-ladder-level-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_eltdx_limit_ladder_level_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_only_source_pair",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_ladder.ladder_level",
+              "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+              "unit": "板"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 连板天梯文档说明 limit_ladder 返回 ShortlineIndicator 行；短线指标官方字段表定义 ladder_level 为当前连续封住涨停的板数，单位为板，仅 limit_status=sealed 时返回。项目采集器将该行原样写入 stocks.<code>.limit_ladder，14 条保留期样本的 target_trade_date 均与目录 meta.data_date 相同，stats_date 均按同日或上一实际交易日规则对齐；limit_ladder.ladder_level 与同一 raw 中的 shortline.ladder_level 14/14 精确一致。对照已验证的 KPL raw_columns.col_15，13 条同数据日可配对值 13/13 相等；另有一条 ELTDX 误标封板的数据质量异常单独记录，不据此否定字段释义或新增跨源映射。逐行日期、值与 raw/meta SHA-256 见 docs/field_verification/research/20261119_eltdx_limit_ladder_level_samples.csv。",
+          "source_contract": {
+            "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+            "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].ladder_level -> LimitLadderTable.rows[*] (ShortlineIndicator.ladder_level) -> stocks.<code>.limit_ladder.ladder_level",
+            "locator": "短线指标文档 §计算字段 ladder_level；连板天梯文档 §数据来源与处理流程/§返回结构；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "same_source_alias": {
+            "source": "TDX-eltdx(适配层)",
+            "code": "shortline.ladder_level",
+            "evidence_path": "research/20261119_eltdx_limit_ladder_level_samples.csv",
+            "locator": "14 条数据日期合格的同 raw 股票行；比较 limit_ladder_value 与 shortline_value，14/14 精确相等",
+            "observed_pairs": 14,
+            "mismatches": 0
+          }
+        }
+      ]
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
       "code": "limit_ladder.open_amount",
       "identity": "TDX-eltdx(适配层)::limit_ladder.open_amount",
       "path": "limit_ladder.open_amount",
@@ -120109,14 +120247,15 @@
       "identity": "TDX-eltdx(适配层)::shortline.ladder_level",
       "path": "shortline.ladder_level",
       "canonical": "shortline.ladder_level",
-      "meaning": "连板梯队等级",
-      "unit": "-",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
       "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
       "sections": [
-        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
+        "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
+        "source contract: 项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义） · client.helpers.shortline_indicators(codes=ecodes).rows[*].ladder_level -> ShortlineIndicator.ladder_level -> stocks.<code>.shortline.ladder_level#短线指标文档 §计算字段 ladder_level；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现 @ ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -120130,6 +120269,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261119-eltdx-shortline-ladder-level-contract-metadata"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261119-eltdx-shortline-ladder-level-contract-metadata"
         ]
       },
       "reference_evidence": [
@@ -120140,6 +120285,35 @@
           "unit": "-",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "source contract: 项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义） · client.helpers.shortline_indicators(codes=ecodes).rows[*].ladder_level -> ShortlineIndicator.ladder_level -> stocks.<code>.shortline.ladder_level#短线指标文档 §计算字段 ladder_level；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现 @ ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+          "canonical": "shortline.ladder_level",
+          "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-19：20261119-eltdx-shortline-ladder-level-contract-metadata",
+          "status": "verified",
+          "adjudication_id": "20261119-eltdx-shortline-ladder-level-contract-metadata",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+            "path": "client.helpers.shortline_indicators(codes=ecodes).rows[*].ladder_level -> ShortlineIndicator.ladder_level -> stocks.<code>.shortline.ladder_level",
+            "locator": "短线指标文档 §计算字段 ladder_level；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "连板梯队等级",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+              "unit": "板"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -120154,7 +120328,56 @@
         "meaning": "连板梯队等级",
         "unit": "-",
         "section": "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-eltdx-shortline-ladder-level-contract-metadata",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_eltdx_limit_ladder_level_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "连板梯队等级",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+              "unit": "板"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 ShortlineIndicator 官方字段表将 ladder_level 定义为当前连续封住涨停的板数，单位为板，且仅 limit_status=sealed 时返回；它是计数值，不是梯队分类等级。旧释义与单位会把字段误读为无量纲分类，故按固定上游契约修正。保留期 14 条有效 ELTDX 样本中，shortline.ladder_level 与 limit_ladder.ladder_level 在同一原始记录逐值相等；该相等只证明同源路径输出一致，不作为独立来源证据。",
+          "source_contract": {
+            "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+            "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-19 核验）",
+            "path": "client.helpers.shortline_indicators(codes=ecodes).rows[*].ladder_level -> ShortlineIndicator.ladder_level -> stocks.<code>.shortline.ladder_level",
+            "locator": "短线指标文档 §计算字段 ladder_level；ShortlineIndicatorService._build_indicator 与 _ladder_level 实现",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "连板梯队等级",
+              "unit": "-"
+            },
+            "updated": {
+              "canonical": "shortline.ladder_level",
+              "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+              "unit": "板"
+            },
+            "rationale": "ELTDX v3.3.2 ShortlineIndicator 官方字段表明 ladder_level 是当前连续封住涨停的板数，只有封板时有值，单位为板；因此将“梯队等级”更正为连续封板计数，并修正无量纲单位。"
+          }
+        }
+      ]
     },
     {
       "source": "TDX-eltdx(适配层)",
@@ -268276,6 +268499,17 @@
       "evidence_level": "E3",
       "evidence_file": "docs/field_verification/adjudications/20261107_eltdx_limit_ladder_semantic_adjudication.md",
       "matrix_field": "free_float_shares",
+      "matrix_source": "TDX-eltdx"
+    },
+    {
+      "source": "TDX-eltdx(适配层)",
+      "code": "limit_ladder.ladder_level",
+      "canonical": "limit_ladder.ladder_level",
+      "meaning": "当前连续封住涨停的板数；仅 limit_status=sealed 时有值",
+      "unit": "板",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261119_eltdx_limit_ladder_level_source_contract.md",
+      "matrix_field": "limit_ladder.ladder_level",
       "matrix_source": "TDX-eltdx"
     },
     {

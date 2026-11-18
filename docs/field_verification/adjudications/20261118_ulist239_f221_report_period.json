@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex（用户授权项目定案）",
+  "reviewed_on": "2026-11-18",
+  "evidence_file": "docs/field_verification/adjudications/20261118_ulist239_f221_report_period.md",
+  "evidence_sha256": "a1c8dfe4c21bcfea87d0e3a87b3e1a7f881638e2b0a6c926462796505bda3c26",
+  "decisions": [
+    {
+      "id": "20261118-ulist239-f221-report-period-end",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f221"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f221",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "report_period_end_date",
+      "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+      "unit": "YYYYMMDD",
+      "section": "Eastmoney Ulist239 f221 report period end-date empirical verification",
+      "rationale": "精确采集路径是东方财富 ulist.np/get 响应键 f221。2026-11-18 当前20只股票全部为20260930；按代码与东方财富数据中心同一报告期的 REPORT_DATE 逐股比较20/20相同、无反例或缺失。贵州茅台和九阳股份东方财富业绩页将2026-09-30标为截止日期，并分别显示2026-10-31和2026-10-23为披露日期，区分了报告期末与公告日。确认本字段的来源内日期语义，不推断服务端报告期选择策略，不建立跨源映射。",
+      "previous_attribute_conflicts": {},
+      "sample": {
+        "scope": "2026-11-18 ulist239 原始 f221 全部20只股票，按代码与东方财富数据中心 2026-09-30 REPORT_DATE 对照；另以贵州茅台、九阳股份官方个股业绩页区分截止日期与披露日期。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

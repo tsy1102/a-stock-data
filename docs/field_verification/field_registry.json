@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 754,
+      "matched": 753,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
@@ -33,7 +33,7 @@
       "unresolved": 7,
       "unverified": 961,
       "verified": 1585,
-      "verified_by_empirical_addendum": 204,
+      "verified_by_empirical_addendum": 205,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 454
@@ -17448,18 +17448,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f221",
-      "meaning": "",
-      "unit": "",
+      "canonical": "report_period_end_date",
+      "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+      "unit": "YYYYMMDD",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f222",
@@ -46190,6 +46188,9 @@
     ],
     "zhuyinglirun": [
       "TDX(双命名源)"
+    ],
+    "report_period_end_date": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -196823,15 +196824,16 @@
       "code": "f221",
       "identity": "东财-ulist239(np/get)::f221",
       "path": "f221",
-      "canonical": "f221",
-      "meaning": "",
-      "unit": "",
+      "canonical": "report_period_end_date",
+      "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+      "unit": "YYYYMMDD",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "Eastmoney Ulist239 f221 report period end-date empirical verification"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -196845,7 +196847,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261118-ulist239-f221-report-period-end"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261118_ulist239_f221_report_period.md",
+        "evidence_sha256": "a1c8dfe4c21bcfea87d0e3a87b3e1a7f881638e2b0a6c926462796505bda3c26",
+        "sample": {
+          "scope": "2026-11-18 ulist239 原始 f221 全部20只股票，按代码与东方财富数据中心 2026-09-30 REPORT_DATE 对照；另以贵州茅台、九阳股份官方个股业绩页区分截止日期与披露日期。",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -196855,6 +196873,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "Eastmoney Ulist239 f221 report period end-date empirical verification",
+          "canonical": "report_period_end_date",
+          "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+          "unit": "YYYYMMDD",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-18",
+          "status": "verified",
+          "adjudication_id": "20261118-ulist239-f221-report-period-end",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261118_ulist239_f221_report_period.md",
+          "evidence_sha256": "a1c8dfe4c21bcfea87d0e3a87b3e1a7f881638e2b0a6c926462796505bda3c26",
+          "metadata_change": {
+            "before": {
+              "canonical": "f221",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "report_period_end_date",
+              "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+              "unit": "YYYYMMDD"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-18 ulist239 原始 f221 全部20只股票，按代码与东方财富数据中心 2026-09-30 REPORT_DATE 对照；另以贵州茅台、九阳股份官方个股业绩页区分截止日期与披露日期。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -196869,7 +196921,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261118-ulist239-f221-report-period-end",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex（用户授权项目定案）",
+          "reviewed_on": "2026-11-18",
+          "decision_file": "adjudications/20261118_ulist239_f221_report_period.json",
+          "evidence_file": "adjudications/20261118_ulist239_f221_report_period.md",
+          "evidence_sha256": "a1c8dfe4c21bcfea87d0e3a87b3e1a7f881638e2b0a6c926462796505bda3c26",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f221",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f221",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "report_period_end_date",
+              "meaning": "财务报告截止日期（报告期末日期），原始值采用 YYYYMMDD；不表示公告日期或采集/行情快照日期。",
+              "unit": "YYYYMMDD"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "精确采集路径是东方财富 ulist.np/get 响应键 f221。2026-11-18 当前20只股票全部为20260930；按代码与东方财富数据中心同一报告期的 REPORT_DATE 逐股比较20/20相同、无反例或缺失。贵州茅台和九阳股份东方财富业绩页将2026-09-30标为截止日期，并分别显示2026-10-31和2026-10-23为披露日期，区分了报告期末与公告日。确认本字段的来源内日期语义，不推断服务端报告期选择策略，不建立跨源映射。",
+          "sample": {
+            "scope": "2026-11-18 ulist239 原始 f221 全部20只股票，按代码与东方财富数据中心 2026-09-30 REPORT_DATE 对照；另以贵州茅台、九阳股份官方个股业绩页区分截止日期与披露日期。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

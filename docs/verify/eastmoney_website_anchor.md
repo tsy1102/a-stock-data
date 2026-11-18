@@ -292,7 +292,7 @@
 | ulist f160 | 10日涨跌幅（字典§12.3.2.3） | 腾讯.idx69 |
 | ulist f211 | 买一量（字典§12.3.2.3） | tdx.bid1_vol(×100)、腾讯.idx10(×100)、新浪.idx10(×100) |
 | ulist f212 | 卖一量（字典§12.3.2.3） | 腾讯.idx20 |
-| ulist f221 | 最新报告期（字典§12.3.2.3） | 腾讯.idx30(×1e6)、zhb.date、axdata.stats_date |
+| ulist f221 | 财务报告期末日期（字典§12.3.2.3；选择策略未确认） | 腾讯.idx30(×1e6)、zhb.date、axdata.stats_date |
 | f49 | 外盘（字典§12.9.1，非量比） | 腾讯.idx7 |
 | f71 / f107 / f119 / f120 / f121 / f122 / f161 | 待补（数值已对撞，中文名待补） | 腾讯.idx51 / idx0+market / idx63 / idx70 / idx71 / idx62 / idx8 |
 | ulist f11 | 待补（候选涨速，需多日复核） | 腾讯.idx80 |

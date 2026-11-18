@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-11-15",
+  "updated": "2026-11-18",
   "description": "运行时来源别名、提供方独立性、客户端/服务仓库关系与锚点资格；AxData/Levistock 框架和包装关系不等同于底层独立数据源。",
   "sources": {
     "AxData": {
@@ -728,7 +728,8 @@
     },
     "沪深交易所": {
       "runtime_aliases": [
-        "exchange"
+        "exchange",
+        "etf"
       ],
       "provider": "沪深交易所",
       "independence_family": "exchange",
@@ -1019,9 +1020,9 @@
       "note": "Eastmoney K 线接口"
     },
     "etf": {
-      "independence_family": null,
-      "independence_status": "unconfirmed",
-      "note": "provider not confirmed by field-level evidence"
+      "independence_family": "exchange",
+      "independence_status": "confirmed",
+      "note": "复合 ETF 采集器直接请求上交所 query.sse.com.cn/commonQuery.do 与深交所 szse.cn/api/report/ShowReport/data；字段路径保留 etf_sh/etf_sz 分支，归入交易所来源族，不与其他交易所接口路径合并。"
     },
     "event_dc": {
       "independence_family": null,

@@ -49,7 +49,18 @@ VERIFICATION_MODES = {
     REPORT_SOURCE_RATING_CODE_MODE,
 }
 PLACEHOLDER_MEANINGS = {"", "待破解", "待确认", "待验证", "未验证", "未定义", "未知"}
-OFFICIAL_PROVIDER_HOSTS = {"Eastmoney": {"data.eastmoney.com", "quote.eastmoney.com"}}
+OFFICIAL_PROVIDER_HOSTS = {
+    "Eastmoney": {"data.eastmoney.com", "quote.eastmoney.com"},
+    "沪深交易所": {
+        "szse.cn",
+        "www.szse.cn",
+        "fund.szse.cn",
+        "disc.static.szse.cn",
+        "sse.com.cn",
+        "www.sse.com.cn",
+        "query.sse.com.cn",
+    },
+}
 
 
 def _object(value: Any, label: str) -> dict[str, Any]:
@@ -157,6 +168,7 @@ def _raw_value(
         "东财-push2(stock/get)": "raw_push2.json",
         "东财-ulist239(np/get)": "raw_ulist239.json",
         "东财-push2ex": "raw_push2ex.json",
+        "沪深交易所": "raw_etf.json",
     }
     expected_file = expected_files.get(source)
     if expected_file is None:
@@ -167,6 +179,23 @@ def _raw_value(
     if not re.fullmatch(r"20\d{6}", date_dir) or date_dir < "20261015":
         raise ValueError("source_file must use a retained sample date from 20261015 onward")
     payload = _read_json(path, "raw source sample")
+    if source == "沪深交易所":
+        branch, separator, branch_field = field_code.partition(".")
+        if not separator or branch not in {"etf_sh", "etf_sz"} or not branch_field:
+            raise ValueError("exchange observations require a full etf_sh/etf_sz field path")
+        records = payload.get(branch)
+        if not isinstance(records, list):
+            raise ValueError(f"{branch} is not a list in {source_file}")
+        matches = [
+            item
+            for item in records
+            if isinstance(item, dict) and str(item.get("code", "")) == stock_code
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"{stock_code} must occur exactly once in {branch} of {source_file}")
+        if branch_field not in matches[0]:
+            raise ValueError(f"{stock_code} has no {branch_field} in {source_file}")
+        return matches[0][branch_field]
     if source == "东财-push2ex":
         allowed_collections = {
             output_path[0]

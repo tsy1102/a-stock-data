@@ -18,13 +18,15 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = 1
-# Bump when candidate methods, normalization, precision, or sample qualification changes.
-METHOD_VERSION = "collision-candidate-v4"
+# Bump when candidate methods, normalization, precision, sample qualification, or field identity changes.
+METHOD_VERSION = "collision-candidate-v6"
 SUPPORTED_REPORT_METHOD_VERSIONS = frozenset(
     {
         "collision-candidate-v1",
         "collision-candidate-v2",
         "collision-candidate-v3",
+        "collision-candidate-v4",
+        "collision-candidate-v5",
         METHOD_VERSION,
     }
 )

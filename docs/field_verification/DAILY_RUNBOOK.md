@@ -16,6 +16,8 @@
 
 3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json` 中的 `data_date`、运行时间、市场阶段、逐源采集时间、`as_of_date`、ZHB 日期、来源状态、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝。盘前采集上一交易日时，来源日期早于采集自然日仍可能是已收盘样本；以来源级资格和报告诊断为准。
 
+   `etf` 是复合来源：`raw_etf.json` 中 `etf_sh[].date` 是上交所按日归档日期，`etf_sz[].date` 是深交所最新快照日期；两者可不同，碰撞和覆盖按每条记录的 `date` 归日，不用目录名或单个来源级日期替代。
+
    同一数据日重跑默认跳过完整来源，只补采缺失或不完整来源并保留既有成功样本。`--only <source>` 会重新请求指定来源，`--overwrite` 会强制刷新所选范围；重采前备份该来源 raw 和 `meta.json`。旧 `meta.json` 缺少逐源时间时，按 `legacy_global_metadata` 处理，不推断精确请求时刻。需要检查历史来源日期对应关系时运行：
 
        .\scripts\run_with_system_python.ps1 scripts\audit_source_date_mapping.py

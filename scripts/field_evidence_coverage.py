@@ -239,13 +239,14 @@ def build_field_coverage(
                 str(declared_scheme or "missing")
             )
 
-        for container in collide._record_containers(
+        for path_prefix, container in collide._record_containers_with_paths(
             document, snapshot.source, include_context=include_context
         ):
             for container_code, record in container.items():
                 if not isinstance(record, dict):
                     continue
                 event_source = snapshot.domain == cdates.CALENDAR
+                sample_phase = snapshot.phase
                 if event_source:
                     sample_day = cdates.event_record_date(snapshot.source, record)
                     if sample_day is None:
@@ -273,6 +274,22 @@ def build_field_coverage(
                             continue
                         sample_day = market_trade_day
                         sample_date_origin = "record.trade_date"
+                    elif snapshot.source == "etf":
+                        etf_trade_day = cdates.record_source_as_of_date(snapshot.source, record)
+                        if etf_trade_day is None:
+                            missing_market_dates += 1
+                            continue
+                        if (
+                            etf_trade_day not in trading_window_set
+                            or etf_trade_day > report_date
+                            or etf_trade_day > snapshot.capture_date
+                        ):
+                            out_of_window_market_dates += 1
+                            continue
+                        sample_day = etf_trade_day
+                        sample_date_origin = "record.as_of_date"
+                        if etf_trade_day < snapshot.capture_date:
+                            sample_phase = "closed"
                     else:
                         sample_day = snapshot.sample_date
                         sample_date_origin = snapshot.date_origin
@@ -288,6 +305,7 @@ def build_field_coverage(
                     day_key,
                     pairs,
                     include_structured_values=True,
+                    path_prefix=path_prefix,
                 )
                 for fid, value in pairs:
                     if not _has_value(value):
@@ -308,13 +326,13 @@ def build_field_coverage(
                     )
                     target["candidate_samples"][day_key].add(entity_code)
                     target["date_origins"].add(sample_date_origin)
-                    target["phases"].add(snapshot.phase)
+                    target["phases"].add(sample_phase)
                     target["source_statuses"].add(snapshot.status)
                     event_date_is_explicit = event_source
-                    closed_snapshot = event_source or snapshot.phase == "closed"
+                    closed_snapshot = event_source or sample_phase == "closed"
                     source_date_is_explicit = (
                         snapshot.date_origin == "source_as_of"
-                        or sample_date_origin == "record.trade_date"
+                        or sample_date_origin in {"record.trade_date", "record.as_of_date"}
                     )
                     status_is_usable = snapshot.status in {"ok", "partial"}
                     if scheme_ok and status_is_usable and event_date_is_explicit:

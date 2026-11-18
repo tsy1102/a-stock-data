@@ -51,6 +51,62 @@ def test_public_page_observation_uses_exact_source_to_raw_file_route(tmp_path):
         )
 
 
+def test_exchange_public_observation_resolves_branch_qualified_etf_fields(tmp_path):
+    sample_path = tmp_path / "docs" / "field_verification" / "20261117" / "raw_etf.json"
+    _write_json(
+        sample_path,
+        {
+            "etf_sh": [{"code": "510001", "date": "2026-11-17"}],
+            "etf_sz": [
+                {"code": "158000", "listing_date": "2026-08-26"},
+                {"code": "158001", "listing_date": "2026-08-27"},
+            ],
+        },
+    )
+
+    assert (
+        adjudications._raw_value(
+            tmp_path,
+            "沪深交易所",
+            "20261117/raw_etf.json",
+            "158000",
+            "etf_sz.listing_date",
+        )
+        == "2026-08-26"
+    )
+    with pytest.raises(ValueError, match="full etf_sh/etf_sz field path"):
+        adjudications._raw_value(
+            tmp_path,
+            "沪深交易所",
+            "20261117/raw_etf.json",
+            "158000",
+            "listing_date",
+        )
+
+
+def test_exchange_public_observation_host_allowlist_is_scoped_to_official_domains(tmp_path):
+    lineage_path = tmp_path / "docs" / "field_verification" / "source_lineage.json"
+    _write_json(
+        lineage_path,
+        {
+            "sources": {
+                "沪深交易所": {
+                    "provider": "沪深交易所",
+                    "independence_status": "confirmed",
+                }
+            }
+        },
+    )
+
+    adjudications._validate_official_provider_urls(
+        "沪深交易所", ["https://www.szse.cn/market/product/list/all/index.html"], tmp_path
+    )
+    with pytest.raises(ValueError, match="allowlisted official"):
+        adjudications._validate_official_provider_urls(
+            "沪深交易所", ["https://szse.example/market/product/list"], tmp_path
+        )
+
+
 def test_push2ex_public_observation_reads_catalogued_yesterday_pool(tmp_path):
     sample_path = tmp_path / "docs" / "field_verification" / "20261114" / "raw_push2ex.json"
     _write_json(

@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`20261118/post_szse_listing_date_v6/20261118_collision_report.md`](20261118/post_szse_listing_date_v6/20261118_collision_report.md) 与 [`adjudications/public_web/20261118_szse_etf_listing_date.md`](adjudications/public_web/20261118_szse_etf_listing_date.md)：修复 ETF 上交所/深交所分支路径与逐行来源日期处理后，完整报告纳入 4 个深交所来源日。深交所 `etf_sz.listing_date` 以 20 条官网列表逐值观测、两个官方产品材料及 772 只 ETF 的 3,088 条完整归档值定案为上市交易日期（`YYYY-MM-DD`）；只登记深交所分支语义，不建立跨源映射。报告 L1/L1-C 为 0、L4 为 1；其他日期路径仍按各自接口字段继续核验。
 - [`adjudications/20261118_kph_industry_count_followup.md`](adjudications/20261118_kph_industry_count_followup.md)、[`research/20261118_kph_industry_limit_up_count_samples.csv`](research/20261118_kph_industry_limit_up_count_samples.csv) 与[当日 AxData 验证摘要](20261117/axdata_validation.json)：按 2026-11-17 分页完整 KPH 返回样本与同日 KPL 对照，34 只配对股票的 6 个共同字段均为 34/34 精确相同；但“同行业涨停数”与 KPL 分组计数仅 14/34 相同，KPH 返回列表内计数另有 5 条差异。Levistock 同接口将 row[27] 映射为“同行业涨停数”，但无开盘红正式字段契约。共同值支持观测重叠，不证明底层提供方相同或可以停采；KPH 字段仍待核，不建立跨源字段映射。
 - [`research/20261118_ulist239_f30_formula_screen.md`](research/20261118_ulist239_f30_formula_screen.md) 与[网页核验记录](adjudications/public_web/20261118_public_web_research.md)：八个合格交易日、160 组 Ulist 样本中，`f30` 与相邻 `f34/f35` 直接差值为 0/160，`f33` 与按这两列计算的委比公式为 0/160；另有 115/160 条 `f30` 为负，反驳第三方 `f30=现手` 候选。官方未给出 `ulist.np/get::f30` 的键值映射，真实含义仍待核。
 - [`20261118/post_user_capture_1229/20261118_collision_report.md`](20261118/post_user_capture_1229/20261118_collision_report.md)：12:29 默认采集按幂等规则复用 11 月 17 日完整盘后归档；七个有效交易日的本地碰撞报告完整，L1/L1-C 为 0、L4 为 1，未增加新数据日样本。

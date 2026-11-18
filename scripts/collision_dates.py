@@ -113,9 +113,12 @@ class Snapshot:
     def rank(self) -> tuple[int, int, int, int, str, str]:
         status_rank = {"ok": 3, "partial": 2, "unknown": 1}.get(self.status, 0)
         phase_rank = {"closed": 2, "unknown": 1, "intraday": 0, "calendar": 2}.get(self.phase, 1)
-        origin_rank = {"source_as_of": 3, "meta_data_date": 2, "folder_inferred": 1}.get(
-            self.date_origin, 0
-        )
+        origin_rank = {
+            "source_as_of": 3,
+            "record_as_of_date": 3,
+            "meta_data_date": 2,
+            "folder_inferred": 1,
+        }.get(self.date_origin, 0)
         captured = self.captured_at.isoformat(timespec="seconds") if self.captured_at else ""
         return phase_rank, status_rank, self.record_count, origin_rank, captured, self.folder
 
@@ -591,6 +594,10 @@ def _record_count(document: dict[str, Any]) -> int:
 
 
 def _source_as_of(meta: dict[str, Any], document: dict[str, Any], source: str) -> Any:
+    if source == "etf":
+        # The adapter combines two exchanges with independent data dates:
+        # SSE's archived day and SZSE's latest snapshot. Resolve ETF dates per row.
+        return None, "record_as_of_date"
     if source == "zhb":
         if document.get("zhb_date"):
             return document["zhb_date"], "source_as_of"
@@ -610,6 +617,13 @@ def _source_as_of(meta: dict[str, Any], document: dict[str, Any], source: str) -
     if meta.get("data_date"):
         return meta["data_date"], "meta_data_date"
     return None, "folder_inferred"
+
+
+def record_source_as_of_date(source: str, record: Any) -> date | None:
+    """Return an explicit per-record market date for composite source payloads."""
+    if source != "etf" or not isinstance(record, dict):
+        return None
+    return parse_date(record.get("date"))
 
 
 def _phase(

@@ -10,9 +10,12 @@ from datetime import date
 from scripts.collision_dates import (
     CALENDAR,
     TRADING,
+    CalendarResolutionError,
     event_record_date,
     is_calendar_event_source,
+    is_trading_session,
     parse_date,
+    record_source_as_of_date,
     sample_date_key,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
@@ -36,12 +39,23 @@ def _collision_value(value, *, include_structured=False):
     return None
 
 
-def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=False):
+def _flatten(
+    rec,
+    source,
+    scheme,
+    code,
+    date,
+    out,
+    *,
+    include_structured_values=False,
+    path_prefix=None,
+):
     """把单只股票的原始记录扁平化为 (fid, value) 列表，写入 out。"""
     if not isinstance(rec, dict):
         return
     if rec.get("__error__") or "__skipped__" in rec:
         return
+    field_prefix = f"{source}.{path_prefix}." if path_prefix else f"{source}."
 
     # 形态 A：fN 字典（ulist239 / push2_full / push2）
     data = rec.get("data")
@@ -53,7 +67,7 @@ def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=
                 continue
             value = _collision_value(v, include_structured=include_structured_values)
             if value is not None:
-                out.append((f"{source}.{k}", value))
+                out.append((f"{field_prefix}{k}", value))
         return
 
     # 形态 B：位置列表（tencent / sina）
@@ -62,7 +76,9 @@ def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=
         for i, v in enumerate(flds):
             value = _collision_value(v, include_structured=include_structured_values)
             if value is not None:
-                out.append((f"{source}[{i}]", value))
+                out.append(
+                    (f"{source}.{path_prefix}[{i}]" if path_prefix else f"{source}[{i}]", value)
+                )
         return
 
     # 形态 C：嵌套名典 / 标量（zhb full/stat/stat2/tipinfo、tdx quote_full/finance_info、fuyao *、…）
@@ -94,11 +110,11 @@ def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=
                     continue
                 value = _collision_value(v, include_structured=include_structured_values)
                 if value is not None:
-                    out.append((f"{source}.{sub}.{k}", value))
+                    out.append((f"{field_prefix}{sub}.{k}", value))
         else:
             value = _collision_value(subv, include_structured=include_structured_values)
             if value is not None:
-                out.append((f"{source}.{sub}", value))
+                out.append((f"{field_prefix}{sub}", value))
 
 
 def _is_ftshare_limit_up_record(source, container_code):
@@ -240,6 +256,27 @@ def _record_containers(doc, source=None, include_context=False):
     return containers
 
 
+def _record_containers_with_paths(doc, source=None, include_context=False):
+    """Return record containers with their top-level collection path when relevant."""
+    if source == "etf":
+        containers = []
+        for branch in ("etf_sh", "etf_sz"):
+            records = doc.get(branch) if isinstance(doc, dict) else None
+            if isinstance(records, list):
+                containers.append(
+                    (
+                        branch,
+                        {
+                            f"__{branch}_{index}": record
+                            for index, record in enumerate(records)
+                            if isinstance(record, dict)
+                        },
+                    )
+                )
+        return containers
+    return [(None, container) for container in _record_containers(doc, source, include_context)]
+
+
 def _event_identity(source, record, container_code, entity_code):
     """Use a shared title fingerprint or a source-scoped fallback event id."""
     title = next(
@@ -285,6 +322,9 @@ def load_snapshots(
     future_event_counts = defaultdict(int)
     undated_market_counts = defaultdict(int)
     out_of_window_market_counts = defaultdict(int)
+    future_market_counts = defaultdict(int)
+    invalid_market_date_counts = defaultdict(int)
+    calendar_error_counts = defaultdict(int)
     allowed_trading_dates = (
         {
             day.strftime("%Y%m%d") if isinstance(day, date) else str(day).replace("-", "")
@@ -339,11 +379,14 @@ def load_snapshots(
                 f"记录数={auction_meta.get('item_count', 0)}"
             )
             diagnostics.append(diagnostic)
-        for container in _record_containers(doc, snapshot.source, include_context=include_context):
+        for path_prefix, container in _record_containers_with_paths(
+            doc, snapshot.source, include_context=include_context
+        ):
             for container_code, rec in container.items():
                 if not isinstance(rec, dict):
                     continue
                 sample_day = snapshot.sample_date
+                sample_phase = snapshot.phase
                 if snapshot.domain == CALENDAR:
                     event_day = event_record_date(snapshot.source, rec)
                     if event_day is None:
@@ -375,6 +418,35 @@ def load_snapshots(
                         sample_day = ftshare_trade_day
                         day_key = sample_date_key(TRADING, ftshare_trade_day)
                         sample_date_origin = "record.trade_date"
+                    elif snapshot.source == "etf":
+                        etf_trade_day = record_source_as_of_date(snapshot.source, rec)
+                        if etf_trade_day is None:
+                            undated_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        if etf_trade_day > snapshot.capture_date:
+                            future_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        etf_trade_day_text = etf_trade_day.strftime("%Y%m%d")
+                        if (
+                            allowed_trading_dates is not None
+                            and etf_trade_day_text not in allowed_trading_dates
+                        ):
+                            out_of_window_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        if allowed_trading_dates is None:
+                            try:
+                                is_session = is_trading_session(etf_trade_day)
+                            except CalendarResolutionError:
+                                calendar_error_counts[(snapshot.folder, snapshot.source)] += 1
+                                continue
+                            if not is_session:
+                                invalid_market_date_counts[(snapshot.folder, snapshot.source)] += 1
+                                continue
+                        sample_day = etf_trade_day
+                        day_key = sample_date_key(TRADING, etf_trade_day)
+                        sample_date_origin = "record.as_of_date"
+                        if etf_trade_day < snapshot.capture_date:
+                            sample_phase = "closed"
                     else:
                         day_key = snapshot.day_key
                         sample_date_origin = snapshot.date_origin
@@ -410,6 +482,7 @@ def load_snapshots(
                     include_structured_values=_is_ftshare_limit_up_record(
                         snapshot.source, container_code
                     ),
+                    path_prefix=path_prefix,
                 )
                 for fid, value in pairs:
                     key = (code, day_key)
@@ -426,7 +499,7 @@ def load_snapshots(
                             duplicate_examples.append(f"{fid}/{code}/{day_key}")
                     store[fid]["vals"][key] = value
                     store[fid].setdefault("sample_meta", {})[key] = {
-                        "phase": snapshot.phase,
+                        "phase": sample_phase,
                         "source": snapshot.source,
                         "capture_folder": snapshot.folder,
                         "capture_date": snapshot.capture_date.strftime("%Y%m%d"),
@@ -455,6 +528,14 @@ def load_snapshots(
         diagnostics.append(f"{folder}/{source}: {count} 条事件记录晚于报告日，已跳过")
     for (folder, source), count in sorted(undated_market_counts.items()):
         diagnostics.append(f"{folder}/{source}: {count} 条市场记录缺少可解析的来源交易日，已跳过")
+    for (folder, source), count in sorted(future_market_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条市场记录的来源日期晚于采集日，已跳过")
+    for (folder, source), count in sorted(invalid_market_date_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条市场记录的来源日期不是交易日，已跳过")
+    for (folder, source), count in sorted(calendar_error_counts.items()):
+        diagnostics.append(
+            f"{folder}/{source}: 交易日历无法确认 {count} 条市场记录的来源日期，已跳过"
+        )
     for (folder, source), count in sorted(out_of_window_market_counts.items()):
         diagnostics.append(f"{folder}/{source}: {count} 条市场记录不在所选交易日窗口内，已跳过")
     return total

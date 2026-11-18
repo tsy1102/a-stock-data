@@ -33,7 +33,7 @@
 | 开盘红 | active | kph | KPH / 开盘红（项目自有分页适配器） | kph（confirmed） | 是 | unconfirmed | pending |
 | 新浪(hq.sinajs) | active | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 沪深交易所 | active | exchange | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
+| 沪深交易所 | active | exchange, etf | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
 | 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |

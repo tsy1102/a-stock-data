@@ -127,6 +127,7 @@ from scripts.collision_snapshots import (
     _ftshare_limit_up_trade_date,
     _record_code,
     _record_containers,
+    _record_containers_with_paths,
     _without_context_records,
     load_snapshots,
 )

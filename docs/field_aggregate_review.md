@@ -3112,7 +3112,7 @@
 
 ### `time` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -3120,7 +3120,7 @@
 | 东财-热榜(em_hot) · `time` | time | 分钟时间点 | — | `verified` |
 | 市场源(market_sources) · `time` | time | 时间 | — | `verified` |
 | 开盘啦(kpl) · `time` | — | — | — | `unverified` |
-| 财联社(cls) · `time` | — | — | — | `unverified` |
+| 财联社(cls) · `time` | cls_telegraph_publish_time | 财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。 | 东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS） | `verified` |
 
 ### `title` — ambiguous
 

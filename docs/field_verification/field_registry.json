@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 326,
+      "aggregate_status_scope_unresolved": 325,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 18,
@@ -31,9 +31,9 @@
       "status_conflict": 17,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 958,
-      "verified": 1588,
-      "verified_by_empirical_addendum": 208,
+      "unverified": 957,
+      "verified": 1589,
+      "verified_by_empirical_addendum": 209,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 454
@@ -37129,14 +37129,16 @@
         "东财-热榜(em_hot)": "verified",
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "unverified",
-        "财联社(cls)": "unverified"
+        "财联社(cls)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -46191,6 +46193,9 @@
     ],
     "f88_positive_days_5d": [
       "东财-ulist239(np/get)"
+    ],
+    "cls_telegraph_publish_time": [
+      "财联社(cls)"
     ]
   },
   "mappings": [
@@ -266353,13 +266358,15 @@
       "code": "time",
       "identity": "财联社(cls)::time",
       "path": "time",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "cls_telegraph_publish_time",
+      "meaning": "财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。",
+      "unit": "东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS）",
+      "section": "财联社电报时间来源内实证（2026-11-19）",
+      "sections": [
+        "财联社电报时间来源内实证（2026-11-19）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -266374,9 +266381,62 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261119-cls-time-publication"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
+        "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+        "sample": {
+          "scope": "保留期 2026-10-15 起的财联社 1,000 条 time 样本跨 20 个采集目录；本次对 2026-11-16、2026-11-17、2026-11-18 的 4 条具备 CLS 官方详情页对应项逐条比较。其余 996 条仅纳入格式审计，因未逐条打开并对应官方页面而排除于页面比较。",
+          "comparison_count": 4,
+          "matched_count": 4,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 996,
+          "observation_count": 4,
+          "stock_count": 2
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "财联社电报时间来源内实证（2026-11-19）",
+          "canonical": "cls_telegraph_publish_time",
+          "meaning": "财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。",
+          "unit": "东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-cls-time-publication",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
+          "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_publish_time",
+              "meaning": "财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。",
+              "unit": "东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS）"
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 起的财联社 1,000 条 time 样本跨 20 个采集目录；本次对 2026-11-16、2026-11-17、2026-11-18 的 4 条具备 CLS 官方详情页对应项逐条比较。其余 996 条仅纳入格式审计，因未逐条打开并对应官方页面而排除于页面比较。",
+            "comparison_count": 4,
+            "matched_count": 4,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 996,
+            "observation_count": 4,
+            "stock_count": 2
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "time",
@@ -266394,7 +266454,52 @@
         "meaning": "分钟时间点",
         "unit": "",
         "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-cls-time-publication",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_cls_time_semantics.json",
+          "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
+          "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_publish_time",
+              "meaning": "财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。",
+              "unit": "东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "来源谱系确认提供方为 CLS；采集器将 data.roll_data[].ctime 精确写入该完整输出路径。四条不同日期的保留记录逐项与 CLS 官方详情页标题和发布时间核对，4/4 精确到秒一致，其中两只不同股票的个股电报同日匹配；一条电报正文描述的事件早于页面显示的发布时间，区分了发布时间与事件时间。保留期 1,000 条值均符合格式 YYYY-MM-DD HH:MM:SS。旧目录中自然日与目标数据日不同的记录不视为反例；不据目录名覆盖时间字段。当前代码使用进程本地时区格式化，因此本决定不声称其他主机时区的输出文本或 CLS 未公开的 ctime 修改规则；不建立跨源映射。",
+          "sample": {
+            "scope": "保留期 2026-10-15 起的财联社 1,000 条 time 样本跨 20 个采集目录；本次对 2026-11-16、2026-11-17、2026-11-18 的 4 条具备 CLS 官方详情页对应项逐条比较。其余 996 条仅纳入格式审计，因未逐条打开并对应官方页面而排除于页面比较。",
+            "comparison_count": 4,
+            "matched_count": 4,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 996,
+            "observation_count": 4,
+            "stock_count": 2
+          }
+        }
+      ]
     },
     {
       "source": "财联社(cls)",

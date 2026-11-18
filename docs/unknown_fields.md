@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2663；日常来源路径 2519：unverified 838、candidate 1、conflict 18、disproved 98；历史来源路径 144。
+> 注册字段路径 2663；日常来源路径 2519：unverified 837、candidate 1、conflict 18、disproved 98；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 701 |
+| 含义栏为空/占位 | 700 |
 | 含义栏有文本（仍未验证） | 137 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 287 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 286 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
 | `registry_status_only_single_source` | 416 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
@@ -57,7 +57,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（838）
+## 三、待破解字段（837）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -897,7 +897,6 @@
 | 财联社(cls) | `reading_num` | reading_num | 阅读数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `stock_list` | stock_list | 关联股票代码列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
-| 财联社(cls) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
 ## 四、已证伪（默认不重复破解）（98）

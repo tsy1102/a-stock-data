@@ -40,6 +40,12 @@ ZHB 键名 `main_net_buy_amount` 是项目兼容字段名。既有来源内裁�
 
 其中 `f76`–`f78` 的来源内定义以注册表为准。相关性检查仅用于识别后续候选；结合此前对 ZHB、ELTDX 开盘金额的逐值和倍率核查失败，现有证据既不能定案 `f63`，也不能把“竞价相关”解释为与这些已验证开盘金额字段等价。
 
+## Fuyao 竞价金额样本的日期资格
+
+Fuyao 上游接口契约把 `a-share/auction/snapshot` 的 `auction_amount` 标为集合竞价成交额；但按来源日期规则逐行检查保留期内 6 个目标数据日的 `raw_fuyao.json` 后，20 股/日的 120 行全部带有 `source_data_date=null`、`collision_eligible=false` 和 `exclusion_reason=source_data_date_unavailable`。其中 118 行有数值；另 2 行没有可比竞价额。2026-11-06 目标日的响应时间戳日期为 2026-11-08，直接说明 `expected_trading_day` 和响应日不能代替来源实际数据日。
+
+逐行诊断表为 [`f63 与 Fuyao 竞价金额日期资格审计`](20261119_ulist239_f63_fuyao_auction_date_eligibility.csv)。虽然这 118 个未合格配对中 `f63` 与 `auction_amount` 没有精确相等，`f63 / auction_amount` 中位数为 2.66993、范围为 0.999933–30.9268，但这些统计不进入碰撞或裁决，也不据此拒绝“竞价相关”候选。它们只说明当前 Fuyao 快照不能补上 `f63` 的日期合格外部锚；下一步需先取得该接口可靠的来源数据日，或改用具有明确交易日标签的官方历史数据。
+
 ## 后续
 
 此精确碰撞候选已按 `rejected` 记录；`f63` 继续留在未知字段队列。只有新的官方精确字段定义、不同的可区分语义假设或新的合格样本，才重开 `f63` 的对应候选；不重复用同一批页面值证明字段含义。

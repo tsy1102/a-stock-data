@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`research/20261119_tdx_date_path_scope.md`](research/20261119_tdx_date_path_scope.md)：核对通达信官方四类接口复用大写 `Date` 的情况，确认其承载记录日期，但股本、市场统计、板块统计和日线资金统计的数据域不同。保留期内 66 个 `raw_tdx*.json` 无该键，当前代码也没有对应接口调用；因此 `TDX(双命名源)::Date` 暂不定为股本日期等具体角色，待接口级路径证据补齐。与 `开盘啦(kpl)::Date` 保持独立身份。
 - [`20261119/kph_kpl_identity_eventdc_fix_v8_20261119/20261119_collision_report.md`](20261119/kph_kpl_identity_eventdc_fix_v8_20261119/20261119_collision_report.md)：修正带 `[]` 的嵌套路径身份解析后，基于 6 个采集目录、7 个有效交易日、1,312 个字段和 359,813 条样本值重跑；已验证的 `event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE` 退出破解目标，目标数由 102 降至 101。KPH/KPL 仍列为不同确认来源族；L1/L1-C 为 0，L4 为 3。
 - [`adjudications/20261119_eventdc_convertible_issue_scale.md`](adjudications/20261119_eventdc_convertible_issue_scale.md)、[结构化裁决](adjudications/20261119_eventdc_convertible_issue_scale.json)：将 Eastmoney `RPT_BOND_CB_LIST::ACTUAL_ISSUE_SCALE` 定案为可转债初始发行规模/债券发行总额（亿元）；官方表头和两份发行人年报抽核 2/2 吻合，不表示当前剩余规模或扣费后的净募集资金，不建立跨源映射。
 - [`adjudications/20261119_kph_kpl_source_identity.md`](adjudications/20261119_kph_kpl_source_identity.md)：明确 KPH（开盘红，`kaipanhong.com` / `apphis.kaipanhong.com`）与 KPL（开盘啦，`kaipanla.com` / `apphis.longhuvip.com`）是独立来源身份；两站同列的运营公司不构成同源或字段映射证据。历史标签 `开盘啦(kpl)` 仍指向聚合容器 `market_sources`，专用 KPL 明细为 `开盘啦(kpl_limit_up_detail) → kpl`。

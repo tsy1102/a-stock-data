@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 950,
-      "verified": 1604,
+      "verified": 1605,
       "verified_by_empirical_addendum": 217,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 464
+      "verified_by_source_contract": 465
     },
     "updated_at": "2026-11-19"
   },
@@ -11905,6 +11905,24 @@
       "canonical": "convertible_bond_term_years",
       "meaning": "东方财富详情页标注的可转债存续期限（年）。提前终止或赎回后，该值可短于募集说明书原始约定期限；蓝思转债样本为2.1671年，正式募集说明书原始约定为6年。该字段不是剩余期限或到期日期。保留样本显示其与起息日至有效终止期间接近，但统一年化和终止日取值规则未公开。",
       "unit": "年",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].COUPON_IR",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR#东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。 @ 东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+      "canonical": "bond_coupon_rate_current_interest_year_pct",
+      "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
+      "unit": "%",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -46397,6 +46415,9 @@
       "东财-ulist239(np/get)"
     ],
     "convertible_bond_term_years": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "bond_coupon_rate_current_interest_year_pct": [
       "东财-event_dc(可转债列表)"
     ]
   },
@@ -268795,6 +268816,106 @@
             "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.BOND_EXPIRE -> scripts/capture_context_collectors.py -> raw_event_dc.convertible_bonds[].BOND_EXPIRE",
             "locator": "东方财富可转债详情页“债券信息”行“债券期限(年)”；蓝思转债页面显示2.1671。对照蓝思科技募集说明书“本次发行的可转换公司债券的期限”条款。",
             "url": "https://data.eastmoney.com/kzz/detail/123003.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].COUPON_IR",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].COUPON_IR",
+      "path": "convertible_bonds[].COUPON_IR",
+      "canonical": "bond_coupon_rate_current_interest_year_pct",
+      "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
+      "unit": "%",
+      "section": "source contract: 东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR#东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。 @ 东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+      "sections": [
+        "source contract: 东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR#东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。 @ 东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-coupon-ir-current-interest-year-rate"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-coupon-ir-current-interest-year-rate"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR#东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。 @ 东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+          "canonical": "bond_coupon_rate_current_interest_year_pct",
+          "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-coupon-ir-current-interest-year-rate",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-coupon-ir-current-interest-year-rate",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。",
+            "revision": "东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR",
+            "locator": "东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。",
+            "url": "https://data.eastmoney.com/kzz/detail/113632.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bond_coupon_rate_current_interest_year_pct",
+              "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-coupon-ir-current-interest-year-rate",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_coupon_ir.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "bond_coupon_rate_current_interest_year_pct",
+              "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
+              "unit": "%"
+            }
+          },
+          "rationale": "项目代码将 RPT_BOND_CB_LIST 响应行原样保留到 raw_event_dc.convertible_bonds[]，并在响应后写入本地 fetched_at 观察时间。2026-11-16、17、18、19 四份保留快照中，每份500行有261行COUPON_IR非空；逐行按fetched_at的北京时间日期、VALUE_DATE的已完整周年数和INTEREST_RATE_EXPLAIN中的合同利率序列比较，4日各261/261精确匹配对应计息年度利率。两个跨周年边界样本在11月16日至17日由前一年度利率切换为下一年度利率。发行人公开公告确认样本的发行日期和逐年票面利率。已提前赎回的记录仍随原利率表周年变化，故含义限定为利率表按计息年度选出的利率，不解释为退市后仍实际应付的利率。证据详见 docs/field_verification/adjudications/20261120_eventdc_coupon_ir.md。",
+          "source_contract": {
+            "authority": "东方财富 RPT_BOND_CB_LIST 原始响应路径结合东方财富可转债详情页“起息日”“债券年度”“利率说明”字段展示及发行人巨潮资讯官方公告；公开材料未提供COUPON_IR键名的完整公式文档，选择规则以逐行历史样本和周年边界变化验证。",
+            "revision": "东方财富官方详情页及巨潮资讯发行人公告于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR",
+            "locator": "东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。",
+            "url": "https://data.eastmoney.com/kzz/detail/113632.html"
           }
         }
       ]

@@ -713,6 +713,8 @@ def _identity_capture_block_reason(identity_policy: Optional[dict]) -> Optional[
     reason = str(identity_policy.get("reason") or "capture_policy_skip")
     validation_action = identity_policy.get("identity_validation_action")
     if status == "operationally_redundant":
+        if not _identity_policy_allows_suppression(identity_policy, identity):
+            return None
         return reason
     if validation_action == "suppress" or status == "partially_redundant":
         return None
@@ -724,6 +726,8 @@ def _identity_validation_suppression(identity_policy: Optional[dict]) -> Optiona
         return None
     identity = identity_policy.get("identity")
     identity = identity if isinstance(identity, dict) else {}
+    if not _identity_policy_allows_suppression(identity_policy, identity):
+        return None
     if identity_policy.get("identity_validation_action") != "suppress" and identity.get(
         "status"
     ) not in {"operationally_redundant", "partially_redundant"}:
@@ -736,6 +740,13 @@ def _identity_validation_suppression(identity_policy: Optional[dict]) -> Optiona
         "evidence_dates": identity.get("evidence_dates", []),
         "capture_performed": True,
     }
+
+
+def _identity_policy_allows_suppression(identity_policy: dict, identity: dict) -> bool:
+    """Keep distinct KPH and KPL products independently collected."""
+    if identity.get("interface_id") == "kph_limit_up_history":
+        return False
+    return identity_policy.get("allow_redundancy_suppression", True) is not False
 
 
 def _attach_identity_validation_suppression(

@@ -90,7 +90,7 @@ CAPTURE_IDENTITY_MIN_DATES = 3
 CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE = 18
 CAPTURE_IDENTITY_MIN_FIELDS = 5
 CAPTURE_IDENTITY_RECHECK_DATES = 20
-CAPTURE_ENDPOINTS = {
+CAPTURE_ENDPOINTS: dict[str, dict[str, Any]] = {
     "stock_shortline_indicators_tdx": {
         "source": "axdata",
         "reference_source": "eltdx",
@@ -105,8 +105,9 @@ CAPTURE_ENDPOINTS = {
         "source": "kph",
         "reference_source": "kpl",
         "source_aliases": ["kph"],
+        "allow_redundancy_suppression": False,
         "contract": {
-            "adapter": "stock_common.sc_datasource.get_axdata_records",
+            "adapter": "stock_common.sc_datasource.get_kph_limit_up_history",
             "reference_path": "kpl.stocks.*",
             "field_pairs": KPH_KPL_FIELD_PAIRS,
         },
@@ -219,6 +220,7 @@ def _capture_identity_contract_fingerprint(interface_id: str) -> str:
         "axdata_package_version": installed_axdata_version,
         "source": endpoint["source"],
         "reference_source": endpoint["reference_source"],
+        "allow_redundancy_suppression": endpoint.get("allow_redundancy_suppression", True),
         "contract": endpoint["contract"],
         "minimum_data_dates": CAPTURE_IDENTITY_MIN_DATES,
         "minimum_symbols_per_date": CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE,
@@ -393,6 +395,15 @@ def get_axdata_capture_identity_plan(
         if status == "blocked_until_manual_review":
             action, reason = "skip", "blocked_until_manual_review"
             identity_validation_action = "blocked"
+        elif not endpoint.get("allow_redundancy_suppression", True):
+            if status in {"operationally_redundant", "rechecking", "partially_redundant"}:
+                identity["status"] = "observing"
+                identity["reason"] = "independent_provider_routes_must_remain_active"
+                identity["eligible_data_dates_since_probe"] = 0
+                identity.pop("status_before_recheck", None)
+                changed = True
+            action, reason = "collect", "independent_provider_comparison_only"
+            identity_validation_action = "sample"
         elif status == "operationally_redundant":
             if force_reprobe or (
                 _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES
@@ -420,6 +431,7 @@ def get_axdata_capture_identity_plan(
             "identity_validation_action": identity_validation_action,
             "source": endpoint["source"],
             "reference_source": endpoint["reference_source"],
+            "allow_redundancy_suppression": endpoint.get("allow_redundancy_suppression", True),
             "reason": reason,
             "identity": _capture_identity_summary(identity),
         }
@@ -435,6 +447,8 @@ def get_axdata_collision_suppressions() -> dict[str, dict[str, Any]]:
         return {}
     suppressions: dict[str, dict[str, Any]] = {}
     for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
+        if not endpoint.get("allow_redundancy_suppression", True):
+            continue
         identities = state.get("capture_endpoint_identities")
         identity = identities.get(interface_id) if isinstance(identities, dict) else None
         if not isinstance(identity, dict):
@@ -653,7 +667,10 @@ def _finish_capture_identity(identity: dict[str, Any], samples: list[dict[str, A
         identity["status"] = "observing"
         identity["reason"] = "samples_do_not_cover_full_axdata_schema"
         return
-    identity["status"] = "operationally_redundant"
+    interface_id = identity.get("interface_id")
+    endpoint = CAPTURE_ENDPOINTS.get(interface_id) if isinstance(interface_id, str) else None
+    may_suppress = endpoint.get("allow_redundancy_suppression", True) if endpoint else True
+    identity["status"] = "operationally_redundant" if may_suppress else "observing"
     if was_rechecking:
         identity.setdefault("initial_evidence_dates", identity.get("evidence_dates", []))
         identity["samples"] = samples[-CAPTURE_IDENTITY_MIN_DATES:]
@@ -663,9 +680,12 @@ def _finish_capture_identity(identity: dict[str, Any], samples: list[dict[str, A
     identity["last_probe_data_date"] = evidence_dates[-1]
     identity["last_counted_data_date"] = evidence_dates[-1]
     identity["eligible_data_dates_since_probe"] = 0
-    identity["reason"] = (
-        "scheduled_recheck_matched" if was_rechecking else "minimum_exact_samples_matched"
-    )
+    if may_suppress:
+        identity["reason"] = (
+            "scheduled_recheck_matched" if was_rechecking else "minimum_exact_samples_matched"
+        )
+    else:
+        identity["reason"] = "field_values_match_but_independent_provider_routes_remain_active"
     identity.pop("status_before_recheck", None)
     identity["recheck_samples"] = []
 

@@ -15,10 +15,11 @@
 
 ## 项目路径核对
 
-- `stock_common/sc_datasource/_kph.py` 的 `KPH_HISTORY_URL` 指向 `https://apphis.kaipanhong.com/w1/api/index.php`，KPH 使用独立分页适配器和 `kph` 来源族。
+- `stock_common/sc_datasource/_kph.py` 的 `KPH_HISTORY_URL` 指向 `https://apphis.kaipanhong.com/w1/api/index.php`，KPH 使用 `get_kph_limit_up_history` 独立分页适配器和 `kph` 来源族。
 - `stock_common/sc_kpl.py` 的历史主机配置指向 `https://apphis.longhuvip.com/w1/api/index.php`；专用涨停明细以 `开盘啦(kpl_limit_up_detail) → kpl` 登记。
 - `开盘啦(kpl)` 是历史字段标签，当前只映射到聚合容器 `market_sources`。该容器不代表专用 KPL API，也不得据标签把聚合数据归并到 KPH 或 KPL。
 - `docs/field_verification/source_lineage.json` 中 KPH/KPL 来源族分别是 `kph` 与 `kpl`；逐字段比对继续要求同股、同交易日、同路径，不能用来源总值相似率推断同源。
+- KPH/KPL 的逐字段对照只作为被动证据；即使连续样本完全相等，也不得据此将 KPH 标记为可停采路线或从碰撞中屏蔽。采集身份闸门对 KPH 明确关闭冗余抑制，两个来源独立采集。
 
 ## 既有样本边界
 

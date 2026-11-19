@@ -67,16 +67,19 @@ def test_same_date_identity_skip_does_not_request_duplicate_data(monkeypatch):
     assert result["__source_meta__"]["capture_block"]["capture_performed"] is False
 
 
-def test_collect_kph_history_skips_confirmed_redundant_route(monkeypatch):
+def test_collect_kph_history_ignores_kpl_redundancy_policy(monkeypatch):
     calls = []
 
-    def capture(*args, **kwargs):
-        calls.append((args, kwargs))
-        return [{"code": "000001", "trade_date": "2026-10-13", "sample_value": 9.0}]
+    def capture(trade_date):
+        calls.append(trade_date)
+        return (
+            [{"code": "000001", "trade_date": trade_date, "sample_value": 9.0}],
+            {"pages_fetched": 1, "returned_rows": 1, "complete": True},
+        )
 
     monkeypatch.setattr(capture_probe, "_kph_history_trade_date", lambda _value: date(2026, 10, 13))
     fake_adapter = ModuleType("stock_common.sc_datasource")
-    fake_adapter.get_axdata_records = capture
+    fake_adapter.get_kph_limit_up_history = capture
     monkeypatch.setitem(sys.modules, "stock_common.sc_datasource", fake_adapter)
     result = capture_probe.collect_kph_history(
         "20261013",
@@ -93,11 +96,11 @@ def test_collect_kph_history_skips_confirmed_redundant_route(monkeypatch):
         },
     )
 
-    assert calls == []
+    assert calls == ["2026-10-13"]
     assert result["trade_date"] == "2026-10-13"
-    assert result["stocks"] == {}
-    assert result["__source_meta__"]["capture_block"]["interface_id"] == "kph_limit_up_history"
-    assert result["__source_meta__"]["capture_block"]["capture_performed"] is False
+    assert "000001" in result["stocks"]
+    assert "capture_block" not in result.get("__source_meta__", {})
+    assert "identity_validation_suppression" not in result.get("__source_meta__", {})
 
 
 def test_collect_axdata_stops_after_rate_limit_and_defers_remaining_codes(monkeypatch):

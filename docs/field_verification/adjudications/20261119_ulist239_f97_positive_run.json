@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f97_positive_run.md",
+  "evidence_sha256": "d7fb882bc0d8920f369351b7242737f0340b0f77c9853dd7c8006c9f612684b2",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f97-positive-run",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f97"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f97",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "f88_positive_streak_days",
+      "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+      "unit": "个交易日",
+      "section": "2026-11-19 Ulist239 f97 同源连续正值递推实证定案",
+      "rationale": "项目采集器请求 Eastmoney 官方 ulist.np/get 并将响应 diff item 原样写入 stocks[code].data；目标 data.f97 与同股票、同响应中的 data.f88 精确配对。按 2026-10-15 保留边界检查后，2026-11-02 至 11-10 有七个连续交易数据日，每日 20 只相同股票。逐行日期以 11-02 至 11-04 的已验证 Unix 秒 f124 和 11-05 至 11-10 的 f297 确认；两者共存的 80 行日期完全一致，每段相邻日期经项目交易日历确认间隔一个交易日。11-03 至 11-10 的 120 个同股相邻日转移中，48 个 f88>0 样本全部使 f97 增为前日 f97+1，72 个 f88<=0 样本全部将 f97 置零，合计 120/120 精确符合且无反例。将阈值改为 f88>=0 后为 119/120，唯一反例是 2026-11-09 的 920508（f88=0、f97=0，而含零模型预测 3）；f88!=0 的递推仅 49/120。该批重复观察来自 20 只股票的六个相邻转移，不视为 120 个独立时间序列。2026-11-02 的 20 条初始状态不计为比较；11-17 和 11-18 的 40 条因中间 Ulist 来源日缺失而排除，既不计命中也不计反例。官方资料未将 f97 接口键直接映射到标签，f88 业务含义仍未知；仅确认该精确路径的来源内公式，不建立跨源映射。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后，使用 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始响应。比较 11-03 至 11-10 的六段相邻日期递推，共 120 项；完整逐行证据在 research/20261119_ulist239_f97_positive_run.csv。另排除 11-02 的 20 个初始状态和 11-17、11-18 的 40 条非连续来源日记录。",
+        "comparison_count": 120,
+        "matched_count": 120,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 60,
+        "stock_count": 20
+      }
+    }
+  ]
+}

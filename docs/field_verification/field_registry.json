@@ -25,15 +25,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 497,
+      "registry_status_only_single_source": 496,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 955,
-      "verified": 1593,
-      "verified_by_empirical_addendum": 211,
+      "unverified": 954,
+      "verified": 1594,
+      "verified_by_empirical_addendum": 212,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 457
@@ -19986,18 +19986,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f97",
-      "meaning": "",
-      "unit": "",
+      "canonical": "f88_positive_streak_days",
+      "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+      "unit": "个交易日",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f98",
@@ -46218,6 +46216,9 @@
       "东财-ulist239(np/get)"
     ],
     "security_eligibility_bitmask": [
+      "东财-ulist239(np/get)"
+    ],
+    "f88_positive_streak_days": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -204889,15 +204890,16 @@
       "code": "f97",
       "identity": "东财-ulist239(np/get)::f97",
       "path": "f97",
-      "canonical": "f97",
-      "meaning": "",
-      "unit": "",
+      "canonical": "f88_positive_streak_days",
+      "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+      "unit": "个交易日",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-19 Ulist239 f97 同源连续正值递推实证定案"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -204906,8 +204908,24 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261119-ulist239-f97-positive-run"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_ulist239_f97_positive_run.md",
+        "evidence_sha256": "d7fb882bc0d8920f369351b7242737f0340b0f77c9853dd7c8006c9f612684b2",
+        "sample": {
+          "scope": "保留边界 2026-10-15 之后，使用 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始响应。比较 11-03 至 11-10 的六段相邻日期递推，共 120 项；完整逐行证据在 research/20261119_ulist239_f97_positive_run.csv。另排除 11-02 的 20 个初始状态和 11-17、11-18 的 40 条非连续来源日记录。",
+          "comparison_count": 120,
+          "matched_count": 120,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 60,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -204917,6 +204935,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-19 Ulist239 f97 同源连续正值递推实证定案",
+          "canonical": "f88_positive_streak_days",
+          "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+          "unit": "个交易日",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-ulist239-f97-positive-run",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_ulist239_f97_positive_run.md",
+          "evidence_sha256": "d7fb882bc0d8920f369351b7242737f0340b0f77c9853dd7c8006c9f612684b2",
+          "metadata_change": {
+            "before": {
+              "canonical": "f97",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "f88_positive_streak_days",
+              "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+              "unit": "个交易日"
+            }
+          },
+          "sample": {
+            "scope": "保留边界 2026-10-15 之后，使用 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始响应。比较 11-03 至 11-10 的六段相邻日期递推，共 120 项；完整逐行证据在 research/20261119_ulist239_f97_positive_run.csv。另排除 11-02 的 20 个初始状态和 11-17、11-18 的 40 条非连续来源日记录。",
+            "comparison_count": 120,
+            "matched_count": 120,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -204931,7 +204983,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-ulist239-f97-positive-run",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_ulist239_f97_positive_run.json",
+          "evidence_file": "adjudications/20261119_ulist239_f97_positive_run.md",
+          "evidence_sha256": "d7fb882bc0d8920f369351b7242737f0340b0f77c9853dd7c8006c9f612684b2",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "f97",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f97",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "f88_positive_streak_days",
+              "meaning": "从当前数据日起连续统计 f88 > 0 的交易日数（含当前数据日），当前 f88 <= 0 时计为 0。",
+              "unit": "个交易日"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目采集器请求 Eastmoney 官方 ulist.np/get 并将响应 diff item 原样写入 stocks[code].data；目标 data.f97 与同股票、同响应中的 data.f88 精确配对。按 2026-10-15 保留边界检查后，2026-11-02 至 11-10 有七个连续交易数据日，每日 20 只相同股票。逐行日期以 11-02 至 11-04 的已验证 Unix 秒 f124 和 11-05 至 11-10 的 f297 确认；两者共存的 80 行日期完全一致，每段相邻日期经项目交易日历确认间隔一个交易日。11-03 至 11-10 的 120 个同股相邻日转移中，48 个 f88>0 样本全部使 f97 增为前日 f97+1，72 个 f88<=0 样本全部将 f97 置零，合计 120/120 精确符合且无反例。将阈值改为 f88>=0 后为 119/120，唯一反例是 2026-11-09 的 920508（f88=0、f97=0，而含零模型预测 3）；f88!=0 的递推仅 49/120。该批重复观察来自 20 只股票的六个相邻转移，不视为 120 个独立时间序列。2026-11-02 的 20 条初始状态不计为比较；11-17 和 11-18 的 40 条因中间 Ulist 来源日缺失而排除，既不计命中也不计反例。官方资料未将 f97 接口键直接映射到标签，f88 业务含义仍未知；仅确认该精确路径的来源内公式，不建立跨源映射。",
+          "sample": {
+            "scope": "保留边界 2026-10-15 之后，使用 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始响应。比较 11-03 至 11-10 的六段相邻日期递推，共 120 项；完整逐行证据在 research/20261119_ulist239_f97_positive_run.csv。另排除 11-02 的 20 个初始状态和 11-17、11-18 的 40 条非连续来源日记录。",
+            "comparison_count": 120,
+            "matched_count": 120,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 60,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

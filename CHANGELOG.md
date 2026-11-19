@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 依据 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始样本，将 `东财-ulist239(np/get)::f97` 定案为同源 `f88 > 0` 连续段日数；120 个相邻日转移全部符合严格大于零递推，含零阈值与非零阈值控制均出现反证，不推断 `f88` 业务标签或建立跨源映射。逐行证据见 [`20261119_ulist239_f97_positive_run.md`](docs/field_verification/adjudications/20261119_ulist239_f97_positive_run.md)。
 - 依据 CLS 官方电报详情页四条逐值观察、采集器 `ctime` 到 `time` 的精确映射及保留期 1,000 条格式审计，将 `财联社(cls)::time` 定案为财联社电报发布时间（`YYYY-MM-DD HH:MM:SS`）；明确该时间与交易日、采集目录数据日和正文事件时间分开，不建立跨源映射。
 - 按保留期 1,225 条 KPH 涨停天梯记录及 198 组同股同日 KPH 已验证字段比较，将 `市场源(market_sources)::limit_time` 与 `开盘红(Levistock适配)::limit_time` 定案为涨停时间（Unix 秒）；不推断首次/末次封板口径，不新增跨源映射。
 - 依据 2026-11-18 Ulist 20 只股票样本、东财数据中心 20 条 `REPORT_DATE` 记录及两只股票官网业绩页，补全 `东财-ulist239(np/get)::f221` 为财务报告期截止日期（`YYYYMMDD`）；明确它不同于公告日、采集日和 Ulist `f297` 行情日期，不建立跨源映射。

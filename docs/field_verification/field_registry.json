@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 324,
+      "aggregate_status_scope_unresolved": 323,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 17,
@@ -31,9 +31,9 @@
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 956,
-      "verified": 1592,
-      "verified_by_empirical_addendum": 210,
+      "unverified": 955,
+      "verified": 1593,
+      "verified_by_empirical_addendum": 211,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 457
@@ -15694,15 +15694,13 @@
       "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "unverified",
+        "东财-ulist239(np/get)": "verified",
         "东财-资金流(em_fund_flow)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_statuses_differ",
         "unit_incomplete"
       ]
     },
@@ -46217,6 +46215,9 @@
       "TDX-eltdx(适配层)"
     ],
     "parent_equity_to_total_assets_ratio": [
+      "东财-ulist239(np/get)"
+    ],
+    "security_eligibility_bitmask": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -191954,15 +191955,16 @@
       "code": "f148",
       "identity": "东财-ulist239(np/get)::f148",
       "path": "f148",
-      "canonical": "f148",
-      "meaning": "",
+      "canonical": "security_eligibility_bitmask",
+      "meaning": "东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。",
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-19 Ulist239 f148 官方名单对照与来源内实证定案"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -191974,7 +191976,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261119-ulist239-f148-qualification-mask"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_ulist239_f148_qualification_mask.md",
+        "evidence_sha256": "20b267df6237294ecb531ee5ef23e028a6434b8a414ff6807e9fc3fd2a4c0dc8",
+        "sample": {
+          "scope": "保留期自 2026-10-15 起；四个 Ulist 来源数据日 2026-11-09、10、17、18，共 80 条原始行、20 只证券，逐证券 f148 四日稳定。bit6 使用 2026-11-17 官方两融资格比较 20 项；bit9/bit10 使用适用于 2026-11-18 的港交所名单分别比较 18 项。三个位合计 56 项、56 项匹配；两只北交所股票在两项沪深股通检查中共排除 4 项。",
+          "comparison_count": 56,
+          "matched_count": 56,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 4,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -191984,6 +192002,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-19 Ulist239 f148 官方名单对照与来源内实证定案",
+          "canonical": "security_eligibility_bitmask",
+          "meaning": "东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-ulist239-f148-qualification-mask",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_ulist239_f148_qualification_mask.md",
+          "evidence_sha256": "20b267df6237294ecb531ee5ef23e028a6434b8a414ff6807e9fc3fd2a4c0dc8",
+          "metadata_change": {
+            "before": {
+              "canonical": "f148",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "security_eligibility_bitmask",
+              "meaning": "东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留期自 2026-10-15 起；四个 Ulist 来源数据日 2026-11-09、10、17、18，共 80 条原始行、20 只证券，逐证券 f148 四日稳定。bit6 使用 2026-11-17 官方两融资格比较 20 项；bit9/bit10 使用适用于 2026-11-18 的港交所名单分别比较 18 项。三个位合计 56 项、56 项匹配；两只北交所股票在两项沪深股通检查中共排除 4 项。",
+            "comparison_count": 56,
+            "matched_count": 56,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 4,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -192000,7 +192052,51 @@
         "meaning": "待破解",
         "unit": "元",
         "section": "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-ulist239-f148-qualification-mask",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_ulist239_f148_qualification_mask.json",
+          "evidence_file": "adjudications/20261119_ulist239_f148_qualification_mask.md",
+          "evidence_sha256": "20b267df6237294ecb531ee5ef23e028a6434b8a414ff6807e9fc3fd2a4c0dc8",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "f148",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f148",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "security_eligibility_bitmask",
+              "meaning": "东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目 collect_ulist239 将 Eastmoney ulist.np/get 的 diff item 原样保存，目标精确映射到 raw_ulist239.json 的 stocks[code].data.f148。保留边界内 2026-11-09、10、17、18 四个有效数据日共 80 行、20 只相同证券，f148 每只证券四日稳定，且只观察到 1、65、577、1025、1089 五种位组合。按交易日对齐后，bit6 在 2026-11-17 与上交所、深交所现行两融名单/规则及北交所同日官方查询 20/20 匹配；bit9 与 bit10 使用港交所 2026-11-17 发布且适用于下一北向交易日 2026-11-18 的名单，对齐 2026-11-18 的原始值后，18 只沪深证券分别 18/18 匹配。两只北交所证券不属于沪深股通比较域，排除 4 项位比较，不作负例；总计 56 项可比位值 56/56 匹配、零反例。前次记录误把 11-17 港交所名单按 11-17 数据日使用，本决定已改按名单实际适用日核对。Eastmoney 响应没有 f148 官方字段标签，因此只登记得到支持的来源内掩码角色及三个已验证位；bit0、未观察位保持未知，不创建跨源映射。",
+          "sample": {
+            "scope": "保留期自 2026-10-15 起；四个 Ulist 来源数据日 2026-11-09、10、17、18，共 80 条原始行、20 只证券，逐证券 f148 四日稳定。bit6 使用 2026-11-17 官方两融资格比较 20 项；bit9/bit10 使用适用于 2026-11-18 的港交所名单分别比较 18 项。三个位合计 56 项、56 项匹配；两只北交所股票在两项沪深股通检查中共排除 4 项。",
+            "comparison_count": 56,
+            "matched_count": 56,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 4,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

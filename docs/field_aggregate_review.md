@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 561 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 562 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1345,12 +1345,12 @@
 
 ### `f148` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f148` | fund_small_sell | 小单类别的资金流出金额，不表示投资者账户身份 | 元 | `verified` |
-| 东财-ulist239(np/get) · `f148` | f148 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f148` | security_eligibility_bitmask | 东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。 | — | `verified` |
 | 东财-资金流(em_fund_flow) · `f148` | fund_small_sell | 小单类别的资金流出金额，不表示投资者账户身份。 | 元 | `verified` |
 
 ### `f149` — ambiguous
@@ -3602,6 +3602,7 @@
 | 东财-ulist239(np/get) | `f133` | dividend_yield_lfy_observed | 股息率（%）；在本次保留的善水科技、万华化学、贵州茅台样本中，数值符合最近已实施完整年度现金分红/当日价格的 LFY-like 口径。东方财富整体算法会按分红期切换 TTM/LFY 并可含预案；特别股利及切换条件未由本字段样本充分确认。 | `verified` |
 | 东财-ulist239(np/get) | `f139` | listing_board_type | 证券上市板块类型代码；本次日期合格 A 股样本中 2=主板、5=创业板、32=科创板、80=北交所。仅确认四种已观测枚举，不声称完整码表；该值不代表交易所市场号。 | `verified` |
 | 东财-ulist239(np/get) | `f144` | f144 | 最新价/现价 | `verified` |
+| 东财-ulist239(np/get) | `f148` | security_eligibility_bitmask | 东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。 | `verified` |
 | 东财-ulist239(np/get) | `f149` | ulist239_change_6_intervals_pct | 相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。 | `verified` |
 | 东财-ulist239(np/get) | `f152` | 行情百分比/比例缩放位数 | 东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。 | `verified` |
 | 东财-ulist239(np/get) | `f190` | H股关联A股价格缩放位数 | 东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。 | `verified` |

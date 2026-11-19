@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-bond-expire-term",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].BOND_EXPIRE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_term_years",
+      "meaning": "东方财富详情页标注的可转债存续期限（年）。提前终止或赎回后，该值可短于募集说明书原始约定期限；蓝思转债样本为2.1671年，正式募集说明书原始约定为6年。该字段不是剩余期限或到期日期。保留样本显示其与起息日至有效终止期间接近，但统一年化和终止日取值规则未公开。",
+      "unit": "年",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST BOND_EXPIRE source-contract verification",
+      "rationale": "项目适配器将 Eastmoney RPT_BOND_CB_LIST 响应行原样写入 event_dc.convertible_bonds[]。东方财富官方蓝思转债详情页明确标注“债券期限(年)”并显示 2.1671；2026-11-19 保留 raw_event_dc.json 中 123003 行的 BOND_EXPIRE 同为 2.1671。该债券正式募集说明书规定原始期限为六年，而提前赎回后的 Eastmoney 字段值为 2.1671，故不能释为原始约定期限；它与实际债券生命周期期限相符。500 行样本中，该值与 (EXPIRE_DATE - VALUE_DATE) 的日数差在 499/500 行不超过 3 日、500/500 行不超过 7 日。个别结束日和年化算法未公开，不将近似关系定为统一公式。仅定案此精确来源内语义，不创建 mappings。证据记录见 docs/field_verification/adjudications/20261120_eventdc_bond_expire.md。",
+      "source_contract": {
+        "authority": "东方财富数据中心可转债详情页的官方字段标签，结合项目固定 RPT_BOND_CB_LIST 响应到原始采集路径的代码映射；不声称公开了统一计算公式",
+        "revision": "东方财富官方页面于2026-11-20核验；项目代码以当前检出的 RPT_BOND_CB_LIST 路由为准",
+        "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.BOND_EXPIRE -> scripts/capture_context_collectors.py -> raw_event_dc.convertible_bonds[].BOND_EXPIRE",
+        "locator": "东方财富可转债详情页“债券信息”行“债券期限(年)”；蓝思转债页面显示2.1671。对照蓝思科技募集说明书“本次发行的可转换公司债券的期限”条款。",
+        "url": "https://data.eastmoney.com/kzz/detail/123003.html"
+      }
+    }
+  ]
+}

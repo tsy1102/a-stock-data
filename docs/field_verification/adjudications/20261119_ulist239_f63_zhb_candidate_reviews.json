@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T20:37:49+08:00",
+      "rationale": "拒绝 Ulist239::f63 与 ZHB-tipinfo::hg_amount_yi 的稳健相关/仿射候选作为字段等价或固定换算关系。候选仅有 6 只股票、2 个日期共 12 行；每只股票的 hg_date 和 hg_amount_yi 跨日不变，而 f63 六只股票均发生变化，12 行无数值相等。高 Pearson 及横截面拟合由不同证券间的规模差异产生，不能消除这种时间维度反例。ZHB hg_amount_yi 已有来源内证据定义为带事件日期的回购预案金额上限（亿元）。本决定只拒绝该候选，不定义或证伪 f63 本身；f63 仍 unverified，不改 registry/mappings。",
+      "evidence_refs": [
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+        "20261117/raw_ulist239.json",
+        "20261117/raw_zhb.json",
+        "20261118/raw_ulist239.json",
+        "20261118/raw_zhb.json",
+        "adjudications/20261109_zhb_tipinfo_runtime_aliases.md",
+        "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T20:37:49+08:00",
+      "rationale": "Ulist239::f63 与 ZHB-stat2::amount 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9189、Spearman=0.9490，但精确相等为 0/40，数值比值范围 36.7601–774.2335、CV=0.7783。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+      "evidence_refs": [
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+        "20261117/raw_ulist239.json",
+        "20261117/raw_zhb.json",
+        "20261118/raw_ulist239.json",
+        "20261118/raw_zhb.json",
+        "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T20:37:49+08:00",
+      "rationale": "Ulist239::f63 与 ZHB-stat2::amount_1d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9196、Spearman=0.9430，但精确相等为 0/40，数值比值范围 35.9031–1043.5024、CV=0.9045。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+      "evidence_refs": [
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+        "20261117/raw_ulist239.json",
+        "20261117/raw_zhb.json",
+        "20261118/raw_ulist239.json",
+        "20261118/raw_zhb.json",
+        "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T20:37:49+08:00",
+      "rationale": "Ulist239::f63 与 ZHB-stat2::amount_2d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9246、Spearman=0.9477，但精确相等为 0/40，数值比值范围 34.7041–1829.3009、CV=1.1948。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+      "evidence_refs": [
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+        "20261117/raw_ulist239.json",
+        "20261117/raw_zhb.json",
+        "20261118/raw_ulist239.json",
+        "20261118/raw_zhb.json",
+        "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

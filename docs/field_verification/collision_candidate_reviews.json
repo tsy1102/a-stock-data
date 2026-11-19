@@ -4478,6 +4478,192 @@
         "schema_version": 1
       }
     },
+    "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a": {
+      "current": {
+        "candidate_id": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "3938f9b30decd5141eb0a1b36788ee9c381e885b4664234c2c3fe1333ca8e611",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+            "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+          },
+          {
+            "path": "20261117/raw_ulist239.json",
+            "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+          },
+          {
+            "path": "20261117/raw_zhb.json",
+            "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+          },
+          {
+            "path": "20261118/raw_ulist239.json",
+            "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+          },
+          {
+            "path": "20261118/raw_zhb.json",
+            "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+          },
+          {
+            "path": "adjudications/20261109_zhb_tipinfo_runtime_aliases.md",
+            "sha256": "69a4a54869b7e7743d91e6b18e39646608c9668a93261d2d88f2579455505e01"
+          },
+          {
+            "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+            "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+          }
+        ],
+        "rationale": "拒绝 Ulist239::f63 与 ZHB-tipinfo::hg_amount_yi 的稳健相关/仿射候选作为字段等价或固定换算关系。候选仅有 6 只股票、2 个日期共 12 行；每只股票的 hg_date 和 hg_amount_yi 跨日不变，而 f63 六只股票均发生变化，12 行无数值相等。高 Pearson 及横截面拟合由不同证券间的规模差异产生，不能消除这种时间维度反例。ZHB hg_amount_yi 已有来源内证据定义为带事件日期的回购预案金额上限（亿元）。本决定只拒绝该候选，不定义或证伪 f63 本身；f63 仍 unverified，不改 registry/mappings。",
+        "reviewed_at": "2026-11-19T20:37:49+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "cd88edac3da56578ccf895f3cd63cdfca401fe3374c96e0c01273acf4e9185f9",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "2a30b3295424c62f7b1dd5d69048a8fe1d08a81f6331d4b0adc21c0d4ffc6377"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261109_zhb_tipinfo_runtime_aliases.md",
+              "sha256": "69a4a54869b7e7743d91e6b18e39646608c9668a93261d2d88f2579455505e01"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "拒绝 Ulist239::f63 与 ZHB-tipinfo::hg_amount_yi 的稳健相关/仿射候选作为字段等价或固定换算关系。候选仅有 6 只股票、2 个日期共 12 行；每只股票的 hg_date 和 hg_amount_yi 跨日不变，而 f63 六只股票均发生变化，12 行无数值相等。高 Pearson 及横截面拟合由不同证券间的规模差异产生，不能消除这种时间维度反例。ZHB hg_amount_yi 已有来源内证据定义为带事件日期的回购预案金额上限（亿元）。本决定只拒绝该候选，不定义或证伪 f63 本身；f63 仍 unverified，不改 registry/mappings。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "3938f9b30decd5141eb0a1b36788ee9c381e885b4664234c2c3fe1333ca8e611",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261109_zhb_tipinfo_runtime_aliases.md",
+              "sha256": "69a4a54869b7e7743d91e6b18e39646608c9668a93261d2d88f2579455505e01"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "拒绝 Ulist239::f63 与 ZHB-tipinfo::hg_amount_yi 的稳健相关/仿射候选作为字段等价或固定换算关系。候选仅有 6 只股票、2 个日期共 12 行；每只股票的 hg_date 和 hg_amount_yi 跨日不变，而 f63 六只股票均发生变化，12 行无数值相等。高 Pearson 及横截面拟合由不同证券间的规模差异产生，不能消除这种时间维度反例。ZHB hg_amount_yi 已有来源内证据定义为带事件日期的回购预案金额上限（亿元）。本决定只拒绝该候选，不定义或证伪 f63 本身；f63 仍 unverified，不改 registry/mappings。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9982,
+              "leave_one_out_min": 0.9965,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9976,
+              "spearman": 0.7492
+            },
+            {
+              "formula": "right ≈ 8.9842661e-08 × left + 0.74994907",
+              "method": "affine_formula",
+              "r_squared": 0.995238
+            }
+          ],
+          "right": "zhb.tipinfo.hg_amount_yi",
+          "sample_codes": [
+            "002034",
+            "301190",
+            "600309",
+            "600519",
+            "688553",
+            "688589"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a": {
       "current": {
         "candidate_id": "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a",
@@ -15706,6 +15892,157 @@
         "schema_version": 1
       }
     },
+    "cc1_658e1e9f055a054310a2c40ba4f84cb1d18c0f6133f73fc6a7a7dfa386b06835": {
+      "current": {
+        "candidate_id": "cc1_658e1e9f055a054310a2c40ba4f84cb1d18c0f6133f73fc6a7a7dfa386b06835",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "41f93f5bf844877c33149d46a4c8a046f3963fe4dbdabf71b6b4996b00e4bf50",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+            "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+          },
+          {
+            "path": "research/20261119_kph_industry_limit_up_count_20261118.csv",
+            "sha256": "7844a3597296652d5c2c2b11c14c1a0b8d0464043511c65cd2bf7c1cfa414cf0"
+          },
+          {
+            "path": "adjudications/20261119_kph_candidate_review_decisions.json",
+            "sha256": "b152bffc00dbee425c000c813ce139c5d5cd997667db5648c93356f2558bf197"
+          },
+          {
+            "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+            "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+          },
+          {
+            "path": "adjudications/20261118_kph_industry_count_followup.md",
+            "sha256": "01742db637993d985c635382dcaca2aa678a05968e962fc9e3337feba94672d8"
+          },
+          {
+            "path": "research/20261118_kph_industry_limit_up_count_samples.csv",
+            "sha256": "d5bbce3a07eb268c2a71bb3b17bf461985ed6483f7e36e518f8d2b645783802e"
+          }
+        ],
+        "rationale": "拒绝本报告中开盘红 kph.industry_limit_up_count 与开盘啦 kpl.raw_columns.col_20 的普遍逐值等价候选。按已确认的来源日期对齐 2026-11-16 至 11-18，共 103 组同股配对中仅 83 组计数相同、20 组不同（80.58%）；2026-11-17 为 14/34，其中 17 组行业代码相同但计数不同、3 组行业归属也不同。更早 11 个来源日的 500 组对照亦有 50 组不一致。相关性高和部分日期全匹配不足以消除这些反例。本决定仅拒绝该候选的直接逐值映射，不定义或证伪 KPH 字段本身，不判定来源提供方关系；KPH 释义仍为 unverified，不更新 registry/mappings，也不据此调整采集路由。",
+        "reviewed_at": "2026-11-19T20:19:37+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_658e1e9f055a054310a2c40ba4f84cb1d18c0f6133f73fc6a7a7dfa386b06835",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "41f93f5bf844877c33149d46a4c8a046f3963fe4dbdabf71b6b4996b00e4bf50",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+              "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_20261118.csv",
+              "sha256": "7844a3597296652d5c2c2b11c14c1a0b8d0464043511c65cd2bf7c1cfa414cf0"
+            },
+            {
+              "path": "adjudications/20261119_kph_candidate_review_decisions.json",
+              "sha256": "b152bffc00dbee425c000c813ce139c5d5cd997667db5648c93356f2558bf197"
+            },
+            {
+              "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+              "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+            },
+            {
+              "path": "adjudications/20261118_kph_industry_count_followup.md",
+              "sha256": "01742db637993d985c635382dcaca2aa678a05968e962fc9e3337feba94672d8"
+            },
+            {
+              "path": "research/20261118_kph_industry_limit_up_count_samples.csv",
+              "sha256": "d5bbce3a07eb268c2a71bb3b17bf461985ed6483f7e36e518f8d2b645783802e"
+            }
+          ],
+          "rationale": "拒绝本报告中开盘红 kph.industry_limit_up_count 与开盘啦 kpl.raw_columns.col_20 的普遍逐值等价候选。按已确认的来源日期对齐 2026-11-16 至 11-18，共 103 组同股配对中仅 83 组计数相同、20 组不同（80.58%）；2026-11-17 为 14/34，其中 17 组行业代码相同但计数不同、3 组行业归属也不同。更早 11 个来源日的 500 组对照亦有 50 组不一致。相关性高和部分日期全匹配不足以消除这些反例。本决定仅拒绝该候选的直接逐值映射，不定义或证伪 KPH 字段本身，不判定来源提供方关系；KPH 释义仍为 unverified，不更新 registry/mappings，也不据此调整采集路由。",
+          "reviewed_at": "2026-11-19T20:19:37+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 31,
+            "T:20261117": 14,
+            "T:20261118": 38
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 2,
+          "distinct_days": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kph.industry_limit_up_count",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 103,
+          "n_pairs": 103,
+          "official_contract_anchor": false,
+          "overall_hit": 0.8058,
+          "ratio": null,
+          "right": "kpl.raw_columns.col_20",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 103
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 110
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_662f76bdb422ca175dc3cd3fe30e0f9f6fce476deb1b0d0b50d64a4966e4f05c": {
       "current": {
         "candidate_id": "cc1_662f76bdb422ca175dc3cd3fe30e0f9f6fce476deb1b0d0b50d64a4966e4f05c",
@@ -17363,6 +17700,189 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v3",
+        "schema_version": 1
+      }
+    },
+    "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8": {
+      "current": {
+        "candidate_id": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "dc79757991cc4a808d41ac1c859b8d155097dca75a6cbd6fc2065b5425f5938a",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+            "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+          },
+          {
+            "path": "20261117/raw_ulist239.json",
+            "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+          },
+          {
+            "path": "20261117/raw_zhb.json",
+            "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+          },
+          {
+            "path": "20261118/raw_ulist239.json",
+            "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+          },
+          {
+            "path": "20261118/raw_zhb.json",
+            "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+          },
+          {
+            "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+            "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+          }
+        ],
+        "rationale": "Ulist239::f63 与 ZHB-stat2::amount_2d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9246、Spearman=0.9477，但精确相等为 0/40，数值比值范围 34.7041–1829.3009、CV=1.1948。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+        "reviewed_at": "2026-11-19T20:37:49+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "84b033ae452c8b281392036040b5cea0e3c09ff8946cb88f0f3842e04c176f6e",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "2a30b3295424c62f7b1dd5d69048a8fe1d08a81f6331d4b0adc21c0d4ffc6377"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount_2d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9246、Spearman=0.9477，但精确相等为 0/40，数值比值范围 34.7041–1829.3009、CV=1.1948。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "dc79757991cc4a808d41ac1c859b8d155097dca75a6cbd6fc2065b5425f5938a",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount_2d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9246、Spearman=0.9477，但精确相等为 0/40，数值比值范围 34.7041–1829.3009、CV=1.1948。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9446,
+              "leave_one_out_min": 0.8966,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9246,
+              "spearman": 0.9477
+            }
+          ],
+          "right": "zhb.stat2.amount_2d",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
         "schema_version": 1
       }
     },
@@ -22192,6 +22712,189 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf": {
+      "current": {
+        "candidate_id": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "bc7be97650276dec480ea29dbcf3cce590ffb124d85256d5f8ff7535a4293c04",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+            "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+          },
+          {
+            "path": "20261117/raw_ulist239.json",
+            "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+          },
+          {
+            "path": "20261117/raw_zhb.json",
+            "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+          },
+          {
+            "path": "20261118/raw_ulist239.json",
+            "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+          },
+          {
+            "path": "20261118/raw_zhb.json",
+            "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+          },
+          {
+            "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+            "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+          }
+        ],
+        "rationale": "Ulist239::f63 与 ZHB-stat2::amount_1d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9196、Spearman=0.9430，但精确相等为 0/40，数值比值范围 35.9031–1043.5024、CV=0.9045。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+        "reviewed_at": "2026-11-19T20:37:49+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "3b727c1a414e33a091999453e6e277cd41353e6ae43570d30e533099fae3b20e",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "2a30b3295424c62f7b1dd5d69048a8fe1d08a81f6331d4b0adc21c0d4ffc6377"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount_1d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9196、Spearman=0.9430，但精确相等为 0/40，数值比值范围 35.9031–1043.5024、CV=0.9045。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "bc7be97650276dec480ea29dbcf3cce590ffb124d85256d5f8ff7535a4293c04",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount_1d 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9196、Spearman=0.9430，但精确相等为 0/40，数值比值范围 35.9031–1043.5024、CV=0.9045。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9367,
+              "leave_one_out_min": 0.8883,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9196,
+              "spearman": 0.943
+            }
+          ],
+          "right": "zhb.stat2.amount_1d",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
         "schema_version": 1
       }
     },
@@ -33397,6 +34100,189 @@
         "schema_version": 1
       }
     },
+    "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316": {
+      "current": {
+        "candidate_id": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "3675369b6a5d5f0b871d71869f1c45aedcc303f2c8a79a3b3443922ae9cf9cfd",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+            "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+          },
+          {
+            "path": "20261117/raw_ulist239.json",
+            "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+          },
+          {
+            "path": "20261117/raw_zhb.json",
+            "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+          },
+          {
+            "path": "20261118/raw_ulist239.json",
+            "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+          },
+          {
+            "path": "20261118/raw_zhb.json",
+            "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+          },
+          {
+            "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+            "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+          }
+        ],
+        "rationale": "Ulist239::f63 与 ZHB-stat2::amount 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9189、Spearman=0.9490，但精确相等为 0/40，数值比值范围 36.7601–774.2335、CV=0.7783。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+        "reviewed_at": "2026-11-19T20:37:49+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "d2823d27a5c25d7a265e6347258086990495264f5be7f39c8f23f62a5b59809e",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "2a30b3295424c62f7b1dd5d69048a8fe1d08a81f6331d4b0adc21c0d4ffc6377"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9189、Spearman=0.9490，但精确相等为 0/40，数值比值范围 36.7601–774.2335、CV=0.7783。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "3675369b6a5d5f0b871d71869f1c45aedcc303f2c8a79a3b3443922ae9cf9cfd",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_samples.csv",
+              "sha256": "c985c8fa2d520c760ccdbe52095bdad46be96efcb7a464c551061a35243b29a6"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "Ulist239::f63 与 ZHB-stat2::amount 在 20 只股票、2 个来源日的 40 组配对中 Pearson=0.9189、Spearman=0.9490，但精确相等为 0/40，数值比值范围 36.7601–774.2335、CV=0.7783。两日横截面相关不能确认字段语义或稳定单位换算；保留为待外部字段契约或新增独立日期证据的候选，不建立映射，也不据此定案 f63。",
+          "reviewed_at": "2026-11-19T20:37:49+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9378,
+              "leave_one_out_min": 0.8992,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9189,
+              "spearman": 0.949
+            }
+          ],
+          "right": "zhb.stat2.amount",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_cf893281e4e1dc6e6c2bb0e60a987ec62c1bf6a350c0dd815327be5650fca0f5": {
       "current": {
         "candidate_id": "cc1_cf893281e4e1dc6e6c2bb0e60a987ec62c1bf6a350c0dd815327be5650fca0f5",
@@ -40433,5 +41319,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-19T20:13:13+08:00"
+  "updated_at": "2026-11-19T20:37:49+08:00"
 }

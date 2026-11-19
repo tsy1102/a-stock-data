@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_658e1e9f055a054310a2c40ba4f84cb1d18c0f6133f73fc6a7a7dfa386b06835",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T20:19:37+08:00",
+  "rationale": "拒绝本报告中开盘红 kph.industry_limit_up_count 与开盘啦 kpl.raw_columns.col_20 的普遍逐值等价候选。按已确认的来源日期对齐 2026-11-16 至 11-18，共 103 组同股配对中仅 83 组计数相同、20 组不同（80.58%）；2026-11-17 为 14/34，其中 17 组行业代码相同但计数不同、3 组行业归属也不同。更早 11 个来源日的 500 组对照亦有 50 组不一致。相关性高和部分日期全匹配不足以消除这些反例。本决定仅拒绝该候选的直接逐值映射，不定义或证伪 KPH 字段本身，不判定来源提供方关系；KPH 释义仍为 unverified，不更新 registry/mappings，也不据此调整采集路由。",
+  "evidence_refs": [
+    "20261119/20261119_collision_report.json",
+    "research/20261119_kph_industry_limit_up_count_followup.md",
+    "research/20261119_kph_industry_limit_up_count_20261118.csv",
+    "adjudications/20261119_kph_candidate_review_decisions.json",
+    "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+    "adjudications/20261118_kph_industry_count_followup.md",
+    "research/20261118_kph_industry_limit_up_count_samples.csv"
+  ],
+  "duplicate_of": null
+}

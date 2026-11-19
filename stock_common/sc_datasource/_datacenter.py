@@ -28,24 +28,31 @@ def query_datacenter(
     http_logger: Any,
     biz_logger: Any,
     debug_log: Callable[[str], Any],
+    quote_columns: str = "",
+    quote_type: str | None = None,
 ) -> List[Dict[str, Any]]:
     """Run one synchronous datacenter request and normalize its row list."""
     try:
         # V17.4.1: market-level reports with no explicit filter request all rows.
         full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
+        params = {
+            "reportName": report_name,
+            "columns": columns,
+            "filter": full_filter,
+            "pageNumber": str(page_index),
+            "pageSize": str(page_size),
+            "sortColumns": sort_columns,
+            "sortTypes": sort_types,
+            "source": "WEB",
+            "client": "WEB",
+        }
+        if quote_columns:
+            params["quoteColumns"] = quote_columns
+        if quote_type is not None:
+            params["quoteType"] = str(quote_type)
         response = quick_request(
             datacenter_url,
-            params={
-                "reportName": report_name,
-                "columns": columns,
-                "filter": full_filter,
-                "pageNumber": str(page_index),
-                "pageSize": str(page_size),
-                "sortColumns": sort_columns,
-                "sortTypes": sort_types,
-                "source": "WEB",
-                "client": "WEB",
-            },
+            params=params,
             headers={"User-Agent": user_agent},
             timeout=15,
         )
@@ -91,25 +98,32 @@ async def query_datacenter_async(
     user_agent: str,
     biz_logger: Any,
     debug_log: Callable[[str], Any],
+    quote_columns: str = "",
+    quote_type: str | None = None,
 ) -> List[Dict[str, Any]]:
     """Run one asynchronous datacenter request and normalize its row list."""
     try:
         # V17.4.1: same market-level empty-filter behavior as the sync endpoint.
         full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
+        params = {
+            "reportName": report_name,
+            "columns": columns,
+            "filter": full_filter,
+            "pageNumber": "1",
+            "pageSize": str(page_size),
+            "sortColumns": sort_columns,
+            "sortTypes": sort_types,
+            "source": "WEB",
+            "client": "WEB",
+        }
+        if quote_columns:
+            params["quoteColumns"] = quote_columns
+        if quote_type is not None:
+            params["quoteType"] = str(quote_type)
         payload = await async_request_with_retry(
             session,
             datacenter_url,
-            params={
-                "reportName": report_name,
-                "columns": columns,
-                "filter": full_filter,
-                "pageNumber": "1",
-                "pageSize": str(page_size),
-                "sortColumns": sort_columns,
-                "sortTypes": sort_types,
-                "source": "WEB",
-                "client": "WEB",
-            },
+            params=params,
             headers={"User-Agent": user_agent},
             timeout=15,
         )

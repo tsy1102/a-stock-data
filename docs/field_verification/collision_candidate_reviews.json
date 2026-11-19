@@ -4664,6 +4664,117 @@
         "schema_version": 1
       }
     },
+    "cc1_1620bc0adc29a4b2b765b6664560505873b72f098467efb24b0f56be8f0ff562": {
+      "current": {
+        "candidate_id": "cc1_1620bc0adc29a4b2b765b6664560505873b72f098467efb24b0f56be8f0ff562",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "23c520d2d1210370da2a28f179950988dcac16fbb5f1a9a9c3f8376098c9247f",
+        "evidence_refs": [
+          {
+            "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+            "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+          },
+          {
+            "path": "adjudications/20261119_kph_kpl_source_identity.md",
+            "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+          }
+        ],
+        "rationale": "KPH.industry_limit_up_count 与 KPL.raw_columns.col_20 在已确认来源日的103组样本中83组相等、20组不等，逐日命中为31/31、14/34、38/38。它是弱值重叠，不是字段定案；KPL col_20 尚无官方逐列释义，现有样本无法区分同义但口径不同、相邻指标或偶合。KPH（开盘红）与 KPL（开盘啦）是不同产品/API来源族，本候选不用于合并来源或采集路线。保留待核，不写 registry/mappings。",
+        "reviewed_at": "2026-11-20T07:14:13+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_1620bc0adc29a4b2b765b6664560505873b72f098467efb24b0f56be8f0ff562",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "23c520d2d1210370da2a28f179950988dcac16fbb5f1a9a9c3f8376098c9247f",
+          "evidence_refs": [
+            {
+              "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+              "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+            },
+            {
+              "path": "adjudications/20261119_kph_kpl_source_identity.md",
+              "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+            }
+          ],
+          "rationale": "KPH.industry_limit_up_count 与 KPL.raw_columns.col_20 在已确认来源日的103组样本中83组相等、20组不等，逐日命中为31/31、14/34、38/38。它是弱值重叠，不是字段定案；KPL col_20 尚无官方逐列释义，现有样本无法区分同义但口径不同、相邻指标或偶合。KPH（开盘红）与 KPL（开盘啦）是不同产品/API来源族，本候选不用于合并来源或采集路线。保留待核，不写 registry/mappings。",
+          "reviewed_at": "2026-11-20T07:14:13+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 31,
+            "T:20261117": 14,
+            "T:20261118": 38
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 2,
+          "distinct_days": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kph.industry_limit_up_count",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 103,
+          "n_pairs": 103,
+          "official_contract_anchor": false,
+          "overall_hit": 0.8058,
+          "ratio": null,
+          "right": "kpl.raw_columns.col_20",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 103
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 110
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
     "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a": {
       "current": {
         "candidate_id": "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a",
@@ -29691,6 +29802,117 @@
         "schema_version": 1
       }
     },
+    "cc1_b3fd58a18c10fddef4e5ec9c3d5a7b6fd148532df4bab7510adce1096b4467e4": {
+      "current": {
+        "candidate_id": "cc1_b3fd58a18c10fddef4e5ec9c3d5a7b6fd148532df4bab7510adce1096b4467e4",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "0eec04b2eeb40096e37d48d0014c04fd7a9f4acbdd7a96b358098d52bde9bd85",
+        "evidence_refs": [
+          {
+            "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+            "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+          },
+          {
+            "path": "adjudications/20261119_kph_kpl_source_identity.md",
+            "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+          }
+        ],
+        "rationale": "拒绝 KPL.raw_columns.col_02 与 KPH.limit_count 作为直接数值等价映射：来源日期合格的103组样本仅46组相等，整体命中44.66%，三日命中均未达到现行候选阈值。该处置只否定本候选的直接等价关系，不定义 col_02 的业务语义，也不改变 KPH/KPL 是两个独立来源的身份裁决；不写 registry/mappings。",
+        "reviewed_at": "2026-11-20T07:14:13+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b3fd58a18c10fddef4e5ec9c3d5a7b6fd148532df4bab7510adce1096b4467e4",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "0eec04b2eeb40096e37d48d0014c04fd7a9f4acbdd7a96b358098d52bde9bd85",
+          "evidence_refs": [
+            {
+              "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+              "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+            },
+            {
+              "path": "adjudications/20261119_kph_kpl_source_identity.md",
+              "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+            }
+          ],
+          "rationale": "拒绝 KPL.raw_columns.col_02 与 KPH.limit_count 作为直接数值等价映射：来源日期合格的103组样本仅46组相等，整体命中44.66%，三日命中均未达到现行候选阈值。该处置只否定本候选的直接等价关系，不定义 col_02 的业务语义，也不改变 KPH/KPL 是两个独立来源的身份裁决；不写 registry/mappings。",
+          "reviewed_at": "2026-11-20T07:14:13+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 11,
+            "T:20261117": 13,
+            "T:20261118": 22
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kpl.raw_columns.col_02",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 103,
+          "n_pairs": 103,
+          "official_contract_anchor": false,
+          "overall_hit": 0.4466,
+          "ratio": null,
+          "right": "kph.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 110
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 103
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
     "cc1_b7b1fad96b0508181f33097bd3615395d893293cbdc7166a846fc2cec16d2282": {
       "current": {
         "candidate_id": "cc1_b7b1fad96b0508181f33097bd3615395d893293cbdc7166a846fc2cec16d2282",
@@ -38574,6 +38796,125 @@
         "schema_version": 1
       }
     },
+    "cc1_edd888dd713d9d5e6f5f7b30a2e87240c7312f10cf75bccc0d3469cd4f4fdef6": {
+      "current": {
+        "candidate_id": "cc1_edd888dd713d9d5e6f5f7b30a2e87240c7312f10cf75bccc0d3469cd4f4fdef6",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "725bc33f4cd74efafe39a0f516a1f0c659b1afd0c158fc4e34a1361c24f6d794",
+        "evidence_refs": [
+          {
+            "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+            "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+          },
+          {
+            "path": "adjudications/20261119_kph_kpl_source_identity.md",
+            "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+          }
+        ],
+        "rationale": "KPL.raw_columns.col_02 与 Push2EX.limit_count 的170组观测全部因KPL来源实际日期未确认而被排除，样本键日期不能替代来源 as_of_date。42.35%只是未经日期资格的描述性数值比例，不作为跨源碰撞、字段等价或来源合并证据。保留待核，不写 registry/mappings。",
+        "reviewed_at": "2026-11-20T07:14:13+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_edd888dd713d9d5e6f5f7b30a2e87240c7312f10cf75bccc0d3469cd4f4fdef6",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "725bc33f4cd74efafe39a0f516a1f0c659b1afd0c158fc4e34a1361c24f6d794",
+          "evidence_refs": [
+            {
+              "path": "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+              "sha256": "c9f8013d52326b4335cc740a91b2e89b9a85c1228fba21a14576b78c7aa45f98"
+            },
+            {
+              "path": "adjudications/20261119_kph_kpl_source_identity.md",
+              "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+            }
+          ],
+          "rationale": "KPL.raw_columns.col_02 与 Push2EX.limit_count 的170组观测全部因KPL来源实际日期未确认而被排除，样本键日期不能替代来源 as_of_date。42.35%只是未经日期资格的描述性数值比例，不作为跨源碰撞、字段等价或来源合并证据。保留待核，不写 registry/mappings。",
+          "reviewed_at": "2026-11-20T07:14:13+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261112": 10,
+            "T:20261116": 12,
+            "T:20261117": 17,
+            "T:20261118": 24,
+            "T:20261119": 9
+          },
+          "daily_informative_sample_counts": {
+            "T:20261112": 37,
+            "T:20261116": 32,
+            "T:20261117": 37,
+            "T:20261118": 41,
+            "T:20261119": 23
+          },
+          "daily_sample_counts": {
+            "T:20261112": 37,
+            "T:20261116": 32,
+            "T:20261117": 37,
+            "T:20261118": 41,
+            "T:20261119": 23
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261112",
+            "T:20261116",
+            "T:20261117",
+            "T:20261118",
+            "T:20261119"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 170,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kpl.raw_columns.col_02",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 5,
+          "n_informative_pairs": 170,
+          "n_pairs": 170,
+          "official_contract_anchor": false,
+          "overall_hit": 0.4235,
+          "ratio": null,
+          "right": "push2ex.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "date_unconfirmed",
+            "left": {
+              "date_origin_counts": {
+                "source_as_of": 170
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "meta_data_date": 289
+              },
+              "date_status": "date_unconfirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
     "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40": {
       "current": {
         "candidate_id": "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40",
@@ -41319,5 +41660,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-19T20:37:49+08:00"
+  "updated_at": "2026-11-20T07:14:13+08:00"
 }

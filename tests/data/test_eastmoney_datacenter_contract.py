@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from stock_common.sc_datasource import _eastmoney
+from stock_common.sc_datasource import _convertible, _eastmoney
 
 
 class _Response:
@@ -93,6 +93,82 @@ def test_async_datacenter_keeps_retry_adapter_and_market_filter_contract(monkeyp
     }
     assert kwargs["headers"] == {"User-Agent": _eastmoney.UA}
     assert kwargs["timeout"] == 15
+
+
+def test_sync_datacenter_forwards_optional_quote_columns(monkeypatch):
+    calls = []
+
+    def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
+        return _Response()
+
+    monkeypatch.setattr(_eastmoney, "_quick_request", fake_request)
+
+    _eastmoney.eastmoney_datacenter(
+        "113660",
+        "RPT_BOND_CB_LIST",
+        filter_str='(SECURITY_CODE="113660")',
+        quote_columns="f235~10~SECURITY_CODE~TRANSFER_PRICE",
+        quote_type="1",
+    )
+
+    assert len(calls) == 1
+    params = calls[0][1]["params"]
+    assert params["quoteColumns"] == "f235~10~SECURITY_CODE~TRANSFER_PRICE"
+    assert params["quoteType"] == "1"
+    assert params["filter"] == '(SECURITY_CODE="113660")'
+
+
+def test_async_datacenter_forwards_optional_quote_columns(monkeypatch):
+    calls = []
+
+    async def fake_request(session, url, **kwargs):
+        calls.append((session, url, kwargs))
+        return {"result": {"data": [{"SECURITY_CODE": "113660"}]}}
+
+    monkeypatch.setattr(_eastmoney, "_async_request_with_retry", fake_request)
+    session = object()
+    request = _eastmoney.eastmoney_datacenter_async(
+        session,
+        "113660",
+        "RPT_BOND_CB_LIST",
+        quote_columns="f236~10~SECURITY_CODE~TRANSFER_VALUE",
+        quote_type="1",
+    )
+    with pytest.raises(StopIteration) as completed:
+        request.send(None)
+
+    assert completed.value.value == [{"SECURITY_CODE": "113660"}]
+    assert len(calls) == 1
+    actual_session, _, kwargs = calls[0]
+    assert actual_session is session
+    assert kwargs["params"]["quoteColumns"] == "f236~10~SECURITY_CODE~TRANSFER_VALUE"
+    assert kwargs["params"]["quoteType"] == "1"
+
+
+def test_convertible_bonds_requests_first_party_quote_columns(monkeypatch):
+    calls = []
+
+    def fake_datacenter(code, report_name, **kwargs):
+        calls.append((code, report_name, kwargs))
+        return [
+            {"SECURITY_CODE": "113660", "STATUS": "交易中"},
+            {"SECURITY_CODE": "000000", "STATUS": "已摘牌"},
+        ]
+
+    monkeypatch.setattr(_convertible, "eastmoney_datacenter", fake_datacenter)
+
+    rows = _convertible.convertible_bonds()
+
+    assert len(calls) == 1
+    code, report_name, kwargs = calls[0]
+    assert code == ""
+    assert report_name == "RPT_BOND_CB_LIST"
+    assert kwargs["page_size"] == 500
+    assert kwargs["quote_columns"] == _convertible._QUOTE_COLUMNS
+    assert kwargs["quote_type"] == "0"
+    assert [row["SECURITY_CODE"] for row in rows] == ["113660"]
+    assert rows[0]["source"] == "convertible_bonds"
 
 
 def test_sync_northbound_keeps_missing_change_values_distinct_from_zero(monkeypatch):

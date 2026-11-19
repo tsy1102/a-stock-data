@@ -21,7 +21,18 @@ _EM_REPORTS: Dict[str, str] = {
     "convertible_bonds": "RPT_BOND_CB_LIST",
 }
 _SOURCE_URLS: Dict[str, str] = {"convertible_bonds": DATACENTER_URL}
-_VERIFIED = True  # 常量取自上游权威仓库; 字段语义待本项目 collide 终检
+# Match the first-party convertible-bond detail page's quote column selection.
+_QUOTE_COLUMNS = (
+    "f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE,"
+    "f235~10~SECURITY_CODE~TRANSFER_PRICE,"
+    "f236~10~SECURITY_CODE~TRANSFER_VALUE,"
+    "f2~10~SECURITY_CODE~CURRENT_BOND_PRICE,"
+    "f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO,"
+    "f239~10~SECURITY_CODE~RESALE_TRIG_PRICE,"
+    "f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE,"
+    "f23~01~CONVERT_STOCK_CODE~PBV_RATIO"
+)
+_VERIFIED = True  # 请求契约与登记字段已核验；逐字段释义和证据状态以 field_registry.json 为准。
 
 
 def _trace(source: str) -> Dict[str, Any]:
@@ -29,14 +40,21 @@ def _trace(source: str) -> Dict[str, Any]:
 
 
 def convertible_bonds(include_delisted: bool = False) -> List[Dict[str, Any]]:
-    """可转债列表: 条款/转股价值/溢价率。
+    """可转债列表: 条款与官方详情页使用的行情字段。
 
     include_delisted=False 仅返回交易中/待上市; True 含已摘牌。东财源。
     V17.4.1: 拉全量后在 Python 侧按 STATUS 过滤(避免错误过滤串掩盖 reportName 真伪, 便于对撞验证)。
+    quoteColumns 与东方财富详情页的 RPT_BOND_CB_LIST 请求一致。项目不携带官网登录
+    Cookie，quoteType 使用官网 hsaDelay() 对未登录访问采用的 0。
     """
     try:
         rows = eastmoney_datacenter(
-            "", _EM_REPORTS["convertible_bonds"], filter_str="", page_size=500
+            "",
+            _EM_REPORTS["convertible_bonds"],
+            filter_str="",
+            page_size=500,
+            quote_columns=_QUOTE_COLUMNS,
+            quote_type="0",
         )
     except Exception as _e:
         _debug_log(f"convertible_bonds: 取值失败 -> {_e}")

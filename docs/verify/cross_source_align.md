@@ -8,6 +8,8 @@
 > 注：fuyao/tdx/eltdx/zhb 适配层字段因 registered_field_sets 收录形态差异，verified 状态定案见 field_dict.md 附录；本表确保 collide in_registry 固化等价关系。
 >
 > **2026-11-07 语义复核提示**：本表旧报告中的 `ulist239.f142 ↔ sina[13]` “板级枚举计数”和 `ulist239.f143 ↔ tencent[21]` “年初至今涨跌幅”是已被撤回的历史错标，不代表当前字典结论。当前精确路径已核实为买二价/卖二价，4 条 Ulist–Sina/Tencent 关系为既有映射并已用保留期样本复验；其中卖二 4 组 `-` 对 `0.00/0.000` 是无报价占位差异。`push2(stock/get)::f192` 的委差定义也不得投射到 `ulist239(np/get)::f192`。详见[本轮最终审计](../field_verification/adjudications/20261107_historical_recrack_final_closeout.md)。下表保留历史原始行作为审计记录，字段当前语义以逐源注册表为准。
+>
+> **2026-11-20 映射撤回**：`event_dc.INITIAL_TRANSFER_PRICE ↔ event_dc.TRANSFER_VALUE` 曾由缺少 `quoteColumns` 的旧请求形状产生 L1 相等，已从活动映射表撤回；旧报告保留作历史记录。正式更正见[可转债行情字段裁决](../field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md)。
 
 | 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
 |---|---|---|---|---|
@@ -395,7 +397,6 @@
 | event_dc.LATELY_PRICE | event_dc.TNEW_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.AVERAGE_PRICE | event_dc.LD_AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.TOTAL_RAISE_FUNDS | event_dc.DEC_SUMFINA | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
-| event_dc.INITIAL_TRANSFER_PRICE | event_dc.TRANSFER_VALUE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.PREDICT_ISSUE_PRICE1 | event_dc.CURRENT_ONEWORD_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
 | event_dc.CURRENT_ONEWORD_NUM | event_dc.IS_RISKWARNING | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
 

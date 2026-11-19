@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_1620bc0adc29a4b2b765b6664560505873b72f098467efb24b0f56be8f0ff562",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T07:14:13+08:00",
+      "rationale": "KPH.industry_limit_up_count 与 KPL.raw_columns.col_20 在已确认来源日的103组样本中83组相等、20组不等，逐日命中为31/31、14/34、38/38。它是弱值重叠，不是字段定案；KPL col_20 尚无官方逐列释义，现有样本无法区分同义但口径不同、相邻指标或偶合。KPH（开盘红）与 KPL（开盘啦）是不同产品/API来源族，本候选不用于合并来源或采集路线。保留待核，不写 registry/mappings。",
+      "evidence_refs": [
+        "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+        "adjudications/20261119_kph_kpl_source_identity.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_b3fd58a18c10fddef4e5ec9c3d5a7b6fd148532df4bab7510adce1096b4467e4",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T07:14:13+08:00",
+      "rationale": "拒绝 KPL.raw_columns.col_02 与 KPH.limit_count 作为直接数值等价映射：来源日期合格的103组样本仅46组相等，整体命中44.66%，三日命中均未达到现行候选阈值。该处置只否定本候选的直接等价关系，不定义 col_02 的业务语义，也不改变 KPH/KPL 是两个独立来源的身份裁决；不写 registry/mappings。",
+      "evidence_refs": [
+        "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+        "adjudications/20261119_kph_kpl_source_identity.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_edd888dd713d9d5e6f5f7b30a2e87240c7312f10cf75bccc0d3469cd4f4fdef6",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T07:14:13+08:00",
+      "rationale": "KPL.raw_columns.col_02 与 Push2EX.limit_count 的170组观测全部因KPL来源实际日期未确认而被排除，样本键日期不能替代来源 as_of_date。42.35%只是未经日期资格的描述性数值比例，不作为跨源碰撞、字段等价或来源合并证据。保留待核，不写 registry/mappings。",
+      "evidence_refs": [
+        "20261119/eventdc_quote_fields_final_20261120/20261119_collision_report.json",
+        "adjudications/20261119_kph_kpl_source_identity.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

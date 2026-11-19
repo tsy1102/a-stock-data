@@ -559,10 +559,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    # Includes existing ELTDX paths, four new limit_ladder outputs, and
-    # Eastmoney convertible-bond issue scale, term, and coupon-rate fields;
+    # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
+    # convertible-bond issue scale, term, coupon-rate and quote fields;
     # zhuying_shouru uses an empirical correction instead.
-    assert len(pairs) == 116
+    assert len(pairs) == 126
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs

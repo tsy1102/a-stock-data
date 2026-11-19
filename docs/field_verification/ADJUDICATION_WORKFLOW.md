@@ -211,6 +211,12 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 - **混合来源回退透传**：证明历史输出属于哪条复合 accessor、该来源原始响应缺失/不含该键、同记录值实际来自哪个来源路径，并核查当前来源专属采集器是否仍会输出。相同数值只用于识别回退血缘；若来源实际日期不同或缺失，不得据此宣布字段等价或用作碰撞样本。将错误归属的精确身份记为 `disproved`、`status_resolution: mixed_source_capture_passthrough`，保留原状态快照和证据；不创建 `mappings`，也不修改实际提供值的来源字段。
 - 两种处置均须提供日期化审计记录、结构化逐样本证据、当前调用链/适配器实现及原状态快照；若路径生产方式曾变化，明确记录各时期的血缘，不能把当前生成方式倒推到历史样本。`registry_parity.py` 对基线内外路径都要求这些证据。保留历史原始归档，不回写或重解释原始采集文件。它们与 `retired_legacy_path` 不同：前者说明输出如何产生，不能伪造同源新键承接关系。
 
+## 撤回错误的活动映射
+
+`mappings` 表示当前仍成立的字段关系，不是只读历史清单。若后续证据证明某条已登记关系源于错误请求参数、字段路径混淆或不合格样本，应按完整 `(source, code path)` 核查，并只删除被证伪的精确映射；不要因此改写两端字段各自有效的来源语义或批量影响同短码路径。
+
+更正记录需保留被撤映射的原始端点、relation、原引用证据、撤回理由、接口/样本边界和复核日期。当前没有自动撤回映射的裁决动作：在证据记录完成后，从 `field_registry.json.mappings` 和 [`docs/verify/cross_source_align.md`](../verify/cross_source_align.md) 的活动表中移除该精确关系，避免 `extract_registry.py` 再次导入；将更正记录保留在表头说明和当前索引中。随后重生成投影视图，并运行 registry parity、同步校验及受影响的碰撞回归。历史报告保留原样；后续报告不得继续把已撤关系当作活动映射。
+
 ## 撤销错误的历史定义
 
 当原始响应或跨日样本证明历史语义定义错误时，先区分“字段路径无效”和“路径真实、旧释义错误”。若精确 `(source, code)` 路径本身是清单残留、已退役别名或非字段输出，按对应的 `disproved` 处置记录替代路径与证据；若原始字段路径仍真实存在、但旧含义被推翻且新含义尚未确认，则将该路径设为 `unverified`、`status_resolution: historical_meaning_withdrawn_unresolved`，清空错误的规范语义和单位，保留旧 `reference_evidence` 并新增日期化纠错记录。该状态继续进入未知破解队列，不能因旧释义被推翻而把真实字段永久排除。若新含义已确认，则使用对应来源契约或来源内实证流程直接更新为 `verified`。三种处置均按完整来源路径进行；只撤销依赖错误旧释义的活动映射，不按短代码批量修改其他接口。更新后重建 `fields` 聚合视图和 `meta.source_field_stats`，生成字典视图并运行 registry parity、同步校验及相关回归。历史报告只保留为历史证据，并在当前索引中链接更正记录，不覆写原始样本或删除旧结论。

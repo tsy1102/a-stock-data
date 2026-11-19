@@ -61,6 +61,8 @@ def eastmoney_datacenter(
     sort_columns: str = "",
     sort_types: str = "-1",
     page_index: int = 1,
+    quote_columns: str = "",
+    quote_type: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """东财数据中心统一查询（datacenter-web.eastmoney.com）。
 
@@ -81,6 +83,8 @@ def eastmoney_datacenter(
         http_logger=_http_logger,
         biz_logger=_biz_logger,
         debug_log=_debug_log,
+        quote_columns=quote_columns,
+        quote_type=quote_type,
     )
 
 
@@ -112,6 +116,8 @@ async def eastmoney_datacenter_async(
     page_size: int = 50,
     sort_columns: str = "",
     sort_types: str = "-1",
+    quote_columns: str = "",
+    quote_type: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """async 版：东财数据中心统一查询（datacenter-web.eastmoney.com）。
 
@@ -131,6 +137,8 @@ async def eastmoney_datacenter_async(
         user_agent=UA,
         biz_logger=_biz_logger,
         debug_log=_debug_log,
+        quote_columns=quote_columns,
+        quote_type=quote_type,
     )
 
 

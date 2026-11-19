@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 950,
-      "verified": 1605,
+      "verified": 1615,
       "verified_by_empirical_addendum": 217,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 465
+      "verified_by_source_contract": 475
     },
     "updated_at": "2026-11-19"
   },
@@ -11914,6 +11914,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "convertible_bonds[].CONVERT_STOCK_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE#quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_underlying_stock_price",
+      "meaning": "可转债对应正股的行情价格。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "convertible_bonds[].COUPON_IR",
       "source": "东财-event_dc(可转债列表)",
       "sources": [
@@ -11923,6 +11941,168 @@
       "canonical": "bond_coupon_rate_current_interest_year_pct",
       "meaning": "按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。",
       "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].CURRENT_BOND_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE#quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_current_market_price",
+      "meaning": "可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].CURRENT_BOND_PRICENEW",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW#详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_current_market_price",
+      "meaning": "可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].INITIAL_TRANSFER_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE#RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_initial_conversion_price",
+      "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
+      "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].PBV_RATIO",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO#quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_underlying_stock_pb_ratio",
+      "meaning": "对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].REDEEM_TRIG_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE#quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_redemption_trigger_price",
+      "meaning": "东方财富可转债详情页显示的强赎触发价。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].RESALE_TRIG_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE#quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_resale_trigger_price",
+      "meaning": "东方财富可转债详情页显示的回售触发价。",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO#quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_conversion_premium_ratio",
+      "meaning": "东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].TRANSFER_PRICE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE#quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_current_conversion_price",
+      "meaning": "东方财富可转债详情页显示的当前生效转股价格。",
+      "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].TRANSFER_VALUE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE#quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "canonical": "convertible_bond_conversion_value",
+      "meaning": "东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。",
+      "unit": "元",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -46419,6 +46599,33 @@
     ],
     "bond_coupon_rate_current_interest_year_pct": [
       "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_initial_conversion_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_current_conversion_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_conversion_value": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_underlying_stock_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_current_market_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_conversion_premium_ratio": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_resale_trigger_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_redemption_trigger_price": [
+      "东财-event_dc(可转债列表)"
+    ],
+    "convertible_bond_underlying_stock_pb_ratio": [
+      "东财-event_dc(可转债列表)"
     ]
   },
   "mappings": [
@@ -51902,18 +52109,6 @@
       "to": {
         "source": "event_dc",
         "code": "DEC_SUMFINA"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=1.00·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
-        "code": "INITIAL_TRANSFER_PRICE"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "TRANSFER_VALUE"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1·hit=1.00·3d"
@@ -268916,6 +269111,1006 @@
             "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=RPT_BOND_CB_LIST) response row.COUPON_IR -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].COUPON_IR",
             "locator": "东方财富详情页显示起息日与完整利率说明；巨潮资讯仙鹤股份（113632）和寿仙谷（113660）公告明确发行日期及逐年票面利率。保留样本于2026-11-17的两个起息周年日分别出现COUPON_IR周年切换。",
             "url": "https://data.eastmoney.com/kzz/detail/113632.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].INITIAL_TRANSFER_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].INITIAL_TRANSFER_PRICE",
+      "path": "convertible_bonds[].INITIAL_TRANSFER_PRICE",
+      "canonical": "convertible_bond_initial_conversion_price",
+      "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE#RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE#RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-initial_transfer_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-initial_transfer_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE#RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_initial_conversion_price",
+          "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-initial_transfer_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-initial_transfer_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE",
+            "locator": "RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。",
+            "url": "https://static.cninfo.com.cn/finalpage/2026-10-09/1225596301.PDF"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_initial_conversion_price",
+              "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-initial_transfer_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_initial_conversion_price",
+              "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE。RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.INITIAL_TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].INITIAL_TRANSFER_PRICE",
+            "locator": "RPT_BOND_CB_LIST columns=ALL 的 INITIAL_TRANSFER_PRICE；寿22原始响应38.08、鹤21原始响应39.09，分别与发行人公告明确记载的初始转股价吻合。",
+            "url": "https://static.cninfo.com.cn/finalpage/2026-10-09/1225596301.PDF"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].TRANSFER_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].TRANSFER_PRICE",
+      "path": "convertible_bonds[].TRANSFER_PRICE",
+      "canonical": "convertible_bond_current_conversion_price",
+      "meaning": "东方财富可转债详情页显示的当前生效转股价格。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE#quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE#quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-transfer_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-transfer_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE#quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_current_conversion_price",
+          "meaning": "东方财富可转债详情页显示的当前生效转股价格。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-transfer_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-transfer_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE",
+            "locator": "quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。",
+            "url": "https://static.cninfo.com.cn/finalpage/2026-10-09/1225596301.PDF"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_conversion_price",
+              "meaning": "东方财富可转债详情页显示的当前生效转股价格。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-transfer_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_conversion_price",
+              "meaning": "东方财富可转债详情页显示的当前生效转股价格。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE。quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PRICE",
+            "locator": "quoteColumns 项 f235~10~SECURITY_CODE~TRANSFER_PRICE；详情页“转股价(元)”。寿22原始响应36.84，与发行人公告列出的调整后现行转股价一致。",
+            "url": "https://static.cninfo.com.cn/finalpage/2026-10-09/1225596301.PDF"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].TRANSFER_VALUE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].TRANSFER_VALUE",
+      "path": "convertible_bonds[].TRANSFER_VALUE",
+      "canonical": "convertible_bond_conversion_value",
+      "meaning": "东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE#quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE#quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-transfer_value-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-transfer_value-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE#quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_conversion_value",
+          "meaning": "东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-transfer_value-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-transfer_value-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE",
+            "locator": "quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_value",
+              "meaning": "东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-transfer_value-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_value",
+              "meaning": "东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE。quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_VALUE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_VALUE",
+            "locator": "quoteColumns 项 f236~10~SECURITY_CODE~TRANSFER_VALUE；详情页“转股价值(元)”。154条可比记录按样本观察公式计算154/154吻合。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].CONVERT_STOCK_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].CONVERT_STOCK_PRICE",
+      "path": "convertible_bonds[].CONVERT_STOCK_PRICE",
+      "canonical": "convertible_bond_underlying_stock_price",
+      "meaning": "可转债对应正股的行情价格。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE#quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE#quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-convert_stock_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-convert_stock_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE#quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_underlying_stock_price",
+          "meaning": "可转债对应正股的行情价格。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-convert_stock_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-convert_stock_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE",
+            "locator": "quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_underlying_stock_price",
+              "meaning": "可转债对应正股的行情价格。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-convert_stock_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_underlying_stock_price",
+              "meaning": "可转债对应正股的行情价格。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE。quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CONVERT_STOCK_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CONVERT_STOCK_PRICE",
+            "locator": "quoteColumns 项 f2~01~CONVERT_STOCK_CODE~CONVERT_STOCK_PRICE；详情页“正股价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].CURRENT_BOND_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].CURRENT_BOND_PRICE",
+      "path": "convertible_bonds[].CURRENT_BOND_PRICE",
+      "canonical": "convertible_bond_current_market_price",
+      "meaning": "可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE#quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE#quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-current_bond_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-current_bond_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE#quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_current_market_price",
+          "meaning": "可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-current_bond_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-current_bond_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE",
+            "locator": "quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_market_price",
+              "meaning": "可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-current_bond_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_market_price",
+              "meaning": "可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE。quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICE",
+            "locator": "quoteColumns 项 f2~10~SECURITY_CODE~CURRENT_BOND_PRICE；详情页“债券现价(元)”的回退键。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].CURRENT_BOND_PRICENEW",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].CURRENT_BOND_PRICENEW",
+      "path": "convertible_bonds[].CURRENT_BOND_PRICENEW",
+      "canonical": "convertible_bond_current_market_price",
+      "meaning": "可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW#详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW#详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-current_bond_pricenew-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-current_bond_pricenew-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW#详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_current_market_price",
+          "meaning": "可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-current_bond_pricenew-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-current_bond_pricenew-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW",
+            "locator": "详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_market_price",
+              "meaning": "可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-current_bond_pricenew-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_current_market_price",
+              "meaning": "可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW。详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.CURRENT_BOND_PRICENEW -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].CURRENT_BOND_PRICENEW",
+            "locator": "详情页脚本对同一“债券现价(元)”展示槽位优先使用 CURRENT_BOND_PRICENEW；本次500行中2行非空。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+      "path": "convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+      "canonical": "convertible_bond_conversion_premium_ratio",
+      "meaning": "东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。",
+      "unit": "%",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO#quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO#quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-transfer_premium_ratio-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-transfer_premium_ratio-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO#quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_conversion_premium_ratio",
+          "meaning": "东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-transfer_premium_ratio-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-transfer_premium_ratio-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+            "locator": "quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_premium_ratio",
+              "meaning": "东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-transfer_premium_ratio-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_premium_ratio",
+              "meaning": "东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。",
+              "unit": "%"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO。quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.TRANSFER_PREMIUM_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].TRANSFER_PREMIUM_RATIO",
+            "locator": "quoteColumns 项 f237~10~SECURITY_CODE~TRANSFER_PREMIUM_RATIO；详情页“转股溢价率”，前端按百分比格式显示。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].RESALE_TRIG_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].RESALE_TRIG_PRICE",
+      "path": "convertible_bonds[].RESALE_TRIG_PRICE",
+      "canonical": "convertible_bond_resale_trigger_price",
+      "meaning": "东方财富可转债详情页显示的回售触发价。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE#quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE#quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-resale_trig_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-resale_trig_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE#quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_resale_trigger_price",
+          "meaning": "东方财富可转债详情页显示的回售触发价。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-resale_trig_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-resale_trig_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE",
+            "locator": "quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_resale_trigger_price",
+              "meaning": "东方财富可转债详情页显示的回售触发价。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-resale_trig_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_resale_trigger_price",
+              "meaning": "东方财富可转债详情页显示的回售触发价。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE。quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.RESALE_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].RESALE_TRIG_PRICE",
+            "locator": "quoteColumns 项 f239~10~SECURITY_CODE~RESALE_TRIG_PRICE；详情页“回售触发价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].REDEEM_TRIG_PRICE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].REDEEM_TRIG_PRICE",
+      "path": "convertible_bonds[].REDEEM_TRIG_PRICE",
+      "canonical": "convertible_bond_redemption_trigger_price",
+      "meaning": "东方财富可转债详情页显示的强赎触发价。",
+      "unit": "元",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE#quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE#quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-redeem_trig_price-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-redeem_trig_price-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE#quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_redemption_trigger_price",
+          "meaning": "东方财富可转债详情页显示的强赎触发价。",
+          "unit": "元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-redeem_trig_price-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-redeem_trig_price-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE",
+            "locator": "quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_redemption_trigger_price",
+              "meaning": "东方财富可转债详情页显示的强赎触发价。",
+              "unit": "元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-redeem_trig_price-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_redemption_trigger_price",
+              "meaning": "东方财富可转债详情页显示的强赎触发价。",
+              "unit": "元"
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE。quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.REDEEM_TRIG_PRICE -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].REDEEM_TRIG_PRICE",
+            "locator": "quoteColumns 项 f240~10~SECURITY_CODE~REDEEM_TRIG_PRICE；详情页“强赎触发价(元)”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].PBV_RATIO",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].PBV_RATIO",
+      "path": "convertible_bonds[].PBV_RATIO",
+      "canonical": "convertible_bond_underlying_stock_pb_ratio",
+      "meaning": "对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。",
+      "unit": "",
+      "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO#quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO#quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-pbv_ratio-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-pbv_ratio-source-contract"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。 · stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO#quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。 @ 东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+          "canonical": "convertible_bond_underlying_stock_pb_ratio",
+          "meaning": "对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-pbv_ratio-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-pbv_ratio-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO",
+            "locator": "quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_underlying_stock_pb_ratio",
+              "meaning": "对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。",
+              "unit": ""
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-pbv_ratio-source-contract",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_convertible_quote_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_underlying_stock_pb_ratio",
+              "meaning": "对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目将精确接口响应路径保存为  -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO。quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。 详细证据及样本边界见 docs/field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md。本决定只定案此来源完整路径的含义，不建立跨来源映射；响应未提供可确认的来源实际日期，因此不把 fetched_at 或目录目标日当成行情 as_of_date。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 JavaScript 对 RPT_BOND_CB_LIST 的请求与展示映射；发行人公告用于核实初始/当前转股价样本。",
+            "revision": "东方财富详情页脚本及页面于 2026-11-20 核验；项目采集器按当前源码路由",
+            "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO",
+            "locator": "quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
           }
         }
       ]

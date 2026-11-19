@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 576 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 582 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3565,6 +3565,12 @@
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ACTUAL_ISSUE_SCALE` | convertible_bond_issue_scale | 可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].BOND_EXPIRE` | convertible_bond_term_years | 东方财富详情页标注的可转债存续期限（年）。提前终止或赎回后，该值可短于募集说明书原始约定期限；蓝思转债样本为2.1671年，正式募集说明书原始约定为6年。该字段不是剩余期限或到期日期。保留样本显示其与起息日至有效终止期间接近，但统一年化和终止日取值规则未公开。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].COUPON_IR` | bond_coupon_rate_current_interest_year_pct | 按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].CURRENT_BOND_PRICE` | convertible_bond_current_market_price | 可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].CURRENT_BOND_PRICENEW` | convertible_bond_current_market_price | 可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].INITIAL_TRANSFER_PRICE` | convertible_bond_initial_conversion_price | 发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].PBV_RATIO` | convertible_bond_underlying_stock_pb_ratio | 对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].TRANSFER_PREMIUM_RATIO` | convertible_bond_conversion_premium_ratio | 东方财富可转债详情页显示的转股溢价率，按百分比展示。按当前债券现价及转股价值复算，153/154条可比记录吻合到2位小数；113655相差0.01个百分点，原因未确认。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].TRANSFER_VALUE` | convertible_bond_conversion_value | 东方财富可转债详情页显示的转股价值。当前样本中与100×正股价/当前转股价按4位小数计算相符；该公式是样本观察，未认定为官网发布的统一算法。 | `verified` |
 | 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | `verified` |
 | 东财-push2(stock/get) | `f107` | f107 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | `verified` |

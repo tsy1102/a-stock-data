@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_cd2a299866852a9f3a2cad0a7f5f470b206afcfa9e95fddb77dfd40a1d3fc80f",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T20:13:13+08:00",
+  "rationale": "拒绝本报告中东财 Ulist239::f111 与 ZHB-tipinfo::hg_amount_yi 的 robust_correlation 作为字段等价或语义映射证据。12 行只有 6 只股票；每只股票在两个数据日的两字段值均完全重复，因此不存在跨日独立变化信息，相关性只来自这 6 只证券之间的横截面差异。f111 仅见 131072/524288，hg_amount_yi 为 0.2 至 30，未见逐值相等或稳定换算。此决定仅否定这一个相关候选，不定义 f111 含义、不推断其编码类型、不否定未来新证据；字段仍 unverified，不改 registry 或 mappings。",
+  "evidence_refs": [
+    "20261119/20261119_collision_report.json",
+    "research/20261119_ulist239_f111_zhb_hg_amount_review.md",
+    "research/20261119_ulist239_f111_zhb_hg_amount_samples.csv",
+    "20261117/raw_ulist239.json",
+    "20261117/raw_zhb.json",
+    "20261118/raw_ulist239.json",
+    "20261118/raw_zhb.json",
+    "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md"
+  ],
+  "duplicate_of": null
+}

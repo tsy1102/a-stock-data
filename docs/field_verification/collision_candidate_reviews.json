@@ -33112,6 +33112,175 @@
         "schema_version": 1
       }
     },
+    "cc1_cd2a299866852a9f3a2cad0a7f5f470b206afcfa9e95fddb77dfd40a1d3fc80f": {
+      "current": {
+        "candidate_id": "cc1_cd2a299866852a9f3a2cad0a7f5f470b206afcfa9e95fddb77dfd40a1d3fc80f",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "6396d223aff4dda5ecd9746e001a4426ecf9c328133db577e882c4359f49be7e",
+        "evidence_refs": [
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f111_zhb_hg_amount_review.md",
+            "sha256": "060e41baf6e5d5d5035858fe048ad1f203983b3b76a11b6ebbbf1cb05c9dbff9"
+          },
+          {
+            "path": "research/20261119_ulist239_f111_zhb_hg_amount_samples.csv",
+            "sha256": "b716a26d926a59cde05c6062792410e8bdf614533f334d2b46b67b1cfb7b5bf9"
+          },
+          {
+            "path": "20261117/raw_ulist239.json",
+            "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+          },
+          {
+            "path": "20261117/raw_zhb.json",
+            "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+          },
+          {
+            "path": "20261118/raw_ulist239.json",
+            "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+          },
+          {
+            "path": "20261118/raw_zhb.json",
+            "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+          },
+          {
+            "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+            "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+          }
+        ],
+        "rationale": "拒绝本报告中东财 Ulist239::f111 与 ZHB-tipinfo::hg_amount_yi 的 robust_correlation 作为字段等价或语义映射证据。12 行只有 6 只股票；每只股票在两个数据日的两字段值均完全重复，因此不存在跨日独立变化信息，相关性只来自这 6 只证券之间的横截面差异。f111 仅见 131072/524288，hg_amount_yi 为 0.2 至 30，未见逐值相等或稳定换算。此决定仅否定这一个相关候选，不定义 f111 含义、不推断其编码类型、不否定未来新证据；字段仍 unverified，不改 registry 或 mappings。",
+        "reviewed_at": "2026-11-19T20:13:13+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cd2a299866852a9f3a2cad0a7f5f470b206afcfa9e95fddb77dfd40a1d3fc80f",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "8013e01da6058db4b1f002c94c7dcbcefa8de4f7a61e6d468c527caea8fb68a5",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "56b64ac09412f9108dcec9d6cfc039b84c7f686fd3ff273fecac596789368e75"
+            },
+            {
+              "path": "research/20261119_ulist239_f111_zhb_hg_amount_review.md",
+              "sha256": "867e8b659725c1479c3d2331e3baea78d03ac96c935ebdb7a73c4c57beb772b4"
+            },
+            {
+              "path": "research/20261119_ulist239_f111_zhb_hg_amount_samples.csv",
+              "sha256": "b716a26d926a59cde05c6062792410e8bdf614533f334d2b46b67b1cfb7b5bf9"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "拒绝本报告中东财 Ulist239::f111 与 ZHB-tipinfo::hg_amount_yi 的 robust_correlation 作为字段等价或语义映射证据。12 行只有 6 只股票；每只股票在两个数据日的两字段值均完全重复，因此不存在跨日独立变化信息，相关性只来自这 6 只证券之间的横截面差异。f111 仅见 131072/524288，hg_amount_yi 为 0.2 至 30，未见逐值相等或稳定换算。此决定仅否定这一个相关候选，不定义 f111 含义、不推断其编码类型、不否定未来新证据；字段仍 unverified，不改 registry 或 mappings。",
+          "reviewed_at": "2026-11-19T20:06:11+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_cd2a299866852a9f3a2cad0a7f5f470b206afcfa9e95fddb77dfd40a1d3fc80f",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "6396d223aff4dda5ecd9746e001a4426ecf9c328133db577e882c4359f49be7e",
+          "evidence_refs": [
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f111_zhb_hg_amount_review.md",
+              "sha256": "060e41baf6e5d5d5035858fe048ad1f203983b3b76a11b6ebbbf1cb05c9dbff9"
+            },
+            {
+              "path": "research/20261119_ulist239_f111_zhb_hg_amount_samples.csv",
+              "sha256": "b716a26d926a59cde05c6062792410e8bdf614533f334d2b46b67b1cfb7b5bf9"
+            },
+            {
+              "path": "20261117/raw_ulist239.json",
+              "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+            },
+            {
+              "path": "20261117/raw_zhb.json",
+              "sha256": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2"
+            },
+            {
+              "path": "20261118/raw_ulist239.json",
+              "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+            },
+            {
+              "path": "20261118/raw_zhb.json",
+              "sha256": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+            },
+            {
+              "path": "adjudications/20261114_ulist239_f297_empirical_semantics_evidence.md",
+              "sha256": "52ace95221991835523761935bd6f4dc558bf057ae08877865670b895fba2838"
+            }
+          ],
+          "rationale": "拒绝本报告中东财 Ulist239::f111 与 ZHB-tipinfo::hg_amount_yi 的 robust_correlation 作为字段等价或语义映射证据。12 行只有 6 只股票；每只股票在两个数据日的两字段值均完全重复，因此不存在跨日独立变化信息，相关性只来自这 6 只证券之间的横截面差异。f111 仅见 131072/524288，hg_amount_yi 为 0.2 至 30，未见逐值相等或稳定换算。此决定仅否定这一个相关候选，不定义 f111 含义、不推断其编码类型、不否定未来新证据；字段仍 unverified，不改 registry 或 mappings。",
+          "reviewed_at": "2026-11-19T20:13:13+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f111",
+          "methods": [
+            {
+              "leave_one_out_max": 0.6232,
+              "leave_one_out_min": 0.4929,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.5513,
+              "spearman": 0.8783
+            }
+          ],
+          "right": "zhb.tipinfo.hg_amount_yi",
+          "sample_codes": [
+            "002034",
+            "301190",
+            "600309",
+            "600519",
+            "688553",
+            "688589"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_cd4cbea8396838fe6f5b0441227b10584c64dabb5d5529ad1b68740be8780017": {
       "current": {
         "candidate_id": "cc1_cd4cbea8396838fe6f5b0441227b10584c64dabb5d5529ad1b68740be8780017",
@@ -40264,5 +40433,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-19T16:25:39+08:00"
+  "updated_at": "2026-11-19T20:13:13+08:00"
 }

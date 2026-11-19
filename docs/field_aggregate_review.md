@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 573 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 574 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -960,14 +960,14 @@
 | 东财-push2(stock/get) · `f110` | f110 | 市场标记（布尔 0/1，北交=0） | - | `verified` |
 | 东财-ulist239(np/get) · `f110` | change_20d | 20日涨跌幅 | % | `verified` |
 
-### `f111` — incomplete
+### `f111` — ambiguous
 
-聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f111` | f111 | 板级枚举 | - | `verified` |
-| 东财-ulist239(np/get) · `f111` | f111 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f111` | registration_system_listing_bitmask | 东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。 | — | `verified` |
 
 ### `f112` — ambiguous
 
@@ -3605,6 +3605,7 @@
 | 东财-slist | `n_boards` | n_boards | 项目派生的板块列表条目数：collect_slist 读取 Eastmoney 响应 data.diff，并以 len(diff) 生成此键；不是提供方响应字段。 | `disproved` |
 | 东财-ulist239(np/get) | `f1` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-ulist239(np/get) | `f11` | 5分钟涨跌幅 | 东方财富行情中心官方字段映射定义的5分钟涨跌幅，按百分比展示。精确计算公式、窗口边界及复权细节未由本证据确认。 | `verified` |
+| 东财-ulist239(np/get) | `f111` | registration_system_listing_bitmask | 东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。 | `verified` |
 | 东财-ulist239(np/get) | `f114` | f114 | 市盈率(静态/年报 LYR) | `verified` |
 | 东财-ulist239(np/get) | `f13` | f13 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；保留期样本与 f27 同值。 | `verified` |
 | 东财-ulist239(np/get) | `f131` | f131 | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |

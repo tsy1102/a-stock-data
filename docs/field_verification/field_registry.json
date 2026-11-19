@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 322,
+      "aggregate_status_scope_unresolved": 321,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 17,
@@ -31,9 +31,9 @@
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 951,
-      "verified": 1602,
-      "verified_by_empirical_addendum": 216,
+      "unverified": 950,
+      "verified": 1603,
+      "verified_by_empirical_addendum": 217,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 463
@@ -14696,19 +14696,19 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f111",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "✅ L1",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "source_statuses_differ",
+        "canonical_differs",
+        "meaning_differs",
         "unit_incomplete"
       ]
     },
@@ -46374,6 +46374,9 @@
     ],
     "limit_ladder.prev2_seal_amount": [
       "TDX-eltdx(适配层)"
+    ],
+    "registration_system_listing_bitmask": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -189536,15 +189539,16 @@
       "code": "f111",
       "identity": "东财-ulist239(np/get)::f111",
       "path": "f111",
-      "canonical": "f111",
-      "meaning": "",
+      "canonical": "registration_system_listing_bitmask",
+      "meaning": "东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。",
       "unit": "",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-20 Ulist239 f111 上市制度标记位掩码定案"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -189555,7 +189559,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261120-ulist239-f111-registration-mask"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261120_ulist239_f111_registration_mask.md",
+        "evidence_sha256": "187a18ea2dd64affed6f10a494ed8ab673ec2bf0b3822ef9dbafb3b42b087760",
+        "sample": {
+          "scope": "保留边界 2026-10-15 后；2026-11-18 来源日 20 只不同证券，所有记录 f297=20261118；另以 2026-11-02、03、04、05、06、09、10、17、18 共 9 个来源日的 180 行检查逐证券稳定性。",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -189565,6 +189585,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-20 Ulist239 f111 上市制度标记位掩码定案",
+          "canonical": "registration_system_listing_bitmask",
+          "meaning": "东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-20",
+          "status": "verified",
+          "adjudication_id": "20261120-ulist239-f111-registration-mask",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261120_ulist239_f111_registration_mask.md",
+          "evidence_sha256": "187a18ea2dd64affed6f10a494ed8ab673ec2bf0b3822ef9dbafb3b42b087760",
+          "metadata_change": {
+            "before": {
+              "canonical": "f111",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "registration_system_listing_bitmask",
+              "meaning": "东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留边界 2026-10-15 后；2026-11-18 来源日 20 只不同证券，所有记录 f297=20261118；另以 2026-11-02、03、04、05、06、09、10、17、18 共 9 个来源日的 180 行检查逐证券稳定性。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -189580,7 +189634,51 @@
         "meaning": "板级枚举",
         "unit": "-",
         "section": "12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261120-ulist239-f111-registration-mask",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_ulist239_f111_registration_mask.json",
+          "evidence_file": "adjudications/20261120_ulist239_f111_registration_mask.md",
+          "evidence_sha256": "187a18ea2dd64affed6f10a494ed8ab673ec2bf0b3822ef9dbafb3b42b087760",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "f111",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f111",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "registration_system_listing_bitmask",
+              "meaning": "东方财富 ulist.np/get 返回的证券上市制度标记位掩码。保留样本支持 bit17（131072）表示注册制试点/注册制板块上市批次，bit19（524288）表示注册制改革前进入当前上市板块的存量批次。该定义描述 Eastmoney 当前证券分类中的上市批次标记，不等同于发行人最早一次公开发行所经历的审批方式；920508 殷图网联先在新三板精选层挂牌、后平移至北交所，是此边界的实例。bit10、bit21、bit3、bit6、bit11、bit18 等其他观察位含义未定。未观察 2023-04 全面注册制后沪深主板新 IPO，不外推 bit17 在该类证券中的编码。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目 collect_ulist239 将 Eastmoney ulist.np/get 响应 diff 的原始记录保存至 raw_ulist239.json 的 stocks[code].data；目标精确映射到该记录 f111。2026-11-18 的 20 条样本均有 f297=20261118；保留边界后 9 个来源日共有 180 行、20 只不同证券，f111 每只证券逐日稳定。语义比较以 20 只不同证券为单位，不把重复日期计为独立股票样本。bit17 出现在 6/6 个注册制试点/注册制板块上市批次样本（创业板改革后 301190、科创板 3 只、北交所 2 只），bit19 出现在 14/14 个注册制改革前存量上市批次样本（沪深主板 12 只、创业板改革前 2 只），零反例。最强控制为同为创业板的 300031/300788（注册制切换前，bit19）与 301190（切换后，bit17）。官方交易所制度与上市公告支持各板块切换日期；920508 平移北交所边界、未解释其他位、未观察改革后沪深主板 IPO 均已明确列入结论范围。Eastmoney 没有公开 f111 字段标签，因此本决定是受限于所列样本范围的来源内实证，不是 Eastmoney API 契约定案。",
+          "sample": {
+            "scope": "保留边界 2026-10-15 后；2026-11-18 来源日 20 只不同证券，所有记录 f297=20261118；另以 2026-11-02、03、04、05、06、09、10、17、18 共 9 个来源日的 180 行检查逐证券稳定性。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

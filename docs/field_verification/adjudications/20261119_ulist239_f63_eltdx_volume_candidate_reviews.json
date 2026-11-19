@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_88194337fb11d855b262460672bf3fd415a8eef0f7680290c9d578d184f111b4",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T12:58:23+08:00",
+      "rationale": "更正前次候选路径误配：此 ID 实际为 Ulist f63 ↔ ELTDX shortline.open_volume_hand。该字段是 09:25 正式撮合成交量（手）。9 日、20 股共 180 组无日期错配，原值 0 组相等；非零比例中位数 4845.055、范围 281.838–806603.353；最佳固定比例误差中位数 54.36%、P90 84.80%。拒绝其同义或固定换算映射；f63 语义仍未知。",
+      "evidence_refs": [
+        "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+        "adjudications/20261119_ulist239_f63_eltdx_candidate_identity_correction.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_52682e639052b2f97ed470f93320e2da0006ad18b0054f83eb19429c6db687e2",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-19T12:58:23+08:00",
+      "rationale": "此 ID 对应 Ulist f63 ↔ ELTDX shortline.open_volume_ratio。9 日、20 股共 180 组无日期错配，原值 0 组相等；非零固定比例从 20599.227 到 209586598.173，最佳固定比例误差中位数 71.97%、P90 95.22%。Pearson 0.3608、Spearman 0.7050 不能证明字段等价。拒绝同义或固定换算映射；f63 语义仍未知。",
+      "evidence_refs": [
+        "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+        "adjudications/20261119_ulist239_f63_eltdx_candidate_identity_correction.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

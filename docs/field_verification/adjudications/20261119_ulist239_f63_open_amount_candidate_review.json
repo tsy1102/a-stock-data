@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_9790941bc04f6efd5ed3820a6273b9b5d13989c78d8a72b9bb02bf3a8520cc43",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T12:58:23+08:00",
+  "rationale": "拒绝将 Ulist f63 与 ELTDX shortline.open_amount 作为同义或固定单位换算字段。按 Ulist f124 与 ELTDX target_trade_date 对齐 9 个交易日、20 只股票共 180 组，无日期错配；原值仅 1 组相等。排除 3 组零开盘金额后，比例中位数 2.7974、范围 0.9997–30.9268；最佳固定比例下绝对相对误差中位数 31.39%、P90 70.10%，比例误差不超过 1% 的仅 4 组。Pearson 0.8953 与 Spearman 0.9764 只说明共同变化，不证明逐值等价。此决定只排除该映射候选，f63 的含义仍未定案。",
+  "evidence_refs": [
+    "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+    "adjudications/20261119_ulist239_f63_eltdx_candidate_identity_correction.md"
+  ],
+  "duplicate_of": null
+}

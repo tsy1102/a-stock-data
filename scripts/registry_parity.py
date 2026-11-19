@@ -907,7 +907,11 @@ def _validated_source_contract_adjudications(
     declared_pairs: set[tuple[str, str]],
 ) -> tuple[set[tuple[str, str]], dict[str, set[str]], list[str]]:
     """Validate verified paths admitted by source-contract adjudication files."""
-    source_actions = {"verify_source_contract", "correct_verified_metadata"}
+    source_actions = {
+        "verify_source_contract",
+        "correct_verified_metadata",
+        "register_source_contract_field",
+    }
     verification_root = Path(REPO_ROOT, "docs", "field_verification").resolve()
     rows = {(row["source"], row["code"]): row for row in source_records}
     baseline_matrix, _ = gm.build_matrix_from_md()
@@ -1078,6 +1082,31 @@ def _validated_source_contract_adjudications(
         }
         reset_failed = False
         for decision_id, (pair, _, _, decision, _) in file_rows.items():
+            if decision.get("action") == "register_source_contract_field":
+                # Reconstruct the pre-adjudication state: this action exists
+                # specifically because the exact runtime identity was absent.
+                source_field_list = replay_registry.get("source_fields")
+                if not isinstance(source_field_list, list):
+                    problems.append("源契约路径登记无法重建前置 source_fields")
+                    invalid_pairs.add(pair)
+                    reset_failed = True
+                    continue
+                remaining = [
+                    item
+                    for item in source_field_list
+                    if not (
+                        isinstance(item, dict)
+                        and item.get("source") == pair[0]
+                        and item.get("code") == pair[1]
+                    )
+                ]
+                if len(remaining) != len(source_field_list) - 1:
+                    problems.append(f"{pair[0]}::{pair[1]} 新路徑登記無法重建唯一的缺失前置身份")
+                    invalid_pairs.add(pair)
+                    reset_failed = True
+                    continue
+                replay_registry["source_fields"] = remaining
+                continue
             replay_row = replay_rows.get(pair)
             previous = decision.get("previous")
             if replay_row is None or not isinstance(previous, dict):

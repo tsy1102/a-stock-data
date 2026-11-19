@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 567 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 573 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3387,9 +3387,13 @@
 | TDX-eltdx(适配层) | `limit_ladder.free_float_market_value` | limit_ladder.free_float_market_value | 自由流通市值；自由流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_shares` | limit_ladder.free_float_shares | 自由流通股本；TDX 自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.ladder_level` | limit_ladder.ladder_level | 当前连续封住涨停的板数；仅 limit_status=sealed 时有值 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.limit_board_text` | limit_ladder.limit_board_text | 统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.limit_stat_days` | limit_ladder.limit_stat_days | “几天几板”统计所用的窗口长度；ELTDX 从 tdxstat.cfg 直接读取 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.limit_up_count_in_stat_days` | limit_ladder.limit_up_count_in_stat_days | 涨停统计窗口内记录的涨停次数，是“几天几板”中的板数；ELTDX 从 tdxstat.cfg 直接读取 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_turnover_z` | limit_ladder.open_turnover_z | 09:25 竞价成交量占自由流通股本 Z 的比例；Z 为自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_volume_ratio` | limit_ladder.open_volume_ratio | 开盘成交量相对最近 5 个完整交易日平均每分钟成交量的倍数；需至少 5 根完整日 K | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.pe_ttm` | limit_ladder.pe_ttm | 滚动市盈率；当前估值相对最近 12 个月利润的倍数 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.prev2_seal_amount` | limit_ladder.prev2_seal_amount | 目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_amount` | limit_ladder.seal_amount | 当前买一金额；封板时解释为封单额 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_to_amount_ratio` | limit_ladder.seal_to_amount_ratio | 当前买一金额相对当日成交额的倍数；只有已封板时才按封单成交额比解释 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_to_float_ratio` | limit_ladder.seal_to_float_ratio | 当前买一金额占自由流通市值 Z 的比例；Z 为自由流通口径，只有已封板时才按封流比解释 | `verified` |
@@ -3408,10 +3412,12 @@
 | TDX-eltdx(适配层) | `seal_amount` | seal_amount | 当前买一档挂单金额；不代表涨停总封单金额 | `verified` |
 | TDX-eltdx(适配层) | `shortline.beta_60d` | shortline.beta_60d | 近 60 日 Beta；相对 TDX 统计资源使用的市场基准，具体基准未公开 | `verified` |
 | TDX-eltdx(适配层) | `shortline.ladder_level` | shortline.ladder_level | 当前连续封住涨停的板数；仅 limit_status=sealed 时有值 | `verified` |
+| TDX-eltdx(适配层) | `shortline.limit_board_text` | shortline.limit_board_text | 统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_prev_seal_ratio` | shortline.open_prev_seal_ratio | 开盘额/昨封单额比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_turnover_z` | shortline.open_turnover_z | 09:25 竞价成交量占自由流通股本 Z 的比例；Z 为自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `shortline.open_volume_ratio` | shortline.open_volume_ratio | 开盘成交量相对最近 5 个完整交易日平均每分钟成交量的倍数；需至少 5 根完整日 K | `verified` |
 | TDX-eltdx(适配层) | `shortline.pe_ttm` | shortline.pe_ttm | 滚动市盈率；当前估值相对最近 12 个月利润的倍数 | `verified` |
+| TDX-eltdx(适配层) | `shortline.prev2_seal_amount` | shortline.prev2_seal_amount | 目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_prev_ratio` | shortline.seal_prev_ratio | 封单/前封单比 | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_to_amount_ratio` | shortline.seal_to_amount_ratio | 当前买一金额相对当日成交额的倍数；只有已封板时才按封单成交额比解释 | `verified` |
 | TDX-eltdx(适配层) | `shortline.seal_to_float_ratio` | shortline.seal_to_float_ratio | 当前买一金额占自由流通市值 Z 的比例；Z 为自由流通口径，只有已封板时才按封流比解释 | `verified` |

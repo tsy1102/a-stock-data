@@ -56,6 +56,10 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 - 已有有效元数据默认不能覆盖。`action: correct_verified_metadata` 专用于已经 `verified` 且 `status_resolution: matched` 的字段，必须附 `metadata_correction`，精确记录 `previous` / `updated` 三项快照并写明理由；快照须与决策的字段值完全一致，目标不得有 `attribute_conflicts`，也不能在同一决定内附带别名。常规 `verify_source_contract` 仍只接受未验证、候选或满足前述条件的可收敛状态冲突字段。核验通过后，逐源记录保持 `verified`，`status_resolution` 记为 `verified_by_source_contract`，完整保留契约与修正证据；该流程不创建跨源 `mappings`，来源锚资格由 `source_lineage.json` 独立决定。
 - 工具只检查证据记录结构、版本定位和状态快照，不会替复核人访问链接或判断链接内容是否权威。必须先实际打开并核对契约，再填写决定。
 
+### 登记尚未进入 registry 的运行路径
+
+碰撞报告或原始采集发现精确运行路径，但 `field_registry.json.source_fields` 尚无该 `(source, 完整 code path)` 时，可用 `action: register_source_contract_field` 在来源契约裁决中直接登记并定案。该操作只允许来源本身已存在于 registry 的路径，不新增来源族；决策需填写 `previous_status: "unverified"`、`previous_status_resolution: "runtime_path_unregistered"`，并将 `previous` 三项留空。`target.code` 必须使用实际采集路径的完整规范路径，契约路径必须说明运行时响应到该路径的精确映射。工具会创建逐源记录、更新兼容聚合和字段矩阵，再按来源契约核验；重复应用幂等。该操作不创建跨源映射，也不替代对上游契约和运行路径的人工核验。
+
 ### 单源实证定案（不要求 L1 或重复数据日）
 
 - 若提供方官方接口/协议明确给出字段释义，且精确采集路径已映射到该官方字段，可直接按来源契约核验；公开财报或官方页面逐值吻合可作为增强证据，不再要求固定股票数、采集日数或第二个报告期。

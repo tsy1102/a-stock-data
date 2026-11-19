@@ -2399,6 +2399,17 @@ def test_event_snapshots_keep_natural_dates_and_source_scoped_identity(tmp_path)
     )
 
 
+def test_registered_source_contract_paths_are_exposed_as_contract_evidence():
+    context = collide.load_registry_context()
+
+    assert {
+        ("eltdx", "limit_ladder.limit_board_text"),
+        ("eltdx", "limit_ladder.limit_stat_days"),
+        ("eltdx", "limit_ladder.limit_up_count_in_stat_days"),
+        ("eltdx", "limit_ladder.prev2_seal_amount"),
+    } <= context["official_contract_verified"]
+
+
 def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs():
     generated_path = collision_rules.emit_markdown()
     rendered = Path(generated_path).read_text(encoding="utf-8")

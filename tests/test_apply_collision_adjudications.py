@@ -650,6 +650,85 @@ def test_source_contract_decision_is_idempotent():
     }
 
 
+def test_source_contract_registers_a_new_exact_path_for_an_existing_source():
+    registry, document = _source_contract_inputs()
+    registry["sources"] = [{"name": "target-source", "status": "active"}]
+    registry["source_fields"] = [
+        row for row in registry["source_fields"] if row["code"] != "unknown.value"
+    ]
+    document["decisions"][0].update(
+        {
+            "id": "20261018-register-source-contract-path",
+            "action": "register_source_contract_field",
+            "target": {"source": "target-source", "code": "new.object.metric"},
+            "previous_status": "unverified",
+            "previous_status_resolution": "runtime_path_unregistered",
+            "previous": {"canonical": "", "meaning": "", "unit": ""},
+            "canonical": "new.object.metric",
+            "meaning": "由固定上游契约定义的新路径",
+            "unit": "元",
+            "source_contract": {
+                "authority": "上游 Helper 输出契约",
+                "revision": "接口文档 2026-10-10",
+                "path": "client.helper.rows[].new_object_metric -> capture.new.object.metric",
+                "locator": "固定版本文档的字段表",
+                "url": "https://example.com/field-spec",
+            },
+        }
+    )
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_registration.json"
+    )
+
+    target = next(
+        row
+        for row in updated["source_fields"]
+        if row["source"] == "target-source" and row["code"] == "new.object.metric"
+    )
+    aggregate = next(row for row in updated["fields"] if row["code"] == "new.object.metric")
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["status_evidence"]["values"] == ["runtime_path_unregistered"]
+    assert aggregate["status"] == "verified"
+    assert updated["field_matrix"]["new.object.metric"] == ["target-source"]
+    assert updated["mappings"] == []
+    assert stats["source_contract_verified"] == 1
+    assert stats["mappings_added"] == 0
+
+    repeated, repeat_stats = apply_source_contract_adjudications(
+        updated, document, "adjudications/source_contract_registration.json"
+    )
+    assert repeated == updated
+    assert repeat_stats["already_applied"] == 1
+
+
+def test_source_contract_cannot_register_unknown_or_already_registered_paths():
+    registry, document = _source_contract_inputs()
+    decision = document["decisions"][0]
+    decision.update(
+        {
+            "action": "register_source_contract_field",
+            "previous_status_resolution": "runtime_path_unregistered",
+        }
+    )
+
+    with pytest.raises(ValueError, match="source field already exists; use verify_source_contract"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_registration.json"
+        )
+
+    registry["source_fields"] = [
+        row for row in registry["source_fields"] if row["code"] != "unknown.value"
+    ]
+    decision["target"] = {"source": "new-source", "code": "new.path"}
+
+    with pytest.raises(ValueError, match="only accepts an already registered source"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_registration.json"
+        )
+
+
 def _set_status_only_conflict(registry, document):
     target = registry["source_fields"][0]
     target.update(

@@ -172,7 +172,8 @@ def _verified_official_contract_kind(field, source_config, source_record, adjudi
         adjudicated_contract = adjudication.get("source_contract")
 
         if (
-            adjudication.get("action") != "verify_source_contract"
+            adjudication.get("action")
+            not in {"verify_source_contract", "register_source_contract_field"}
             or adjudication.get("status") != "verified"
             or adjudication.get("evidence_basis") != evidence.get("evidence_basis")
             or not isinstance(adjudicated_contract, dict)

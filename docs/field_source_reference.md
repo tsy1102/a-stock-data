@@ -5441,11 +5441,11 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | free_float_shares | 自由流通股本(股) | - |
 | prev_amount | 前一日成交额(元) | - |
 | prev_seal_amount | 前一日封单额(元) | - |
-| prev2_seal_amount | 前二日封单额(元) | - |
+| prev2_seal_amount | 目标交易日前第二个实际交易日的涨停封单额(元)，按交易日对齐 tdxstat2.cfg | 固定 ELTDX v3.3.2 Helper 契约 |
 | prev_open_volume_hand | 前一日开盘成交量(手) | - |
 | prev_open_amount | 前一日开盘成交额(元) | - |
-| limit_stat_days | 连板统计窗口天数 | 对撞 AxData §12.12 limit_stat_days |
-| limit_up_count_in_stat_days | 窗口内涨停次数 | 对撞 AxData §12.12 limit_up_count_in_stat_days |
+| limit_stat_days | 涨停统计窗口长度，tdxstat.cfg 直接值 | 天 |
+| limit_up_count_in_stat_days | 统计窗口内记录的涨停次数，tdxstat.cfg 直接值 | 次 |
 | limit_up_streak_days | 连续涨停天数(连板天数) | ⭐对撞 同花顺-fuyao 连板天数 / 东财 连板天数 |
 | year_limit_up_days | 年内涨停天数 | - |
 | free_float_market_value | 自由流通市值(元) | - |
@@ -5455,8 +5455,8 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | open_prev_seal_ratio | 开盘额/昨封单额比(%) | 对撞 AxData §12.12 open_prev_seal_ratio |
 | seal_to_float_ratio | 封单占流通比(封单额/流通市值) | ⭐对撞 同花顺-fuyao 133971封单额/东财封单额 |
 | seal_prev_ratio | 封单/前封单比 | - |
-| limit_board_text | 连板文字(如"5天5板") | ⭐对撞 AxData §12.12 limit_board_text |
-| ladder_level | 连板梯队等级(如5=五板) | ⭐净新增(AxData 无明确等级,东财涨停梯队 boards 结构部分对应) |
+| limit_board_text | 统计窗口与窗口内涨停次数组成的“几天几板”文本；统计资源为上一交易日且目标日封板时计入目标日 | 文本；固定 ELTDX v3.3.2 Helper 契约 |
+| ladder_level | 当前连续封板高度；仅 limit_status=sealed 时有值 | 板；固定 ELTDX v3.3.2 Helper 契约 |
 | open_price | 开盘价 | 对撞 AxData §12.12 open_price |
 | pre_close | 昨收 | - |
 | open_change_pct | 开盘涨跌幅(%) | - |
@@ -5615,8 +5615,8 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | shortline.beta_60d | 60日Beta | - | ✅ L1 |
 | shortline.pe_ttm | 市盈率 | 倍 | ✅ L1|
 | shortline.limit_up_streak_days | 连续涨停天数 | 天 | ✅ L1|
-| shortline.limit_board_text | 连板梯队文本 | - | ✅ L1|
-| shortline.ladder_level | 连板梯队等级 | - | ✅|
+| shortline.limit_board_text | 统计窗口与窗口内涨停次数组成的“几天几板”文本；上一交易日统计资源且目标日封板时计入目标日 | 文本 | ✅|
+| shortline.ladder_level | 当前连续封板高度；仅 limit_status=sealed 时有值 | 板 | ✅|
 | shortline.seal_to_float_ratio | 封单/流通市值比 | % | ✅ L1|
 | shortline.open_volume_ratio | 开盘量比 | 倍 | ✅ L1|
 | shortline.seal_amount | 封单额 | 元 | ✅ L1|
@@ -5638,7 +5638,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | shortline.auction_prev_volume_ratio | 竞价量/昨量比 | 倍 | ✅ L1|
 | shortline.prev_amount | 前一日成交额 | 元 | ✅ |
 | shortline.prev_seal_amount | 前一日封单额 | 元 | ✅ |
-| shortline.prev2_seal_amount | 前二日封单额 | 元 | ✅ |
+| shortline.prev2_seal_amount | 目标交易日前第二个实际交易日统计资源记录的涨停封单金额 | 元 | ✅ |
 | shortline.prev_open_amount | 前一日开盘成交额 | 元 | ✅ |
 | shortline.prev_open_volume_hand | 前一日开盘成交量 | 手 | ✅ |
 | shortline.seal_prev_ratio | 封单/前封单比 | - | ✅ |
@@ -5662,9 +5662,9 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 | 统一层字段 (cdata.eltdx_*) | 类型 | 中文语义 | ← 源字段 (eltdx token) | 来源 |
 |:---|:---|:---|:---|:---|
-| eltdx_ladder_level | int | 连板高度(档位, 如 3=三板) | ladder_level | eltdx 7709/7615 |
+| eltdx_ladder_level | int | 当前连续封板高度；仅封板时有值 | ladder_level | eltdx 7709/7615 |
 | eltdx_limit_up_streak_days | int | 连续涨停天数 | limit_up_streak_days | eltdx 7709/7615 |
-| eltdx_limit_board_text | str | 连板梯队文本(如"3天3板") | limit_board_text | eltdx 7709/7615 |
+| eltdx_limit_board_text | str | 统计窗口与窗口内涨停次数构成的“几天几板”文本 | limit_board_text | eltdx 7709/7615 |
 | eltdx_seal_to_float_ratio | float | 封单额/流通市值(%)——封板坚决度 | seal_to_float_ratio | eltdx 7709/7615 |
 | eltdx_open_volume_ratio | float | 开盘成交量比 | open_volume_ratio | eltdx 7709/7615 |
 | eltdx_seal_amount | float | 封单额(元) | seal_amount | eltdx 7709/7615 |

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 为已注册来源新增受限的精确运行路径登记裁决；依据 ELTDX v3.3.2 契约登记连板梯队的四个适配器输出字段，并更正两个短线指标的旧释义。保留样本中梯队、短线指标与逐股路径 16/16 一致；不据此建立跨来源映射。
 - 将 Eastmoney 可转债列表路径 `event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE` 来源内定案为可转债发行规模/债券发行总额（亿元），并补入注册表；以东财官方表头和两份发行人年报交叉核验，不与剩余规模或净募集资金混淆。
 - 利用已定案的 Ulist `f98` 五交易日正值计数，将 `东财-ulist239(np/get)::f99` 来源内定案为最近 10 个交易日中 `f88 > 0` 的天数；三组十日窗口逐股 60/60 精确相等，独立滚动日留出 20/20 相符。保留 `f88` 释义未知，不将第三方 DDX 标签当作官方契约，也不建跨源映射。逐行证据见 [`20261119_ulist239_f99_positive_days_10d.md`](docs/field_verification/adjudications/20261119_ulist239_f99_positive_days_10d.md)。
 - 依据 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始样本，将 `东财-ulist239(np/get)::f97` 定案为同源 `f88 > 0` 连续段日数；120 个相邻日转移全部符合严格大于零递推，含零阈值与非零阈值控制均出现反证，不推断 `f88` 业务标签或建立跨源映射。逐行证据见 [`20261119_ulist239_f97_positive_run.md`](docs/field_verification/adjudications/20261119_ulist239_f97_positive_run.md)。

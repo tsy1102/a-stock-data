@@ -592,10 +592,14 @@ def apply_source_contract_adjudications(
             raise ValueError(f"duplicate decision id: {decision_id}")
         seen_ids.add(decision_id)
         action = decision.get("action")
-        if action not in {"verify_source_contract", "correct_verified_metadata"}:
+        if action not in {
+            "verify_source_contract",
+            "correct_verified_metadata",
+            "register_source_contract_field",
+        }:
             raise ValueError(
-                "source-contract workflow only accepts 'verify_source_contract' or "
-                "'correct_verified_metadata'"
+                "source-contract workflow only accepts 'verify_source_contract', "
+                "'correct_verified_metadata', or 'register_source_contract_field'"
             )
 
         target_obj = _require_object(decision.get("target"), "decision.target")
@@ -606,10 +610,6 @@ def apply_source_contract_adjudications(
         if target in seen_targets:
             raise ValueError(f"multiple decisions target the same field: {target}")
         seen_targets.add(target)
-        target_record = by_identity.get(target)
-        if target_record is None:
-            raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
-
         previous_status = _non_empty_string(
             decision.get("previous_status"), "decision.previous_status"
         )
@@ -617,13 +617,87 @@ def apply_source_contract_adjudications(
             decision.get("previous_status_resolution"),
             "decision.previous_status_resolution",
         )
+        target_record = by_identity.get(target)
+        if action == "register_source_contract_field":
+            if (
+                previous_status != "unverified"
+                or previous_resolution != "runtime_path_unregistered"
+            ):
+                raise ValueError(
+                    "register_source_contract_field requires previous_status='unverified' "
+                    "and previous_status_resolution='runtime_path_unregistered'"
+                )
+            if target_record is None:
+                known_sources = updated.get("sources", [])
+                if not isinstance(known_sources, list) or not any(
+                    isinstance(source_record, dict) and source_record.get("name") == target[0]
+                    for source_record in known_sources
+                ):
+                    raise ValueError(
+                        "register_source_contract_field only accepts an already registered source"
+                    )
+                target_record = {
+                    "source": target[0],
+                    "code": target[1],
+                    "identity": f"{target[0]}::{target[1]}",
+                    "path": target[1],
+                    "canonical": "",
+                    "meaning": "",
+                    "unit": "",
+                    "section": "",
+                    "sections": [],
+                    "status": "unverified",
+                    "status_resolution": "runtime_path_unregistered",
+                    "status_evidence": {
+                        "reference_statuses": [],
+                        "reference_status_raw": [],
+                        "registry_aggregate_status": None,
+                        "registry_aggregate_sources": [],
+                        "values": ["runtime_path_unregistered"],
+                    },
+                    "reference_evidence": [],
+                    "attribute_conflicts": {},
+                    "attribute_ambiguities": {},
+                    "registry_aggregate": None,
+                    "adjudications": [],
+                }
+                source_fields.append(target_record)
+                by_identity[target] = target_record
+
+                aggregates = [
+                    item
+                    for item in updated.get("fields", [])
+                    if isinstance(item, dict) and item.get("code") == target[1]
+                ]
+                if len(aggregates) > 1:
+                    raise ValueError(
+                        f"expected at most one compatibility aggregate for code {target[1]!r}; "
+                        f"found {len(aggregates)}"
+                    )
+                if not aggregates:
+                    aggregate = fra.build_aggregate_fields([target_record])[0]
+                    updated.setdefault("fields", []).append(aggregate)
+            else:
+                history = target_record.get("adjudications", [])
+                if not isinstance(history, list) or not any(
+                    isinstance(item, dict) and item.get("id") == decision_id for item in history
+                ):
+                    raise ValueError(
+                        f"source field already exists; use verify_source_contract: "
+                        f"{target[0]}::{target[1]}"
+                    )
+        elif target_record is None:
+            raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
+
         if action == "verify_source_contract":
             if previous_status not in {"unverified", "candidate", "conflict"}:
                 raise ValueError(
                     "source-contract verification only accepts unverified, candidate, "
                     "or resolvable status-conflict fields"
                 )
-        elif previous_status != "verified" or previous_resolution != "matched":
+        elif action == "correct_verified_metadata" and (
+            previous_status != "verified" or previous_resolution != "matched"
+        ):
             raise ValueError(
                 "correct_verified_metadata requires a verified target with "
                 "status_resolution='matched'"
@@ -748,8 +822,12 @@ def apply_source_contract_adjudications(
                 raise ValueError(
                     f"decision id already exists with different content: {decision_id}"
                 )
-            if action == "verify_source_contract":
+            if action in {"verify_source_contract", "register_source_contract_field"}:
                 _add_source_contract_matrix_source(updated, target[0], canonical)
+            if action == "register_source_contract_field":
+                fields = updated.get("fields")
+                if isinstance(fields, list):
+                    fields.sort(key=lambda record: record.get("code", ""))
             stats["already_applied"] += 1
             continue
 
@@ -816,7 +894,7 @@ def apply_source_contract_adjudications(
         target_record["status"] = "verified"
         target_record["status_resolution"] = "verified_by_source_contract"
         target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
-        if action == "verify_source_contract":
+        if action in {"verify_source_contract", "register_source_contract_field"}:
             _add_source_contract_matrix_source(updated, target[0], canonical)
 
         reference_evidence = target_record.setdefault("reference_evidence", [])

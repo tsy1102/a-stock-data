@@ -559,9 +559,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     )
 
     assert problems == []
-    # Includes the 17 ELTDX limit_ladder paths adjudicated in the 2026-11-18 batch;
-    # zhuying_shouru now has an empirical correction, so it is no longer counted here.
-    assert len(pairs) == 110
+    # Includes the existing ELTDX paths and four newly registered limit_ladder
+    # output paths; zhuying_shouru uses an empirical correction instead.
+    assert len(pairs) == 114
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
@@ -573,6 +573,13 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert ("TDX-eltdx(适配层)", "limit_ladder.target_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.previous_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.stats_date") in pairs
+    for code in (
+        "limit_ladder.limit_board_text",
+        "limit_ladder.limit_stat_days",
+        "limit_ladder.limit_up_count_in_stat_days",
+        "limit_ladder.prev2_seal_amount",
+    ):
+        assert ("TDX-eltdx(适配层)", code) in pairs
     assert matrix["finance_batch[].gu_dong_ren_shu_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].zhu_ying_shou_ru_raw_float"] == {"TDX-eltdx(适配层)"}
     assert matrix["finance_batch[].ying_ye_li_run_raw_float"] == {"TDX-eltdx(适配层)"}

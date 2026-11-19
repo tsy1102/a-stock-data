@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "decisions": [
+    {
+      "id": "20261120-eltdx-shortline-limit-board-text-metadata",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "shortline.limit_board_text"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "shortline.limit_board_text",
+        "meaning": "连板梯队文本",
+        "unit": "-"
+      },
+      "canonical": "shortline.limit_board_text",
+      "meaning": "统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日",
+      "unit": "文本",
+      "rationale": "ELTDX v3.3.2 固定版短线指标契约将 limit_board_text 定义为统计窗口与窗口内涨停次数组合的可读文本，并规定统计资源为上一交易日、目标日已封板时展示计入目标日。旧释义把它误写成连板梯队文本且单位为空占位符，现按上游输出契约修正。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "shortline.limit_board_text",
+          "meaning": "连板梯队文本",
+          "unit": "-"
+        },
+        "updated": {
+          "canonical": "shortline.limit_board_text",
+          "meaning": "统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日",
+          "unit": "文本"
+        },
+        "rationale": "固定版字段表明确该值是由统计窗口和窗口内涨停次数构成的文本，并列明目标日封板时的计入规则；它不是连板高度数值或分类，单位应为文本。"
+      },
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.shortline_indicators(codes=[...]).rows[*].limit_board_text -> ShortlineIndicator.limit_board_text -> stocks.<code>.shortline.limit_board_text",
+        "locator": "短线指标文档 §计算字段 limit_board_text 与 §统计文件日期对齐规则",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261120-eltdx-shortline-prev2-seal-amount-date-metadata",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "shortline.prev2_seal_amount"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "shortline.prev2_seal_amount",
+        "meaning": "前二日封单额",
+        "unit": "元"
+      },
+      "canonical": "shortline.prev2_seal_amount",
+      "meaning": "目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 固定版字段契约把 prev2_seal_amount 明确定义为目标交易日前第二个实际交易日的涨停封单金额，并说明按交易日对齐 tdxstat2.cfg。原“前二日”未区分自然日与实际交易日，补足精确日期语义，不改变数值或单位。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "shortline.prev2_seal_amount",
+          "meaning": "前二日封单额",
+          "unit": "元"
+        },
+        "updated": {
+          "canonical": "shortline.prev2_seal_amount",
+          "meaning": "目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg",
+          "unit": "元"
+        },
+        "rationale": "固定版字段表给出目标交易日和第二个实际交易日的明确关系；用该表述替代可能被理解为自然日的“前二日”。"
+      },
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.shortline_indicators(codes=[...]).rows[*].prev2_seal_amount -> ShortlineIndicator.prev2_seal_amount -> stocks.<code>.shortline.prev2_seal_amount",
+        "locator": "短线指标文档 §统计资源直接字段 prev2_seal_amount",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261120-eltdx-limit-ladder-limit-board-text",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.limit_board_text"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.limit_board_text",
+      "meaning": "统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日",
+      "unit": "文本",
+      "rationale": "ELTDX v3.3.2 固定版说明 limit_ladder 返回 ShortlineIndicator 行，limit_board_text 是统计窗口与涨停次数构成的文本，并列明目标日封板时的计入规则。返回结构另见 https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md。项目将全局 helper 的行逐股写入 stocks.<code>.limit_ladder；保留期内 12 个来源数据日的 16 条有效行中，该精确路径与同一 ELTDX ShortlineIndicator 的 shortline.limit_board_text 16/16 相同（15 个非空、1 组双方为空、差异 0）。逐行日期、原始文件哈希和数值见 research/20261120_eltdx_limit_ladder_path_contract_samples.csv。该结论是 ELTDX 适配层字段契约，不宣称原生 TDX 线协议定义，也不创建跨源映射。",
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].limit_board_text -> LimitLadderTable.rows[*] (ShortlineIndicator.limit_board_text) -> global_helpers.limit_ladder.rows[*].limit_board_text -> stocks.<code>.limit_ladder.limit_board_text",
+        "locator": "短线指标文档 §计算字段 limit_board_text；连板天梯文档 §数据来源与处理流程/§返回结构",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261120-eltdx-limit-ladder-limit-stat-days",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.limit_stat_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.limit_stat_days",
+      "meaning": "“几天几板”统计所用的窗口长度；ELTDX 从 tdxstat.cfg 直接读取",
+      "unit": "天",
+      "rationale": "ELTDX v3.3.2 固定版把 limit_stat_days 定义为涨停统计窗口天数，并明确来自 tdxstat.cfg 直接值。返回结构另见 https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md。项目全局 helper 行按逐股路径保存；保留期内 12 个来源数据日的 16 条有效行中，该路径与同一 ELTDX ShortlineIndicator 的 shortline.limit_stat_days 16/16 相同（12 个非空、4 组双方为空、差异 0）。日期、原始文件哈希及完整配对值见 research/20261120_eltdx_limit_ladder_path_contract_samples.csv。只确认适配层输出契约，不创建跨源映射。",
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].limit_stat_days -> LimitLadderTable.rows[*] (ShortlineIndicator.limit_stat_days) -> global_helpers.limit_ladder.rows[*].limit_stat_days -> stocks.<code>.limit_ladder.limit_stat_days",
+        "locator": "短线指标文档 §统计资源直接字段 limit_stat_days；连板天梯文档 §数据来源与处理流程/§返回结构",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261120-eltdx-limit-ladder-limit-up-count-in-stat-days",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.limit_up_count_in_stat_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.limit_up_count_in_stat_days",
+      "meaning": "涨停统计窗口内记录的涨停次数，是“几天几板”中的板数；ELTDX 从 tdxstat.cfg 直接读取",
+      "unit": "次",
+      "rationale": "ELTDX v3.3.2 固定版将 limit_up_count_in_stat_days 定义为统计窗口内记录的涨停次数，并明确来自 tdxstat.cfg 直接值。返回结构另见 https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md。项目全局 helper 行按逐股路径保存；保留期内 12 个来源数据日的 16 条有效行中，该路径与同一 ELTDX ShortlineIndicator 的 shortline.limit_up_count_in_stat_days 16/16 相同（12 个非空、4 组双方为空、差异 0）。逐条日期、值和哈希见 research/20261120_eltdx_limit_ladder_path_contract_samples.csv。此裁决只确认 ELTDX 适配层契约，不创建跨源映射。",
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].limit_up_count_in_stat_days -> LimitLadderTable.rows[*] (ShortlineIndicator.limit_up_count_in_stat_days) -> global_helpers.limit_ladder.rows[*].limit_up_count_in_stat_days -> stocks.<code>.limit_ladder.limit_up_count_in_stat_days",
+        "locator": "短线指标文档 §统计资源直接字段 limit_up_count_in_stat_days；连板天梯文档 §数据来源与处理流程/§返回结构",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261120-eltdx-limit-ladder-prev2-seal-amount",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.prev2_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.prev2_seal_amount",
+      "meaning": "目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg",
+      "unit": "元",
+      "rationale": "ELTDX v3.3.2 固定版把 prev2_seal_amount 定义为目标交易日前第二个实际交易日统计资源中的涨停封单金额，并说明按交易日对齐 tdxstat2.cfg。返回结构另见 https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md。项目全局 helper 行按逐股路径保存；保留期内 12 个来源数据日的 16 条有效行中，该路径与同一 ELTDX ShortlineIndicator 的 shortline.prev2_seal_amount 16/16 相同（7 个非空、9 组双方为空、差异 0）。目录日、meta.data_date 和 target_trade_date 均通过核对；其来源日期语义依上游交易日定义，不将自然日偏移误判为过期。逐条样本及哈希见 research/20261120_eltdx_limit_ladder_path_contract_samples.csv。此结论只确认 ELTDX 适配层输出，不创建跨源映射。",
+      "source_contract": {
+        "authority": "项目固定 ELTDX v3.3.2 Helper 输出契约（非原生 TDX 线协议字段定义）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本；2026-11-20 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].prev2_seal_amount -> LimitLadderTable.rows[*] (ShortlineIndicator.prev2_seal_amount) -> global_helpers.limit_ladder.rows[*].prev2_seal_amount -> stocks.<code>.limit_ladder.prev2_seal_amount",
+        "locator": "短线指标文档 §统计资源直接字段 prev2_seal_amount；连板天梯文档 §数据来源与处理流程/§返回结构",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    }
+  ]
+}

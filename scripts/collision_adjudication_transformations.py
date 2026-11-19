@@ -128,6 +128,8 @@ def _refresh_aggregate_projection(registry: dict[str, Any], affected_codes: set[
         aggregates[0].clear()
         aggregates[0].update(aggregate)
 
+    fields.sort(key=lambda record: record.get("code", ""))
+
     meta = registry.setdefault("meta", {})
     if not isinstance(meta, dict):
         raise TypeError("registry.meta must be an object")

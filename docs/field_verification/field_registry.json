@@ -266910,7 +266910,7 @@
         "evidence_basis": "empirical_source_field_semantics",
         "evidence_level": "E3",
         "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
-        "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+        "evidence_sha256": "7a53172fd750c166fe79c6a31917224eaa5bbf2c753f8caaf2c0028ce94563ab",
         "sample": {
           "scope": "保留期 2026-10-15 起的财联社 1,000 条 time 样本跨 20 个采集目录；本次对 2026-11-16、2026-11-17、2026-11-18 的 4 条具备 CLS 官方详情页对应项逐条比较。其余 996 条仅纳入格式审计，因未逐条打开并对应官方页面而排除于页面比较。",
           "comparison_count": 4,
@@ -266934,7 +266934,7 @@
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
-          "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+          "evidence_sha256": "7a53172fd750c166fe79c6a31917224eaa5bbf2c753f8caaf2c0028ce94563ab",
           "metadata_change": {
             "before": {
               "canonical": "",
@@ -266986,7 +266986,7 @@
           "reviewed_on": "2026-11-19",
           "decision_file": "adjudications/20261119_cls_time_semantics.json",
           "evidence_file": "adjudications/public_web/20261119_public_web_research.md",
-          "evidence_sha256": "f35306fee6a710c082b5ac8ed676e41a3d3c7273d4e9181af14b010812de5734",
+          "evidence_sha256": "7a53172fd750c166fe79c6a31917224eaa5bbf2c753f8caaf2c0028ce94563ab",
           "evidence_basis": "empirical_source_field_semantics",
           "evidence_level": "E3",
           "previous_status": "unverified",

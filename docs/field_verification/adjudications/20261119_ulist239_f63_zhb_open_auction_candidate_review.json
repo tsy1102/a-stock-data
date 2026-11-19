@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_7c11bd5bf48747534c52e86e40d49bb535a1a098d2d109c7014889feaaf94c98",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T11:44:54+08:00",
+  "rationale": "拒绝 ulist239.f63 与 zhb.stat2.main_net_buy_amount 的直接等值或固定单位换算候选。按来源日期规则核对的139组样本覆盖20只股票、7个交易日；ZHB该兼容键经既有裁决实际表示当日开盘集合竞价成交额（万元）。f63与ZHB原值及换算人民币元精确相等均为0/139，按0.01万元展示精度对应的±50元容差仅2/139，倍率中位数2.6565且范围0.9981–31.7，不支持固定比例。东方财富官方页面2026-11-18两只股票的五类资金流值均与f63不匹配。该结论只否定此候选关系；f63本身含义和单位仍未知，不修改注册表或主字典。",
+  "evidence_refs": [
+    "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+    "research/20261119_ulist239_f63_zhb_open_auction_candidate_review.md",
+    "research/20261119_ulist239_f63_zhb_open_auction_manifest.json",
+    "adjudications/public_web/20261119_public_web_research.md",
+    "adjudications/20261108_zhb_tdxstat2_fields.md",
+    "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html",
+    "https://data.eastmoney.com/zjlx/600519.html",
+    "https://data.eastmoney.com/zjlx/000007.html"
+  ],
+  "duplicate_of": null
+}

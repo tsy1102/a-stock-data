@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "analysis": "ulist239.f63 versus ZHB stat2.main_net_buy_amount",
+  "candidate_id": "cc1_7c11bd5bf48747534c52e86e40d49bb535a1a098d2d109c7014889feaaf94c98",
+  "candidate_report": "docs/field_verification/20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+  "candidate_report_sha256": "0c5ce52272da1318edf2630ef59bf73225545e8d3244acc4b21e41c0a03c69cb",
+  "sample_csv": "docs/field_verification/research/20261119_ulist239_f63_zhb_open_auction_samples.csv",
+  "sample_csv_sha256": "c01077b72eaddee8af388eeb74488a66dc4ba7a084ff7f1d24fd6bba90b5f96a",
+  "sample_count": 139,
+  "sample_dates": [
+    "20261102",
+    "20261103",
+    "20261104",
+    "20261106",
+    "20261109",
+    "20261117",
+    "20261118"
+  ],
+  "stock_count": 20,
+  "date_issues": [],
+  "duplicate_value_conflicts": {
+    "ulist": [],
+    "zhb": []
+  },
+  "matched_zhb_archives": [
+    "cache/zhb/zhb_20261102.zip",
+    "cache/zhb/zhb_20261103.zip",
+    "cache/zhb/zhb_20261104.zip",
+    "cache/zhb/zhb_20261106.zip",
+    "cache/zhb/zhb_20261109.zip",
+    "cache/zhb/zhb_20261117.zip",
+    "cache/zhb/zhb_20261118.zip"
+  ],
+  "matched_zhb_archives_all_present": true,
+  "comparison": {
+    "zhb_unit": "万元",
+    "yuan_conversion": "ZHB amount × 10000",
+    "exact_raw_f63_equals_zhb_wan": 0,
+    "exact_f63_equals_zhb_yuan": 0,
+    "within_50_yuan_after_conversion": 2,
+    "f63_to_zhb_yuan_ratio": {
+      "median_f63_to_zhb_open_amount_yuan": 2.6565267335004177,
+      "min_f63_to_zhb_open_amount_yuan": 0.998139534883721,
+      "max_f63_to_zhb_open_amount_yuan": 31.7
+    }
+  },
+  "source_file_sha256": {
+    "docs/field_verification/20261102/raw_ulist239.json": "8df028edbcc2725edf0280d741e6b146dc777532dec2d7c368ea655431d22718",
+    "docs/field_verification/20261103/raw_ulist239.json": "ad26b1f24b3a74b95647ef97fa89e41284932fba38936c4a4746f331850ac034",
+    "docs/field_verification/20261103/raw_zhb.json": "71d7be6c5c5e3bdfbbf7ffa9d554350a731e862949c7d454080141da1dd3c550",
+    "docs/field_verification/20261104/raw_ulist239.json": "a6e6706884616bc349f29440a9708026bab9f42f985a19639be4129050b3b79d",
+    "docs/field_verification/20261104/raw_zhb.json": "6a6f42a1088df0b01075721efe7282c2443ac19fc4f4be3cf2842c013194c721",
+    "docs/field_verification/20261105/raw_zhb.json": "2dca8c9c150288423a3dba7c2ff1fb68a2cc1d46361a6d7f1c5b93df882ebfc3",
+    "docs/field_verification/20261106/raw_ulist239.json": "fd4a54c15fc2aecd4edadbab8e50bfed75f610e989490d33ccb16676049feac2",
+    "docs/field_verification/20261109/raw_ulist239.json": "7d8bfc4b6d12e4d8bce1aa1cb1e93b5fbe6abbf4b3b05126887775c9838afa4c",
+    "docs/field_verification/20261109/raw_zhb.json": "a6d59d641debce9792fdac12903ce3e57b585aeb92803ea3f7d918cb7bcd89dc",
+    "docs/field_verification/20261110/raw_zhb.json": "7e542ae53c7bdcdb33ff95ef8c90fbc9f265990a6b264f7fe3852e66b432d8b8",
+    "docs/field_verification/20261117/raw_ulist239.json": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf",
+    "docs/field_verification/20261117/raw_zhb.json": "4974f01faca71b1567af15a9bbd0deb2123109dbc4542669328c8656fa5ab6d2",
+    "docs/field_verification/20261118/raw_ulist239.json": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b",
+    "docs/field_verification/20261118/raw_zhb.json": "f6cb9cc26d11daa9a65639ace7de93e8cc160e55101e72efe69fccfa4752e83f"
+  }
+}

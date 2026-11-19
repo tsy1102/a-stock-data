@@ -37,3 +37,16 @@
 | `docs/field_verification/20261118/raw_cls.json` | `beff13b6902860a0f8074e6538f10a22f62bcc7bfb690aae80be8720d3c71cfd` |
 | `docs/field_verification/20261117/raw_cls.json` | `7055835025cdf8b542355ac0e644a336863d5d1693678514db2a8ccc66b95db1` |
 | `docs/field_verification/20261116/raw_cls.json` | `a99a12f0e4534cfe0fb4edb121b2e2789735b731ec1281280fdff7fd17753227d` |
+
+## Ulist `f63` 候选排除：ZHB 开盘金额与东财资金流
+
+- 候选报告：`20261119/intraday_all_history_20261119_1030/20261119_collision_report.json`，SHA-256 `0c5ce52272da1318edf2630ef59bf73225545e8d3244acc4b21e41c0a03c69cb`；candidate_id `cc1_7c11bd5bf48747534c52e86e40d49bb535a1a098d2d109c7014889feaaf94c98`。
+- 精确目标为 `东财-ulist239(np/get)::f63`。碰撞候选端 `zhb.stat2.main_net_buy_amount` 是项目兼容名；ZHB 既有裁决已确认其对应 `ZHB-tdxstat2::[14]`，含义为当日开盘集合竞价成交额，单位万元。通达信官方接口表定义 `OpenAmo` 为开盘金额（万元），见[官方接口文档](https://help.tdx.com.cn/quant/docs/markdown/mindoc-1hjbidnohpjn4/mindoc-1hlir5r0t9hgc.html)。
+- 历史样本按 Ulist `f124`/`f297` 与 ZHB 文件名日期对齐：139 组、20 只股票、7 个交易日，日期问题与重复值冲突均为零。f63 与 ZHB 原值精确相等 `0/139`，换算成人民币元后精确相等 `0/139`；按 ZHB `0.01 万元` 精度的半单位 `±50 元` 只命中 `2/139`。两例 11 月 18 日原始值和完整逐行结果见[专门研究记录](../../research/20261119_ulist239_f63_zhb_open_auction_candidate_review.md)。
+- 同日 Chrome 页面检查时间为 2026-11-19 11:34 与 11:36（Asia/Shanghai）。两个官方页面均显示历史日期、五类净流入列及其净额；页面动态值以 Chrome 实际打开时记录为准。
+
+[observation] {"source":"东财-ulist239(np/get)","code":"f63","stock_code":"600519","data_date":"20261118","source_file":"20261118/raw_ulist239.json","raw_value":334160976,"raw_unit":"unknown","page_url":"https://data.eastmoney.com/zjlx/600519.html","page_metric":"历史资金流向：主力净流入、超大单净流入、大单净流入、中单净流入、小单净流入","page_values":[{"label":"主力净流入","value":"-2.52","unit":"亿元"},{"label":"超大单净流入","value":"-2.08","unit":"亿元"},{"label":"大单净流入","value":"-4367.83","unit":"万元"},{"label":"中单净流入","value":"+2.52","unit":"亿元"},{"label":"小单净流入","value":"-34.27","unit":"万元"}],"accessed_at":"2026-11-19T11:34+08:00","result":"contradicted"}
+
+[observation] {"source":"东财-ulist239(np/get)","code":"f63","stock_code":"000007","data_date":"20261118","source_file":"20261118/raw_ulist239.json","raw_value":410590,"raw_unit":"unknown","page_url":"https://data.eastmoney.com/zjlx/000007.html","page_metric":"历史资金流向：主力净流入、超大单净流入、大单净流入、中单净流入、小单净流入","page_values":[{"label":"主力净流入","value":"-1302.23","unit":"万元"},{"label":"超大单净流入","value":"-367.13","unit":"万元"},{"label":"大单净流入","value":"-935.10","unit":"万元"},{"label":"中单净流入","value":"+489.77","unit":"万元"},{"label":"小单净流入","value":"+812.47","unit":"万元"}],"accessed_at":"2026-11-19T11:36+08:00","result":"contradicted"}
+
+`contradicted` 仅指同日页面五种净流入指标都不与 f63 原值直接相等；这些网页观察不定义 `f63`，也不建立其与任何资金流指标的跨源映射。ZHB 候选被排除的完整依据与字段状态边界见[裁决说明](../../research/20261119_ulist239_f63_zhb_open_auction_candidate_review.md)。

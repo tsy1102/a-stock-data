@@ -910,9 +910,34 @@ def test_code_of_preserves_full_nested_identity():
     assert collide.code_of("tdx.quote_full.amount_wan") == "quote_full.amount_wan"
     assert collide.code_of("zhb.stat.board_count") == "stat.board_count"
     assert collide.code_of("tencent[4]") == "[4]"
+    assert collide.code_of("event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE") == (
+        "convertible_bonds[].ACTUAL_ISSUE_SCALE"
+    )
+    assert collide.alias_src("event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE") == "event_dc"
+    assert collide.code_of("sina[4].label") == "[4].label"
     assert collide.code_of("zhb.full.change_5d") == "full.change_5d"
     assert collide.code_of("zhb.stat.change_5d") == "stat.change_5d"
     assert collide.code_of("zhb.stat2.low_52w") == "stat2.low_52w"
+
+
+def test_verified_event_dc_array_field_exits_cracking_targets():
+    context = collide.load_registry_context()
+    field_id = "event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE"
+
+    assert ("event_dc", "convertible_bonds[].ACTUAL_ISSUE_SCALE") in context["verified"]
+    assert collide.is_verified(field_id, context["verified"])
+
+    left_ids, _right_ids = collide.select_collision_fields(
+        {
+            field_id: {"is_identifier": False, "is_constant": False, "type": "num"},
+        },
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        contract_anchors=context["contract_anchors"],
+    )
+
+    assert left_ids == []
 
 
 def test_zhb_merged_field_paths_do_not_bypass_duplicate_registry_owners():

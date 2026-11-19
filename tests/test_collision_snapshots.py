@@ -126,3 +126,41 @@ def test_etf_record_date_counts_as_explicit_source_date_in_field_coverage():
     sz_target = next(row for row in result["fields"] if row["code"] == "etf_sz.date")
     assert sz_target["source_as_of_days"] == ["T:20261117"]
     assert sz_target["candidate_days"] == ["T:20261117"]
+
+
+def test_event_dc_top_level_collections_keep_full_field_paths():
+    snapshot = Snapshot(
+        source="event_dc",
+        domain=TRADING,
+        sample_date=date(2026, 11, 19),
+        capture_date=date(2026, 11, 19),
+        folder="20261119",
+        path="raw_event_dc.json",
+        document={
+            "scheme": {"name": "em.datacenter"},
+            "convertible_bonds": [{"SECURITY_CODE": "110003", "ACTUAL_ISSUE_SCALE": 27.6}],
+            "ipo_calendar": [{"SECURITY_CODE": "600000", "CHANGE": "申购"}],
+        },
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=2,
+        captured_at=datetime(2026, 11, 19, 19, 52),
+        date_origin="capture_date",
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}})
+
+    load_snapshots(
+        [snapshot],
+        store,
+        [],
+        allowed_trading_dates={"20261119"},
+    )
+
+    assert store["event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE"]["vals"] == {
+        ("110003", "T:20261119"): 27.6,
+    }
+    assert store["event_dc.ipo_calendar[].CHANGE"]["vals"] == {
+        ("600000", "T:20261119"): "申购",
+    }
+    assert "event_dc.ACTUAL_ISSUE_SCALE" not in store

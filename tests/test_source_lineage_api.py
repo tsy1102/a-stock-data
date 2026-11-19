@@ -132,6 +132,28 @@ def test_runtime_alias_resolution_includes_non_anchor_sources():
     assert lineage_api.source_aliases("开盘啦(kpl)", lineage) == []
 
 
+def test_kph_and_kpl_remain_distinct_products_and_runtime_source_families():
+    lineage = lineage_api.load_source_lineage()
+    sources = lineage["sources"]
+
+    kph = sources["开盘红"]
+    kpl = sources["开盘啦(kpl_limit_up_detail)"]
+    legacy_kpl_label = sources["开盘啦(kpl)"]
+
+    assert lineage_api.source_aliases("开盘红", lineage) == ["kph"]
+    assert lineage_api.source_aliases("开盘啦(kpl_limit_up_detail)", lineage) == ["kpl"]
+    assert lineage_api.source_aliases("开盘啦(kpl)", lineage) == []
+    assert lineage_api.runtime_family("kph", lineage) == "kph"
+    assert lineage_api.runtime_family("kpl", lineage) == "kpl"
+    assert lineage_api.runtime_family("kph", lineage) != lineage_api.runtime_family("kpl", lineage)
+    assert lineage_api.runtime_family("market_sources", lineage) is None
+    assert "kaipanhong.com" in kph["anchor_note"]
+    assert "apphis.kaipanhong.com" in kph["anchor_note"]
+    assert "kaipanla.com" in kpl["anchor_note"]
+    assert "apphis.longhuvip.com" in kpl["anchor_note"]
+    assert "market_sources" in legacy_kpl_label["anchor_note"]
+
+
 @pytest.mark.parametrize(
     ("alias", "code", "expected"),
     [

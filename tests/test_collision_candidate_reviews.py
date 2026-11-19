@@ -48,7 +48,7 @@ def test_candidate_id_binds_source_method_and_sample_evidence_but_ignores_review
     assert reviews.candidate_id(candidate, "l1_candidate") != identifier
 
 
-def test_candidate_method_v7_changes_identity_without_rewriting_legacy_methods():
+def test_candidate_method_v8_preserves_v7_legacy_identity():
     candidate = _candidate()
     legacy_identity = reviews.candidate_identity_payload(
         candidate, "method_pair", method_version="collision-candidate-v1"
@@ -68,15 +68,19 @@ def test_candidate_method_v7_changes_identity_without_rewriting_legacy_methods()
     v6_identity = reviews.candidate_identity_payload(
         candidate, "method_pair", method_version="collision-candidate-v6"
     )
+    v7_identity = reviews.candidate_identity_payload(
+        candidate, "method_pair", method_version="collision-candidate-v7"
+    )
     current_identity = reviews.candidate_identity_payload(candidate, "method_pair")
 
-    assert current_identity["method_version"] == "collision-candidate-v7"
+    assert current_identity["method_version"] == "collision-candidate-v8"
     assert legacy_identity["method_version"] == "collision-candidate-v1"
     assert previous_identity["method_version"] == "collision-candidate-v2"
     assert v3_identity["method_version"] == "collision-candidate-v3"
     assert v4_identity["method_version"] == "collision-candidate-v4"
     assert v5_identity["method_version"] == "collision-candidate-v5"
     assert v6_identity["method_version"] == "collision-candidate-v6"
+    assert v7_identity["method_version"] == "collision-candidate-v7"
     assert reviews.candidate_id_from_payload(legacy_identity) != reviews.candidate_id_from_payload(
         current_identity
     )
@@ -93,6 +97,9 @@ def test_candidate_method_v7_changes_identity_without_rewriting_legacy_methods()
         current_identity
     )
     assert reviews.candidate_id_from_payload(v6_identity) != reviews.candidate_id_from_payload(
+        current_identity
+    )
+    assert reviews.candidate_id_from_payload(v7_identity) != reviews.candidate_id_from_payload(
         current_identity
     )
     with pytest.raises(ValueError, match="unsupported candidate method version"):

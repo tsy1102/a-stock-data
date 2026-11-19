@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex field audit",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_eventdc_convertible_issue_scale.md",
+  "evidence_sha256": "ff7b714b3d19857ee5aeb18843983791cf795309c394c90fbe525cc14c81b310",
+  "decisions": [
+    {
+      "id": "20261119-eventdc-cb-issue-scale",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ACTUAL_ISSUE_SCALE"
+      },
+      "previous_status": "candidate",
+      "previous_status_resolution": "candidate_from_source_coverage",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_issue_scale",
+      "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+      "unit": "亿元",
+      "section": "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication",
+      "rationale": "采集代码将 RPT_BOND_CB_LIST 的原始 ACTUAL_ISSUE_SCALE 保存于 convertible_bonds[]，Eastmoney 官方可转债列表对应列明确标为发行规模（亿元）。对 110003 与 110004 的归档原值分别以发行人正式年报记载的发行总额换算为亿元，2/2 精确吻合。详情页将债券发行总额和实际募集资金总额列为不同指标，故语义限定为发行总额，不延伸为净募集资金或当前剩余规模。字段日期语义为历史发行属性，归档运行日只标记快照，不作为发行日。",
+      "sample": {
+        "scope": "2026-11-19 raw_event_dc.convertible_bonds[] 的 500 条非空数值记录；其中按债券代码对照两份发行人年报的样本为 110003 和 110004。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0
+      }
+    }
+  ]
+}

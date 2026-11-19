@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 566 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 567 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3556,6 +3556,7 @@
 | 东财-datacenter(英文键) | `shares_is_actual` | shares_is_actual | 项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。 | `disproved` |
 | 东财-em_kline_f61 | `dktotal` | daily_kline_record_count | Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。 | `verified` |
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | `disproved` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].ACTUAL_ISSUE_SCALE` | convertible_bond_issue_scale | 可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。 | `verified` |
 | 东财-push2(stock/get) | `f103` | ocf_ttm(f103) | 经营活动现金流量净额 TTM：上年全年 + 本年最新报告期年初至今 − 上年同期年初至今；合并现金流口径。 | `verified` |
 | 东财-push2(stock/get) | `f107` | f107 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | `verified` |

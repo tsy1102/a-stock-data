@@ -264,6 +264,31 @@ def _record_containers(doc, source=None, include_context=False):
 
 def _record_containers_with_paths(doc, source=None, include_context=False):
     """Return record containers with their top-level collection path when relevant."""
+    if source == "event_dc":
+        collection_paths = ("ipo_calendar", "convertible_bonds")
+        containers = []
+        for collection_path in collection_paths:
+            records = doc.get(collection_path) if isinstance(doc, dict) else None
+            if isinstance(records, list):
+                containers.append(
+                    (
+                        f"{collection_path}[]",
+                        {
+                            f"__{collection_path}_{index}": record
+                            for index, record in enumerate(records)
+                            if isinstance(record, dict)
+                        },
+                    )
+                )
+        residual = (
+            {key: value for key, value in doc.items() if key not in collection_paths}
+            if isinstance(doc, dict)
+            else {}
+        )
+        containers.extend(
+            (None, container) for container in _record_containers(residual, source, include_context)
+        )
+        return containers
     if source == "etf":
         containers = []
         for branch in ("etf_sh", "etf_sz"):

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-11-18",
+  "updated": "2026-11-19",
   "description": "运行时来源别名、提供方独立性、客户端/服务仓库关系与锚点资格；AxData/Levistock 框架和包装关系不等同于底层独立数据源。",
   "sources": {
     "AxData": {
@@ -562,7 +562,7 @@
       "independence_family": null,
       "independence_status": "unconfirmed",
       "anchor_eligible": false,
-      "anchor_note": "采集结果容器已知为 market_sources，但尚不能映射到独立原始数据源或字段路径",
+      "anchor_note": "这是历史字段标签，运行时仅映射到多源聚合容器 market_sources，不能作为开盘啦专用 API 或 KPL 独立来源身份；专用个股涨停明细身份是开盘啦(kpl_limit_up_detail) → kpl",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -601,7 +601,7 @@
       "independence_family": "kpl",
       "independence_status": "confirmed",
       "anchor_eligible": true,
-      "anchor_note": "KPL 涨停个股明细独立 raw 文件；六个字段在 2026-09-29、09-30 与 KPH 样本逐值一致。",
+      "anchor_note": "开盘啦 KPL 涨停明细，独立 raw 文件；产品官网 https://www.kaipanla.com/，项目历史接口主机 apphis.longhuvip.com。与开盘红 KPH（官网 https://www.kaipanhong.com/，接口主机 apphis.kaipanhong.com）是不同产品、不同域名与不同项目来源族；官网页脚虽显示同一运营公司，但不据此合并数据源。部分字段逐值一致只证明具体字段关系，不表示同源",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -640,7 +640,7 @@
       "independence_family": "kph",
       "independence_status": "confirmed",
       "anchor_eligible": true,
-      "anchor_note": "独立的 KPH 历史涨停接口；当前采集由项目自有适配器按页请求，AxData 与 Levistock 仅作接口映射和分页实现参考；KPH 自身 GitHub 上游尚未确认。",
+      "anchor_note": "开盘红 KPH 历史涨停接口，项目按页采集；官网 https://www.kaipanhong.com/，接口主机 apphis.kaipanhong.com。与开盘啦 KPL（官网 https://www.kaipanla.com/，接口主机 apphis.longhuvip.com）是不同产品、不同域名与不同项目来源族；官网页脚虽显示同一运营公司，但不据此合并数据源。AxData/Levistock 仅作接口实现参考",
       "repository_mapping_status": "unconfirmed",
       "repositories": [
         {
@@ -666,7 +666,7 @@
       ],
       "dialog_confirmation": {
         "status": "pending",
-          "note": "KPH 提供方和 apphis.kaipanhong.com 接口路径由客户端实现与返回值确认；KPH 官方文档/仓库对应关系仍待核实。"
+        "note": "KPH 提供方和 apphis.kaipanhong.com 接口路径由客户端实现与返回值确认；KPH 官方文档/仓库对应关系仍待核实。"
       }
     },
     "新浪(hq.sinajs)": {
@@ -918,6 +918,18 @@
         "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
         "evidence_file": "docs/verify/ftshare_rest_contract.md"
       }
+    },
+    "东财-event_dc(可转债列表)": {
+      "runtime_aliases": [
+        "event_dc"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "仅指 event_dc.convertible_bonds[] 的 RPT_BOND_CB_LIST 字段路径；与通用 datacenter 字段路径分开登记，均属于 Eastmoney 来源族",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": []
     }
   },
   "source_aliases": {
@@ -966,7 +978,8 @@
     "财联社(cls)": "cls",
     "Levistock历史未归属": null,
     "开盘红(Levistock适配)": "kph",
-    "FTShare REST": "ftshare_rest"
+    "FTShare REST": "ftshare_rest",
+    "东财-event_dc(可转债列表)": "event_dc"
   },
   "runtime_sources": {
     "axdata": {
@@ -1025,9 +1038,9 @@
       "note": "复合 ETF 采集器直接请求上交所 query.sse.com.cn/commonQuery.do 与深交所 szse.cn/api/report/ShowReport/data；字段路径保留 etf_sh/etf_sz 分支，归入交易所来源族，不与其他交易所接口路径合并。"
     },
     "event_dc": {
-      "independence_family": null,
-      "independence_status": "unconfirmed",
-      "note": "provider not confirmed by field-level evidence"
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney datacenter-web runtime producer. collect_event_dc stores ipo_calendar and convertible_bonds as separate top-level arrays; convertible_bonds calls reportName=RPT_BOND_CB_LIST. Registry identity is scoped to the exact array and field path, not merged with generic datacenter paths."
     },
     "exchange": {
       "independence_family": "exchange",
@@ -1052,7 +1065,7 @@
     "kpl": {
       "independence_family": "kpl",
       "independence_status": "confirmed",
-      "note": "开盘啦 KPL 个股涨停明细；从 market_sources 拆分但每次采集仍只请求一次。"
+      "note": "开盘啦 KPL 个股涨停明细；产品官网 kaipanla.com，历史接口主机 apphis.longhuvip.com；与 KPH 开盘红来源族分开登记。从 market_sources 拆分但每次采集仍只请求一次。"
     },
     "macro_dc": {
       "independence_family": null,

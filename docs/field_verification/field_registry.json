@@ -32,8 +32,8 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 951,
-      "verified": 1597,
-      "verified_by_empirical_addendum": 215,
+      "verified": 1598,
+      "verified_by_empirical_addendum": 216,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 457
@@ -359,6 +359,15 @@
       "contract_ids": [
         "a_share_realtime_quote"
       ]
+    },
+    {
+      "name": "东财-event_dc(可转债列表)",
+      "verify_file": null,
+      "section_patterns": [
+        "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication"
+      ],
+      "status": "active",
+      "source_role": "provider_component"
     }
   ],
   "fields": [
@@ -11867,6 +11876,24 @@
         "canonical_incomplete",
         "meaning_incomplete"
       ]
+    },
+    {
+      "code": "convertible_bonds[].ACTUAL_ISSUE_SCALE",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication",
+      "canonical": "convertible_bond_issue_scale",
+      "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+      "unit": "亿元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "count",
@@ -46260,6 +46287,9 @@
     ],
     "ulist239_sales_gross_margin_report_period_pct": [
       "东财-ulist239(np/get)"
+    ],
+    "convertible_bond_issue_scale": [
+      "东财-event_dc(可转债列表)"
     ]
   },
   "mappings": [
@@ -164172,6 +164202,140 @@
       }
     },
     {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].ACTUAL_ISSUE_SCALE",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].ACTUAL_ISSUE_SCALE",
+      "path": "convertible_bonds[].ACTUAL_ISSUE_SCALE",
+      "canonical": "convertible_bond_issue_scale",
+      "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+      "unit": "亿元",
+      "section": "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication",
+      "sections": [
+        "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [
+          "东财-event_dc(可转债列表)"
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261119-eventdc-cb-issue-scale"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_eventdc_convertible_issue_scale.md",
+        "evidence_sha256": "ff7b714b3d19857ee5aeb18843983791cf795309c394c90fbe525cc14c81b310",
+        "sample": {
+          "scope": "2026-11-19 raw_event_dc.convertible_bonds[] 的 500 条非空数值记录；其中按债券代码对照两份发行人年报的样本为 110003 和 110004。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "official_report_count": 2,
+          "excluded_count": 0
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication",
+          "canonical": "convertible_bond_issue_scale",
+          "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+          "unit": "亿元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-eventdc-cb-issue-scale",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_eventdc_convertible_issue_scale.md",
+          "evidence_sha256": "ff7b714b3d19857ee5aeb18843983791cf795309c394c90fbe525cc14c81b310",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_issue_scale",
+              "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+              "unit": "亿元"
+            }
+          },
+          "sample": {
+            "scope": "2026-11-19 raw_event_dc.convertible_bonds[] 的 500 条非空数值记录；其中按债券代码对照两份发行人年报的样本为 110003 和 110004。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": {
+        "code": "convertible_bonds[].ACTUAL_ISSUE_SCALE",
+        "source": "东财-event_dc(可转债列表)",
+        "sources": [
+          "东财-event_dc(可转债列表)"
+        ],
+        "status": "candidate",
+        "status_raw": "候选字段，待来源内实证核验",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication"
+      },
+      "adjudications": [
+        {
+          "id": "20261119-eventdc-cb-issue-scale",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_eventdc_convertible_issue_scale.json",
+          "evidence_file": "adjudications/20261119_eventdc_convertible_issue_scale.md",
+          "evidence_sha256": "ff7b714b3d19857ee5aeb18843983791cf795309c394c90fbe525cc14c81b310",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "candidate",
+          "previous_status_resolution": "candidate_from_source_coverage",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_issue_scale",
+              "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+              "unit": "亿元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "采集代码将 RPT_BOND_CB_LIST 的原始 ACTUAL_ISSUE_SCALE 保存于 convertible_bonds[]，Eastmoney 官方可转债列表对应列明确标为发行规模（亿元）。对 110003 与 110004 的归档原值分别以发行人正式年报记载的发行总额换算为亿元，2/2 精确吻合。详情页将债券发行总额和实际募集资金总额列为不同指标，故语义限定为发行总额，不延伸为净募集资金或当前剩余规模。字段日期语义为历史发行属性，归档运行日只标记快照，不作为发行日。",
+          "sample": {
+            "scope": "2026-11-19 raw_event_dc.convertible_bonds[] 的 500 条非空数值记录；其中按债券代码对照两份发行人年报的样本为 110003 和 110004。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0
+          }
+        }
+      ]
+    },
+    {
       "source": "东财-push2(stock/get)",
       "code": "f1",
       "identity": "东财-push2(stock/get)::f1",
@@ -269501,6 +269665,17 @@
       "evidence_file": "docs/field_verification/zhb_tipinfo_shareholder_change_adjudication_20261108.md",
       "matrix_field": "tipinfo.shareholder_change_shares_wan",
       "matrix_source": "ZHB"
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].ACTUAL_ISSUE_SCALE",
+      "canonical": "convertible_bond_issue_scale",
+      "meaning": "可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。",
+      "unit": "亿元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261119_eventdc_convertible_issue_scale.md",
+      "matrix_field": "convertible_bond_issue_scale",
+      "matrix_source": "东财-event_dc(可转债列表)"
     },
     {
       "source": "同花顺-fuyao",

@@ -19,7 +19,7 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 # Bump when candidate methods, normalization, precision, sample qualification, or field identity changes.
-METHOD_VERSION = "collision-candidate-v7"
+METHOD_VERSION = "collision-candidate-v8"
 SUPPORTED_REPORT_METHOD_VERSIONS = frozenset(
     {
         "collision-candidate-v1",
@@ -28,6 +28,7 @@ SUPPORTED_REPORT_METHOD_VERSIONS = frozenset(
         "collision-candidate-v4",
         "collision-candidate-v5",
         "collision-candidate-v6",
+        "collision-candidate-v7",
         METHOD_VERSION,
     }
 )

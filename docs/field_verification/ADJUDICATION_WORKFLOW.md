@@ -9,7 +9,7 @@
 
 ## 跨来源碰撞候选审阅状态（schema 5 起）
 
-schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格及其报告记录的候选方法版本。当前新报告使用 `collision-candidate-v7`：保留 v3 的精确匹配、独立近似层、日期值候选识别及关系/证据/进度分类轴；v4 修正 L4 的信息配对资格与命中率分母，v5 修正复合 ETF 来源的逐记录交易日资格，v6 保留复合 ETF 的完整分支字段路径，v7 为 KPH 涨停天梯按逐行 Unix 秒时间戳归日。历史 `collision-candidate-v1` 至 `v6` 报告仍按报告内记录的版本校验和查询；旧审阅不会附着到 v7 新身份。报告另以 `match_class`、`evidence_basis`、`adjudication_progress` 分列值关系、证据来源和处理状态，兼容字段 `level` 不代表晋级顺序。若候选算法、归一化、精度、样本资格或字段身份语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
+schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格及其报告记录的候选方法版本。当前新报告使用 `collision-candidate-v8`：保留 v3 的精确匹配、独立近似层、日期值候选识别及关系/证据/进度分类轴；v4 修正 L4 的信息配对资格与命中率分母，v5 修正复合 ETF 来源的逐记录交易日资格，v6 保留复合 ETF 的完整分支字段路径，v7 为 KPH 涨停天梯按逐行 Unix 秒时间戳归日，v8 保留 `event_dc` 顶层 `ipo_calendar[]` 与 `convertible_bonds[]` 的完整字段路径。历史 `collision-candidate-v1` 至 `v7` 报告仍按报告内记录的版本校验和查询；旧审阅不会附着到 v8 新身份。报告另以 `match_class`、`evidence_basis`、`adjudication_progress` 分列值关系、证据来源和处理状态，兼容字段 `level` 不代表晋级顺序。若候选算法、归一化、精度、样本资格或字段身份语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
 
 新报告先展示通过官方契约核验的锚路径结果，再列日期语义候选和一般数值方法线索。此顺序只安排研究优先级，不降低映射裁决门槛。来源/接口重叠审阅按完整规范路径及来源实际日期对齐，识别可能的重复或互补路由；它不自动证明底层同源，也不自动停用采集。恒空、恒零和当前恒定路径进入低信息队列；样本出现有效变化后再加入普通碰撞。日期值队列需继续核实业务日期角色，不把日期格式本身当作释义。
 

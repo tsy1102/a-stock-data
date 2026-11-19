@@ -584,10 +584,9 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
 
 
 def norm_src_of(fid):
-    if "." in fid:
-        return fid.split(".")[0]
-    if "[" in fid:
-        return fid.split("[")[0]
+    separators = [index for token in (".", "[") if (index := fid.find(token)) >= 0]
+    if separators:
+        return fid[: min(separators)]
     return fid
 
 
@@ -611,18 +610,19 @@ def are_independent_sources(left_fid, right_fid, lineage):
 
 
 def code_of(fid, normalize_runtime_field_code):
-    if "[" in fid:
-        code = fid[fid.index("[") :]
-    elif "." in fid:
-        code = fid.split(".", 1)[1]
+    source = norm_src_of(fid)
+    if fid.startswith(f"{source}."):
+        code = fid[len(source) + 1 :]
+    elif fid.startswith(f"{source}["):
+        code = fid[len(source) :]
     else:
         return fid
-    if norm_src_of(fid) == "zhb" and code.startswith("full."):
+    if source == "zhb" and code.startswith("full."):
         # Keep the merged-view namespace explicit. Registry loading adds this
         # alias only for a unique stat/stat2 owner; stripping it here could
         # conflate a merged field with an unrelated unqualified registry path.
         return code
-    return normalize_runtime_field_code(norm_src_of(fid), code)
+    return normalize_runtime_field_code(source, code)
 
 
 def is_verified(fid, verified, lineage):

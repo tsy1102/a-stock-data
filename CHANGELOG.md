@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 将 Eastmoney 可转债列表路径 `event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE` 来源内定案为可转债发行规模/债券发行总额（亿元），并补入注册表；以东财官方表头和两份发行人年报交叉核验，不与剩余规模或净募集资金混淆。
 - 利用已定案的 Ulist `f98` 五交易日正值计数，将 `东财-ulist239(np/get)::f99` 来源内定案为最近 10 个交易日中 `f88 > 0` 的天数；三组十日窗口逐股 60/60 精确相等，独立滚动日留出 20/20 相符。保留 `f88` 释义未知，不将第三方 DDX 标签当作官方契约，也不建跨源映射。逐行证据见 [`20261119_ulist239_f99_positive_days_10d.md`](docs/field_verification/adjudications/20261119_ulist239_f99_positive_days_10d.md)。
 - 依据 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始样本，将 `东财-ulist239(np/get)::f97` 定案为同源 `f88 > 0` 连续段日数；120 个相邻日转移全部符合严格大于零递推，含零阈值与非零阈值控制均出现反证，不推断 `f88` 业务标签或建立跨源映射。逐行证据见 [`20261119_ulist239_f97_positive_run.md`](docs/field_verification/adjudications/20261119_ulist239_f97_positive_run.md)。
 - 依据 CLS 官方电报详情页四条逐值观察、采集器 `ctime` 到 `time` 的精确映射及保留期 1,000 条格式审计，将 `财联社(cls)::time` 定案为财联社电报发布时间（`YYYY-MM-DD HH:MM:SS`）；明确该时间与交易日、采集目录数据日和正文事件时间分开，不建立跨源映射。
@@ -28,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修复 `event_dc` 顶层数组字段在碰撞与覆盖报告中丢失集合路径的问题；新报告分别保留 `ipo_calendar[]` 和 `convertible_bonds[]`。候选身份升至 v8，历史 v1–v7 报告保持兼容。
+- 修复包含 `[]` 的嵌套字段身份被误截断的问题；已验证的 `event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE` 不再重复进入碰撞破解目标。
 - 撤回东财 Ulist239 `np/get::f59` 的历史“收盘价/最新价”释义：六个来源交易日、20 只股票共 120 行日期合格样本均不支持其等于已验证最新价 `f2`，且 `f59` 六日恒定；撤回当时暂列待核，随后按同报告期财报逐值复算完成来源内定案，详见本节 Added 的裁决记录。
 - 修复 KPH `get_zttt` 涨停天梯将请求日误作行日期的问题：碰撞、字段覆盖和每日来源验证按已验证的 Unix 秒 `limit_time` 推导东八区行日期；旧日行不再归入请求日，缺失或格式异常的时间戳不参与正式碰撞。候选方法身份升至 v7，历史 v1–v6 报告保持兼容。
 - 修复复合 ETF 来源日期错归：上交所按日归档与深交所最新快照按各条记录的 `date` 归入实际交易日，超出窗口、晚于来源采集日或无法解析的记录不参与碰撞/覆盖；候选样本资格版本升至 v5，并保留 v1–v4 审阅兼容。

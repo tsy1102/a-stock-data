@@ -38,6 +38,7 @@
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | FTShare REST | active | ftshare_rest | FTShare public REST Gateway; the underlying data provider is unconfirmed | 未确认（unconfirmed） | 否 | unconfirmed | pending |
+| 东财-event_dc(可转债列表) | active | event_dc | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
 
 ## 项目级历史参考基线
 
@@ -207,7 +208,7 @@
 
 ### 开盘啦(kpl)
 
-- 来源说明：采集结果容器已知为 market_sources，但尚不能映射到独立原始数据源或字段路径。
+- 来源说明：这是历史字段标签，运行时仅映射到多源聚合容器 market_sources，不能作为开盘啦专用 API 或 KPL 独立来源身份；专用个股涨停明细身份是开盘啦(kpl_limit_up_detail) → kpl。
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
 - [https://github.com/LowellLee/kpl](https://github.com/LowellLee/kpl) — parallel_api_reference；confirmed。按用户确认作为开盘啦/KPL 接口参考之一；与另一个并列确认仓库同时记录，当前证据不指定唯一代码来源。
   - 项目内证据：stock_common/sc_kpl.py, get_mak_report.py
@@ -216,7 +217,7 @@
 
 ### 开盘啦(kpl_limit_up_detail)
 
-- 来源说明：KPL 涨停个股明细独立 raw 文件；六个字段在 2026-09-29、09-30 与 KPH 样本逐值一致。。
+- 来源说明：开盘啦 KPL 涨停明细，独立 raw 文件；产品官网 https://www.kaipanla.com/，项目历史接口主机 apphis.longhuvip.com。与开盘红 KPH（官网 https://www.kaipanhong.com/，接口主机 apphis.kaipanhong.com）是不同产品、不同域名与不同项目来源族；官网页脚虽显示同一运营公司，但不据此合并数据源。部分字段逐值一致只证明具体字段关系，不表示同源。
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
 - [https://github.com/LowellLee/kpl](https://github.com/LowellLee/kpl) — parallel_api_reference；confirmed。按用户确认作为开盘啦/KPL 接口参考之一；与另一个并列确认仓库同时记录，当前证据不指定唯一代码来源。
   - 项目内证据：stock_common/sc_kpl.py, get_mak_report.py
@@ -225,7 +226,7 @@
 
 ### 开盘红
 
-- 来源说明：独立的 KPH 历史涨停接口；当前采集由项目自有适配器按页请求，AxData 与 Levistock 仅作接口映射和分页实现参考；KPH 自身 GitHub 上游尚未确认。。
+- 来源说明：开盘红 KPH 历史涨停接口，项目按页采集；官网 https://www.kaipanhong.com/，接口主机 apphis.kaipanhong.com。与开盘啦 KPL（官网 https://www.kaipanla.com/，接口主机 apphis.longhuvip.com）是不同产品、不同域名与不同项目来源族；官网页脚虽显示同一运营公司，但不据此合并数据源。AxData/Levistock 仅作接口实现参考。
 - 对话确认：pending。KPH 提供方和 apphis.kaipanhong.com 接口路径由客户端实现与返回值确认；KPH 官方文档/仓库对应关系仍待核实。
 - [https://github.com/electkismet/AxData](https://github.com/electkismet/AxData) — interface_mapping_reference；confirmed。AxData 0.1.4 的 KPH parser/catalog 用作接口字段映射与首 50 行请求行为的核查参考；当前 KPH 历史采集不再经由该请求适配器。
   - 项目内证据：requirements.txt, docs/field_verification/adjudications/20261117_kph_pagination_audit.md
@@ -275,6 +276,12 @@
 ### FTShare REST
 
 - 来源说明：官方接口字段契约支持语义锚；底层数据提供方及跨来源独立性未确认，碰撞强候选标 L1-C。
+- 对话确认：pending。关系待通过对话逐项确认。
+- GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
+
+### 东财-event_dc(可转债列表)
+
+- 来源说明：仅指 event_dc.convertible_bonds[] 的 RPT_BOND_CB_LIST 字段路径；与通用 datacenter 字段路径分开登记，均属于 Eastmoney 来源族。
 - 对话确认：pending。关系待通过对话逐项确认。
 - GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
 

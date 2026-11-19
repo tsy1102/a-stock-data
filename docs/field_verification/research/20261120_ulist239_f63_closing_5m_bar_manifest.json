@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "target_data_date": "20261118",
+  "verification_only": true,
+  "source_endpoint": "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+  "request_parameters": {
+    "klt": 5,
+    "fqt": 0,
+    "beg": "20261118",
+    "end": "20261119",
+    "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
+  },
+  "source_date_qualification": "Kline row timestamp is 2026-11-18 15:00; Ulist f297 is 20261118 for all rows.",
+  "comparison_scope": "Ulist f63 versus the full 15:00 five-minute Kline bar f57 amount; diagnostic equality candidate only.",
+  "ulist_raw_path": "docs/field_verification/20261118/raw_ulist239.json",
+  "ulist_raw_sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b",
+  "sample_csv": "docs/field_verification/research/20261120_ulist239_f63_closing_5m_bar_samples.csv",
+  "sample_csv_sha256": "a425d94032a82f71e51af96a09d0d70ba7536f25a527526ac2bec69e1e18822c",
+  "sample_count": 6,
+  "observations": [
+    {
+      "code": "000007",
+      "ulist_f63": "410590",
+      "kline_f57_amount_yuan": "1420423",
+      "absolute_relative_difference_pct": "71.093822",
+      "request_started_at": "2026-11-20 03:26:10.290 +08:00",
+      "request_finished_at": "2026-11-20 03:26:11.690 +08:00"
+    },
+    {
+      "code": "000037",
+      "ulist_f63": "1298666",
+      "kline_f57_amount_yuan": "2362004",
+      "absolute_relative_difference_pct": "45.018467",
+      "request_started_at": "2026-11-20 03:26:11.723 +08:00",
+      "request_finished_at": "2026-11-20 03:26:13.023 +08:00"
+    },
+    {
+      "code": "300031",
+      "ulist_f63": "8532041",
+      "kline_f57_amount_yuan": "13627858",
+      "absolute_relative_difference_pct": "37.392648",
+      "request_started_at": "2026-11-20 03:26:13.024 +08:00",
+      "request_finished_at": "2026-11-20 03:26:14.336 +08:00"
+    },
+    {
+      "code": "600309",
+      "ulist_f63": "59106025",
+      "kline_f57_amount_yuan": "51744262",
+      "absolute_relative_difference_pct": "14.227206",
+      "request_started_at": "2026-11-20 03:26:14.337 +08:00",
+      "request_finished_at": "2026-11-20 03:26:15.557 +08:00"
+    },
+    {
+      "code": "600519",
+      "ulist_f63": "334160976",
+      "kline_f57_amount_yuan": "333670884",
+      "absolute_relative_difference_pct": "0.146879",
+      "request_started_at": "2026-11-20 03:26:15.557 +08:00",
+      "request_finished_at": "2026-11-20 03:26:16.828 +08:00"
+    },
+    {
+      "code": "688553",
+      "ulist_f63": "626182",
+      "kline_f57_amount_yuan": "1207560",
+      "absolute_relative_difference_pct": "48.144854",
+      "request_started_at": "2026-11-20 03:26:16.829 +08:00",
+      "request_finished_at": "2026-11-20 03:26:18.152 +08:00"
+    }
+  ]
+}

@@ -55,3 +55,9 @@ Levistock 固定提交 `808d8187a6dd2a781dc51efeb1581f35d68e66c7` 将相同 KPH 
 - 本地归档 KPL raw：`docs/field_verification/20261118/raw_kpl.json`，SHA-256 `9e72fa239bda12f857fb7e1fc36a17732ee9aec77abf44d3f667b6b96a467d6b`。
 - 来源元数据：`docs/field_verification/20261118/meta.json`，SHA-256 `50f007e09c124758cb08ce3aa3e902d3f835c91edcf59dec3a7b9e8b5218fed6`。
 - 前两日核验：[`20261117_kph_industry_count_followup.md`](../adjudications/20261117_kph_industry_count_followup.md)、[`20261118_kph_industry_count_followup.md`](../adjudications/20261118_kph_industry_count_followup.md) 及 [`20261118_kph_industry_limit_up_count_samples.csv`](20261118_kph_industry_limit_up_count_samples.csv)。
+
+## 后续候选复核（2026-11-19 16:25）
+
+- 将 KPH `industry_limit_up_count` 与 KPL `raw_columns.col_20` 的直接等价候选审阅为 `rejected`。三日的 103 组日期合格配对中 20 组失配；11 月 17 日仅 14/34 相同，其中多数反例在行业码相同的情况下计数仍不同。更早的 11 个来源日、500 组样本也有 50 组差异。高相关和两日全匹配不足以抹去可重复的逐值反例。
+- 将 KPH `industry_limit_up_count` 与东财 `push2ex.limit_count` 的标签候选审阅为 `rejected`：后者已验证为当前连续涨停板数（单位“板”），前者候选是同行业涨停数量（单位“家”）；共有 `limit/count` 词元不代表语义相同。
+- 这两项只拒绝具体跨源关系，不判定 KPH 提供方身份，也不否认 KPH 字段的“同行业涨停数”候选释义。KPH 字段仍 `unverified`，各源分别保留采集，无跨源映射或停采决定。审阅事件见[候选决定文件](../adjudications/20261119_kph_candidate_review_decisions.json)。

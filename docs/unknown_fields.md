@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2664；日常来源路径 2520：unverified 833、candidate 1、conflict 17、disproved 98；历史来源路径 144。
+> 注册字段路径 2666；日常来源路径 2522：unverified 832、candidate 1、conflict 17、disproved 100；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 697 |
+| 含义栏为空/占位 | 696 |
 | 含义栏有文本（仍未验证） | 136 |
 
 ### 历史状态证据的解析结果
@@ -25,7 +25,7 @@
 | `aggregate_status_scope_unresolved` | 284 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 414 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 413 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（17）
@@ -56,7 +56,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（833）
+## 三、待破解字段（832）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -399,7 +399,6 @@
 | 东财-ulist239(np/get) | `f249` | f249 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f250` | f250 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f28` | f28 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f30` | f30 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f49` | f49 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f63` | f63 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f93` | f93 | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
@@ -894,7 +893,7 @@
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（98）
+## 四、已证伪（默认不重复破解）（100）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -938,7 +937,9 @@
 | ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | reports | `actualLastTwoYearEps` | actualLastYearEps | 保留期内全部非空样本与同条 actualLastYearEps 完全重复；不能作为独立的前两年实际 EPS 字段（当前接口响应行为） | 元/股 | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；2026-11-13 reports actualLastTwoYearEps 重复输出裁定 |
+| 东财-datacenter(英文键) | `free_shares` | free_shares | 项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。 | 股（项目归一化输出） | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
 | 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 直接核验的 600519、601288 两条 2026-09-30 响应均未提供 CHANGE_SHARES；旧适配器将缺失填为 0，本路径是项目占位输出，不代表持股未变化。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
+| 东财-datacenter(英文键) | `shares_is_actual` | shares_is_actual | 项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。 | 布尔 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | 条 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
 | 东财-push2ex | `HHMMSS` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-15 Push2EX HHMMSS token classification |
 | 东财-push2ex | `limit_broken_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |

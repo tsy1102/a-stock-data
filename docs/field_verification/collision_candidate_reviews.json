@@ -2546,6 +2546,107 @@
         "schema_version": 1
       }
     },
+    "cc1_0baa70b8f1883ccb17bd1810f856195f9712594971bef4bcbe9ecd081174cee6": {
+      "current": {
+        "candidate_id": "cc1_0baa70b8f1883ccb17bd1810f856195f9712594971bef4bcbe9ecd081174cee6",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "4bb523617a1503ea87ee70ee33b1c3d2ae1dce36cafe86a68070420ade9432cc",
+        "evidence_refs": [
+          {
+            "path": "20261119/post_f30_semantics_20261119/20261119_collision_report.json",
+            "sha256": "051fe78b892b92599c904f0077505f126f03afe0a834900a1edfc91de27d6caf"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "42bf3b8c8a7f19f87ffa3f1bded98cdb329c92bf82583024f2bd13070969e481"
+          },
+          {
+            "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+            "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+          }
+        ],
+        "rationale": "拒绝开盘红::industry_limit_up_count 与东财-push2ex::limit_count 的语义标签映射候选。注册表已将 push2ex.limit_count 定案为当前连续涨停板数，单位“板”；KPH industry_limit_up_count 的候选释义是同行业涨停数量，单位“家”。共享 limit/count 词元只反映词面，不是字段身份、来源契约或数值等价证据。此决定仅拒绝该映射；KPH 字段释义仍未验证，不推断两源提供方关系，不更新 registry/mappings，也不调整采集路由。",
+        "reviewed_at": "2026-11-19T16:25:39+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_0baa70b8f1883ccb17bd1810f856195f9712594971bef4bcbe9ecd081174cee6",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "4bb523617a1503ea87ee70ee33b1c3d2ae1dce36cafe86a68070420ade9432cc",
+          "evidence_refs": [
+            {
+              "path": "20261119/post_f30_semantics_20261119/20261119_collision_report.json",
+              "sha256": "051fe78b892b92599c904f0077505f126f03afe0a834900a1edfc91de27d6caf"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "42bf3b8c8a7f19f87ffa3f1bded98cdb329c92bf82583024f2bd13070969e481"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+              "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+            }
+          ],
+          "rationale": "拒绝开盘红::industry_limit_up_count 与东财-push2ex::limit_count 的语义标签映射候选。注册表已将 push2ex.limit_count 定案为当前连续涨停板数，单位“板”；KPH industry_limit_up_count 的候选释义是同行业涨停数量，单位“家”。共享 limit/count 词元只反映词面，不是字段身份、来源契约或数值等价证据。此决定仅拒绝该映射；KPH 字段释义仍未验证，不推断两源提供方关系，不更新 registry/mappings，也不调整采集路由。",
+          "reviewed_at": "2026-11-19T16:25:39+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kph",
+            "push2ex"
+          ],
+          "left": "kph.industry_limit_up_count",
+          "methods": [
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "count",
+                "limit"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "push2ex.limit_count",
+          "sample_codes": [
+            "000156",
+            "000158",
+            "000410",
+            "000521",
+            "000533",
+            "000595",
+            "000628",
+            "000707",
+            "000711",
+            "000815",
+            "000819",
+            "000889",
+            "000980",
+            "001318",
+            "002035",
+            "002042",
+            "002058",
+            "002148",
+            "002187",
+            "002194"
+          ],
+          "sample_count": 103,
+          "sample_dates": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_0c51870c07493c0cf06259c4b88725a7236017dae793db91ee6025d1ff6f62d0": {
       "current": {
         "candidate_id": "cc1_0c51870c07493c0cf06259c4b88725a7236017dae793db91ee6025d1ff6f62d0",
@@ -24872,6 +24973,136 @@
         "schema_version": 1
       }
     },
+    "cc1_9ddd06c4c2726350f8a47361f6a82586b64101f164acccf7246a90b11ccdf863": {
+      "current": {
+        "candidate_id": "cc1_9ddd06c4c2726350f8a47361f6a82586b64101f164acccf7246a90b11ccdf863",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "da34209f37303614df246b7baa1d531a006d6526d81c89a7f4dbaed7005cdddc",
+        "evidence_refs": [
+          {
+            "path": "20261119/post_f30_semantics_20261119/20261119_collision_report.json",
+            "sha256": "051fe78b892b92599c904f0077505f126f03afe0a834900a1edfc91de27d6caf"
+          },
+          {
+            "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+            "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+          },
+          {
+            "path": "research/20261119_kph_industry_limit_up_count_20261118.csv",
+            "sha256": "7844a3597296652d5c2c2b11c14c1a0b8d0464043511c65cd2bf7c1cfa414cf0"
+          },
+          {
+            "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+            "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+          },
+          {
+            "path": "adjudications/20261118_kph_industry_count_followup.md",
+            "sha256": "01742db637993d985c635382dcaca2aa678a05968e962fc9e3337feba94672d8"
+          },
+          {
+            "path": "research/20261118_kph_industry_limit_up_count_samples.csv",
+            "sha256": "d5bbce3a07eb268c2a71bb3b17bf461985ed6483f7e36e518f8d2b645783802e"
+          }
+        ],
+        "rationale": "拒绝开盘红::industry_limit_up_count 与开盘啦(kpl_limit_up_detail)::raw_columns.col_20 的普遍逐值等价候选。KPL col_20 已按来源内样本定案为同交易日内按 col_19 分类代码分组的 KPL DailyLimitPerformance 涨停梯队返回记录数；KPH 与 KPL 在 2026-11-16 至 11-18 的 103 组来源日期合格配对中仅 83 组相同、20 组不同。失配主要不是舍入：11-17 有 17 组行业码相同但计数不同，另有 3 组行业码不同；当日仅 14/34 相同。更早的 11 个来源日 500 组对照中亦有 50 组不同。强相关、个别日期精确匹配及共同中文词义不能消除这些逐值反例。本决定只否定普遍直接等价与映射，不断言两源背后的提供方相同或不同；KPH 字段“同行业涨停数”仍为未验证候选，不更新注册表、不新增 mapping，也不据此停采。",
+        "reviewed_at": "2026-11-19T16:25:39+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_9ddd06c4c2726350f8a47361f6a82586b64101f164acccf7246a90b11ccdf863",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "da34209f37303614df246b7baa1d531a006d6526d81c89a7f4dbaed7005cdddc",
+          "evidence_refs": [
+            {
+              "path": "20261119/post_f30_semantics_20261119/20261119_collision_report.json",
+              "sha256": "051fe78b892b92599c904f0077505f126f03afe0a834900a1edfc91de27d6caf"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+              "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_20261118.csv",
+              "sha256": "7844a3597296652d5c2c2b11c14c1a0b8d0464043511c65cd2bf7c1cfa414cf0"
+            },
+            {
+              "path": "adjudications/20261116_kpl_col20_category_limit_up_count.md",
+              "sha256": "68de1901664894ff58c5af23225cdc4dbbf08a68747e95730223d31dc443488f"
+            },
+            {
+              "path": "adjudications/20261118_kph_industry_count_followup.md",
+              "sha256": "01742db637993d985c635382dcaca2aa678a05968e962fc9e3337feba94672d8"
+            },
+            {
+              "path": "research/20261118_kph_industry_limit_up_count_samples.csv",
+              "sha256": "d5bbce3a07eb268c2a71bb3b17bf461985ed6483f7e36e518f8d2b645783802e"
+            }
+          ],
+          "rationale": "拒绝开盘红::industry_limit_up_count 与开盘啦(kpl_limit_up_detail)::raw_columns.col_20 的普遍逐值等价候选。KPL col_20 已按来源内样本定案为同交易日内按 col_19 分类代码分组的 KPL DailyLimitPerformance 涨停梯队返回记录数；KPH 与 KPL 在 2026-11-16 至 11-18 的 103 组来源日期合格配对中仅 83 组相同、20 组不同。失配主要不是舍入：11-17 有 17 组行业码相同但计数不同，另有 3 组行业码不同；当日仅 14/34 相同。更早的 11 个来源日 500 组对照中亦有 50 组不同。强相关、个别日期精确匹配及共同中文词义不能消除这些逐值反例。本决定只否定普遍直接等价与映射，不断言两源背后的提供方相同或不同；KPH 字段“同行业涨停数”仍为未验证候选，不更新注册表、不新增 mapping，也不据此停采。",
+          "reviewed_at": "2026-11-19T16:25:39+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "left": "kph.industry_limit_up_count",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9986,
+              "leave_one_out_min": 0.9904,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9907,
+              "spearman": 0.9816
+            },
+            {
+              "formula": "right ≈ 0.9988292 × left + 0.19380966",
+              "method": "affine_formula",
+              "r_squared": 0.981388
+            }
+          ],
+          "right": "kpl.raw_columns.col_20",
+          "sample_codes": [
+            "000156",
+            "000158",
+            "000410",
+            "000521",
+            "000533",
+            "000595",
+            "000628",
+            "000707",
+            "000711",
+            "000815",
+            "000819",
+            "000889",
+            "000980",
+            "001318",
+            "002035",
+            "002042",
+            "002058",
+            "002148",
+            "002187",
+            "002194"
+          ],
+          "sample_count": 103,
+          "sample_dates": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_a4cc6a14ed935199ec15ed8efa875c63d19bbad2fd88e4b1fbff3cec42717e09": {
       "current": {
         "candidate_id": "cc1_a4cc6a14ed935199ec15ed8efa875c63d19bbad2fd88e4b1fbff3cec42717e09",
@@ -34420,6 +34651,143 @@
         "schema_version": 1
       }
     },
+    "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b": {
+      "current": {
+        "candidate_id": "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "cfc3027c8dec3c2b87a71485c4a64ba37e5531817b4b9ed6502d2cf929182cff",
+        "evidence_refs": [
+          {
+            "path": "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+            "sha256": "0c5ce52272da1318edf2630ef59bf73225545e8d3244acc4b21e41c0a03c69cb"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+            "sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56"
+          },
+          {
+            "path": "research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+            "sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+          },
+          {
+            "path": "adjudications/20261108_zhb_tdxstat2_fields.md",
+            "sha256": "e4eba4647bfa0a10bd6fab3565514fc82f6b71c1a16ea00a88904649a29fe5cc"
+          },
+          {
+            "path": "https://baike.eastmoney.com/item/%E5%88%86%E6%97%B6%E8%B5%B0%E5%8A%BF%E5%9B%BE",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "拒绝东财 ulist239(np/get)::f30 与 ZHB-tdxstat2::stat2.zt_seal_amount_1d 的直接同义或可互换候选。前一审阅覆盖 12 组来源日期合格样本，Pearson 0.6397、Spearman 0.6573，只显示中等相关。后续来源内裁决确认 f30 表示最新一笔成交的手数幅度（单位手，正负号含义未决）：160 组合格 Ulist/ELTDX 配对中绝对值 146 组精确相等、14 组相差 1 手；东方财富对现手的定义与 ELTDX 精确路径契约相互印证。ZHB stat2.zt_seal_amount_1d 已由通达信字段定义及项目保留样本核实为前一交易日涨跌停封单额（单位万元）。成交量与前日封单金额的业务对象、时间口径和量纲不同，相关性不能证明字段等价。该决定仅拒绝直接等价候选；保留相关性观察，不推断正负号含义或潜在间接关系，不建立跨源映射，也不改变 f30 或 ZHB 字段各自的注册释义。",
+        "reviewed_at": "2026-11-19T16:17:13+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "55ea48461567a9898f2f706a339236cd0b43a800bcd70fcf69a78b4664c9f725",
+          "evidence_refs": [
+            {
+              "path": "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+              "sha256": "0c5ce52272da1318edf2630ef59bf73225545e8d3244acc4b21e41c0a03c69cb"
+            },
+            {
+              "path": "research/20261119_open_capture_unknown_field_review.md",
+              "sha256": "8397714e782b5f2245c86a2c65de3443636d3438a6615cc26af8e1cfb5045473"
+            },
+            {
+              "path": "https://quote.eastmoney.com/sh600519.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "已按 Ulist f124 北京时间日期与 ZHB zhb_date/同名归档核对 12 组来源日期一致的样本，覆盖 5 个交易日、7 只股票。候选仅为中等相关（Pearson 0.6397、Spearman 0.6573），没有逐值等价、稳定比例或官方字段契约。该证据不足以说明 f30 与 zhb.stat2.zt_seal_amount_1d 含义相同；保留字段未验证状态，等待 Ulist 精确路径定义或带标签的官方值核对。",
+          "reviewed_at": "2026-11-19T10:54:36+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "cfc3027c8dec3c2b87a71485c4a64ba37e5531817b4b9ed6502d2cf929182cff",
+          "evidence_refs": [
+            {
+              "path": "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+              "sha256": "0c5ce52272da1318edf2630ef59bf73225545e8d3244acc4b21e41c0a03c69cb"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+              "sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56"
+            },
+            {
+              "path": "research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+              "sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+            },
+            {
+              "path": "adjudications/20261108_zhb_tdxstat2_fields.md",
+              "sha256": "e4eba4647bfa0a10bd6fab3565514fc82f6b71c1a16ea00a88904649a29fe5cc"
+            },
+            {
+              "path": "https://baike.eastmoney.com/item/%E5%88%86%E6%97%B6%E8%B5%B0%E5%8A%BF%E5%9B%BE",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "拒绝东财 ulist239(np/get)::f30 与 ZHB-tdxstat2::stat2.zt_seal_amount_1d 的直接同义或可互换候选。前一审阅覆盖 12 组来源日期合格样本，Pearson 0.6397、Spearman 0.6573，只显示中等相关。后续来源内裁决确认 f30 表示最新一笔成交的手数幅度（单位手，正负号含义未决）：160 组合格 Ulist/ELTDX 配对中绝对值 146 组精确相等、14 组相差 1 手；东方财富对现手的定义与 ELTDX 精确路径契约相互印证。ZHB stat2.zt_seal_amount_1d 已由通达信字段定义及项目保留样本核实为前一交易日涨跌停封单额（单位万元）。成交量与前日封单金额的业务对象、时间口径和量纲不同，相关性不能证明字段等价。该决定仅拒绝直接等价候选；保留相关性观察，不推断正负号含义或潜在间接关系，不建立跨源映射，也不改变 f30 或 ZHB 字段各自的注册释义。",
+          "reviewed_at": "2026-11-19T16:17:13+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f30",
+          "methods": [
+            {
+              "leave_one_out_max": 0.757,
+              "leave_one_out_min": 0.4513,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.6397,
+              "spearman": 0.6573
+            }
+          ],
+          "right": "zhb.stat2.zt_seal_amount_1d",
+          "sample_codes": [
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002242",
+            "300788",
+            "600825"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261109",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v7",
+        "schema_version": 1
+      }
+    },
     "cc1_dc295c7e93415b9179d1bad9cc9986e966ba7003956d55bc74c1b89f92ef9c8a": {
       "current": {
         "candidate_id": "cc1_dc295c7e93415b9179d1bad9cc9986e966ba7003956d55bc74c1b89f92ef9c8a",
@@ -39896,5 +40264,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-19T11:44:54+08:00"
+  "updated_at": "2026-11-19T16:25:39+08:00"
 }

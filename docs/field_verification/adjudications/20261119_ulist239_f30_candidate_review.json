@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b",
+  "disposition": "needs_external_evidence",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T10:54:36+08:00",
+  "rationale": "已按 Ulist f124 北京时间日期与 ZHB zhb_date/同名归档核对 12 组来源日期一致的样本，覆盖 5 个交易日、7 只股票。候选仅为中等相关（Pearson 0.6397、Spearman 0.6573），没有逐值等价、稳定比例或官方字段契约。该证据不足以说明 f30 与 zhb.stat2.zt_seal_amount_1d 含义相同；保留字段未验证状态，等待 Ulist 精确路径定义或带标签的官方值核对。",
+  "evidence_refs": [
+    "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+    "research/20261119_open_capture_unknown_field_review.md",
+    "https://quote.eastmoney.com/sh600519.html"
+  ],
+  "duplicate_of": null
+}

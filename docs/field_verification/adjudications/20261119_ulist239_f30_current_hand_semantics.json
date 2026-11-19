@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+  "evidence_sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f30-current-hand-semantics",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f30"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "f30",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "current_trade_hand_count",
+      "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+      "unit": "手",
+      "section": "来源内实证定案：Ulist239 f30 与 ELTDX current_hand 对照",
+      "rationale": "东方财富官方百科定义‘现手’为最新一笔成交对应的手数；ELTDX v3.3.2 0x054c 契约将精确 quote_snapshot.current_hand 路径定义为现手，项目注册表已确认该路径单位为手。以 Ulist f124 日期及两源同日收盘采集时间筛选 8 个已确认数据日、20 只股票的 160 组配对。abs(f30) 与 quote_snapshot.current_hand 146/160 完全相等，其余 14 组均相差 1 手，全部差距不超过一个手数计数单位；该一手范围仅用于判断指标幅度，不作为逐值同义映射，其成因不作推断。同日收盘价 160/160 精确一致，总成交量 160/160 相差不超过 1 手。1 手近似行单独计数，不推断差异来自舍入，也不登记同数跨源映射。字段注册语义只确认成交手数幅度；f30 原始值带正负号，现有证据不能区分符号是主动买卖方向、报价编码还是其他规则，因此该部分明确保留未决。2026-11-06 周日补采的 20 组因 ELTDX 缺少独立来源日期而排除。",
+      "sample": {
+        "scope": "Ulist239 f124 日期匹配、两源于同一目标交易日收盘阶段采集的 8 个来源日（2026-11-02、03、04、05、09、10、17、18），20 只股票共 160 组；逐行比较 abs(Ulist f30) 与 ELTDX v3.3.2 quote_snapshot.current_hand。语义幅度容差为 1 手，原值正负号不参与幅度比较；2026-11-06 周日补采的 20 组从正式样本排除。",
+        "comparison_count": 160,
+        "matched_count": 160,
+        "counterexample_count": 0,
+        "excluded_count": 20,
+        "stock_count": 20,
+        "observation_count": 160,
+        "data_date_count": 8,
+        "exact_match_count": 146,
+        "one_hand_difference_count": 14,
+        "absolute_tolerance_hands": 1,
+        "max_absolute_difference_hands": 1,
+        "max_relative_difference_percent": 1.16279069767442,
+        "paired_last_price_exact_count": 160,
+        "paired_total_hand_within_one_count": 160,
+        "f124_date_match_count": 180,
+        "f297_present_count": 120,
+        "f297_date_match_count": 120,
+        "f297_date_conflict_count": 0,
+        "evidence_file": "docs/field_verification/research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+        "evidence_sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+      }
+    }
+  ]
+}

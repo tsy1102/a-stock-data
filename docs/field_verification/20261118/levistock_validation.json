@@ -5,7 +5,7 @@
   "latest_completed_trade_date": "2026-11-18",
   "data_date_domain": "trading",
   "market_phase": "closed",
-  "evaluated_at": "2026-11-18T23:51:03+08:00",
+  "evaluated_at": "2026-11-19T13:27:38+08:00",
   "eligibility_reason": null,
   "client": {
     "package": "levistock",
@@ -88,13 +88,12 @@
       "date_status": "record_timestamp_match",
       "eligible_for_date_comparison": true,
       "eligible_for_request_aligned_comparison": true,
-      "requested_trade_date": "2026-11-18",
-      "source_as_of_date": "2026-11-18",
+      "source_timestamp_record_count": 40,
+      "source_record_count": 40,
       "source_dates": [
         "2026-11-18"
       ],
-      "source_timestamp_record_count": 40,
-      "source_record_count": 40
+      "source_as_of_date": "2026-11-18"
     }
   },
   "candidate_probe": {

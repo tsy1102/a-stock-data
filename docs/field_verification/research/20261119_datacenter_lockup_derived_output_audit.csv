@@ -1,0 +1,2 @@
+capture_dir,meta_data_date,run_started_at,code,event_index,event_date,type,shares,able_shares,free_shares,ratio,shares_is_actual,route_hint,raw_datacenter_sha256,meta_sha256
+20261119,20261119,,000568,0,2027-02-17,股权激励限售股份,27799.999999999996,27799.999999999996,1471188837.0,0.0,True,eastmoney_fallback_confirmed_by_actual_flag,5b451690c00c75e1c39f16a46f0b7b29f52a6f3332d68a03c8086b2ed63a32f0,fc4a1d37f1d8fe9844a20467cb937abf1d92501dd154fb8b43fb27eb271aa188

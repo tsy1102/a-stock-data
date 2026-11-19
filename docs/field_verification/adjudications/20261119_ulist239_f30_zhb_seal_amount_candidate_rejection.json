@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_da36232d94708d5695767b8ec940abcebc40025bd5cc3c9025d7a2e91840351b",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-19T16:17:13+08:00",
+  "rationale": "拒绝东财 ulist239(np/get)::f30 与 ZHB-tdxstat2::stat2.zt_seal_amount_1d 的直接同义或可互换候选。前一审阅覆盖 12 组来源日期合格样本，Pearson 0.6397、Spearman 0.6573，只显示中等相关。后续来源内裁决确认 f30 表示最新一笔成交的手数幅度（单位手，正负号含义未决）：160 组合格 Ulist/ELTDX 配对中绝对值 146 组精确相等、14 组相差 1 手；东方财富对现手的定义与 ELTDX 精确路径契约相互印证。ZHB stat2.zt_seal_amount_1d 已由通达信字段定义及项目保留样本核实为前一交易日涨跌停封单额（单位万元）。成交量与前日封单金额的业务对象、时间口径和量纲不同，相关性不能证明字段等价。该决定仅拒绝直接等价候选；保留相关性观察，不推断正负号含义或潜在间接关系，不建立跨源映射，也不改变 f30 或 ZHB 字段各自的注册释义。",
+  "evidence_refs": [
+    "20261119/intraday_all_history_20261119_1030/20261119_collision_report.json",
+    "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+    "research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+    "adjudications/20261108_zhb_tdxstat2_fields.md",
+    "https://baike.eastmoney.com/item/%E5%88%86%E6%97%B6%E8%B5%B0%E5%8A%BF%E5%9B%BE",
+    "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+  ],
+  "duplicate_of": null
+}

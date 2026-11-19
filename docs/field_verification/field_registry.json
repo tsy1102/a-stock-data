@@ -11,7 +11,7 @@
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 17,
-      "disproved": 98,
+      "disproved": 100,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,19 +21,19 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
-      "project_derived_capture_output": 10,
+      "project_derived_capture_output": 12,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 495,
+      "registry_status_only_single_source": 494,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 953,
-      "verified": 1595,
-      "verified_by_empirical_addendum": 213,
+      "unverified": 952,
+      "verified": 1596,
+      "verified_by_empirical_addendum": 214,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 457
@@ -18259,18 +18259,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f30",
-      "meaning": "",
-      "unit": "",
+      "canonical": "current_trade_hand_count",
+      "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+      "unit": "手",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "f31",
@@ -20962,6 +20960,24 @@
       "status": "verified",
       "source_statuses": {
         "TDX-eltdx(适配层)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "free_shares",
+      "source": "东财-datacenter(英文键)",
+      "sources": [
+        "东财-datacenter(英文键)"
+      ],
+      "section": "项目采集器派生输出（非上游字段）",
+      "canonical": "free_shares",
+      "meaning": "项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。",
+      "unit": "股（项目归一化输出）",
+      "status_raw": "",
+      "status": "disproved",
+      "source_statuses": {
+        "东财-datacenter(英文键)": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -33374,6 +33390,24 @@
         "source_statuses_differ",
         "unit_incomplete"
       ]
+    },
+    {
+      "code": "shares_is_actual",
+      "source": "东财-datacenter(英文键)",
+      "sources": [
+        "东财-datacenter(英文键)"
+      ],
+      "section": "项目采集器派生输出（非上游字段）",
+      "canonical": "shares_is_actual",
+      "meaning": "项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。",
+      "unit": "布尔",
+      "status_raw": "",
+      "status": "disproved",
+      "source_statuses": {
+        "东财-datacenter(英文键)": "disproved"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "shiyebianma",
@@ -46220,6 +46254,9 @@
       "东财-ulist239(np/get)"
     ],
     "f88_positive_days_10d": [
+      "东财-ulist239(np/get)"
+    ],
+    "current_trade_hand_count": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -160670,6 +160707,87 @@
     },
     {
       "source": "东财-datacenter(英文键)",
+      "code": "free_shares",
+      "identity": "东财-datacenter(英文键)::free_shares",
+      "path": "free_shares",
+      "canonical": "free_shares",
+      "meaning": "项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。",
+      "unit": "股（项目归一化输出）",
+      "section": "项目采集器派生输出（非上游字段）",
+      "sections": [
+        "项目采集器派生输出（非上游字段）"
+      ],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
+      "status_evidence": {
+        "adjudication_evidence_id": "datacenter-lockup-derived-output-20261119:free_shares",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "东财-datacenter(英文键)"
+        ],
+        "values": [
+          "disproved"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": {
+        "code": "free_shares",
+        "source": "东财-datacenter(英文键)",
+        "sources": [
+          "东财-datacenter(英文键)"
+        ],
+        "section": "项目采集器派生输出（非上游字段）",
+        "canonical": "free_shares",
+        "meaning": "项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。",
+        "unit": "股（项目归一化输出）",
+        "status_raw": "",
+        "status": "disproved",
+        "source_statuses": {
+          "东财-datacenter(英文键)": "disproved"
+        },
+        "aggregation_status": "consistent",
+        "aggregation_issues": []
+      },
+      "status_raw": "已证伪为上游原始字段身份：项目派生采集输出。",
+      "superseded_status_evidence": {
+        "record_present_before_adjudication": false,
+        "source": "东财-datacenter(英文键)",
+        "code": "free_shares",
+        "pre_adjudication_git_commit": "6ace99e1af97e4e77559fe2d4afaed874671b95b",
+        "snapshot_note": "该精确身份在裁决前不存在于 field_registry.json.source_fields；本次记录保留其历史 parity 基线身份，并分类为项目派生输出。"
+      },
+      "adjudication_evidence": {
+        "id": "datacenter-lockup-derived-output-20261119:free_shares",
+        "decision": "disproved",
+        "decision_date": "2026-11-19",
+        "decision_note": "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+        "reason": "collect_datacenter 将统一层 get_lockup_expiry() 的返回值写入 raw_datacenter；该函数的 TDX F10 与 Eastmoney 回退分支均生成 free_shares 并执行万股到股的转换。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+          "docs/field_verification/research/20261119_datacenter_lockup_derived_output_audit.csv",
+          "stock_common/sc_datasource/_financials.py",
+          "scripts/capture_context_collectors.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_field_probe.py",
+          "scripts/audit_field_completeness.py",
+          "scripts/registry_parity.py",
+          "docs/field_verification/20261119/raw_datacenter.json",
+          "docs/field_verification/20261119/meta.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 21,
+        "structured_record_count": 1,
+        "structured_evidence": "docs/field_verification/research/20261119_datacenter_lockup_derived_output_audit.csv"
+      }
+    },
+    {
+      "source": "东财-datacenter(英文键)",
       "code": "hold_ratio",
       "identity": "东财-datacenter(英文键)::hold_ratio",
       "path": "hold_ratio",
@@ -162919,6 +163037,87 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      }
+    },
+    {
+      "source": "东财-datacenter(英文键)",
+      "code": "shares_is_actual",
+      "identity": "东财-datacenter(英文键)::shares_is_actual",
+      "path": "shares_is_actual",
+      "canonical": "shares_is_actual",
+      "meaning": "项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。",
+      "unit": "布尔",
+      "section": "项目采集器派生输出（非上游字段）",
+      "sections": [
+        "项目采集器派生输出（非上游字段）"
+      ],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
+      "status_evidence": {
+        "adjudication_evidence_id": "datacenter-lockup-derived-output-20261119:shares_is_actual",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "东财-datacenter(英文键)"
+        ],
+        "values": [
+          "disproved"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": {
+        "code": "shares_is_actual",
+        "source": "东财-datacenter(英文键)",
+        "sources": [
+          "东财-datacenter(英文键)"
+        ],
+        "section": "项目采集器派生输出（非上游字段）",
+        "canonical": "shares_is_actual",
+        "meaning": "项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。",
+        "unit": "布尔",
+        "status_raw": "",
+        "status": "disproved",
+        "source_statuses": {
+          "东财-datacenter(英文键)": "disproved"
+        },
+        "aggregation_status": "consistent",
+        "aggregation_issues": []
+      },
+      "status_raw": "已证伪为上游原始字段身份：项目派生采集输出。",
+      "superseded_status_evidence": {
+        "record_present_before_adjudication": false,
+        "source": "东财-datacenter(英文键)",
+        "code": "shares_is_actual",
+        "pre_adjudication_git_commit": "6ace99e1af97e4e77559fe2d4afaed874671b95b",
+        "snapshot_note": "该精确身份在裁决前不存在于 field_registry.json.source_fields；本次记录保留其历史 parity 基线身份，并分类为项目派生输出。"
+      },
+      "adjudication_evidence": {
+        "id": "datacenter-lockup-derived-output-20261119:shares_is_actual",
+        "decision": "disproved",
+        "decision_date": "2026-11-19",
+        "decision_note": "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+        "reason": "该布尔值由 get_lockup_expiry() 根据来源分支及 ABLE_FREE_SHARES 可用性计算；TDX F10 记录固定写 false，不能把该输出当作独立上游字段。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261119_datacenter_lockup_derived_outputs.md",
+          "docs/field_verification/research/20261119_datacenter_lockup_derived_output_audit.csv",
+          "stock_common/sc_datasource/_financials.py",
+          "scripts/capture_context_collectors.py",
+          "scripts/capture_catalog.py",
+          "scripts/capture_field_probe.py",
+          "scripts/audit_field_completeness.py",
+          "scripts/registry_parity.py",
+          "docs/field_verification/20261119/raw_datacenter.json",
+          "docs/field_verification/20261119/meta.json"
+        ],
+        "sample_floor": "20261015",
+        "capture_directory_count": 21,
+        "structured_record_count": 1,
+        "structured_evidence": "docs/field_verification/research/20261119_datacenter_lockup_derived_output_audit.csv"
       }
     },
     {
@@ -199394,15 +199593,16 @@
       "code": "f30",
       "identity": "东财-ulist239(np/get)::f30",
       "path": "f30",
-      "canonical": "f30",
-      "meaning": "",
-      "unit": "",
+      "canonical": "current_trade_hand_count",
+      "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+      "unit": "手",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "来源内实证定案：Ulist239 f30 与 ELTDX current_hand 对照"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -199411,8 +199611,38 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261119-ulist239-f30-current-hand-semantics"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+        "evidence_sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56",
+        "sample": {
+          "scope": "Ulist239 f124 日期匹配、两源于同一目标交易日收盘阶段采集的 8 个来源日（2026-11-02、03、04、05、09、10、17、18），20 只股票共 160 组；逐行比较 abs(Ulist f30) 与 ELTDX v3.3.2 quote_snapshot.current_hand。语义幅度容差为 1 手，原值正负号不参与幅度比较；2026-11-06 周日补采的 20 组从正式样本排除。",
+          "comparison_count": 160,
+          "matched_count": 160,
+          "counterexample_count": 0,
+          "excluded_count": 20,
+          "stock_count": 20,
+          "observation_count": 160,
+          "data_date_count": 8,
+          "exact_match_count": 146,
+          "one_hand_difference_count": 14,
+          "absolute_tolerance_hands": 1,
+          "max_absolute_difference_hands": 1,
+          "max_relative_difference_percent": 1.16279069767442,
+          "paired_last_price_exact_count": 160,
+          "paired_total_hand_within_one_count": 160,
+          "f124_date_match_count": 180,
+          "f297_present_count": 120,
+          "f297_date_match_count": 120,
+          "f297_date_conflict_count": 0,
+          "evidence_file": "docs/field_verification/research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+          "evidence_sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+        }
       },
       "reference_evidence": [
         {
@@ -199422,6 +199652,54 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "来源内实证定案：Ulist239 f30 与 ELTDX current_hand 对照",
+          "canonical": "current_trade_hand_count",
+          "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+          "unit": "手",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-ulist239-f30-current-hand-semantics",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+          "evidence_sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56",
+          "metadata_change": {
+            "before": {
+              "canonical": "f30",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "current_trade_hand_count",
+              "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+              "unit": "手"
+            }
+          },
+          "sample": {
+            "scope": "Ulist239 f124 日期匹配、两源于同一目标交易日收盘阶段采集的 8 个来源日（2026-11-02、03、04、05、09、10、17、18），20 只股票共 160 组；逐行比较 abs(Ulist f30) 与 ELTDX v3.3.2 quote_snapshot.current_hand。语义幅度容差为 1 手，原值正负号不参与幅度比较；2026-11-06 周日补采的 20 组从正式样本排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "excluded_count": 20,
+            "stock_count": 20,
+            "observation_count": 160,
+            "data_date_count": 8,
+            "exact_match_count": 146,
+            "one_hand_difference_count": 14,
+            "absolute_tolerance_hands": 1,
+            "max_absolute_difference_hands": 1,
+            "max_relative_difference_percent": 1.16279069767442,
+            "paired_last_price_exact_count": 160,
+            "paired_total_hand_within_one_count": 160,
+            "f124_date_match_count": 180,
+            "f297_present_count": 120,
+            "f297_date_match_count": 120,
+            "f297_date_conflict_count": 0,
+            "evidence_file": "docs/field_verification/research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+            "evidence_sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -199436,7 +199714,65 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-ulist239-f30-current-hand-semantics",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_ulist239_f30_current_hand_semantics.json",
+          "evidence_file": "adjudications/20261119_ulist239_f30_current_hand_semantics.md",
+          "evidence_sha256": "811174fa42f786b526e0121727e3ead110dcef92b14ff07390d40ed1123e7e56",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "f30",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f30",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "current_trade_hand_count",
+              "meaning": "最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。",
+              "unit": "手"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "东方财富官方百科定义‘现手’为最新一笔成交对应的手数；ELTDX v3.3.2 0x054c 契约将精确 quote_snapshot.current_hand 路径定义为现手，项目注册表已确认该路径单位为手。以 Ulist f124 日期及两源同日收盘采集时间筛选 8 个已确认数据日、20 只股票的 160 组配对。abs(f30) 与 quote_snapshot.current_hand 146/160 完全相等，其余 14 组均相差 1 手，全部差距不超过一个手数计数单位；该一手范围仅用于判断指标幅度，不作为逐值同义映射，其成因不作推断。同日收盘价 160/160 精确一致，总成交量 160/160 相差不超过 1 手。1 手近似行单独计数，不推断差异来自舍入，也不登记同数跨源映射。字段注册语义只确认成交手数幅度；f30 原始值带正负号，现有证据不能区分符号是主动买卖方向、报价编码还是其他规则，因此该部分明确保留未决。2026-11-06 周日补采的 20 组因 ELTDX 缺少独立来源日期而排除。",
+          "sample": {
+            "scope": "Ulist239 f124 日期匹配、两源于同一目标交易日收盘阶段采集的 8 个来源日（2026-11-02、03、04、05、09、10、17、18），20 只股票共 160 组；逐行比较 abs(Ulist f30) 与 ELTDX v3.3.2 quote_snapshot.current_hand。语义幅度容差为 1 手，原值正负号不参与幅度比较；2026-11-06 周日补采的 20 组从正式样本排除。",
+            "comparison_count": 160,
+            "matched_count": 160,
+            "counterexample_count": 0,
+            "excluded_count": 20,
+            "stock_count": 20,
+            "observation_count": 160,
+            "data_date_count": 8,
+            "exact_match_count": 146,
+            "one_hand_difference_count": 14,
+            "absolute_tolerance_hands": 1,
+            "max_absolute_difference_hands": 1,
+            "max_relative_difference_percent": 1.16279069767442,
+            "paired_last_price_exact_count": 160,
+            "paired_total_hand_within_one_count": 160,
+            "f124_date_match_count": 180,
+            "f297_present_count": 120,
+            "f297_date_match_count": 120,
+            "f297_date_conflict_count": 0,
+            "evidence_file": "docs/field_verification/research/20261119_ulist239_f30_eltdx_current_hand_audit.csv",
+            "evidence_sha256": "7a65052cd2cc0b16c62001322e71e2f480b9639195b9d628ba10f179d4847085"
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

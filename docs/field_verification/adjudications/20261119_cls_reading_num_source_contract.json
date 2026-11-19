@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "decisions": [
+    {
+      "id": "20261119-cls-reading-num-source-contract",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "财联社(cls)",
+        "code": "reading_num"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "reading_num",
+        "meaning": "阅读数",
+        "unit": ""
+      },
+      "canonical": "reading_num",
+      "meaning": "阅读数",
+      "unit": "",
+      "rationale": "项目调用财联社官方 www.cls.cn/v1/roll/get_roll_list，并将原始 JSON 的 data.roll_data[].reading_num 直通到精确路径 财联社(cls)::reading_num。2026-11-18 原始条目时间和 CLS 官方文章页标题/发布时间对应，官方详情页将页面计数标注为“阅读”。这足以确认该来源字段的阅读数角色，但归档列表响应与后续详情页显示数不一致，且不同 app/os 页面请求观察到的展示数也不一致；本决定不宣称两种页面值与列表接口数值相等，不确认去重/唯一用户口径，不把同短码 reports::reading_num 合并，也不创建跨源映射。保留原有释义“阅读数”，将计数算法、刷新时点及页面间统计口径列为未决。证据说明及样本哈希见 docs/field_verification/adjudications/20261119_cls_reading_num_source_contract.md。",
+      "source_contract": {
+        "authority": "财联社官方电报滚动列表接口",
+        "revision": "接口响应观察于 2026-11-18；请求参数 appName=CailianpressWeb、os=web、sv=7.7.5",
+        "path": "data.roll_data[].reading_num",
+        "locator": "官方 JSON 响应中的电报阅读计数键；项目 cls_telegraph() 直接读取 item.get('reading_num', 0)",
+        "url": "https://www.cls.cn/v1/roll/get_roll_list"
+      }
+    }
+  ]
+}

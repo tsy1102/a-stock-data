@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 325,
+      "aggregate_status_scope_unresolved": 324,
       "candidate": 1,
       "collector_output_container": 10,
       "conflict": 17,
@@ -31,12 +31,12 @@
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 957,
-      "verified": 1591,
+      "unverified": 956,
+      "verified": 1592,
       "verified_by_empirical_addendum": 210,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 456
+      "verified_by_source_contract": 457
     },
     "updated_at": "2026-11-19"
   },
@@ -31727,12 +31727,13 @@
       "status": "conflict",
       "source_statuses": {
         "reports": "unverified",
-        "财联社(cls)": "unverified"
+        "财联社(cls)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
-        "meaning_differs"
+        "meaning_differs",
+        "source_statuses_differ"
       ]
     },
     {
@@ -43861,7 +43862,8 @@
       "TDX-eltdx"
     ],
     "reading_num": [
-      "东财"
+      "东财",
+      "财联社(cls)"
     ],
     "reason": [
       "东财",
@@ -266562,10 +266564,11 @@
       "unit": "",
       "section": "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
       "sections": [
-        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）"
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
+        "source contract: 财联社官方电报滚动列表接口 · data.roll_data[].reading_num#官方 JSON 响应中的电报阅读计数键；项目 cls_telegraph() 直接读取 item.get('reading_num', 0) @ 接口响应观察于 2026-11-18；请求参数 appName=CailianpressWeb、os=web、sv=7.7.5"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -266576,6 +266579,12 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261119-cls-reading-num-source-contract"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261119-cls-reading-num-source-contract"
         ]
       },
       "reference_evidence": [
@@ -266586,6 +266595,35 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "source contract: 财联社官方电报滚动列表接口 · data.roll_data[].reading_num#官方 JSON 响应中的电报阅读计数键；项目 cls_telegraph() 直接读取 item.get('reading_num', 0) @ 接口响应观察于 2026-11-18；请求参数 appName=CailianpressWeb、os=web、sv=7.7.5",
+          "canonical": "reading_num",
+          "meaning": "阅读数",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-19：20261119-cls-reading-num-source-contract",
+          "status": "verified",
+          "adjudication_id": "20261119-cls-reading-num-source-contract",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "财联社官方电报滚动列表接口",
+            "revision": "接口响应观察于 2026-11-18；请求参数 appName=CailianpressWeb、os=web、sv=7.7.5",
+            "path": "data.roll_data[].reading_num",
+            "locator": "官方 JSON 响应中的电报阅读计数键；项目 cls_telegraph() 直接读取 item.get('reading_num', 0)",
+            "url": "https://www.cls.cn/v1/roll/get_roll_list"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "reading_num",
+              "meaning": "阅读数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "reading_num",
+              "meaning": "阅读数",
+              "unit": ""
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -266601,7 +266639,43 @@
         "meaning": "阅读数/分享数",
         "unit": "",
         "section": "12.9.2 其他接口实测发现"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-cls-reading-num-source-contract",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_cls_reading_num_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "reading_num",
+              "meaning": "阅读数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "reading_num",
+              "meaning": "阅读数",
+              "unit": ""
+            }
+          },
+          "rationale": "项目调用财联社官方 www.cls.cn/v1/roll/get_roll_list，并将原始 JSON 的 data.roll_data[].reading_num 直通到精确路径 财联社(cls)::reading_num。2026-11-18 原始条目时间和 CLS 官方文章页标题/发布时间对应，官方详情页将页面计数标注为“阅读”。这足以确认该来源字段的阅读数角色，但归档列表响应与后续详情页显示数不一致，且不同 app/os 页面请求观察到的展示数也不一致；本决定不宣称两种页面值与列表接口数值相等，不确认去重/唯一用户口径，不把同短码 reports::reading_num 合并，也不创建跨源映射。保留原有释义“阅读数”，将计数算法、刷新时点及页面间统计口径列为未决。证据说明及样本哈希见 docs/field_verification/adjudications/20261119_cls_reading_num_source_contract.md。",
+          "source_contract": {
+            "authority": "财联社官方电报滚动列表接口",
+            "revision": "接口响应观察于 2026-11-18；请求参数 appName=CailianpressWeb、os=web、sv=7.7.5",
+            "path": "data.roll_data[].reading_num",
+            "locator": "官方 JSON 响应中的电报阅读计数键；项目 cls_telegraph() 直接读取 item.get('reading_num', 0)",
+            "url": "https://www.cls.cn/v1/roll/get_roll_list"
+          }
+        }
+      ]
     },
     {
       "source": "财联社(cls)",

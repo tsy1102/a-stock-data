@@ -2988,12 +2988,12 @@
 
 ### `reading_num` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | reports · `reading_num` | reading_num / share_num | 阅读数/分享数 | — | `unverified` |
-| 财联社(cls) · `reading_num` | reading_num | 阅读数 | — | `unverified` |
+| 财联社(cls) · `reading_num` | reading_num | 阅读数 | — | `verified` |
 
 ### `reason` — ambiguous
 

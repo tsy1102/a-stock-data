@@ -1902,6 +1902,7 @@ def _validated_unverified_candidates(
         "registry_status_only_single_source",
         "aggregate_status_scope_unresolved",
         "status_missing",
+        "historical_meaning_withdrawn_unresolved",
     }
     candidates: set[tuple[str, str]] = set()
     problems: list[str] = []

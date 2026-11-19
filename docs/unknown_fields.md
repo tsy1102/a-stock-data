@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2664；日常来源路径 2520：unverified 837、candidate 1、conflict 18、disproved 98；历史来源路径 144。
+> 注册字段路径 2664；日常来源路径 2520：unverified 837、candidate 1、conflict 17、disproved 98；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -28,7 +28,7 @@
 | `registry_status_only_single_source` | 416 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（18）
+## 一、状态冲突（禁止作为锚点，优先复核）（17）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -46,7 +46,6 @@
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f141` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f145` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 东财-ulist239(np/get) | `f59` | f59 | — | — | 含义栏为空/占位 | status_conflict | 12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 开盘啦(kpl) | `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `pe_ttm` | pe_ttm | PE(TTM) | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |

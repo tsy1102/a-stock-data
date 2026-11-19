@@ -10,7 +10,7 @@
       "aggregate_status_scope_unresolved": 325,
       "candidate": 1,
       "collector_output_container": 10,
-      "conflict": 18,
+      "conflict": 17,
       "disproved": 98,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
@@ -28,12 +28,12 @@
       "registry_status_only_single_source": 497,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
-      "status_conflict": 17,
+      "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 957,
-      "verified": 1590,
-      "verified_by_empirical_addendum": 209,
+      "verified": 1591,
+      "verified_by_empirical_addendum": 210,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 456
@@ -19026,17 +19026,13 @@
       "source_statuses": {
         "东财-em_kline_f61": "verified",
         "东财-push2(stock/get)": "verified",
-        "东财-ulist239(np/get)": "conflict"
+        "东财-ulist239(np/get)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
-        "source_status_conflict",
-        "source_statuses_differ",
-        "unit_differs",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -46217,6 +46213,9 @@
     ],
     "limit_ladder.ladder_level": [
       "TDX-eltdx(适配层)"
+    ],
+    "parent_equity_to_total_assets_ratio": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -201999,15 +201998,16 @@
       "code": "f59",
       "identity": "东财-ulist239(np/get)::f59",
       "path": "f59",
-      "canonical": "f59",
-      "meaning": "",
-      "unit": "",
+      "canonical": "parent_equity_to_total_assets_ratio",
+      "meaning": "报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "来源内实证定案：东财 Ulist239 财务指标"
       ],
-      "status": "conflict",
-      "status_resolution": "status_conflict",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -202022,9 +202022,44 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "verified",
-          "candidate"
-        ]
+          "verified"
+        ],
+        "historical_meaning_withdrawal": {
+          "decision_id": "20261119-ulist239-f59-historical-meaning-withdrawal",
+          "previous_status": "conflict",
+          "previous_status_resolution": "status_conflict",
+          "withdrawn_claims": [
+            "收盘价",
+            "最新价"
+          ],
+          "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f59_historical_claim_withdrawal.md",
+          "evidence_sha256": "8f4d5383debbc81a9139dad7a869789241d8b8accceec13eef232245124c18c5",
+          "note": "原始字段路径持续存在；日期合格样本推翻价格释义，但目前无法确认新含义，故恢复为 unverified 并保留在未知队列。"
+        },
+        "adjudication_ids": [
+          "20261119-ulist239-f59-parent-equity-assets"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_ulist239_f59_empirical_semantics.md",
+        "evidence_sha256": "ca220deb9913cea8192bf5a3605962c6455ac8bbcd641403b7dce71cdf0666d6",
+        "sample": {
+          "scope": "Ulist 数据日 2026-11-18，f221=20260930；对照东方财富普通发行人及银行财报表同一 REPORT_DATE=2026-09-30 的三季报记录；20 只不同股票、1 个独立报告期，公式 TOTAL_PARENT_EQUITY / TOTAL_ASSETS * 100，单位百分点，容差 1e-8。",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "official_report_count": 20,
+          "excluded_count": 0,
+          "stock_count": 20,
+          "report_period_count": 1,
+          "max_absolute_difference_percentage_points": 3.97291088916063e-11,
+          "evidence_file": "docs/field_verification/public_web/20261119_ulist239_f59_financial_statement_validation.json",
+          "evidence_sha256": "d7d3e00eb98047de8202005ccf5df12d15f8f3968b2a619daed7c7199b0a1a72",
+          "crosschecked_issuer_reports": [
+            "601288 农业银行 2026Q3",
+            "688327 云从科技 2026Q3"
+          ]
+        }
       },
       "reference_evidence": [
         {
@@ -202034,6 +202069,48 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "来源内实证定案：东财 Ulist239 财务指标",
+          "canonical": "parent_equity_to_total_assets_ratio",
+          "meaning": "报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-ulist239-f59-parent-equity-assets",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_ulist239_f59_empirical_semantics.md",
+          "evidence_sha256": "ca220deb9913cea8192bf5a3605962c6455ac8bbcd641403b7dce71cdf0666d6",
+          "metadata_change": {
+            "before": {
+              "canonical": "f59",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "parent_equity_to_total_assets_ratio",
+              "meaning": "报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "Ulist 数据日 2026-11-18，f221=20260930；对照东方财富普通发行人及银行财报表同一 REPORT_DATE=2026-09-30 的三季报记录；20 只不同股票、1 个独立报告期，公式 TOTAL_PARENT_EQUITY / TOTAL_ASSETS * 100，单位百分点，容差 1e-8。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "report_period_count": 1,
+            "max_absolute_difference_percentage_points": 3.97291088916063e-11,
+            "evidence_file": "docs/field_verification/public_web/20261119_ulist239_f59_financial_statement_validation.json",
+            "evidence_sha256": "d7d3e00eb98047de8202005ccf5df12d15f8f3968b2a619daed7c7199b0a1a72",
+            "crosschecked_issuer_reports": [
+              "601288 农业银行 2026Q3",
+              "688327 云从科技 2026Q3"
+            ]
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -202050,7 +202127,59 @@
         "status": "conflict",
         "status_raw": "",
         "unit": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-ulist239-f59-parent-equity-assets",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_ulist239_f59_empirical_semantics.json",
+          "evidence_file": "adjudications/20261119_ulist239_f59_empirical_semantics.md",
+          "evidence_sha256": "ca220deb9913cea8192bf5a3605962c6455ac8bbcd641403b7dce71cdf0666d6",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "historical_meaning_withdrawn_unresolved",
+          "previous_metadata": {
+            "canonical": "f59",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f59",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "parent_equity_to_total_assets_ratio",
+              "meaning": "报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "2026-11-18 的 Ulist f59 与同一报告期东方财富财报表的逐值复算 20/20 命中，最大差为 3.9729108891606302e-11 个百分点；19 条普通发行人记录来自 RPT_F10_FINANCE_GBALANCE，农业银行记录来自 RPT_F10_FINANCE_BBALANCE。农业银行存在正少数股东权益，云从科技存在负少数股东权益；两者 f59 均匹配归母权益/总资产而不匹配权益合计/总资产，排除了总权益口径。120 行历史价字段对照仅用于支持撤回旧价格标签。本裁决是来源内实证结论，不将同号字段推广至其他来源，不建立跨源映射。",
+          "sample": {
+            "scope": "Ulist 数据日 2026-11-18，f221=20260930；对照东方财富普通发行人及银行财报表同一 REPORT_DATE=2026-09-30 的三季报记录；20 只不同股票、1 个独立报告期，公式 TOTAL_PARENT_EQUITY / TOTAL_ASSETS * 100，单位百分点，容差 1e-8。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "official_report_count": 20,
+            "excluded_count": 0,
+            "stock_count": 20,
+            "report_period_count": 1,
+            "max_absolute_difference_percentage_points": 3.97291088916063e-11,
+            "evidence_file": "docs/field_verification/public_web/20261119_ulist239_f59_financial_statement_validation.json",
+            "evidence_sha256": "d7d3e00eb98047de8202005ccf5df12d15f8f3968b2a619daed7c7199b0a1a72",
+            "crosschecked_issuer_reports": [
+              "601288 农业银行 2026Q3",
+              "688327 云从科技 2026Q3"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

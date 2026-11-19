@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f59_empirical_semantics.md",
+  "evidence_sha256": "ca220deb9913cea8192bf5a3605962c6455ac8bbcd641403b7dce71cdf0666d6",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f59-parent-equity-assets",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f59"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "historical_meaning_withdrawn_unresolved",
+      "previous": {
+        "canonical": "f59",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "parent_equity_to_total_assets_ratio",
+      "meaning": "报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。",
+      "unit": "%",
+      "section": "来源内实证定案：东财 Ulist239 财务指标",
+      "rationale": "2026-11-18 的 Ulist f59 与同一报告期东方财富财报表的逐值复算 20/20 命中，最大差为 3.9729108891606302e-11 个百分点；19 条普通发行人记录来自 RPT_F10_FINANCE_GBALANCE，农业银行记录来自 RPT_F10_FINANCE_BBALANCE。农业银行存在正少数股东权益，云从科技存在负少数股东权益；两者 f59 均匹配归母权益/总资产而不匹配权益合计/总资产，排除了总权益口径。120 行历史价字段对照仅用于支持撤回旧价格标签。本裁决是来源内实证结论，不将同号字段推广至其他来源，不建立跨源映射。",
+      "sample": {
+        "scope": "Ulist 数据日 2026-11-18，f221=20260930；对照东方财富普通发行人及银行财报表同一 REPORT_DATE=2026-09-30 的三季报记录；20 只不同股票、1 个独立报告期，公式 TOTAL_PARENT_EQUITY / TOTAL_ASSETS * 100，单位百分点，容差 1e-8。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 20,
+        "excluded_count": 0,
+        "stock_count": 20,
+        "report_period_count": 1,
+        "max_absolute_difference_percentage_points": 3.97291088916063E-11,
+        "evidence_file": "docs/field_verification/public_web/20261119_ulist239_f59_financial_statement_validation.json",
+        "evidence_sha256": "d7d3e00eb98047de8202005ccf5df12d15f8f3968b2a619daed7c7199b0a1a72",
+        "crosschecked_issuer_reports": [
+          "601288 农业银行 2026Q3",
+          "688327 云从科技 2026Q3"
+        ]
+      }
+    }
+  ]
+}

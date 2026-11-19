@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "historical_semantic_claim_withdrawal",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f59_historical_claim_withdrawal.md",
+  "evidence_sha256": "8f4d5383debbc81a9139dad7a869789241d8b8accceec13eef232245124c18c5",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f59-historical-meaning-withdrawal",
+      "action": "withdraw_historical_meaning_keep_field_unverified",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f59"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "f59",
+        "meaning": "",
+        "unit": ""
+      },
+      "historical_claims_withdrawn": [
+        "收盘价",
+        "最新价"
+      ],
+      "current_status": "unverified",
+      "current_status_resolution": "historical_meaning_withdrawn_unresolved",
+      "current": {
+        "canonical": "f59",
+        "meaning": "",
+        "unit": ""
+      },
+      "rationale": "保留期内六个来源交易日、20只股票共120行，Ulist f59 与已验证 f2 同值为0/120；每只股票 f59 六日不变而 f2 六日均变化。精确原始路径真实存在，因此不能标为 disproved；旧价格解释被推翻但新语义未知，保留为 unverified 破解目标。",
+      "sample": {
+        "scope": "2026-11-05、11-06、11-09、11-10、11-17、11-18；每个来源日20只股票，f297与目标数据日一致且收盘阶段，共120行。",
+        "evidence_file": "docs/field_verification/research/20261119_ulist239_f59_close_claim_samples.csv",
+        "evidence_sha256": "57baaa5370994ffefcf948c18c29fbe4815aae6e0861565301aa7511a7a12707",
+        "comparison_count": 120,
+        "old_price_claim_matches": 0,
+        "old_price_claim_counterexamples": 120,
+        "stocks_with_constant_f59": 20,
+        "stocks_with_varying_f2": 20,
+        "excluded_20261102_to_20261104": "f297采用Unix秒形式，不符合本次YYYYMMDD来源日期资格。"
+      },
+      "external_research": {
+        "official_source": "https://quote.eastmoney.com/center/static/build/index.js",
+        "checked_on": "2026-11-19",
+        "http_status": 200,
+        "bytes": 673734,
+        "sha256": "1224df21d3aa5cef8659acd9293b1f44047e0398080e6bce72fe881d755dc59b",
+        "finding": "检查到 Ulist np/get 调用，但未找到该精确字段路径的公开释义；构建文件中的 f59 出现在K线字段列表。此负向检索不构成字段无语义的证据。",
+        "secondary_sources": [
+          "https://github.com/Micro-sheep/efinance/blob/main/efinance/common/getter.py#L2218-L2261",
+          "https://github.com/Micro-sheep/efinance/blob/main/efinance/common/config.py#L757-L797"
+        ]
+      },
+      "mapping_changes": []
+    }
+  ]
+}

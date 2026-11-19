@@ -997,3 +997,28 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
         for evidence in row["capture_evidence"]:
             assert set(evidence) == {"file", "path"}
             assert (Path(registry_parity.REPO_ROOT) / evidence["file"]).is_file()
+
+
+def test_historical_meaning_withdrawal_remains_in_unknown_queue(tmp_path: Path):
+    source = "东财-ulist239(np/get)"
+    code = "f59"
+    unknown_fields = tmp_path / "unknown_fields.md"
+    unknown_fields.write_text(f"| {source} | `{code}` | 待核 |\n", encoding="utf-8")
+    records = [
+        {
+            "source": source,
+            "code": code,
+            "status": "unverified",
+            "status_resolution": "historical_meaning_withdrawn_unresolved",
+            "canonical": "f59",
+            "meaning": "",
+            "unit": "",
+        }
+    ]
+
+    candidates, problems = registry_parity._validated_unverified_candidates(
+        set(), {(source, code)}, records, str(unknown_fields)
+    )
+
+    assert candidates == {(source, code)}
+    assert problems == []

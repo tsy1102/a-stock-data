@@ -209,7 +209,7 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 ## 撤销错误的历史定义
 
-当解析器列映射、原始响应或跨日样本证明一个历史 `verified` 定义错误时，不能把它当作普通碰撞晋级，也不能让旧的 `reference_evidence` 静默覆盖新结论。当前碰撞决策工具没有通用的 `disprove` 动作；此类源级纠错需单独留存带日期的审计记录，并在 `field_registry.json.source_fields` 中按完整 `(source, code)` 身份将状态改为 `disproved`、注明正确的对应字段和证据路径，保留旧 `reference_evidence` 作为历史记录；同时移除所有指向已证伪身份的活动 `mappings`。随后重建 `fields` 聚合视图与 `meta.source_field_stats`，运行字典生成器和同步校验。不要修改只读历史档案来掩盖旧定义，也不要按短字段名批量证伪其他来源。示例见 [`change_30d_adjudication_20261017.md`](change_30d_adjudication_20261017.md)。
+当原始响应或跨日样本证明历史语义定义错误时，先区分“字段路径无效”和“路径真实、旧释义错误”。若精确 `(source, code)` 路径本身是清单残留、已退役别名或非字段输出，按对应的 `disproved` 处置记录替代路径与证据；若原始字段路径仍真实存在、但旧含义被推翻且新含义尚未确认，则将该路径设为 `unverified`、`status_resolution: historical_meaning_withdrawn_unresolved`，清空错误的规范语义和单位，保留旧 `reference_evidence` 并新增日期化纠错记录。该状态继续进入未知破解队列，不能因旧释义被推翻而把真实字段永久排除。若新含义已确认，则使用对应来源契约或来源内实证流程直接更新为 `verified`。三种处置均按完整来源路径进行；只撤销依赖错误旧释义的活动映射，不按短代码批量修改其他接口。更新后重建 `fields` 聚合视图和 `meta.source_field_stats`，生成字典视图并运行 registry parity、同步校验及相关回归。历史报告只保留为历史证据，并在当前索引中链接更正记录，不覆写原始样本或删除旧结论。
 
 ## 撤回错误的来源身份归属
 

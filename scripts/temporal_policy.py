@@ -294,7 +294,7 @@ def _classify_runtime_field(
     return "unclassified"
 
 
-def _runtime_timestamp_witness_index(
+def build_runtime_timestamp_witness_index(
     policy: dict[str, Any],
     registry: dict[str, Any],
     lineage: dict[str, Any],
@@ -330,7 +330,7 @@ def _runtime_timestamp_witness_index(
     return runtime_index
 
 
-def _timestamp_day(value: Any, timestamp_format: str) -> date | None:
+def parse_timestamp_date(value: Any, timestamp_format: str) -> date | None:
     """Convert a validated Unix-seconds value to its China market date."""
     if timestamp_format != "unix_seconds" or isinstance(value, bool):
         return None
@@ -615,7 +615,7 @@ def _apply_row_timestamp_witnesses(
     lineage: dict[str, Any],
 ) -> tuple[dict[str, Any], list[str]]:
     """Confirm daily sample dates only when the same-row timestamp agrees."""
-    witness_index = _runtime_timestamp_witness_index(policy, registry, lineage)
+    witness_index = build_runtime_timestamp_witness_index(policy, registry, lineage)
     by_source: dict[str, dict[str, int]] = {}
     diagnostics: list[str] = []
     for alias, witness in witness_index.items():
@@ -651,7 +651,7 @@ def _apply_row_timestamp_witnesses(
             ):
                 continue
             counts["witness_rows"] += 1
-            timestamp_day = _timestamp_day(raw_timestamp, witness["timestamp_format"])
+            timestamp_day = parse_timestamp_date(raw_timestamp, witness["timestamp_format"])
             if timestamp_day is None:
                 counts["invalid_timestamp_rows"] += 1
                 continue

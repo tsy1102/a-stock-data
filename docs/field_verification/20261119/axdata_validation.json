@@ -290,22 +290,7 @@
       "evidence_dates": [],
       "confirmed_fields": [],
       "unresolved_fields": [],
-      "last_mismatch": {
-        "data_date": "2026-10-16",
-        "fields": [
-          "auction_prev_volume_ratio",
-          "instrument_id",
-          "open_amount",
-          "open_prev_amount_ratio",
-          "open_turnover_z",
-          "open_volume_hand",
-          "open_volume_ratio",
-          "opening_rush",
-          "tdx_code"
-        ],
-        "reason": "field_value_mismatch"
-      },
-      "reason": "value_mismatch_observed",
+      "reason": "contract_changed_reopened",
       "minimum_data_dates": 3,
       "minimum_symbols_per_date": 18,
       "minimum_fields": 5,
@@ -318,18 +303,7 @@
       "reference_source": "kpl",
       "evidence_dates": [],
       "confirmed_fields": [],
-      "unresolved_fields": [
-        "__identity__",
-        "industry_id",
-        "industry_limit_up_count",
-        "limit_count",
-        "limit_tag",
-        "market_cap",
-        "name",
-        "open_time",
-        "reason",
-        "themes"
-      ],
+      "unresolved_fields": [],
       "reason": "contract_changed_reopened",
       "minimum_data_dates": 3,
       "minimum_symbols_per_date": 18,

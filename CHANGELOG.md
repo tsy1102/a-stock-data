@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正每日字段覆盖漏计已验证的逐行时间戳：仅当同条记录的可信时间戳日期与碰撞样本日期一致时，才计入来源日期覆盖；冲突记录继续排除。此前 Ulist `f124` 已在碰撞资格中成功核对，但覆盖摘要误报为无来源日期。
 - 修正 KPH（开盘红）与 KPL（开盘啦）的采集身份闸门：两者是不同产品与 API 来源，逐字段相等只保留为被动对照，不再允许其抑制 KPH 采集或从碰撞中屏蔽 KPH；同时将 KPH 接口契约指向实际分页适配器 `get_kph_limit_up_history`。
 - 修复 `event_dc` 顶层数组字段在碰撞与覆盖报告中丢失集合路径的问题；新报告分别保留 `ipo_calendar[]` 和 `convertible_bonds[]`。候选身份升至 v8，历史 v1–v7 报告保持兼容。
 - 修复包含 `[]` 的嵌套字段身份被误截断的问题；已验证的 `event_dc.convertible_bonds[].ACTUAL_ISSUE_SCALE` 不再重复进入碰撞破解目标。

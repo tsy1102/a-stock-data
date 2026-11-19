@@ -34,6 +34,7 @@ import collision_dates as cdates
 import collide
 import field_registry_api as fra
 import source_lineage_api as sla
+from scripts import temporal_policy as TP
 
 
 def _runtime_field_parts(fid: str) -> tuple[str, str]:
@@ -176,10 +177,12 @@ def build_field_coverage(
     event_start: dt.date | None = None,
     event_end: dt.date | None = None,
     selection_warnings: list[str] | None = None,
+    timestamp_witness_index: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Summarize source-specific raw observations without retaining their values."""
     source_fields = fra.source_field_records(registry)
     owners, source_records = _identity_index(source_fields, lineage)
+    timestamp_witness_index = timestamp_witness_index or {}
     targets: dict[tuple[str, str], dict[str, Any]] = {}
     for record in source_fields:
         kind = _target_kind(record)
@@ -330,6 +333,25 @@ def build_field_coverage(
                         else path_prefix
                     ),
                 )
+                row_timestamp_checked = False
+                if not event_source:
+                    witness = timestamp_witness_index.get(snapshot.source)
+                    if isinstance(witness, dict):
+                        witness_field_id = witness.get("field_id")
+                        raw_timestamp = next(
+                            (value for field_id, value in pairs if field_id == witness_field_id),
+                            None,
+                        )
+                        timestamp_date = TP.parse_timestamp_date(
+                            raw_timestamp, str(witness.get("timestamp_format", ""))
+                        )
+                        if timestamp_date is not None:
+                            row_timestamp_checked = True
+                            sample_date_origin = (
+                                "record.timestamp"
+                                if timestamp_date == sample_day
+                                else "timestamp_mismatch"
+                            )
                 for fid, value in pairs:
                     if not _has_value(value):
                         continue
@@ -353,15 +375,19 @@ def build_field_coverage(
                     target["source_statuses"].add(snapshot.status)
                     event_date_is_explicit = event_source
                     closed_snapshot = event_source or sample_phase == "closed"
-                    source_date_is_explicit = (
-                        snapshot.date_origin == "source_as_of"
-                        or sample_date_origin
-                        in {
-                            "record.trade_date",
-                            "record.as_of_date",
-                            "record.limit_time_unix_seconds",
-                        }
-                    )
+                    if row_timestamp_checked:
+                        source_date_is_explicit = sample_date_origin == "record.timestamp"
+                    else:
+                        source_date_is_explicit = (
+                            snapshot.date_origin == "source_as_of"
+                            or sample_date_origin
+                            in {
+                                "record.trade_date",
+                                "record.as_of_date",
+                                "record.limit_time_unix_seconds",
+                                "record.timestamp",
+                            }
+                        )
                     status_is_usable = snapshot.status in {"ok", "partial"}
                     if scheme_ok and status_is_usable and event_date_is_explicit:
                         target["event_record_samples"][day_key].add(entity_code)
@@ -516,6 +542,9 @@ def refresh_daily_coverage(
         trading_window_dates.append(day)
     registry = fra.load_registry()
     lineage = sla.load_source_lineage(registry=registry)
+    timestamp_witness_index = TP.build_runtime_timestamp_witness_index(
+        TP.load_policy(), registry, lineage
+    )
     coverage = build_field_coverage(
         snapshots,
         registry,
@@ -524,6 +553,7 @@ def refresh_daily_coverage(
         trading_window_dates=trading_window_dates,
         event_start=folder_window.event_start,
         event_end=folder_window.event_end,
+        timestamp_witness_index=timestamp_witness_index,
         selection_warnings=[
             *discovery_warnings,
             *folder_window.warnings,

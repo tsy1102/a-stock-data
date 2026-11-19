@@ -3,6 +3,7 @@ import json
 from types import SimpleNamespace
 
 from scripts import field_evidence_coverage as coverage
+from scripts import temporal_policy as temporal_policy
 
 
 def _lineage(*sources):
@@ -187,6 +188,63 @@ def test_source_as_of_date_and_closed_phase_count_as_qualified_coverage():
     assert result["fields"][0]["source_as_of_sample_counts"] == {"T:20261014": 1}
 
 
+def test_verified_row_timestamp_qualifies_only_matching_record_dates():
+    registry = {
+        "source_fields": [
+            {"source": "Eastmoney", "code": "f63", "status": "unverified"},
+            {
+                "source": "Eastmoney",
+                "code": "f124",
+                "status": "verified",
+                "unit": "Unix 秒",
+                "meaning": "行情更新时间戳",
+            },
+        ]
+    }
+    lineage = _lineage(("Eastmoney", "ulist239"))
+    policy = {
+        "row_timestamp_witnesses": [
+            {
+                "source": "Eastmoney",
+                "code": "f124",
+                "timestamp_format": "unix_seconds",
+                "unit": "Unix 秒",
+                "meaning_contains": "时间戳",
+            }
+        ]
+    }
+    timestamp_witness_index = temporal_policy.build_runtime_timestamp_witness_index(
+        policy, registry, lineage
+    )
+    snapshot = _snapshot(
+        "ulist239",
+        {
+            "scheme": "em.ulist_np",
+            "stocks": {
+                "600000": {"data": {"f63": 100.0, "f124": 1794987252}},
+                "600001": {"data": {"f63": 200.0, "f124": 1794900852}},
+            },
+        },
+        origin="meta_data_date",
+    )
+    snapshot.sample_date = dt.date(2026, 11, 18)
+    snapshot.capture_date = dt.date(2026, 11, 19)
+
+    result = coverage.build_field_coverage(
+        [snapshot],
+        registry,
+        lineage,
+        dt.date(2026, 11, 19),
+        trading_window_dates=[dt.date(2026, 11, 18)],
+        timestamp_witness_index=timestamp_witness_index,
+    )
+
+    target = next(row for row in result["fields"] if row["code"] == "f63")
+    assert target["candidate_sample_counts"] == {"T:20261118": 2}
+    assert target["source_as_of_sample_counts"] == {"T:20261118": 1}
+    assert target["date_origins"] == ["record.timestamp", "timestamp_mismatch"]
+
+
 def test_ftshare_context_fields_are_covered_by_explicit_record_trade_date():
     codes = (
         "first_limit_up_time",
@@ -336,6 +394,11 @@ def test_daily_refresh_merges_tuple_window_warnings_and_writes_local_index(tmp_p
     )
     monkeypatch.setattr(coverage.fra, "load_registry", lambda: registry)
     monkeypatch.setattr(coverage.sla, "load_source_lineage", lambda **kwargs: lineage)
+    monkeypatch.setattr(
+        coverage.TP,
+        "load_policy",
+        lambda: {"row_timestamp_witnesses": []},
+    )
     monkeypatch.setattr(coverage, "LOCAL_STATE_DIR", str(state_dir))
 
     summary = coverage.refresh_daily_coverage(

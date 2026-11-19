@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 565 条逐源记录。
+> 聚合歧义 152 个 code；聚合定义不完整 176 个 code；疑似合并文本 566 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1999,12 +1999,12 @@
 
 ### `f49` — ambiguous
 
-聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f49` | eastmoney_stock_get_outer_volume | 外盘成交量 | 手 | `verified` |
-| 东财-ulist239(np/get) · `f49` | f49 | — | — | `unverified` |
+| 东财-ulist239(np/get) · `f49` | ulist239_sales_gross_margin_report_period_pct | 报告期销售毛利率（东方财富财报展示口径；单位为%；本次 2026-09-30 样本对应年初至 9 月累计报告期） | % | `verified` |
 
 ### `f50` — ambiguous
 
@@ -3617,6 +3617,7 @@
 | 东财-ulist239(np/get) | `f27` | f27 | 市场标志：本项目 A 股样本中沪市=1，非沪市=0（含深市、北交）；与同源 f13 为实证别名。 | `verified` |
 | 东财-ulist239(np/get) | `f30` | current_trade_hand_count | 最近一笔成交的手数；实测绝对值对应已验证的现手量，原始正负号编码含义未确认。 | `verified` |
 | 东财-ulist239(np/get) | `f46` | ulist239_parent_net_profit_yoy_growth_pct | 归属于母公司股东的净利润同比增长率（东方财富财报展示口径；亏损基期算法另行保留） | `verified` |
+| 东财-ulist239(np/get) | `f49` | ulist239_sales_gross_margin_report_period_pct | 报告期销售毛利率（东方财富财报展示口径；单位为%；本次 2026-09-30 样本对应年初至 9 月累计报告期） | `verified` |
 | 东财-ulist239(np/get) | `f59` | parent_equity_to_total_assets_ratio | 报告期末合并资产负债表中归属于母公司股东（或所有者）权益占总资产的比例；按 TOTAL_PARENT_EQUITY ÷ TOTAL_ASSETS × 100 计算。 | `verified` |
 | 东财-ulist239(np/get) | `f76` | fund_mid_buy | 东方财富个股资金流分类口径下，当日中单类别流入/买入金额；此分类不表示投资者账户身份。 | `verified` |
 | 东财-ulist239(np/get) | `f77` | fund_mid_sell | 东方财富个股资金流分类口径下，当日中单类别流出/卖出金额；此分类不表示投资者账户身份。 | `verified` |

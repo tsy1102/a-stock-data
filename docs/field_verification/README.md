@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261119_ulist239_f49_empirical_semantics_evidence.md`](adjudications/20261119_ulist239_f49_empirical_semantics_evidence.md)、[结构化裁决](adjudications/20261119_ulist239_f49_empirical_semantics.json)、[20 股逐行样本](adjudications/20261119_ulist239_f49_samples.csv)与[财报接口来源记录](adjudications/20261119_ulist239_f49_financial_api_reference.json)：将 `东财-ulist239(np/get)::f49` 定案为报告期销售毛利率（%）。保留期内 6 个 `f297` 来源日、20 股共 114/114 个可比值与东财财报接口 `XSMLL` 精确吻合；60 条缺 `f297` 的观测和 6 条接口空值分别排除，三份发行人季报独立复算也吻合。银行的 `f49=0` 不解释为空值填充或真实零毛利率。本次不新增映射；保留已有 `ulist239.f49 ↔ push2.f186` 毛利率关系。11 月 19 日 17:24 收盘运行未取得新的 Ulist 数据，最新有效 Ulist 来源日为 11 月 18 日。
+
 - [`adjudications/20261119_ulist239_f99_positive_days_10d.md`](adjudications/20261119_ulist239_f99_positive_days_10d.md) 与 [逐股公式样本](research/20261119_ulist239_f99_positive_days_10d.csv)：用已定案的 `f98` 两个相邻五日窗口合成十日窗口，并以 11 月 18 日滚动递推留出，来源内定案 Ulist `f99` 为最近 10 个交易日中 `f88 > 0` 的天数；80/80 精确吻合，`f88` 业务语义仍未知，不建立跨源映射；全历史回归报告见[碰撞报告](20261119/post_f99_adjudication/20261119_collision_report.md)。
 
 - [`research/20261119_open_capture_unknown_field_review.md`](research/20261119_open_capture_unknown_field_review.md) 与[7 日碰撞报告](20261119/intraday_20261119_1030/20261119_collision_report.md)、[保留期全历史报告](20261119/intraday_all_history_20261119_1030/20261119_collision_report.md)：北京时间 10:30 运行采集时已进入交易时段，按最近完成交易日 `20261118` 仅补齐 ZHB（20/20 成功）。按 Ulist `f124` 与 ZHB `zhb_date` 对齐后，`ulist239.f30` 与 ZHB 涨停封单金额仅呈中等相关；当时审阅为待外部证据，官方页面单股盘中核对未能定案 `f30` 或 `f63`。后续 `f30` 来源内语义已定案，且该跨源直接等价候选已复核拒绝，见下条及候选裁决记录。

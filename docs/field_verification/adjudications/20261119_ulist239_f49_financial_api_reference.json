@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "official_provider": "Eastmoney Data Center",
+  "endpoint": "https://datacenter-web.eastmoney.com/api/data/v1/get",
+  "report_name": "RPT_LICO_FN_CPD",
+  "field_path": "result.data[].XSMLL",
+  "used_response_fields": [
+    "SECURITY_CODE",
+    "REPORTDATE",
+    "NOTICE_DATE",
+    "XSMLL"
+  ],
+  "query": {
+    "columns": "ALL",
+    "report_date": "2026-09-30",
+    "security_count": 20,
+    "page_size": 100,
+    "sort_columns": "SECURITY_CODE",
+    "sort_types": 1
+  },
+  "captured_at_local": "2026-11-13T14:37:20+08:00",
+  "live_refresh_during_adjudication": false,
+  "request_manifest_file": "docs/field_verification/adjudications/20261113_ulist239_financial_api_capture.json",
+  "response_file": "docs/field_verification/adjudications/20261113_ulist239_rpt_lico_fn_cpd_response.json",
+  "response_sha256": "1a2702a10e4e2793e06860df65ba3c1b11f0de19a104b3d08c38039324ba6dd2",
+  "response_rows": 20,
+  "response_report_date": "2026-09-30",
+  "matched_ulist_source_files": [
+    {
+      "source_data_date_f297": "20261105",
+      "file": "docs/field_verification/20261105/raw_ulist239.json",
+      "sha256": "10a6f6eba28a406799ccf73d366482ce23913234da33020c752858ea9140cf68"
+    },
+    {
+      "source_data_date_f297": "20261106",
+      "file": "docs/field_verification/20261106/raw_ulist239.json",
+      "sha256": "fd4a54c15fc2aecd4edadbab8e50bfed75f610e989490d33ccb16676049feac2"
+    },
+    {
+      "source_data_date_f297": "20261109",
+      "file": "docs/field_verification/20261109/raw_ulist239.json",
+      "sha256": "7d8bfc4b6d12e4d8bce1aa1cb1e93b5fbe6abbf4b3b05126887775c9838afa4c"
+    },
+    {
+      "source_data_date_f297": "20261110",
+      "file": "docs/field_verification/20261110/raw_ulist239.json",
+      "sha256": "386416eaaf7a3e4146e5679f47e86dc8f6ec08dd117bb3c6d4f2e62845a396c0"
+    },
+    {
+      "source_data_date_f297": "20261117",
+      "file": "docs/field_verification/20261117/raw_ulist239.json",
+      "sha256": "d8f0cd0092412ab8f33fc0cbdccc9643e10367001c667857ec6a16ea73b033bf"
+    },
+    {
+      "source_data_date_f297": "20261118",
+      "file": "docs/field_verification/20261118/raw_ulist239.json",
+      "sha256": "8e49a59996cb579fecc56dea3573febeec94864af01751707e020a8699a51c2b"
+    }
+  ],
+  "scope_note": "Financial report date and capture time are distinct. The API snapshot predates the 2026-11-17 and 2026-11-18 Ulist snapshots; all 20 records had notices dated 2026-10-20 through 2026-10-31. The API endpoint was not live-refreshed in this adjudication."
+}

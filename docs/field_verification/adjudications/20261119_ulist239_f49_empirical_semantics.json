@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-19",
+  "evidence_file": "docs/field_verification/adjudications/20261119_ulist239_f49_empirical_semantics_evidence.md",
+  "evidence_sha256": "c66aefb9b10529900ca731c0989e5bf72a40e06379abd9c5d841817ce5765519",
+  "decisions": [
+    {
+      "id": "20261119-ulist239-f49-sales-gross-margin",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f49"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "f49",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ulist239_sales_gross_margin_report_period_pct",
+      "meaning": "报告期销售毛利率（东方财富财报展示口径；单位为%；本次 2026-09-30 样本对应年初至 9 月累计报告期）",
+      "unit": "%",
+      "section": "12.3.2.3 ulist239 全字段清单；2026-11-19 来源内财务实证附录",
+      "rationale": "精确来源路径东财-ulist239(np/get)::f49 由采集器原样保留为 push2delay.eastmoney.com/api/qt/ulist.np/get 的 data.diff[].f49。保留边界 2026-10-15 之后，f221=20260930 的 180 条观测中，60 条因缺少已验证来源日期 f297 而排除；其余 120 条覆盖 f297=20261105、20261106、20261109、20261110、20261117、20261118 六个来源日。与东方财富数据中心 RPT_LICO_FN_CPD.XSMLL（REPORTDATE=2026-09-30）比较时，114 条可比样本逐值精确相等，0 个反例；另 6 条农业银行样本的接口 XSMLL 为空且 Ulist f49 为 0，排除比较，不推断该 0 是实际毛利率或空值填充。东方财富官方业绩报表页列名为销售毛利率(%)；贵州茅台、万华化学、泸州老窖三份发行人 2026 年三季报的年初至报告期末合并营业收入和营业成本按（营业收入−营业成本）÷营业收入×100 复算后，按各自 f49 小数位精度均与 Ulist 值一致。只确认 Ulist239 精确来源路径，不新增任何跨源 mappings；Push2::f49 仍独立表示外盘成交量。银行空指标对应的原始零值处理、其他报告期和完整服务端舍入算法仍未确认，但不改变本次字段语义结论。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后；20 只股票；同一 Ulist 报告期 f221=20260930；180 条原始观测中 60 条缺 f297 来源日期而排除、120 条日期合格观测覆盖 6 个 f297 来源交易日；与 Eastmoney Data Center RPT_LICO_FN_CPD.XSMLL（REPORTDATE=2026-09-30）比较，其中 114 条接口值非空、6 条接口值为空而排除；另核验 3 份发行人三季报",
+        "comparison_count": 114,
+        "matched_count": 114,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 66,
+        "stock_count": 20
+      }
+    }
+  ]
+}

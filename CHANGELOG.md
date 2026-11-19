@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 利用已定案的 Ulist `f98` 五交易日正值计数，将 `东财-ulist239(np/get)::f99` 来源内定案为最近 10 个交易日中 `f88 > 0` 的天数；三组十日窗口逐股 60/60 精确相等，独立滚动日留出 20/20 相符。保留 `f88` 释义未知，不将第三方 DDX 标签当作官方契约，也不建跨源映射。逐行证据见 [`20261119_ulist239_f99_positive_days_10d.md`](docs/field_verification/adjudications/20261119_ulist239_f99_positive_days_10d.md)。
 - 依据 2026-11-02 至 11-10 七个连续来源交易日、20 只股票的 Ulist 原始样本，将 `东财-ulist239(np/get)::f97` 定案为同源 `f88 > 0` 连续段日数；120 个相邻日转移全部符合严格大于零递推，含零阈值与非零阈值控制均出现反证，不推断 `f88` 业务标签或建立跨源映射。逐行证据见 [`20261119_ulist239_f97_positive_run.md`](docs/field_verification/adjudications/20261119_ulist239_f97_positive_run.md)。
 - 依据 CLS 官方电报详情页四条逐值观察、采集器 `ctime` 到 `time` 的精确映射及保留期 1,000 条格式审计，将 `财联社(cls)::time` 定案为财联社电报发布时间（`YYYY-MM-DD HH:MM:SS`）；明确该时间与交易日、采集目录数据日和正文事件时间分开，不建立跨源映射。
 - 按保留期 1,225 条 KPH 涨停天梯记录及 198 组同股同日 KPH 已验证字段比较，将 `市场源(market_sources)::limit_time` 与 `开盘红(Levistock适配)::limit_time` 定案为涨停时间（Unix 秒）；不推断首次/末次封板口径，不新增跨源映射。

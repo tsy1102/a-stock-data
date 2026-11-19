@@ -25,15 +25,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 496,
+      "registry_status_only_single_source": 495,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 954,
-      "verified": 1594,
-      "verified_by_empirical_addendum": 212,
+      "unverified": 953,
+      "verified": 1595,
+      "verified_by_empirical_addendum": 213,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 457
@@ -20022,18 +20022,16 @@
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
-      "canonical": "f99",
-      "meaning": "",
-      "unit": "",
+      "canonical": "f88_positive_days_10d",
+      "meaning": "最近10个连续交易数据日（含当前数据日）中，f88 > 0 的交易日数量。",
+      "unit": "个交易日",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-ulist239(np/get)": "unverified"
+        "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "fHSL",
@@ -46219,6 +46217,9 @@
       "东财-ulist239(np/get)"
     ],
     "f88_positive_streak_days": [
+      "东财-ulist239(np/get)"
+    ],
+    "f88_positive_days_10d": [
       "东财-ulist239(np/get)"
     ]
   },
@@ -205178,15 +205179,16 @@
       "code": "f99",
       "identity": "东财-ulist239(np/get)::f99",
       "path": "f99",
-      "canonical": "f99",
-      "meaning": "",
-      "unit": "",
+      "canonical": "f88_positive_days_10d",
+      "meaning": "最近10个连续交易数据日（含当前数据日）中，f88 > 0 的交易日数量。",
+      "unit": "个交易日",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-19 Ulist239 f99 同源十交易日公式实证定案"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -205195,8 +205197,24 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261119-ulist239-f99-positive-days-10d"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261119_ulist239_f99_positive_days_10d.md",
+        "evidence_sha256": "3079e8b463351bebc907a10c472680cec217af6567f55610731d240777e06eb5",
+        "sample": {
+          "scope": "2026-10-15 保留边界之后的九个成功 Ulist 来源日（2026-11-02 至 11-18），每天相同的 20 只证券。三个目标日以两段 f98 五日计数相加验证 f99，共 60 项；2026-11-18 用 11-17 f99 和 11-04/11-18 f88 正值标志作滚动留出 20 项。另有 100 个 f99 值因无法组成保留期内完整十日对照而仅作范围审计。逐行值见 research/20261119_ulist239_f99_positive_days_10d.csv。",
+          "comparison_count": 80,
+          "matched_count": 80,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 100,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -205206,6 +205224,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-19 Ulist239 f99 同源十交易日公式实证定案",
+          "canonical": "f88_positive_days_10d",
+          "meaning": "最近10个连续交易数据日（含当前数据日）中，f88 > 0 的交易日数量。",
+          "unit": "个交易日",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-19",
+          "status": "verified",
+          "adjudication_id": "20261119-ulist239-f99-positive-days-10d",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261119_ulist239_f99_positive_days_10d.md",
+          "evidence_sha256": "3079e8b463351bebc907a10c472680cec217af6567f55610731d240777e06eb5",
+          "metadata_change": {
+            "before": {
+              "canonical": "f99",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "f88_positive_days_10d",
+              "meaning": "最近10个连续交易数据日（含当前数据日）中，f88 > 0 的交易日数量。",
+              "unit": "个交易日"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 保留边界之后的九个成功 Ulist 来源日（2026-11-02 至 11-18），每天相同的 20 只证券。三个目标日以两段 f98 五日计数相加验证 f99，共 60 项；2026-11-18 用 11-17 f99 和 11-04/11-18 f88 正值标志作滚动留出 20 项。另有 100 个 f99 值因无法组成保留期内完整十日对照而仅作范围审计。逐行值见 research/20261119_ulist239_f99_positive_days_10d.csv。",
+            "comparison_count": 80,
+            "matched_count": 80,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 100,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -205220,7 +205272,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261119-ulist239-f99-positive-days-10d",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-19",
+          "decision_file": "adjudications/20261119_ulist239_f99_positive_days_10d.json",
+          "evidence_file": "adjudications/20261119_ulist239_f99_positive_days_10d.md",
+          "evidence_sha256": "3079e8b463351bebc907a10c472680cec217af6567f55610731d240777e06eb5",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "f99",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f99",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "f88_positive_days_10d",
+              "meaning": "最近10个连续交易数据日（含当前数据日）中，f88 > 0 的交易日数量。",
+              "unit": "个交易日"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目采集器将 Eastmoney ulist.np/get 响应 diff 项原样保存于 stocks[code].data，目标及输入均取同一股票、同一 Ulist 响应。此前已将同源 f98 定案为最近五个连续交易数据日内 f88>0 的计数。使用本地交易日历，把 2026-11-09、11-10、11-17 各自最近十个交易日拆为两个相邻且不重叠的五日窗口；f99 与对应两个 f98 端点之和逐股 60/60 完全相等。再以 11-18 作为滚动留出，依据 11-17 f99 减去移出日 11-04 的 1[f88>0]、加上新进入日 11-18 的 1[f88>0]，20/20 完全相等。改用 f88>=0 的留出预测只有 19/20 命中；920508 在 11-18 的 f88=0，实际 f99 不增加，含零模型错误多计 1。九个可用 Ulist 来源日均 20/20 且行级日期由已验证 f124 或 f297 确认；180 个 f99 观测均为 1 至 9 的整数。80 个正式关系比较来自 20 只重复证券、三个重叠窗口和一个相邻日留出，不当作相互独立实验；其余 100 个 f99 行缺少可用十日窗口配对，仅作范围检查，不计命中或反例。第三方参数表的 DDX 标签仅作为候选线索，官方 f99 键级定义未核实；因此只确认精确来源路径相对未知 f88 的计数公式，不推断 f88 业务含义，不建立跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 保留边界之后的九个成功 Ulist 来源日（2026-11-02 至 11-18），每天相同的 20 只证券。三个目标日以两段 f98 五日计数相加验证 f99，共 60 项；2026-11-18 用 11-17 f99 和 11-04/11-18 f88 正值标志作滚动留出 20 项。另有 100 个 f99 值因无法组成保留期内完整十日对照而仅作范围审计。逐行值见 research/20261119_ulist239_f99_positive_days_10d.csv。",
+            "comparison_count": 80,
+            "matched_count": 80,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 100,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "东财-热榜(em_hot)",

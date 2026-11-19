@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261119_ulist239_f99_positive_days_10d.md`](adjudications/20261119_ulist239_f99_positive_days_10d.md) 与 [逐股公式样本](research/20261119_ulist239_f99_positive_days_10d.csv)：用已定案的 `f98` 两个相邻五日窗口合成十日窗口，并以 11 月 18 日滚动递推留出，来源内定案 Ulist `f99` 为最近 10 个交易日中 `f88 > 0` 的天数；80/80 精确吻合，`f88` 业务语义仍未知，不建立跨源映射；全历史回归报告见[碰撞报告](20261119/post_f99_adjudication/20261119_collision_report.md)。
+
 - [`adjudications/20261119_ulist239_f59_empirical_semantics.md`](adjudications/20261119_ulist239_f59_empirical_semantics.md)、[结构化裁决](adjudications/20261119_ulist239_f59_empirical_semantics.json) 与[逐值财报证据](public_web/20261119_ulist239_f59_financial_statement_validation.json)：20 只股票与同一 2026-09-30 报告期的东财财报数据 20/20 命中，将 Ulist `f59` 来源内定案为归母权益/总资产百分比。此前撤回的错误价格解释及当时暂列待核的过程，见[历史撤回记录](adjudications/20261119_ulist239_f59_historical_claim_withdrawal.md)和[120 行价格排除样本](research/20261119_ulist239_f59_close_claim_samples.csv)；当前注册表状态为 `verified`，不建立跨源映射。
 
 - [`adjudications/20261119_eltdx_limit_ladder_level_source_contract.md`](adjudications/20261119_eltdx_limit_ladder_level_source_contract.md) 与[结构化决定](adjudications/20261119_eltdx_limit_ladder_level_source_contract.json)：定案 ELTDX `limit_ladder.ladder_level` 为封板时当前连续涨停板数（板），并把 `shortline.ladder_level` 的错误“梯队等级”/无量纲元数据纠正为同一语义。14 条、6 只股票、11 个目标交易日样本均日期合格，两条 Helper 路径 14/14 精确相等，KPL `col_15` 同日配对 13/13 精确相等。修正 registry 中把既有 `push2ex.limit_count → eltdx.limit_ladder.ladder_level` 映射压成叶字段的路径错误；单列 000678 的上游 `limit_status` 误判，不将其当作字段语义反例。

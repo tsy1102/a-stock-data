@@ -1238,7 +1238,7 @@ print(q.code, q.price, q.change_pct)
 > **附注**：
 > - **TDX 系三库实测结论（2026-08-10）**：easy-tdx（1.20.6）为主——K线/周K/行情/财务/xdxr/分红/板块/成员/ZHB 下载全功能 ✓（**1.14.5 及以下 K线解码失败**，requirements 已锁 >=1.20.4）；mootdx（0.11.7）为 fallback——指数K线/健康检查/ZHB 备胎（easy_tdx 1.20.6 指数K线解码 bug 由 mootdx 兜底）；**pytdx 已移除**（零代码引用，mootdx 0.11.7 底层依赖为 tdxpy 非 pytdx）
 > - rainx/pytdx 已停更（2020-04），TDX 协议研究参考价值仍在（AxData/eltdx 基于其扩展）
-> - 开盘红（kaipanhong.com）与开盘啦（longhuvip.com）为**同协议双产品线**（w1/api/index.php，Dalvik UA）——levistock 封装开盘红域名，KPL-post 抓包为开盘啦域名，接口可互相印证
+> - 开盘红 KPH（官网 `kaipanhong.com`，接口主机 `apphis.kaipanhong.com`）与开盘啦 KPL（官网 `kaipanla.com`，接口主机 `apphis.longhuvip.com`）是不同产品、官网和项目来源族。两者部分请求路径或字段值相似，不构成同源依据；Levistock 的相关封装归入 KPH，KPL-post 归入 KPL。字段关系须按精确路径、同股和同交易日单独核验，见[来源身份裁决](field_verification/adjudications/20261119_kph_kpl_source_identity.md)。
 > - 本项目主仓库：https://github.com/tsy1102/a-stock-data（字典随项目版本演进）
 ## 十二、 多数据源字段字典（联网核实版，2026-08-03）
 

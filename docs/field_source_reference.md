@@ -6025,10 +6025,11 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 > **与 12.17（30 实测）/ 12.17.1（10 实测）关系**：66 接口中 **8 个 Action 已实测记录**（MoodNumCount/ChangeStatistics/GetPlateInfo_w38/GetTrendIncremental/GetVolTurIncremental/GroupCount_w28/GetStockList/GlobalCommon/GetDayZhangTing）——**互相印证 ✓**；其余 **约 45 个新接口**（多组同 Action 不同参数，如 MarketSCLNKLine×6 市场、GetList×4 快讯分类）
 > **⚠️ 本小节为抓包级记录（未实测）**——参数/URL 来自抓包文档；实测口径以 12.17/12.17.1 为准
 
-**🔑 复盘啦（FuPanLa）= 字典 12.10.3/12.10.4『开盘红』的抓包确认**：levistock 封装的 get_pmsl/get_zttt/get_his_limit_resumption 实为开盘啦 FuPanLa 控制器（apphwhq.longhuvip.com，apiv=w47）——
-『开盘红』即复盘啦（fupanwang）系列，同一批接口：
+**来源归属勘误（2026-11-20）**：旧稿曾把 Levistock 的 `get_pmsl` / `get_zttt` / `get_his_limit_resumption` 归为开盘啦 KPL 的 `apphwhq.longhuvip.com`、`apiv=w47` 接口，依据不足且与固定版本源码不符。Levistock 0.1.8 的 [`stock_fupanla_kph.py`](https://github.com/fleetinglife/levistock/blob/808d8187a6dd2a781dc51efeb1581f35d68e66c7/levistock/stock/stock_fupanla_kph.py) 明确标注为“开盘红复盘接口封装”，实际使用 `apphwshhq.kaipanhong.com`（实时）和 `apphis.kaipanhong.com`（历史），`apiv=w45`；这些方法属于 KPH。它们与 KPL-post 文档列出的同名 `FuPanLa` Action 只能作名称/动作层面的对照，不能据此认定同源、同接口契约或相同字段值。KPH/KPL 的来源身份和项目路由分别见[来源身份裁决](field_verification/adjudications/20261119_kph_kpl_source_identity.md)。
 
-| 复盘啦接口 | Action | 对应字典 12.10 记录 | 参数 |
+下表仅保留 KPL-post 抓包文档中的功能/Action 名称，以及旧稿关联的 KPH 方法章节；未验证两端点的参数、响应契约或字段映射：
+
+| KPL-post 功能 | KPL-post Action | 旧稿关联的 KPH 方法章节（未证实接口映射） | 抓包参数 |
 |:---|:---|:---|:---|
 | 盘面亮点 | FuPanLa/GetPMSL_PMLD | 12.10.4 get_pmsl 盘面梳理 | st=30/Index 分页/Red |
 | 看强势（大幅回撤） | FuPanLa/GetPMSL_KQXY | 12.10.4 get_pmsl 盘面梳理 | Red |

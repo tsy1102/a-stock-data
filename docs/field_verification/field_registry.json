@@ -25,15 +25,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 494,
+      "registry_status_only_single_source": 493,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 950,
-      "verified": 1615,
-      "verified_by_empirical_addendum": 217,
+      "unverified": 949,
+      "verified": 1616,
+      "verified_by_empirical_addendum": 218,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 475
@@ -22861,18 +22861,16 @@
         "开盘红"
       ],
       "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
-      "canonical": "",
-      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+      "canonical": "kph_industry_limit_up_count",
+      "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
       "unit": "家",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "开盘红": "unverified"
+        "开盘红": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "industry_raw",
@@ -46626,6 +46624,9 @@
     ],
     "convertible_bond_underlying_stock_pb_ratio": [
       "东财-event_dc(可转债列表)"
+    ],
+    "kph_industry_limit_up_count": [
+      "开盘红"
     ]
   },
   "mappings": [
@@ -252350,15 +252351,16 @@
       "code": "industry_limit_up_count",
       "identity": "开盘红::industry_limit_up_count",
       "path": "industry_limit_up_count",
-      "canonical": "",
-      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+      "canonical": "kph_industry_limit_up_count",
+      "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
       "unit": "家",
       "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
       "sections": [
+        "2026-11-20 开盘红 industry_limit_up_count 来源内实证",
         "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -252367,8 +252369,24 @@
           "开盘红"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261120-kph-industry-limit-up-count"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261120_kph_industry_limit_up_count_empirical.md",
+        "evidence_sha256": "06c7b9d4b89a8d4eb44789e9731ef9498ff23950b6c9d291f26ef320cc7bf345",
+        "sample": {
+          "scope": "开盘红 KPH 2026-11-16、17、18 三个不同来源交易日的完整分页快照；103 条股票记录、43 个来源日与 industry_id 分组。comparison_count/matched_count=43/43 表示同一分组内字段值一致；另以 38/43 分组等于当前响应分组行数、5 个不等作为统计范围诊断。排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+          "comparison_count": 43,
+          "matched_count": 43,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 38,
+          "observation_count": 103
+        }
       },
       "reference_evidence": [
         {
@@ -252378,6 +252396,40 @@
           "unit": "家",
           "status_raw": "",
           "status": "unverified"
+        },
+        {
+          "section": "2026-11-20 开盘红 industry_limit_up_count 来源内实证",
+          "canonical": "kph_industry_limit_up_count",
+          "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+          "unit": "家",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-20",
+          "status": "verified",
+          "adjudication_id": "20261120-kph-industry-limit-up-count",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261120_kph_industry_limit_up_count_empirical.md",
+          "evidence_sha256": "06c7b9d4b89a8d4eb44789e9731ef9498ff23950b6c9d291f26ef320cc7bf345",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+              "unit": "家"
+            },
+            "after": {
+              "canonical": "kph_industry_limit_up_count",
+              "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+              "unit": "家"
+            }
+          },
+          "sample": {
+            "scope": "开盘红 KPH 2026-11-16、17、18 三个不同来源交易日的完整分页快照；103 条股票记录、43 个来源日与 industry_id 分组。comparison_count/matched_count=43/43 表示同一分组内字段值一致；另以 38/43 分组等于当前响应分组行数、5 个不等作为统计范围诊断。排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
         }
       ],
       "registry_aggregate": {
@@ -252392,7 +252444,51 @@
         "unit": "家",
         "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
       },
-      "attribute_conflicts": {}
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261120-kph-industry-limit-up-count",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_kph_industry_limit_up_count_empirical.json",
+          "evidence_file": "adjudications/20261120_kph_industry_limit_up_count_empirical.md",
+          "evidence_sha256": "06c7b9d4b89a8d4eb44789e9731ef9498ff23950b6c9d291f26ef320cc7bf345",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+            "unit": "家"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+              "unit": "家"
+            },
+            "after": {
+              "canonical": "kph_industry_limit_up_count",
+              "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+              "unit": "家"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "本项目将精确 KPH 响应 row[26] 映射为 industry_id、row[27] 映射为 industry_limit_up_count；固定版本的独立 Levistock 客户端用同一 KPH 历史接口路径将 row[27] 映射为 industry_zt（同行业涨停数），但不把该第三方映射冒充 KPH 官方契约。开盘红官网盘后教程明确描述同一板块内涨停家数并以五只涨停股举例，确认产品级指标类别和计量单位；页面未给出 row[27] 映射。KPH 自身 2026-11-16 至 18 三个完整分页来源日的 103 条记录分为 43 个日期与 industry_id 组，43/43 组内字段值一致。38/43 组的字段值等于该 KPH 响应分组行数，另 5 组分别为 5 对 4、2 对 1、5 对 4、3 对 1、23 对 22；这些差异否定“字段只是当前响应分组长度”，但不足以确定统计集合的准确边界。2026-11-19 对同一 KPH 来源日 2026-11-18 的重复捕获不作为独立日期样本。KPH 与 KPL 是不同产品、官网、接口主机和来源族；KPL 值没有用于本字段的语义定义，也未新增跨源映射。",
+          "sample": {
+            "scope": "开盘红 KPH 2026-11-16、17、18 三个不同来源交易日的完整分页快照；103 条股票记录、43 个来源日与 industry_id 分组。comparison_count/matched_count=43/43 表示同一分组内字段值一致；另以 38/43 分组等于当前响应分组行数、5 个不等作为统计范围诊断。排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
+        }
+      ]
     },
     {
       "source": "开盘红",

@@ -3791,7 +3791,7 @@
 | 开盘啦(kpl_limit_up_detail) | `turnover_real` | turnover_real | 实际换手率；与 KPH turnover_rate 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `zt_time` | limit_time | 涨停时间；与 KPH limit_time 两日逐值一致 | `verified` |
 | 开盘红 | `industry_id` | industry_id | 行业分类 ID；与 KPL sector_code 在来源日期对齐的 420 组对照中 417 组相同、3 组不同；分类体系或层级未确认，保留各来源原码 | `verified` |
-| 开盘红 | `industry_limit_up_count` | — | 同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认 | `unverified` |
+| 开盘红 | `industry_limit_up_count` | kph_industry_limit_up_count | 按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。 | `verified` |
 | 开盘红 | `limit_count` | limit_count | 连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致 | `verified` |
 | 开盘红 | `limit_tag` | limit_tag | 连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致 | `verified` |
 | 开盘红 | `limit_time` | limit_time | 涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致 | `verified` |

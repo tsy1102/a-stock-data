@@ -49,7 +49,7 @@
 - 旧身份 `levistock(ftshare)` 已从当前字段注册表和 `source_lineage.json` 移除；其历史证据按接口归属拆分，未归属部分没有运行时别名，也不具备锚资格。
 - 财联社与 KPH 样本通过 `market_sources` 的组件级 `__source_meta__` 标注适配方法和上游族。组件名称保留原状，数值字段路径不变。
 - FTShare 的 6 条记录已归入 FTShare 服务接口身份；底层来源族仍未确认，因此不作为独立碰撞锚。
-- Levistock 与 AxData、KPL 的关系按接口和数据日分别比较。相同底层提供方的包装调用不算独立源；KPH 与 KPL 是不同提供方，字段是否同义仍按同日实测值判断。
+- Levistock 与 AxData、KPL 的关系按接口和数据日分别比较。相同底层提供方的包装调用不算独立源；KPH（开盘红）与 KPL（开盘啦）是不同产品、API 服务及项目来源身份，但两家官网列出同一运营主体，不能据此表述为不同公司。字段是否同义仍按同股同交易日逐字段证据判断。
 
 ## 后续主字典来源身份校正（2026-10-11）
 
@@ -61,4 +61,10 @@
 - **历史未归属**：136 条结构化记录保留原字段路径、状态、含义和证据。旧 Markdown 解析器另能识别 56 个 token，但这些 token 在迁移前的结构化注册表中没有对应记录，现仍只留在不可改写的 `field_source_reference.md` 原文中，不提升为当前字段记录、不推断含义或底层源。
 
 逐项映射清单见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json)。重分类后注册表仍有 2,481 条 `source_fields`、1,852 个兼容聚合字段；verified 842、unverified 1,548、candidate 1、conflict 90。迁移只改 175 条记录的来源身份键及对应聚合来源名，不变更字段状态、含义、单位、路径或证据。历史逐字节归档 `field_source_reference.md` 保持不变。
+
+## 2026-11-20 KPH/KPL 来源措辞更正
+
+本文原先称“KPH 与 KPL 是不同提供方”，容易被理解为运营公司不同。准确表述是：KPH（开盘红，`kaipanhong.com` / `apphis.kaipanhong.com`）与 KPL（开盘啦，`kaipanla.com` / `apphis.longhuvip.com`）是不同产品、不同官网/API 服务和独立项目来源身份；两官网页脚列出同一运营主体。这与[来源身份裁决](field_verification/adjudications/20261119_kph_kpl_source_identity.md)及当前适配器一致。
+
+只读历史归档 `field_source_reference.md` §12.21 曾将 Levistock §12.10 与 KPL §12.17 并列描述为 KPL 的覆盖路径，容易把开盘红 KPH 与开盘啦 KPL 混作同一来源。后续核对确认 §12.10 的相关接口属于 KPH；历史原文保留不改，当前来源判断以来源身份裁决、`source_lineage.json` 和适配器路由为准。
 # 历史状态说明（2026-10-20）

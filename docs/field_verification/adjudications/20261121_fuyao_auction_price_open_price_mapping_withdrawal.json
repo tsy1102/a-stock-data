@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-21",
+  "reviewer": "Codex source-contract review",
+  "action": "withdraw_exact_mappings",
+  "reason": "Fuyao's official contract distinguishes auction_price (竞价价格) from open_price (开盘价). They are separate response fields, and a retained same-item observation differs. The previous same_number_same_meaning relations treated the Fuyao auction price as an open price.",
+  "source_contract": {
+    "authority": "同花顺金融数据 API 官方文档",
+    "revision": "在线官方文档于 2026-11-21 核验",
+    "path": "GET /api/a-share/auction/snapshot",
+    "locator": "data.item[].auction_price=竞价价格; data.item[].open_price=开盘价",
+    "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+  },
+  "sample_scope": {
+    "capture_floor": "20261015",
+    "capture_directories": 22,
+    "stock_records": 440,
+    "directory_data_date_matches_meta": true,
+    "legacy_auction_container_records": 0,
+    "current_auction_final_records": 400,
+    "unequal_auction_price_open_price_rows": 1,
+    "auction_source_data_date_exposed": false,
+    "collision_eligible": false,
+    "evidence_file": "docs/field_verification/research/20261121_fuyao_auction_price_open_price_path_audit.csv"
+  },
+  "counterexample": {
+    "capture_directory": "20261020",
+    "stock_code": "920508",
+    "auction_price": 13.62,
+    "open_price": 13.68,
+    "pre_close_price": 13.62,
+    "auction_volume": 0.0,
+    "source_data_date": null,
+    "use_limit": "same-response field distinction only; not a date-qualified cross-source collision or a claim about the provider's fallback rule"
+  },
+  "withdrawn_mappings": [
+    {
+      "recorded_in": "field_registry.json.mappings",
+      "from": {"source": "sina", "code": "[1]"},
+      "to": {"source": "fuyao", "code": "auction_price"},
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "recorded_in": "field_registry.json.mappings",
+      "from": {"source": "tencent", "code": "[5]"},
+      "to": {"source": "fuyao", "code": "auction_price"},
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "recorded_in": "field_registry.json.mappings",
+      "from": {"source": "ulist239", "code": "f17"},
+      "to": {"source": "fuyao", "code": "auction_price"},
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·9d"
+    },
+    {
+      "recorded_in": "field_registry.json.mappings",
+      "from": {"source": "push2_full", "code": "f46"},
+      "to": {"source": "fuyao", "code": "auction_price"},
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·7d"
+    },
+    {
+      "recorded_in": "field_registry.json.mappings",
+      "from": {"source": "push2", "code": "f46"},
+      "to": {"source": "fuyao", "code": "auction_price"},
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·8d"
+    },
+    {
+      "recorded_in": "docs/verify/cross_source_align.md",
+      "from": {"source": "sina", "code": "[1]"},
+      "to": {"source": "fuyao", "code": "auction_final.auction_price"},
+      "relation": "同义",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "recorded_in": "docs/verify/cross_source_align.md",
+      "from": {"source": "tencent", "code": "[5]"},
+      "to": {"source": "fuyao", "code": "auction_final.auction_price"},
+      "relation": "同义",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "recorded_in": "docs/verify/cross_source_align.md",
+      "from": {"source": "ulist239", "code": "f17"},
+      "to": {"source": "fuyao", "code": "auction_final.auction_price"},
+      "relation": "同义",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·9d"
+    },
+    {
+      "recorded_in": "docs/verify/cross_source_align.md",
+      "from": {"source": "push2_full", "code": "f46"},
+      "to": {"source": "fuyao", "code": "auction_final.auction_price"},
+      "relation": "同义",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·7d"
+    },
+    {
+      "recorded_in": "docs/verify/cross_source_align.md",
+      "from": {"source": "push2", "code": "f46"},
+      "to": {"source": "fuyao", "code": "auction_final.auction_price"},
+      "relation": "同义",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·8d"
+    }
+  ],
+  "non_changes": [
+    "同花顺-fuyao::auction_price remains a verified API-leaf contract field meaning 竞价价格; its unqualified identity is not used to restore the withdrawn mappings.",
+    "同花顺-fuyao::snapshot.open_price remains 开盘价.",
+    "KPH (开盘红) and KPL (开盘啦) remain separate provider families; this review adds no relation between them."
+  ]
+}

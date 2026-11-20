@@ -573,9 +573,40 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # IPO par value, issue shares, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
     # quote and issue fields, plus separate Sina research-list, SSE ETF and
-    # CCTV News Broadcast, SZSE ETF scale date and SSE/SZSE ETF shares paths;
-    # zhuying_shouru uses an empirical correction.
-    assert len(pairs) == 169
+    # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
+    # and Fuyao's distinct auction/open price response fields; zhuying_shouru
+    # uses an empirical correction.
+    assert len(pairs) == 171
+    auction_price = records_by_pair[("同花顺-fuyao", "auction_final.auction_price")]
+    auction_open_price = records_by_pair[("同花顺-fuyao", "auction_final.open_price")]
+    assert auction_price["status"] == "verified"
+    assert auction_price["status_resolution"] == "verified_by_source_contract"
+    assert auction_price["meaning"] == "竞价价格。"
+    assert auction_open_price["status"] == "verified"
+    assert auction_open_price["status_resolution"] == "verified_by_source_contract"
+    assert auction_open_price["meaning"] == "开盘价。"
+    assert matrix["auction_final.auction_price"] == {"同花顺-fuyao"}
+    assert matrix["auction_final.open_price"] == {"同花顺-fuyao"}
+
+    retired_auction_price = records_by_pair[("同花顺-fuyao", "auction.auction_price")]
+    assert retired_auction_price["status"] == "disproved"
+    assert retired_auction_price["status_resolution"] == "retired_legacy_path"
+    assert retired_auction_price["canonical"] == "auction_final.auction_price"
+    assert not any(
+        mapping.get("to") == {"source": "fuyao", "code": "auction_price"}
+        and (
+            mapping.get("from", {}).get("source"),
+            mapping.get("from", {}).get("code"),
+        )
+        in {
+            ("sina", "[1]"),
+            ("tencent", "[5]"),
+            ("ulist239", "f17"),
+            ("push2_full", "f46"),
+            ("push2", "f46"),
+        }
+        for mapping in registry["mappings"]
+    )
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs

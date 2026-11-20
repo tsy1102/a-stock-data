@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2726；日常来源路径 2582：unverified 823、candidate 1、conflict 17、disproved 104；历史来源路径 144。
+> 注册字段路径 2728；日常来源路径 2584：unverified 823、candidate 1、conflict 17、disproved 105；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -884,7 +884,7 @@
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（104）
+## 四、已证伪（默认不重复破解）（105）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -939,6 +939,7 @@
 | 东财-push2ex | `yesterday_limit_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-16 Push2EX yesterday pool output container is not a field path |
 | 东财-slist | `n_boards` | n_boards | 项目派生的板块列表条目数：collect_slist 读取 Eastmoney 响应 data.diff，并以 len(diff) 生成此键；不是提供方响应字段。 | 条 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
 | 同花顺-fuyao | `assets_debt_ratio` | solvency.assets_debt_ratio | 旧无分组根路径身份；当前完整字段路径为 solvency.assets_debt_ratio，裸叶不是当前解析响应的根级独立字段。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务比率裸根路径身份退役（2026-11-14） |
+| 同花顺-fuyao | `auction.auction_price` | auction_final.auction_price | 已退役的旧采集路径 auction.auction_price；当前完整运行路径为 auction_final.auction_price。旧“开盘价”释义已撤回；目标字段是竞价价格。本记录只处置路径身份，不创建跨源映射。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 竞价价与开盘价身份更正（2026-11-21） |
 | 同花顺-fuyao | `auction_pct` | auction_final.auction_pct | 已退役的旧无分组来源路径；当前完整采集路径为 auction_final.auction_pct。本条只处置路径身份，不否定目标字段的语义或单位。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `calculate_operating_income_yoy_growth_ratio` | growth.calculate_operating_income_yoy_growth_ratio | 旧登记将 营业收入同比增长率 的 index_id 叶名当作来源根路径；当前响应中该根路径不存在，实际字段位于 growth.calculate_operating_income_yoy_growth_ratio。此记录仅退役旧路径身份，不改变嵌套字段的语义裁决。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 同比增长指标旧根路径退役（2026-11-14） |
 | 同花顺-fuyao | `calculate_operating_profit_yoy_growth_ratio` | growth.calculate_operating_profit_yoy_growth_ratio | 旧登记把 index_id 叶名当作来源根字段；当前响应和解析器不输出 fin_indicators.calculate_operating_profit_yoy_growth_ratio 根路径。对应指标实际位于 growth.calculate_operating_profit_yoy_growth_ratio；此记录只退役旧路径身份，不否定嵌套字段语义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-14 Fuyao 营业利润字段完整路径实证 |

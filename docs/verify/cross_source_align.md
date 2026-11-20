@@ -3,7 +3,9 @@
 > 用途：承载非 ulist239↔push2 的跨源等价/同义关系（fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/em_hot/exchange 任意源对；后 5 个为 V17.4.22 batch-2 扩展接纳）。
 > 经 extract_registry.py 解析入 field_registry.json mappings，collide 据 load_registry_state 标 in_registry 后 durable 定案（不再每轮重新发现）。
 > 来源：docs/field_verification/20260918/20260918_crack_report.md（collide 7 天窗口 L1 候选，hit≥0.92·5d，四铁律全过）。
-> 格式：`| 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |`
+> 格式：`> **2026-11-21 映射撤回**：Fuyao 官方分别将 `auction_price` 定义为竞价价格、`open_price` 定义为开盘价；已撤回把五个开盘价端点登记为 `auction_final.auction_price` 同义项的活动映射。保留期内有同响应反例，但竞价 `source_data_date` 未提供，该样本不作为跨源日期碰撞证据。详见[字段裁决](../field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)；历史碰撞报告保留原样。
+
+| 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |`
 > 源前缀短别名：fuyao / tdx / eltdx / zhb / tencent / push2 / push2_full / ulist239 / sina / em_fund_flow / event_dc / push2ex / em_hot / exchange
 > 注：fuyao/tdx/eltdx/zhb 适配层字段因 registered_field_sets 收录形态差异，verified 状态定案见 field_dict.md 附录；本表确保 collide in_registry 固化等价关系。
 >
@@ -764,11 +766,6 @@
 | tencent[70] | zhb.full.change_30d | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d |
 | tencent[70] | zhb.stat.change_20d | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d |
 | tencent[70] | zhb.stat.change_30d | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d |
-| sina[1] | fuyao.auction_final.auction_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d |
-| tencent[5] | fuyao.auction_final.auction_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d |
-| ulist239.f17 | fuyao.auction_final.auction_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.98·9d |
-| push2_full.f46 | fuyao.auction_final.auction_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.98·7d |
-| push2.f46 | fuyao.auction_final.auction_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.98·8d |
 | ulist239.f195 | ulist239.f196 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d |
 | ulist239.f196 | ulist239.f195 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d |
 | ulist239.f186 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |

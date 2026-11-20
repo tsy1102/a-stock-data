@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Push2EX 日常字段采集增加昨日涨停池端点，并将四类池接口拆成可单独补采、可追踪的 capture units；请求日期与来源实际日期分开记录，昨日池明确标为可能跨交易日的混合字段集合。
 - Push2EX 官方网页观测按采集目录中登记的输出路径动态校验 `raw_collection`，使新增昨日池样本可沿用现有逐股页面观测裁决。
 
+### Changed
+
+- 按 Fuyao 官方契约区分 `auction_final.auction_price`（竞价价格）与 `auction_final.open_price`（开盘价），修正旧路径错义并撤回 5 组将竞价价映射为开盘价的活动关系。竞价来源日期缺失的样本只用于同响应字段区分，不作为跨源碰撞证据；详见[裁决](docs/field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)。
+
 ### Fixed
 
 - 修复 `st_list` 在东财失败并回退到 Baostock 时仍记录为 `em.clist` 的来源血缘错误。后续 raw/meta 会记录沪深与北交所的实际提供方、接口和路由状态；旧快照缺乏路由证据，保持来源未确认且不改写。详见[审计记录](docs/field_verification/research/20261121_st_list_route_provenance_audit.md)。

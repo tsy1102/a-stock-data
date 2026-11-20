@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-fuyao-auction-final-auction-price-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_price",
+      "meaning": "竞价价格。",
+      "unit": "",
+      "rationale": "Fuyao 官方 GET /api/a-share/auction/snapshot 将 data.item[].auction_price 定义为“竞价价格”，并将 data.item[].open_price 单独定义为“开盘价”。项目适配器保留响应 item 字段，采集器将同一 item 放入 stocks.<代码>.auction_final，因此精确运行路径为 auction_final.auction_price。保留边界内同一响应记录存在 auction_price 与 open_price 不等的样本（2026-10-20、920508），进一步证实不能把两者作为恒等字段；该样本 source_data_date 未暴露，只作同响应字段区分，不作日期或跨源碰撞证据。官方契约未声明原始数值单位，故单位留空。本决定只定案该来源路径的释义，不创建跨源 mappings。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-21 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_price=竞价价格；同表另列 data.item[].open_price=开盘价；data.timestamp 为响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261121-fuyao-auction-final-open-price-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.open_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.open_price",
+      "meaning": "开盘价。",
+      "unit": "",
+      "rationale": "Fuyao 官方 GET /api/a-share/auction/snapshot 将 data.item[].open_price 定义为“开盘价”。项目适配器保留响应 item 字段，采集器将同一 item 放入 stocks.<代码>.auction_final，因此精确运行路径为 auction_final.open_price。该路径与同一 item 中的 auction_price 分开登记；官方契约未声明原始数值单位，故单位留空。本决定只定案该来源路径的释义，不创建跨源 mappings。响应时间不是来源数据日期，采集元数据未暴露 auction 来源日期，因此归档数值不用于跨源碰撞。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-21 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].open_price=开盘价；data.timestamp 为响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    }
+  ]
+}

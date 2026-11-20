@@ -13142,20 +13142,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
+      "canonical": "profitability.index_deduct_weighted_avg_roe",
+      "meaning": "项目生成的 H1 摘要别名：将 profitability.index_deduct_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.ded_weighted_roe；不是 Fuyao 上游键。完整源字段释义为扣非加权净资产收益率，单位 %。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "delta",
@@ -21981,20 +21978,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
+      "canonical": "market.h1_indicators",
+      "meaning": "项目按股票代码组装的 H1 指标摘要对象容器；不是 Fuyao 响应中的单一业务字段。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "h1_indicators_ready",
@@ -22002,20 +21996,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
+      "canonical": "market.h1_indicators_ready",
+      "meaning": "项目生成的 H1 可用性哨兵；取首只股票的当年中报指标请求是否返回，不是 Fuyao 原始字段，也不保证每只股票都完整返回。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "h_gu",
@@ -39856,20 +39847,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
+      "canonical": "profitability.index_weighted_avg_roe",
+      "meaning": "项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "weituo",
@@ -216814,22 +216802,25 @@
       "code": "ded_weighted_roe",
       "identity": "同花顺-fuyao::ded_weighted_roe",
       "path": "ded_weighted_roe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "profitability.index_deduct_weighted_avg_roe",
+      "meaning": "项目生成的 H1 摘要别名：将 profitability.index_deduct_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.ded_weighted_roe；不是 Fuyao 上游键。完整源字段释义为扣非加权净资产收益率，单位 %。",
+      "unit": "%",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-ded-weighted-roe-output-provenance-20261120",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "同花顺-fuyao"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -216845,6 +216836,32 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "status_raw": "采集输出路径来源审计 2026-11-20",
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+          "docs/field_verification/research/20261120_fuyao_h1_alias_samples.csv",
+          "docs/field_verification/research/20261120_fuyao_h1_output_path_inventory.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_asset_metrics_source_contract_evidence.md"
+        ],
+        "reason": "采集器从当年 -2 报告期的 profitability.index_deduct_weighted_avg_roe 读取原值并赋给 market.h1_indicators.<code>.ded_weighted_roe。保留期 420 条成对非空记录逐值完全相等，未发现转换或不匹配；首个目录的完整源值和别名均缺失。"
       }
     },
     {
@@ -220088,22 +220105,25 @@
       "code": "h1_indicators",
       "identity": "同花顺-fuyao::h1_indicators",
       "path": "h1_indicators",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "market.h1_indicators",
+      "meaning": "项目按股票代码组装的 H1 指标摘要对象容器；不是 Fuyao 响应中的单一业务字段。",
       "unit": "",
-      "section": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "collector_output_container",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-h1-indicators-output-provenance-20261120",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "同花顺-fuyao"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -220119,21 +220139,9 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "h1_indicators_ready",
-      "identity": "同花顺-fuyao::h1_indicators_ready",
-      "path": "h1_indicators_ready",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
-      "status_evidence": {
+      },
+      "status_raw": "采集输出路径来源审计 2026-11-20",
+      "superseded_status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
         "registry_aggregate_status": "unverified",
@@ -220142,6 +220150,45 @@
         ],
         "values": [
           "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+          "docs/field_verification/research/20261120_fuyao_h1_alias_samples.csv",
+          "docs/field_verification/research/20261120_fuyao_h1_output_path_inventory.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "reason": "CAPTURE_UNIT_CATALOG 将 market.h1_indicators 声明为输出对象路径；采集器构造按股票代码索引的字典并写入 raw JSON。"
+      }
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "h1_indicators_ready",
+      "identity": "同花顺-fuyao::h1_indicators_ready",
+      "path": "h1_indicators_ready",
+      "canonical": "market.h1_indicators_ready",
+      "meaning": "项目生成的 H1 可用性哨兵；取首只股票的当年中报指标请求是否返回，不是 Fuyao 原始字段，也不保证每只股票都完整返回。",
+      "unit": "",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
+      "sections": [],
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
+      "status_evidence": {
+        "adjudication_evidence_id": "fuyao-h1-indicators-ready-output-provenance-20261120",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+        "reference_status_raw": [],
+        "reference_statuses": [],
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "registry_aggregate_status": "unverified",
+        "values": [
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -220157,6 +220204,30 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "status_raw": "采集输出路径来源审计 2026-11-20",
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+          "docs/field_verification/research/20261120_fuyao_h1_alias_samples.csv",
+          "docs/field_verification/research/20261120_fuyao_h1_output_path_inventory.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py"
+        ],
+        "reason": "采集器将 bool(sentinel) 写入 market.h1_indicators_ready；sentinel 由对首只股票的 year-2 财报请求产生。保留样本显示首日来源状态 ok 但哨兵为 false，后续就绪状态也仅表示该首只股票请求成功。"
       }
     },
     {
@@ -235090,22 +235161,25 @@
       "code": "weighted_roe",
       "identity": "同花顺-fuyao::weighted_roe",
       "path": "weighted_roe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
+      "canonical": "profitability.index_weighted_avg_roe",
+      "meaning": "项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。",
+      "unit": "%",
+      "section": "Fuyao H1 摘要路径来源审计（2026-11-20）",
       "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "disproved",
+      "status_resolution": "project_derived_capture_output",
       "status_evidence": {
-        "reference_statuses": [],
+        "adjudication_evidence_id": "fuyao-weighted-roe-output-provenance-20261120",
+        "evidence_basis": "capture_output_provenance_review",
+        "evidence_file": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
         "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
+        "reference_statuses": [],
         "registry_aggregate_sources": [
           "同花顺-fuyao"
         ],
+        "registry_aggregate_status": "unverified",
         "values": [
-          "unverified"
+          "disproved"
         ]
       },
       "reference_evidence": [],
@@ -235121,6 +235195,32 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "status_raw": "采集输出路径来源审计 2026-11-20",
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261120_fuyao_h1_alias_path_provenance.md",
+          "docs/field_verification/research/20261120_fuyao_h1_alias_samples.csv",
+          "docs/field_verification/research/20261120_fuyao_h1_output_path_inventory.csv",
+          "scripts/capture_catalog.py",
+          "scripts/capture_verified_collectors.py",
+          "docs/verify/fuyao_api_full.md",
+          "docs/field_verification/adjudications/20261114_fuyao_ratio_source_contract_evidence.md"
+        ],
+        "reason": "采集器从当年 -2 报告期的 profitability.index_weighted_avg_roe 读取原值并赋给 market.h1_indicators.<code>.weighted_roe。保留期 420 条成对非空记录逐值完全相等，未发现转换或不匹配；首个目录的完整源值和别名均缺失。"
       }
     },
     {

@@ -164,3 +164,52 @@ def test_event_dc_top_level_collections_keep_full_field_paths():
         ("600000", "T:20261119"): "申购",
     }
     assert "event_dc.ACTUAL_ISSUE_SCALE" not in store
+
+
+def test_market_sources_request_metadata_is_not_flattened_as_a_field():
+    snapshot = Snapshot(
+        source="market_sources",
+        domain=TRADING,
+        sample_date=date(2026, 11, 19),
+        capture_date=date(2026, 11, 20),
+        folder="20261119",
+        path="raw_market_sources.json",
+        document={
+            "__source_meta__": {
+                "kph_limit_ladder": {
+                    "adapter": "levistock.get_zttt",
+                    "provider_family": "kph",
+                    "date_domain": "trading_day",
+                    "requested_trade_date": "2026-11-19",
+                    "date_evidence": "request_parameter",
+                }
+            },
+            "kph_limit_ladder": [
+                {
+                    "code": "002685",
+                    "limit_count": 4,
+                    "limit_time": 1794965100,
+                }
+            ],
+        },
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=1,
+        captured_at=datetime(2026, 11, 20, 8, 30),
+        date_origin="capture_date",
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}})
+
+    load_snapshots(
+        [snapshot],
+        store,
+        [],
+        allowed_trading_dates={"20261118"},
+    )
+
+    assert store["market_sources.limit_count"]["vals"] == {
+        ("002685", "T:20261118"): 4,
+    }
+    assert "market_sources.requested_trade_date" not in store
+    assert not any("requested_trade_date" in field for field in store)

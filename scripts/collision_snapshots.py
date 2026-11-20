@@ -212,6 +212,7 @@ def _record_containers(doc, source=None, include_context=False):
         containers.append({f"__{i}": value for i, value in enumerate(records)})
     for key, value in doc.items():
         if key in (
+            "__source_meta__",
             "scheme",
             "field_meta",
             "zhb_date",

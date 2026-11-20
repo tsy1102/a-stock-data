@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 582 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 586 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3682,6 +3682,7 @@
 | 同花顺-fuyao | `current_assets_turnover_ratio` | operation.current_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.current_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `current_ratio` | solvency.current_ratio | 旧登记的无分组叶名身份；当前完整路径为 solvency.current_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `date_ms` | date_ms | 项目按 probe_trading_day 生成的 Asia/Shanghai 零点毫秒 Unix 时间戳，作为涨停、跌停及炸板池接口的 date_ms 请求参数；该根字段不是 Fuyao 响应字段，也不能代替来源实际数据日。 | `disproved` |
+| 同花顺-fuyao | `ded_weighted_roe` | profitability.index_deduct_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_deduct_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.ded_weighted_roe；不是 Fuyao 上游键。完整源字段释义为扣非加权净资产收益率，单位 %。 | `disproved` |
 | 同花顺-fuyao | `dump` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
 | 同花顺-fuyao | `earned_interest_multiple` | solvency.earned_interest_multiple | 旧登记的无分组叶名身份；当前完整路径为 solvency.earned_interest_multiple。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
@@ -3695,6 +3696,8 @@
 | 同花顺-fuyao | `growth.calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | 该股票所选财报期归属于母公司股东、所有者或上市公司股东的净利润相较上年同期的同比增长率；按百分数值返回。2026H1 样本按（本期归母净利润－上年同期归母净利润）／abs（上年同期归母净利润）×100 复算吻合。 | `verified` |
 | 同花顺-fuyao | `growth.fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 固定资产账面价值同比变动率，按百分数值返回；2026H1正式报告横向实证支持合并口径固定资产账面价值变化率。具体上游计算和基期修订策略未获接口契约确认。 | `verified` |
 | 同花顺-fuyao | `growth.total_assets_growth_ratio` | growth.total_assets_growth_ratio | 总资产增长率；接口值按百分数表达。2026H1样本中按本期末合并总资产相对上期末未调整合并总资产复算；中华企业报告使用调整后比较基数，差异另行保留。 | `verified` |
+| 同花顺-fuyao | `h1_indicators` | market.h1_indicators | 项目按股票代码组装的 H1 指标摘要对象容器；不是 Fuyao 响应中的单一业务字段。 | `disproved` |
+| 同花顺-fuyao | `h1_indicators_ready` | market.h1_indicators_ready | 项目生成的 H1 可用性哨兵；取首只股票的当年中报指标请求是否返回，不是 Fuyao 原始字段，也不保证每只股票都完整返回。 | `disproved` |
 | 同花顺-fuyao | `high_price` | snapshot.high_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.high_price。官方接口将 high_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | `disproved` |
 | 同花顺-fuyao | `index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 旧登记的无分组叶名身份；当前完整路径为 profitability.index_deduct_weighted_avg_roe。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | `disproved` |
 | 同花顺-fuyao | `index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。 | `disproved` |
@@ -3754,6 +3757,7 @@
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | `unverified` |
 | 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
+| 同花顺-fuyao | `weighted_roe` | profitability.index_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。 | `disproved` |
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |

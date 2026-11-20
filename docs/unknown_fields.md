@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2683；日常来源路径 2539：unverified 829、candidate 1、conflict 17、disproved 100；历史来源路径 144。
+> 注册字段路径 2683；日常来源路径 2539：unverified 825、candidate 1、conflict 17、disproved 104；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 694 |
+| 含义栏为空/占位 | 690 |
 | 含义栏有文本（仍未验证） | 135 |
 
 ### 历史状态证据的解析结果
@@ -25,7 +25,7 @@
 | `aggregate_status_scope_unresolved` | 282 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 412 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 408 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（17）
@@ -56,7 +56,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（829）
+## 三、待破解字段（825）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -431,7 +431,6 @@
 | 同花顺-fuyao | `currency` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `day` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 同花顺-fuyao | `ded_weighted_roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `diagnostics` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `diagnostics/detail` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `dividends` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -453,8 +452,6 @@
 | 同花顺-fuyao | `fund_mid_sell` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `fund_super_buy` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `fund_super_sell` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `h1_indicators` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `h1_indicators_ready` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `high` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `historical` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `holders` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -489,7 +486,6 @@
 | 同花顺-fuyao | `total` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `turnover_ratio_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
-| 同花顺-fuyao | `weighted_roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `zt_seal_amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `zt_seal_amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 巨潮(cninfo) | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -890,7 +886,7 @@
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（100）
+## 四、已证伪（默认不重复破解）（104）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -955,11 +951,14 @@
 | 同花顺-fuyao | `current_assets_turnover_ratio` | operation.current_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.current_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `current_ratio` | solvency.current_ratio | 旧登记的无分组叶名身份；当前完整路径为 solvency.current_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `date_ms` | date_ms | 项目按 probe_trading_day 生成的 Asia/Shanghai 零点毫秒 Unix 时间戳，作为涨停、跌停及炸板池接口的 date_ms 请求参数；该根字段不是 Fuyao 响应字段，也不能代替来源实际数据日。 | 毫秒 Unix 时间戳（Asia/Shanghai 00:00） | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | — |
+| 同花顺-fuyao | `ded_weighted_roe` | profitability.index_deduct_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_deduct_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.ded_weighted_roe；不是 Fuyao 上游键。完整源字段释义为扣非加权净资产收益率，单位 %。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | Fuyao H1 摘要路径来源审计（2026-11-20） |
 | 同花顺-fuyao | `earned_interest_multiple` | solvency.earned_interest_multiple | 旧登记的无分组叶名身份；当前完整路径为 solvency.earned_interest_multiple。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `fin_report` | fin_report | 项目财务指标采集器记录成功返回非空指标所用的 report 请求期标签；它不是指标响应中的独立上游字段，也不单独证明指标实际所属报告期。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-15 Fuyao financial indicator containers and request-period label |
 | 同花顺-fuyao | `financials` | stocks.<ticker>.financials | 采集器按股票归并 income_q、income_a、balance_q、cashflow_q 四个报表输出数组的对象容器；不是可独立解释或赋予单一单位的财务指标。叶路径语义按各自接口字段维护。 | — | 采集器输出容器（不是字段路径） | collector_output_container | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `fixed_asset_invest_expansion_ratio` | growth.fixed_asset_invest_expansion_ratio | 旧登记将 ability/index_id 叶名误作 fin_indicators 根级路径；当前响应与解析器不输出该无分组根键，实际路径为 fin_indicators.growth.fixed_asset_invest_expansion_ratio。此记录只退役旧路径身份，不否定嵌套字段语义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-14 Fuyao 固定资产投资扩张率完整路径与实证 |
 | 同花顺-fuyao | `growth` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Fuyao financial indicator containers and request-period label |
+| 同花顺-fuyao | `h1_indicators` | market.h1_indicators | 项目按股票代码组装的 H1 指标摘要对象容器；不是 Fuyao 响应中的单一业务字段。 | — | 采集器输出容器（不是字段路径） | collector_output_container | Fuyao H1 摘要路径来源审计（2026-11-20） |
+| 同花顺-fuyao | `h1_indicators_ready` | market.h1_indicators_ready | 项目生成的 H1 可用性哨兵；取首只股票的当年中报指标请求是否返回，不是 Fuyao 原始字段，也不保证每只股票都完整返回。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | Fuyao H1 摘要路径来源审计（2026-11-20） |
 | 同花顺-fuyao | `high_price` | snapshot.high_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.high_price。官方接口将 high_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情快照裸根路径身份退役（2026-11-15） |
 | 同花顺-fuyao | `index_deduct_weighted_avg_roe` | profitability.index_deduct_weighted_avg_roe | 旧登记的无分组叶名身份；当前完整路径为 profitability.index_deduct_weighted_avg_roe。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务指标无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `index_weighted_avg_roe` | profitability.index_weighted_avg_roe | 旧无分组根路径身份；当前完整字段路径为 profitability.index_weighted_avg_roe，裸叶不是当前解析响应的根级独立字段。 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 财务比率裸根路径身份退役（2026-11-14） |
@@ -993,6 +992,7 @@
 | 同花顺-fuyao | `total_assets_turnover_ratio` | operation.total_assets_turnover_ratio | 旧登记的无分组叶名身份；当前完整路径为 operation.total_assets_turnover_ratio。此记录只退役 fin_indicators.<leaf> 根路径，不否定分组路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 偿债、营运与现金流无分组根路径退役（2026-11-14） |
 | 同花顺-fuyao | `turnover` | snapshot.turnover | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | 股 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
+| 同花顺-fuyao | `weighted_roe` | profitability.index_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | Fuyao H1 摘要路径来源审计（2026-11-20） |
 | 新浪(扩展API) | `report_type` | report_type | 项目采集器回显的请求类别，不是新浪原始报表字段：适配器把请求参数 report_type 写入返回包装对象，提供方报表数据位于 report_list。fzb 表示资产负债表请求，lrb 表示利润表请求，llb 表示现金流量表请求。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 
 ## 已退出来源字段（仅历史证据，不进入默认破解）

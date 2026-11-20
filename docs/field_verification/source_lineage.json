@@ -1170,9 +1170,9 @@
       "note": "Eastmoney slist 接口"
     },
     "sse_e_interaction": {
-      "independence_family": null,
-      "independence_status": "unconfirmed",
-      "note": "underlying exchange endpoint not independently verified"
+      "independence_family": "exchange",
+      "independence_status": "confirmed",
+      "note": "上证e互动官方平台；上交所官方页面明确链接 sns.sseinfo.com，来源身份与 exchange 同属上交所服务体系。核验记录见 adjudications/20261120_sse_e_interaction_official_lineage.md。字段语义仍待分别核实。"
     },
     "st_list": {
       "independence_family": null,

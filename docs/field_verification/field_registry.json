@@ -9,9 +9,9 @@
     "source_field_stats": {
       "aggregate_status_scope_unresolved": 321,
       "candidate": 1,
-      "collector_output_container": 10,
+      "collector_output_container": 11,
       "conflict": 17,
-      "disproved": 100,
+      "disproved": 104,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -21,19 +21,19 @@
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
-      "project_derived_capture_output": 12,
+      "project_derived_capture_output": 15,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 37,
-      "registry_status_only_single_source": 493,
+      "registry_status_only_single_source": 487,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 48,
       "status_conflict": 16,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 949,
-      "verified": 1616,
-      "verified_by_empirical_addendum": 218,
+      "unverified": 943,
+      "verified": 1618,
+      "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 475
@@ -22829,20 +22829,18 @@
         "开盘红(Levistock适配)"
       ],
       "section": "",
-      "canonical": "",
+      "canonical": "industry_id",
       "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
         "开盘红": "verified",
-        "开盘红(Levistock适配)": "unverified"
+        "开盘红(Levistock适配)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_differs",
-        "meaning_differs",
-        "source_statuses_differ"
+        "meaning_differs"
       ]
     },
     {
@@ -22888,13 +22886,13 @@
         "开盘红(Levistock适配)"
       ],
       "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "industry_id / industry_zt",
-      "meaning": "行业 ID / 同行业涨停数",
-      "unit": "",
+      "canonical": "kph_industry_limit_up_count",
+      "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+      "unit": "家",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "开盘红(Levistock适配)": "unverified"
+        "开盘红(Levistock适配)": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -43162,7 +43160,8 @@
       "东财"
     ],
     "industry_id": [
-      "开盘红"
+      "开盘红",
+      "开盘红(Levistock适配)"
     ],
     "industry_name": [
       "AxData"
@@ -46614,7 +46613,8 @@
       "东财-event_dc(可转债列表)"
     ],
     "kph_industry_limit_up_count": [
-      "开盘红"
+      "开盘红",
+      "开盘红(Levistock适配)"
     ]
   },
   "mappings": [
@@ -253397,15 +253397,16 @@
       "code": "industry_id",
       "identity": "开盘红(Levistock适配)::industry_id",
       "path": "industry_id",
-      "canonical": "industry_id / industry_zt",
-      "meaning": "行业 ID / 同行业涨停数",
+      "canonical": "industry_id",
+      "meaning": "开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。",
       "unit": "",
       "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
       "sections": [
-        "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕"
+        "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+        "2026-11-20 开盘红 Levistock industry_id 字段别名来源内核验"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -253414,8 +253415,24 @@
           "开盘红(Levistock适配)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261120-kph-levistock-industry-id-alias"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261120_kph_levistock_industry_id_alias.md",
+        "evidence_sha256": "bc6feb77db7c34935bdfed75c6dca2d055e6992005dc998bfe04c95b15aa3cc8",
+        "sample": {
+          "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页快照。103 条记录分属 43 个来源日与 industry_id 分组；43/43 组均有分类码。项目 KPH 适配器 row[26] 与固定版本 Levistock 的 industry_id 指向同一响应位置。该样本只核验 KPH 自身分类键，不用于推定 KPL 等价；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+          "comparison_count": 43,
+          "matched_count": 43,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 38,
+          "observation_count": 103
+        }
       },
       "reference_evidence": [
         {
@@ -253425,6 +253442,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-20 开盘红 Levistock industry_id 字段别名来源内核验",
+          "canonical": "industry_id",
+          "meaning": "开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-20",
+          "status": "verified",
+          "adjudication_id": "20261120-kph-levistock-industry-id-alias",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261120_kph_levistock_industry_id_alias.md",
+          "evidence_sha256": "bc6feb77db7c34935bdfed75c6dca2d055e6992005dc998bfe04c95b15aa3cc8",
+          "metadata_change": {
+            "before": {
+              "canonical": "industry_id / industry_zt",
+              "meaning": "行业 ID / 同行业涨停数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "industry_id",
+              "meaning": "开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页快照。103 条记录分属 43 个来源日与 industry_id 分组；43/43 组均有分类码。项目 KPH 适配器 row[26] 与固定版本 Levistock 的 industry_id 指向同一响应位置。该样本只核验 KPH 自身分类键，不用于推定 KPL 等价；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -253439,22 +253490,67 @@
         "meaning": "行业 ID / 同行业涨停数",
         "unit": "",
         "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261120-kph-levistock-industry-id-alias",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_kph_levistock_industry_id_alias.json",
+          "evidence_file": "adjudications/20261120_kph_levistock_industry_id_alias.md",
+          "evidence_sha256": "bc6feb77db7c34935bdfed75c6dca2d055e6992005dc998bfe04c95b15aa3cc8",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "industry_id / industry_zt",
+            "meaning": "行业 ID / 同行业涨停数",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "industry_id / industry_zt",
+              "meaning": "行业 ID / 同行业涨停数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "industry_id",
+              "meaning": "开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "本项目 KPH 适配器把开盘红 HisDaBanList 的 row[26] 映射为 industry_id；固定版本的独立 Levistock 客户端调用同一 KPH 主机和动作，将相同 row[26] 映射为 industry_id，并注释为“行业ID”。开盘红官网教程提供板块分类的产品语境，但未公开该编号体系或层级，因此只确认该字段为 KPH 自身分类 ID，不外推编码标准。KPH 2026-11-16、17、18 三个不同来源交易日的完整分页样本共 103 条记录、43 个来源日与 industry_id 分组；样本 CSV 中 43/43 组均有分类码，同组记录携带同一分类码。KPH 与 KPL 是不同产品、官网、接口主机和来源族；没有使用 KPL sector_code 值定义该字段，不建立跨源 mappings。",
+          "sample": {
+            "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页快照。103 条记录分属 43 个来源日与 industry_id 分组；43/43 组均有分类码。项目 KPH 适配器 row[26] 与固定版本 Levistock 的 industry_id 指向同一响应位置。该样本只核验 KPH 自身分类键，不用于推定 KPL 等价；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
+        }
+      ]
     },
     {
       "source": "开盘红(Levistock适配)",
       "code": "industry_zt",
       "identity": "开盘红(Levistock适配)::industry_zt",
       "path": "industry_zt",
-      "canonical": "industry_id / industry_zt",
-      "meaning": "行业 ID / 同行业涨停数",
-      "unit": "",
+      "canonical": "kph_industry_limit_up_count",
+      "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+      "unit": "家",
       "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
       "sections": [
-        "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕"
+        "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+        "2026-11-20 开盘红 Levistock industry_zt 字段别名来源内核验"
       ],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -253463,8 +253559,24 @@
           "开盘红(Levistock适配)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261120-kph-levistock-industry-zt-alias"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261120_kph_levistock_industry_zt_alias.md",
+        "evidence_sha256": "924c4d1cbcfe580623a41683bef5aba95998e39f2e002a6fc46c4cf8755ffe3c",
+        "sample": {
+          "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页；项目适配器 row[27] 与固定 Levistock 客户端 industry_zt 指向同一原始响应位置。103 条记录按来源日与 industry_id 分为 43 组，43/43 组内计数一致；38 组等于当前响应分组行数，5 组大于返回行数。该样本来自项目 KPH 采集，不是另行调用 Levistock；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+          "comparison_count": 43,
+          "matched_count": 43,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 38,
+          "observation_count": 103
+        }
       },
       "reference_evidence": [
         {
@@ -253474,6 +253586,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-20 开盘红 Levistock industry_zt 字段别名来源内核验",
+          "canonical": "kph_industry_limit_up_count",
+          "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+          "unit": "家",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-20",
+          "status": "verified",
+          "adjudication_id": "20261120-kph-levistock-industry-zt-alias",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261120_kph_levistock_industry_zt_alias.md",
+          "evidence_sha256": "924c4d1cbcfe580623a41683bef5aba95998e39f2e002a6fc46c4cf8755ffe3c",
+          "metadata_change": {
+            "before": {
+              "canonical": "industry_id / industry_zt",
+              "meaning": "行业 ID / 同行业涨停数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kph_industry_limit_up_count",
+              "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+              "unit": "家"
+            }
+          },
+          "sample": {
+            "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页；项目适配器 row[27] 与固定 Levistock 客户端 industry_zt 指向同一原始响应位置。103 条记录按来源日与 industry_id 分为 43 组，43/43 组内计数一致；38 组等于当前响应分组行数，5 组大于返回行数。该样本来自项目 KPH 采集，不是另行调用 Levistock；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -253488,7 +253634,51 @@
         "meaning": "行业 ID / 同行业涨停数",
         "unit": "",
         "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261120-kph-levistock-industry-zt-alias",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_kph_levistock_industry_zt_alias.json",
+          "evidence_file": "adjudications/20261120_kph_levistock_industry_zt_alias.md",
+          "evidence_sha256": "924c4d1cbcfe580623a41683bef5aba95998e39f2e002a6fc46c4cf8755ffe3c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "industry_id / industry_zt",
+            "meaning": "行业 ID / 同行业涨停数",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "industry_id / industry_zt",
+              "meaning": "行业 ID / 同行业涨停数",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kph_industry_limit_up_count",
+              "meaning": "按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。",
+              "unit": "家"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "本项目 KPH 适配器把开盘红 HisDaBanList 的 row[27] 映射为 industry_limit_up_count；固定版本的独立 Levistock 客户端调用同一 KPH 主机和动作，将相同 row[27] 映射为 industry_zt，并注释为“同行业涨停数”。开盘红官网教程解释同一板块内涨停家数；这确认产品级语义类别和单位，但不构成 API 原始列到页面指标的正式契约。KPH 2026-11-16 至 18 三个不同来源交易日的完整分页样本包含 103 条记录和 43 个来源日与 industry_id 分组，43/43 组内计数一致。38/43 组等于本次 KPH 返回分组行数、另 5 组大于返回行数，因此确切统计全集仍未知。项目原始响应中 row[27] 的值与第三方客户端 industry_zt 是同一精确响应位置的别名；该别名没有单独调用 Levistock，避免把重复解析误称为独立采样。KPH 与 KPL 是不同产品、官网、接口主机和来源族；没有使用 KPL 数据定义该字段，不建立跨源 mappings。industry_id 的分类体系与层级仍未知。",
+          "sample": {
+            "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页；项目适配器 row[27] 与固定 Levistock 客户端 industry_zt 指向同一原始响应位置。103 条记录按来源日与 industry_id 分为 43 组，43/43 组内计数一致；38 组等于当前响应分组行数，5 组大于返回行数。该样本来自项目 KPH 采集，不是另行调用 Levistock；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+            "comparison_count": 43,
+            "matched_count": 43,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 38,
+            "observation_count": 103
+          }
+        }
+      ]
     },
     {
       "source": "开盘红(Levistock适配)",

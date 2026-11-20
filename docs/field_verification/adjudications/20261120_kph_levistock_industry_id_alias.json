@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_kph_levistock_industry_id_alias.md",
+  "evidence_sha256": "bc6feb77db7c34935bdfed75c6dca2d055e6992005dc998bfe04c95b15aa3cc8",
+  "decisions": [
+    {
+      "id": "20261120-kph-levistock-industry-id-alias",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘红(Levistock适配)",
+        "code": "industry_id"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "industry_id / industry_zt",
+        "meaning": "行业 ID / 同行业涨停数",
+        "unit": ""
+      },
+      "canonical": "industry_id",
+      "meaning": "开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。",
+      "unit": "",
+      "section": "2026-11-20 开盘红 Levistock industry_id 字段别名来源内核验",
+      "rationale": "本项目 KPH 适配器把开盘红 HisDaBanList 的 row[26] 映射为 industry_id；固定版本的独立 Levistock 客户端调用同一 KPH 主机和动作，将相同 row[26] 映射为 industry_id，并注释为“行业ID”。开盘红官网教程提供板块分类的产品语境，但未公开该编号体系或层级，因此只确认该字段为 KPH 自身分类 ID，不外推编码标准。KPH 2026-11-16、17、18 三个不同来源交易日的完整分页样本共 103 条记录、43 个来源日与 industry_id 分组；样本 CSV 中 43/43 组均有分类码，同组记录携带同一分类码。KPH 与 KPL 是不同产品、官网、接口主机和来源族；没有使用 KPL sector_code 值定义该字段，不建立跨源 mappings。",
+      "sample": {
+        "scope": "开盘红 KPH HisDaBanList 2026-11-16、17、18 三个不同来源交易日的完整分页快照。103 条记录分属 43 个来源日与 industry_id 分组；43/43 组均有分类码。项目 KPH 适配器 row[26] 与固定版本 Levistock 的 industry_id 指向同一响应位置。该样本只核验 KPH 自身分类键，不用于推定 KPL 等价；排除捕获于 2026-11-19、来源日仍为 2026-11-18 的 38 条重复记录。",
+        "comparison_count": 43,
+        "matched_count": 43,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 38,
+        "observation_count": 103
+      },
+      "previous_attribute_conflicts": {}
+    }
+  ]
+}

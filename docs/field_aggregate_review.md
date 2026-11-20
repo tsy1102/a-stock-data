@@ -2426,12 +2426,12 @@
 
 ### `industry_id` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：meaning_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 开盘红 · `industry_id` | industry_id | 行业分类 ID；与 KPL sector_code 在来源日期对齐的 420 组对照中 417 组相同、3 组不同；分类体系或层级未确认，保留各来源原码 | — | `verified` |
-| 开盘红(Levistock适配) · `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | `unverified` |
+| 开盘红(Levistock适配) · `industry_id` | industry_id | 开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。 | — | `verified` |
 
 ### `int` — incomplete
 
@@ -3813,8 +3813,8 @@
 | 开盘红(Levistock适配) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
 | 开盘红(Levistock适配) | `flat` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
-| 开盘红(Levistock适配) | `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | `unverified` |
-| 开盘红(Levistock适配) | `industry_zt` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | `unverified` |
+| 开盘红(Levistock适配) | `industry_id` | industry_id | 开盘红接口返回的行业分类 ID，作为 KPH 自身记录的分类键。具体分类体系和层级未公开；本定义不意味着该 ID 与 KPL sector_code 等价，也不推断它对应任何特定行业标准。 | `verified` |
+| 开盘红(Levistock适配) | `industry_zt` | kph_industry_limit_up_count | 按开盘红接口自身 industry_id 分类关联的当日涨停股票家数。统计集合及行业分类体系未公开；部分值不等于本接口当前完整分页响应内该分类的记录数，不外推为全市场完整行业总数。 | `verified` |
 | 开盘红(Levistock适配) | `limit_count` | limit_tag / limit_count | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `limit_tag` | limit_tag / limit_count | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | `verified` |

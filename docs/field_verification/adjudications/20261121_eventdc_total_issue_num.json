@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-ipo-total-issue-num",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TOTAL_ISSUE_NUM"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_total_issue_shares_wan",
+      "meaning": "该字段表示 IPO 发行记录的发行总股数，单位为万股。该完整路径在已保留的 20 条 RPTA_APP_IPOAPPLY 记录中与官方定义的 ISSUE_NUM 完全相同，因此按同源别名登记。东方财富没有单独公布 TOTAL_ISSUE_NUM 的字段标签。本结论适用于此批留存记录。未来若两键值不同，需重新核验。",
+      "unit": "万股",
+      "section": "2026-11-21 Eastmoney RPTA_APP_IPOAPPLY TOTAL_ISSUE_NUM same-source alias adjudication",
+      "rationale": "项目调用链将 RPTA_APP_IPOAPPLY 的响应行原样保留到 raw_event_dc.ipo_calendar[]，TOTAL_ISSUE_NUM 是该响应中的精确键。东方财富官方新股申购页面将 ISSUE_NUM 对应到发行总数（万股），官方详情页脚本以 info.ISSUE_NUM 显示总发行数量，并将 ONLINE_ISSUE_NUM 单独显示为网上发行数量。对 2026-11-19 目标数据日留存的 20 条完整响应逐行对照，ISSUE_NUM 与 TOTAL_ISSUE_NUM 均 20/20 有值且精确相等，19 个不同取值均一致、无反例；既有短路径同源映射仅作辅助线索。本裁决将 TOTAL_ISSUE_NUM 定义为本来源响应中的发行总股数同值别名，不声称官方公开了该键的独立 schema，不创建跨源映射；完整样本、原始归档摘要、前端脚本摘要及证据范围见配套核查记录。",
+      "source_contract": {
+        "authority": "东方财富数据中心 RPTA_APP_IPOAPPLY 及东方财富新股申购官方页面/前端",
+        "revision": "官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；保留响应目标数据日 2026-11-19；上游未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_ISSUE_NUM -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_ISSUE_NUM",
+        "locator": "官方页面 ISSUE_NUM 列标签“发行总数（万股）”；xgdetail.js 将 info.ISSUE_NUM 渲染为“总发行数量”并把 ONLINE_ISSUE_NUM 单列为“网上发行数量”；20 条留存响应中的 TOTAL_ISSUE_NUM 与 ISSUE_NUM 逐行对照见配套核查记录",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    }
+  ]
+}

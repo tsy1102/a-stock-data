@@ -570,13 +570,13 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares, issue price, event dates, quoted prices,
+    # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
     # quote and issue fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
     # uses an empirical correction.
-    assert len(pairs) == 171
+    assert len(pairs) == 172
     auction_price = records_by_pair[("同花顺-fuyao", "auction_final.auction_price")]
     auction_open_price = records_by_pair[("同花顺-fuyao", "auction_final.open_price")]
     assert auction_price["status"] == "verified"

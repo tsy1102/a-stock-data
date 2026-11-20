@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_eventdc_ipo_issue_fields.md",
+  "evidence_sha256": "c2846b75401be73b543750e9b44d65bb69585bbc0a57ea8a93375919b48903f8",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-ipo-issue-num",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].ISSUE_NUM"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_total_issue_shares_wan",
+      "meaning": "该 IPO 发行记录的发行总股数，官方页面以万股显示；不是网上发行数量或发行后总股本。历史记录可能存在取整、截断或旧数据差异，万科样本与正式股数折算结果相差约 0.31%。",
+      "unit": "万股",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY ISSUE_NUM source-contract adjudication",
+      "rationale": "东方财富官方新股申购页将模板字段 item.ISSUE_NUM 绑定到“发行总数（万股）”列。项目以 RPTA_APP_IPOAPPLY 直接采集并保留该字段，未做换算。20 条现有 IPO 发行记录中 20/20 有值。平安银行正式文件记载 1989 年发行 67.5 万股，与采集值精确相同；万科正式材料记载 28,086,000 股，而采集值为 2800 万股，差 0.31%。据官方列标签、调用路径及发行人样本定案字段角色和单位；明确保留万科的精度差异，不声称历史记录逐股精确。仅定案本来源字段，不创建跨源映射。证据详见配套备忘录。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].ISSUE_NUM -> ipo_calendar() -> raw_event_dc.ipo_calendar[].ISSUE_NUM",
+        "locator": "东方财富页列“发行总数（万股）”及模板 item.ISSUE_NUM；平安银行/万科正式发行人资料中的公开发行股数；配套备忘录列出 20 条采集样本",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    },
+    {
+      "id": "20261120-eventdc-ipo-issue-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].ISSUE_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_issue_price_per_share",
+      "meaning": "该 IPO 发行记录的每股发行价格，不是上市首日价格或当前价格。",
+      "unit": "元/股",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY ISSUE_PRICE source-contract adjudication",
+      "rationale": "东方财富官方新股申购页将模板字段 item.ISSUE_PRICE 绑定到“发行价格”列。项目以 RPTA_APP_IPOAPPLY 直接采集并保留该字段，未做换算。20 条现有 IPO 发行记录中 20/20 有值。万科正式材料记载 1988 年公开发行 A 股每股发行价 1 元，与代码 000002 的采集值精确相同。平安银行记录值为 40 元；已取得的平安银行正式文件确认对应发行批次和发行股数，但没有列出该次发行价，因此不把该发行人文件当作价格的独立验证。字段角色由官方页面模板直接定义，数值边界按证据分别表述。仅定案本来源字段，不创建跨源映射。证据详见配套备忘录。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].ISSUE_PRICE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].ISSUE_PRICE",
+        "locator": "东方财富页列“发行价格”及模板 item.ISSUE_PRICE；万科正式发行人资料中的发行价；配套备忘录列出 20 条采集样本",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    }
+  ]
+}

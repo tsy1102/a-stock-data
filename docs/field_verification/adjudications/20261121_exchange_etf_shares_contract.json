@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_exchange_etf_shares_contract.md",
+  "evidence_sha256": "ed6e860f84718958c4c961259bb4fd8cd054a954a0107a4793d283e9888d050d",
+  "decisions": [
+    {
+      "id": "20261121-sse-etf-total-shares",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "etf_sh.shares_10k"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sse_etf_total_shares_10k",
+      "meaning": "上交所 ETF 规模统计记录中的基金总份额，来自官方 ETF 规模接口 TOT_VOL，单位万份。官方页面将该列标为“总份额（万份）”，统计数据为当日清算后数据。此定义仅适用于 etf_sh 分支。",
+      "unit": "万份",
+      "section": "2026-11-21 SSE ETF total shares source-contract adjudication",
+      "rationale": "项目 _etf_shares_sse(day) 请求上交所官方 ETF 规模接口并传入 STAT_DATE，逐行要求响应 STAT_DATE 与请求日期一致，再将 result[].TOT_VOL 映射为 etf_sh[].shares_10k。上交所官方 ETF 规模页面将对应列定义为总份额（万份），并说明统计数据为当日清算后数据。2026-11-18 保留样本中 561160=236933.50、589150=99343.72，均与上交所对应基金官方详情页同日总份额完全一致。该裁决只确认沪市来源内语义，不创建与深交所的映射。",
+      "source_contract": {
+        "authority": "上海证券交易所 ETF 规模页面及其 commonQuery 官方接口",
+        "revision": "2026-11-21 核验；官方页面和接口未提供版本化字段 schema",
+        "path": "沪深交易所::etf_sh.shares_10k (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> result[].TOT_VOL -> output etf_sh[].shares_10k -> raw_etf.json",
+        "locator": "官方 ETF 规模页面列名“总份额（万份）”并注明统计数据为当日清算后数据；_etf_shares_sse 将 TOT_VOL 映射到 shares_10k。保留样本 2026-11-18 的 561160 与 589150 数值分别与官方详情页同日历史总份额完全相等。",
+        "url": "https://www.sse.com.cn/market/funddata/volumn/etfvolumn/"
+      }
+    },
+    {
+      "id": "20261121-szse-etf-current-scale-shares",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "etf_sz.shares_10k"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "szse_etf_current_scale_shares_10k",
+      "meaning": "深交所 ETF 列表“当前规模（万份）”列所报的 ETF 基金份额数值，由每条记录 dqgm 列的展示数值解析。该列对应日期由同一响应 metadata.cols.dqgm 标题中的括号日期确定；官方说明 T 日晚间更新的 T 日规模仅供参考，以 T+1 日早间更新的 T 日规模为准。此定义仅适用于 etf_sz 分支。",
+      "unit": "万份",
+      "section": "2026-11-21 SZSE ETF current-scale shares source-contract adjudication",
+      "rationale": "2026-11-20 21:36:59–21:37:00（北京时间）直接读取深交所基金业务专区官方 ETF 列表接口，响应为基金列表且包含 772 条记录。官方响应 metadata.cols.dqgm 将该列标为“当前规模（万份）”，说明 T 日晚间值仅供参考、以 T+1 日早间更新值为准，并在括号中标注 2026-11-19。项目 _etf_shares_szse_host() 从每条 rec.dqgm 的 HTML 数值解析 shares_10k，并将同一列标题的日期写入 date。日期来源与数据值同列，且 etf_sz.date 的统计日期语义已由独立来源契约裁决确认。此裁决只登记深交所路径，不创建与上交所的映射。",
+      "source_contract": {
+        "authority": "深圳证券交易所基金业务专区 ETF 列表及其 ShowReport 官方接口",
+        "revision": "2026-11-20 21:36:59–21:37:00（北京时间）直接响应核验；接口未提供版本化 schema",
+        "path": "沪深交易所::etf_sz.shares_10k (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_szse_host(host, day) -> /api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=1000_lf&TABKEY=tab1&selectJjlb=ETF&PAGENO=1&pagesize=2000 -> record.dqgm HTML numeric value -> output etf_sz[].shares_10k -> raw_etf.json; metadata.cols.dqgm heading date -> etf_sz[].date",
+        "locator": "响应 metadata.name=基金列表，metadata.subname=2026-11-20，recordcount=772；metadata.cols.dqgm 标题为“当前规模（万份）”，含 T/T+1 更新提示并标注 2026-11-19。项目从同一行 dqgm 解析数值，并从列标题日期生成 date。",
+        "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=1000_lf&TABKEY=tab1&selectJjlb=ETF&PAGENO=1&pagesize=2000"
+      }
+    }
+  ]
+}

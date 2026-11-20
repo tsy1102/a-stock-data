@@ -573,8 +573,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # IPO par value, issue shares, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
     # quote and issue fields, plus separate Sina research-list, SSE ETF and
-    # CCTV News Broadcast and SZSE ETF scale date paths; zhuying_shouru uses an empirical correction.
-    assert len(pairs) == 167
+    # CCTV News Broadcast, SZSE ETF scale date and SSE/SZSE ETF shares paths;
+    # zhuying_shouru uses an empirical correction.
+    assert len(pairs) == 169
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -636,6 +637,25 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "20261120-szse-etf-current-scale-measurement-date"
     ]
     assert matrix["szse_etf_current_scale_measurement_date"] == {"沪深交易所"}
+    for code, canonical, decision_id in (
+        (
+            "etf_sh.shares_10k",
+            "sse_etf_total_shares_10k",
+            "20261121-sse-etf-total-shares",
+        ),
+        (
+            "etf_sz.shares_10k",
+            "szse_etf_current_scale_shares_10k",
+            "20261121-szse-etf-current-scale-shares",
+        ),
+    ):
+        row = records_by_pair[("沪深交易所", code)]
+        assert row["status"] == "verified"
+        assert row["status_resolution"] == "verified_by_source_contract"
+        assert row["canonical"] == canonical
+        assert row["unit"] == "万份"
+        assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
+        assert matrix[canonical] == {"沪深交易所"}
     cctv_date = records_by_pair[("央视网(新闻联播)", "date")]
     assert cctv_date["status"] == "verified"
     assert cctv_date["status_resolution"] == "verified_by_source_contract"

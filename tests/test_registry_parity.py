@@ -543,6 +543,7 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
 def test_source_contract_adjudications_are_validated_and_counted_separately():
     registry = registry_parity.fra.load_registry()
     records = registry_parity.fra.source_field_records(registry)
+    records_by_pair = {(row["source"], row["code"]): row for row in records}
     base = registry_parity.afc.registered_field_sets()
     base_pairs = {(source, code) for source, codes in base.items() for code in codes}
     e3_pairs, _, _ = registry_parity._validated_addenda(registry, records, base_pairs)
@@ -562,8 +563,8 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
     # IPO par value, issue shares, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
-    # fields; zhuying_shouru uses an empirical correction instead.
-    assert len(pairs) == 156
+    # quote and issue fields; zhuying_shouru uses an empirical correction instead.
+    assert len(pairs) == 163
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -586,6 +587,21 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     ):
         assert ("东财-event_dc(IPO发行记录)", code) in pairs
         assert matrix[canonical] == {"东财-event_dc(IPO发行记录)"}
+    convertible_source = "东财-event_dc(可转债列表)"
+    convertible_decisions = {
+        "convertible_bonds[].BOND_START_DATE": "20261120-eventdc-convertible-lottery-number-date",
+        "convertible_bonds[].SECURITY_START_DATE": "20261120-eventdc-convertible-equity-registration-date",
+        "convertible_bonds[].RATING": "20261120-eventdc-convertible-credit-rating",
+        "convertible_bonds[].ONLINE_GENERAL_AAU": "20261120-eventdc-convertible-online-subscription-limit",
+        "convertible_bonds[].ONLINE_GENERAL_LWR": "20261120-eventdc-convertible-online-lottery-win-rate",
+        "convertible_bonds[].FIRST_PROFIT": "20261120-eventdc-convertible-profit-per-lot",
+        "convertible_bonds[].FIRST_PER_PREPLACING": "20261120-eventdc-convertible-priority-placement-per-share",
+    }
+    for code, decision_id in convertible_decisions.items():
+        row = records_by_pair[(convertible_source, code)]
+        assert row["status"] == "verified"
+        assert row["status_resolution"] == "verified_by_source_contract"
+        assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs

@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_eventdc_convertible_issue_fields.md",
+  "evidence_sha256": "a43f3b767281640f5c557c5d183f62a7d2762324b4047dd3a5c4fa98f07ff55c",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-convertible-lottery-number-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].BOND_START_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_lottery_number_publication_date",
+      "meaning": "东方财富可转债申购列表中以 `BOND_START_DATE` 绑定到“中签号发布日”的日期字段。该页面定义它为中签号码发布日；它不同于申购日期、股权登记日和上市时间。",
+      "unit": "日期",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].BOND_START_DATE。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“中签号发布日</th”，表头 `<th data-field=\"BOND_START_DATE\">中签号发布日</th>`；500 条保留记录 500/500 有值。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].BOND_START_DATE",
+        "locator": "表头 `<th data-field=\"BOND_START_DATE\">中签号发布日</th>`；500 条保留记录 500/500 有值。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-equity-registration-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].SECURITY_START_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_equity_registration_date",
+      "meaning": "东方财富可转债申购列表中以 `SECURITY_START_DATE` 绑定到“股权登记日”的日期字段；不能替代申购日期、上市时间或来源采集日期。",
+      "unit": "日期",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].SECURITY_START_DATE。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“股权登记日</th”，表头 `<th data-field=\"SECURITY_START_DATE\">股权登记日</th>`；500 条保留记录 499 条非空。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].SECURITY_START_DATE",
+        "locator": "表头 `<th data-field=\"SECURITY_START_DATE\">股权登记日</th>`；500 条保留记录 499 条非空。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-credit-rating",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].RATING"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_credit_rating",
+      "meaning": "东方财富可转债申购列表在“信用评级”列显示的评级值；页面未为其指定数值单位。",
+      "unit": "",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].RATING。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“信用评级</th”，表头 `<th data-field=\"RATING\">信用评级</th>`；500 条保留记录中 499 条非空、18 个不同值。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].RATING",
+        "locator": "表头 `<th data-field=\"RATING\">信用评级</th>`；500 条保留记录中 499 条非空、18 个不同值。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-online-subscription-limit",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ONLINE_GENERAL_AAU"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_online_subscription_limit_thousand_yuan",
+      "meaning": "东方财富可转债申购列表中的网上申购上限金额。接口原始单位为千元；页面显示时除以 10 换算为万元。",
+      "unit": "千元",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].ONLINE_GENERAL_AAU。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“申购上限(万元)”，表头 `data-field=\"ONLINE_GENERAL_AAU\"` 标签为“申购上限(万元)”；官网格式器注释明确接口单位为千元、页面单位为万元。保留响应 500/500 有值。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].ONLINE_GENERAL_AAU",
+        "locator": "表头 `data-field=\"ONLINE_GENERAL_AAU\"` 标签为“申购上限(万元)”；官网格式器注释明确接口单位为千元、页面单位为万元。保留响应 500/500 有值。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-online-lottery-win-rate",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ONLINE_GENERAL_LWR"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_online_lottery_win_rate_pct",
+      "meaning": "东方财富可转债申购列表中“中签率”字段，页面以百分比显示至四位小数；接口未提供可确认的来源实际日期。",
+      "unit": "%",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].ONLINE_GENERAL_LWR。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“中签率”，表头 `data-field=\"ONLINE_GENERAL_LWR\"` 标签为“中签率”；官网格式器为四位小数并加 `%`。保留响应 499/500 非空。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].ONLINE_GENERAL_LWR",
+        "locator": "表头 `data-field=\"ONLINE_GENERAL_LWR\"` 标签为“中签率”；官网格式器为四位小数并加 `%`。保留响应 499/500 非空。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-profit-per-lot",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].FIRST_PROFIT"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_profit_per_lot_yuan",
+      "meaning": "东方财富可转债申购列表显示的“每中一签获利”，页面单位为元。接口未公开该指标的统一计算公式及其来源估值时点。",
+      "unit": "元",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].FIRST_PROFIT。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“每中一签获利(元)”，表头 `data-field=\"FIRST_PROFIT\"` 标签为“每中一签获利(元)”；保留响应 497/500 非空，既有正值也有负值。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].FIRST_PROFIT",
+        "locator": "表头 `data-field=\"FIRST_PROFIT\"` 标签为“每中一签获利(元)”；保留响应 497/500 非空，既有正值也有负值。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261120-eventdc-convertible-priority-placement-per-share",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].FIRST_PER_PREPLACING"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_priority_placement_amount_yuan_per_share",
+      "meaning": "东方财富可转债申购列表中原股东优先配售的每股配售额。页面明确说明适用对象为股权登记日持股的原股东，单位为元/股。",
+      "unit": "元/股",
+      "section": "2026-11-20 Eastmoney RPT_BOND_CB_LIST issue terms and subscription source-contract adjudication",
+      "rationale": "项目适配器将 RPT_BOND_CB_LIST 响应原键保存为 raw_event_dc.convertible_bonds[].FIRST_PER_PREPLACING。东方财富官网可转债表以该键的 data-field 属性直接绑定中文列“每股配售额”，表头 `data-field=\"FIRST_PER_PREPLACING\"` 标签为“每股配售额”；官网 FAQ 明确“单位：元/股”。保留响应 499/500 非空。 本次留存响应 500 条记录覆盖情况见证据文档及样本 CSV。接口没有可确认的来源实际日期，因此本裁决只定字段含义/原始单位，不把目录目标日或 fetched_at 解释为行情 as-of。",
+      "source_contract": {
+        "authority": "东方财富可转债新股申购官方页面 data-field 表头及第一方 xglist.js；项目适配器按相同 RPT_BOND_CB_LIST 路由原键透传",
+        "revision": "东方财富页面与脚本于 2026-11-20 核查；未发现版本化字段 schema",
+        "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].FIRST_PER_PREPLACING",
+        "locator": "表头 `data-field=\"FIRST_PER_PREPLACING\"` 标签为“每股配售额”；官网 FAQ 明确“单位：元/股”。保留响应 499/500 非空。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    }
+  ]
+}

@@ -807,7 +807,7 @@ def _resolve_evidence_refs(
     if not isinstance(raw_refs, list) or not raw_refs:
         raise ValueError("evidence_refs must be a non-empty list")
     resolved: list[dict[str, Any]] = []
-    matching_reports: dict[str, dict[str, Any]] = {}
+    cited_reports: dict[str, dict[str, Any]] = {}
     report_found = False
     root = verification_dir.resolve()
     for raw_ref in raw_refs:
@@ -840,13 +840,13 @@ def _resolve_evidence_refs(
             if not isinstance(report, dict):
                 raise ValueError(f"evidence JSON root must be an object: {relative.as_posix()}")
             report_candidates = candidate_ids_in_report(report)
+            cited_reports[relative.as_posix()] = report
             identifier = decision.get("candidate_id")
             if identifier in report_candidates:
                 report_found = True
-                matching_reports[relative.as_posix()] = report
     if not report_found:
         raise ValueError("evidence_refs must include a collision report containing candidate_id")
-    return resolved, matching_reports
+    return resolved, cited_reports
 
 
 def prepare_review_decision(
@@ -857,8 +857,10 @@ def prepare_review_decision(
     prepared = _decision_event_payload(decision, refs)
     identifier = prepared["candidate_id"]
     candidate_identity: dict[str, Any] | None = None
+    cited_candidate_ids: set[str] = set()
     for report in reports.values():
         identities = candidate_ids_in_report(report)
+        cited_candidate_ids.update(identities)
         identity = identities.get(identifier)
         if identity is not None:
             if candidate_identity is not None and candidate_identity != identity:
@@ -868,7 +870,7 @@ def prepare_review_decision(
         raise ValueError("candidate_id is absent from its cited collision report")
     duplicate_of = prepared.get("duplicate_of")
     if duplicate_of is not None:
-        if not any(duplicate_of in candidate_ids_in_report(report) for report in reports.values()):
+        if duplicate_of not in cited_candidate_ids:
             raise ValueError("duplicate_of must be present in a cited collision report")
     return prepared, candidate_identity
 

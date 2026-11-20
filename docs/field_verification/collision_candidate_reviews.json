@@ -5096,6 +5096,114 @@
         "schema_version": 1
       }
     },
+    "cc1_16ded971a9d9ecfbe5013d70f851da48e1d25c254971a30e9fa2ce9acbb0e266": {
+      "current": {
+        "candidate_id": "cc1_16ded971a9d9ecfbe5013d70f851da48e1d25c254971a30e9fa2ce9acbb0e266",
+        "disposition": "duplicate_grouped",
+        "duplicate_of": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+        "event_id": "50b8dd833dd192226bda48d2a1e2f9fd6444ea0f0bbfbc6910e1876ba2c73669",
+        "evidence_refs": [
+          {
+            "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+            "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+          },
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+            "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+          }
+        ],
+        "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+        "reviewed_at": "2026-11-20T08:44:22+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_16ded971a9d9ecfbe5013d70f851da48e1d25c254971a30e9fa2ce9acbb0e266",
+          "disposition": "duplicate_grouped",
+          "duplicate_of": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf",
+          "event_id": "50b8dd833dd192226bda48d2a1e2f9fd6444ea0f0bbfbc6910e1876ba2c73669",
+          "evidence_refs": [
+            {
+              "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+              "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+            },
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+              "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+            }
+          ],
+          "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+          "reviewed_at": "2026-11-20T08:44:22+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9367,
+              "leave_one_out_min": 0.8883,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9196,
+              "spearman": 0.943
+            }
+          ],
+          "right": "zhb.stat2.amount_1d",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
     "cc1_17873d1752d64882da49282668124b5d1c27751aac771b0bc52d44335691fda4": {
       "current": {
         "candidate_id": "cc1_17873d1752d64882da49282668124b5d1c27751aac771b0bc52d44335691fda4",
@@ -9842,6 +9950,213 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_32f1c8892b4916c8af81d89b5fb2f6d151b4d83d804f22dc672a71f4160bbb6f": {
+      "current": {
+        "candidate_id": "cc1_32f1c8892b4916c8af81d89b5fb2f6d151b4d83d804f22dc672a71f4160bbb6f",
+        "disposition": "duplicate_grouped",
+        "duplicate_of": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+        "event_id": "7437d84892d5c2950010dd17ad49d4c2bd152d8dc1e44341ae2f941e53c088da",
+        "evidence_refs": [
+          {
+            "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+            "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+          },
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+            "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+          }
+        ],
+        "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+        "reviewed_at": "2026-11-20T08:44:22+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_32f1c8892b4916c8af81d89b5fb2f6d151b4d83d804f22dc672a71f4160bbb6f",
+          "disposition": "duplicate_grouped",
+          "duplicate_of": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316",
+          "event_id": "7437d84892d5c2950010dd17ad49d4c2bd152d8dc1e44341ae2f941e53c088da",
+          "evidence_refs": [
+            {
+              "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+              "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+            },
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+              "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+            }
+          ],
+          "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+          "reviewed_at": "2026-11-20T08:44:22+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9378,
+              "leave_one_out_min": 0.8992,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9189,
+              "spearman": 0.949
+            }
+          ],
+          "right": "zhb.stat2.amount",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
+    "cc1_3475ab87dea1e4f0ee11001d86b92f3c4676286d0887dca8feef7f54447cb895": {
+      "current": {
+        "candidate_id": "cc1_3475ab87dea1e4f0ee11001d86b92f3c4676286d0887dca8feef7f54447cb895",
+        "disposition": "duplicate_grouped",
+        "duplicate_of": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+        "event_id": "e831ecf384217774d36c69791ea3838672377d29d07e8971b705ba5f92e4a052",
+        "evidence_refs": [
+          {
+            "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+            "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+          },
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+            "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+          }
+        ],
+        "rationale": "该 v8 候选与已拒绝的 v7 候选具有完全相同的证据载荷、样本（6 只股票、2 个来源日、12 行）及统计结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 rejected 决定，不重新提出字段语义结论。",
+        "reviewed_at": "2026-11-20T08:44:22+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_3475ab87dea1e4f0ee11001d86b92f3c4676286d0887dca8feef7f54447cb895",
+          "disposition": "duplicate_grouped",
+          "duplicate_of": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a",
+          "event_id": "e831ecf384217774d36c69791ea3838672377d29d07e8971b705ba5f92e4a052",
+          "evidence_refs": [
+            {
+              "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+              "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+            },
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+              "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+            }
+          ],
+          "rationale": "该 v8 候选与已拒绝的 v7 候选具有完全相同的证据载荷、样本（6 只股票、2 个来源日、12 行）及统计结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 rejected 决定，不重新提出字段语义结论。",
+          "reviewed_at": "2026-11-20T08:44:22+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9982,
+              "leave_one_out_min": 0.9965,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9976,
+              "spearman": 0.7492
+            },
+            {
+              "formula": "right ≈ 8.9842661e-08 × left + 0.74994907",
+              "method": "affine_formula",
+              "r_squared": 0.995238
+            }
+          ],
+          "right": "zhb.tipinfo.hg_amount_yi",
+          "sample_codes": [
+            "002034",
+            "301190",
+            "600309",
+            "600519",
+            "688553",
+            "688589"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v8",
         "schema_version": 1
       }
     },
@@ -22733,6 +23048,114 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_8c413da6d6167e286e668bc45fb97705433dfdee94b69c7e2215f20513888ec8": {
+      "current": {
+        "candidate_id": "cc1_8c413da6d6167e286e668bc45fb97705433dfdee94b69c7e2215f20513888ec8",
+        "disposition": "duplicate_grouped",
+        "duplicate_of": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+        "event_id": "121ac7755aa3a784a6d7c8ab9f4c52328a805aec91bb8d916a959c0b0aba8c34",
+        "evidence_refs": [
+          {
+            "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+            "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+          },
+          {
+            "path": "20261119/20261119_collision_report.json",
+            "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+          },
+          {
+            "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+            "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+          },
+          {
+            "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+            "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+          }
+        ],
+        "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+        "reviewed_at": "2026-11-20T08:44:22+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_8c413da6d6167e286e668bc45fb97705433dfdee94b69c7e2215f20513888ec8",
+          "disposition": "duplicate_grouped",
+          "duplicate_of": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8",
+          "event_id": "121ac7755aa3a784a6d7c8ab9f4c52328a805aec91bb8d916a959c0b0aba8c34",
+          "evidence_refs": [
+            {
+              "path": "20261119/preopen_20261120_0821/20261119_collision_report.json",
+              "sha256": "b3508da4acc1a6c9e3e6c3ba4794ef6a8a540dd4b70915661ed355a142bd7a63"
+            },
+            {
+              "path": "20261119/20261119_collision_report.json",
+              "sha256": "c1bbbfb1720a42e2f3e424b4d2ad4c3923ad870055fca98da7a5d7cf2718a066"
+            },
+            {
+              "path": "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+              "sha256": "95f8627607f42a71a9fd3352f45d2b55f829a870b7a0a4a3608b61a02bd12fdb"
+            },
+            {
+              "path": "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json",
+              "sha256": "b71bb527bfd682037ecd75caa85b2f7f7c1f284c71770da9e0c32b118cdf9265"
+            }
+          ],
+          "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+          "reviewed_at": "2026-11-20T08:44:22+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ulist239",
+            "zhb"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9446,
+              "leave_one_out_min": 0.8966,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9246,
+              "spearman": 0.9477
+            }
+          ],
+          "right": "zhb.stat2.amount_2d",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 40,
+          "sample_dates": [
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v8",
         "schema_version": 1
       }
     },
@@ -41660,5 +42083,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-20T07:14:13+08:00"
+  "updated_at": "2026-11-20T08:44:22+08:00"
 }

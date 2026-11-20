@@ -329,6 +329,55 @@ def test_decision_must_reference_collision_report_that_contains_candidate(tmp_pa
     )
 
 
+def test_duplicate_decision_can_reference_representative_in_separate_report(tmp_path):
+    verification_dir = tmp_path / "field_verification"
+    old_report_dir = verification_dir / "20261019"
+    new_report_dir = verification_dir / "20261020"
+    old_report_dir.mkdir(parents=True)
+    new_report_dir.mkdir(parents=True)
+
+    candidate = _candidate()
+    old_identity = reviews.candidate_identity_payload(
+        candidate, "method_pair", method_version="collision-candidate-v7"
+    )
+    old_identifier = reviews.candidate_id_from_payload(old_identity)
+    new_identity = reviews.candidate_identity_payload(candidate, "method_pair")
+    new_identifier = reviews.candidate_id_from_payload(new_identity)
+
+    old_report = {
+        "candidate_review": {"method_version": "collision-candidate-v7"},
+        "method_candidate_inventory": [{**candidate, "candidate_id": old_identifier}],
+    }
+    new_report = {
+        "candidate_review": {"method_version": reviews.METHOD_VERSION},
+        "method_candidate_inventory": [{**candidate, "candidate_id": new_identifier}],
+    }
+    (old_report_dir / "report.json").write_text(
+        json.dumps(old_report, ensure_ascii=False), encoding="utf-8"
+    )
+    (new_report_dir / "report.json").write_text(
+        json.dumps(new_report, ensure_ascii=False), encoding="utf-8"
+    )
+    decision = {
+        "schema_version": 1,
+        "candidate_id": new_identifier,
+        "disposition": "duplicate_grouped",
+        "reviewer": "tester",
+        "reviewed_at": "2026-10-21T10:00:00+08:00",
+        "rationale": "The v8 evidence is identical to the reviewed v7 candidate.",
+        "evidence_refs": ["20261020/report.json", "20261019/report.json"],
+        "duplicate_of": old_identifier,
+    }
+
+    prepared, identity = reviews.prepare_review_decision(
+        decision, verification_dir=verification_dir
+    )
+
+    assert prepared["candidate_id"] == new_identifier
+    assert prepared["duplicate_of"] == old_identifier
+    assert identity == new_identity
+
+
 def test_decision_rejects_path_traversal_and_unrelated_report(tmp_path):
     verification_dir = tmp_path / "field_verification"
     verification_dir.mkdir()

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_3475ab87dea1e4f0ee11001d86b92f3c4676286d0887dca8feef7f54447cb895",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T08:44:22+08:00",
+      "rationale": "该 v8 候选与已拒绝的 v7 候选具有完全相同的证据载荷、样本（6 只股票、2 个来源日、12 行）及统计结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 rejected 决定，不重新提出字段语义结论。",
+      "evidence_refs": [
+        "20261119/preopen_20261120_0821/20261119_collision_report.json",
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json"
+      ],
+      "duplicate_of": "cc1_15a470dd64e0ee92b7a28db8a7ff0b5a8b68b685e6068df05012d7d26573e56a"
+    },
+    {
+      "candidate_id": "cc1_32f1c8892b4916c8af81d89b5fb2f6d151b4d83d804f22dc672a71f4160bbb6f",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T08:44:22+08:00",
+      "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+      "evidence_refs": [
+        "20261119/preopen_20261120_0821/20261119_collision_report.json",
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json"
+      ],
+      "duplicate_of": "cc1_cdcf4cd2031cf571a29767a2359fc320b632b5772378f0d8121778be81762316"
+    },
+    {
+      "candidate_id": "cc1_16ded971a9d9ecfbe5013d70f851da48e1d25c254971a30e9fa2ce9acbb0e266",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T08:44:22+08:00",
+      "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+      "evidence_refs": [
+        "20261119/preopen_20261120_0821/20261119_collision_report.json",
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json"
+      ],
+      "duplicate_of": "cc1_8c8c51731c0e1a7a71f9ad2f52df4ac78e3ed281a037465e3afd42c26e49c6bf"
+    },
+    {
+      "candidate_id": "cc1_8c413da6d6167e286e668bc45fb97705433dfdee94b69c7e2215f20513888ec8",
+      "disposition": "duplicate_grouped",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-20T08:44:22+08:00",
+      "rationale": "该 v8 候选与已审阅的 v7 候选具有完全相同的证据载荷和 20 股、2 个来源日、40 组样本及相关性结果；版本差异来自候选方法版本更新。2026-11-19 的 ZHB 新快照没有同日 Ulist239 f63 配对，因该源在本次采集中被 ip_banned 熔断器于请求前抑制，未新增可比证据。按重复候选归并至既有 needs_external_evidence 决定；不定义字段含义或建立映射。",
+      "evidence_refs": [
+        "20261119/preopen_20261120_0821/20261119_collision_report.json",
+        "20261119/20261119_collision_report.json",
+        "research/20261119_ulist239_f63_zhb_amount_candidate_review.md",
+        "adjudications/20261119_ulist239_f63_zhb_candidate_reviews.json"
+      ],
+      "duplicate_of": "cc1_719e8d9756c09278f23243f1afc033f68086da303c34b9dc7fff9421c6753cf8"
+    }
+  ]
+}

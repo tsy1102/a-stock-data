@@ -21,7 +21,7 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 .\scripts\run_with_system_python.ps1 scripts\review_collision_candidates.py --decision $decision --apply
 ```
 
-每项决定必须引用至少一份包含该候选的碰撞 JSON；工具保存引用路径与 SHA-256，并验证候选身份。批量决定可用 `{"schema_version":1,"decisions":[...]}`，重复成员必须逐项指向同一个代表候选，台账和报告会保留代表/成员双向索引。合法处置为 `duplicate_grouped`、`insufficient_evidence`、`needs_external_evidence`、`accepted_for_adjudication`、`rejected`；每条记录都带审阅人、带时区时间、理由、证据引用和历史事件。
+每项决定必须引用至少一份包含该候选的碰撞 JSON；工具保存引用路径与 SHA-256，并验证候选身份。批量决定可用 `{"schema_version":1,"decisions":[...]}`，重复成员必须逐项指向同一个代表候选；代表和成员可以分别出现在不同的被引用报告中，台账和报告会保留代表/成员双向索引。合法处置为 `duplicate_grouped`、`insufficient_evidence`、`needs_external_evidence`、`accepted_for_adjudication`、`rejected`；每条记录都带审阅人、带时区时间、理由、证据引用和历史事件。
 
 审阅台账不会写字段注册表。对于 schema 5 的 L1 注册表裁决，必须先将该候选置为 `accepted_for_adjudication`，再用更新后的碰撞报告运行现有 `apply_collision_adjudications.py` 预览/应用。老 schema 3/4 报告维持兼容；schema 5 的候选身份和审阅状态则由完整性闸门复核。
 

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 586 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 587 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3562,6 +3562,7 @@
 | 东财-datacenter(英文键) | `shares_is_actual` | shares_is_actual | 项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。 | `disproved` |
 | 东财-em_kline_f61 | `dktotal` | daily_kline_record_count | Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。 | `verified` |
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | `disproved` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].PAR_VALUE` | ipo_record_par_value | 该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ACTUAL_ISSUE_SCALE` | convertible_bond_issue_scale | 可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].BOND_EXPIRE` | convertible_bond_term_years | 东方财富详情页标注的可转债存续期限（年）。提前终止或赎回后，该值可短于募集说明书原始约定期限；蓝思转债样本为2.1671年，正式募集说明书原始约定为6年。该字段不是剩余期限或到期日期。保留样本显示其与起息日至有效终止期间接近，但统一年化和终止日取值规则未公开。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].COUPON_IR` | bond_coupon_rate_current_interest_year_pct | 按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。 | `verified` |

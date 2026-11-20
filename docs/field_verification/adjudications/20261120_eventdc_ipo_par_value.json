@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex field audit",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_eventdc_ipo_par_value.md",
+  "evidence_sha256": "3fe0d8ce29a497607ad8b1715cefd0d10ee7db1c0eec0f40f7724c65fab769e9",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-ipo-par-value",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].PAR_VALUE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_record_par_value",
+      "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+      "unit": "元/股",
+      "section": "2026-11-20 Eastmoney IPO PAR_VALUE source contract and issuer report confirmation",
+      "rationale": "项目以 RPTA_APP_IPOAPPLY 请求新股历史记录；ipo_calendar() 将每条响应原样写入 raw_event_dc.ipo_calendar[]，没有重命名或计算 PAR_VALUE。保留样本 20/20 行有值，19 行为 1、1 行为 20。发行人正式文件对代码 000001 记载 1989 年 3 月第三期普通股每股面值 20 元、1990 年拆细后为 1 元，与样本 PAR_VALUE=20 一致，并排除“当前面值”解释。代码 000002 的值 1 也与万科正式公司资料中的历史股份面额相符。事件日期按发行历史记录核对；目录 data_date、采集时间和 UP_DATE 均不被当作发行日期。结论仅定案该来源路径的字段角色与单位，不建立跨源映射。",
+      "source_contract": {
+        "authority": "东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY",
+        "revision": "2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE",
+        "locator": "_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    }
+  ]
+}

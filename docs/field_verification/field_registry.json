@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1618,
+      "verified": 1619,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 475
+      "verified_by_source_contract": 476
     },
     "updated_at": "2026-11-19"
   },
@@ -365,6 +365,15 @@
       "verify_file": null,
       "section_patterns": [
         "2026-11-19 Eastmoney RPT_BOND_CB_LIST source-semantic adjudication"
+      ],
+      "status": "active",
+      "source_role": "provider_component"
+    },
+    {
+      "name": "东财-event_dc(IPO发行记录)",
+      "verify_file": null,
+      "section_patterns": [
+        "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY IPO source-contract adjudication"
       ],
       "status": "active",
       "source_role": "provider_component"
@@ -23202,6 +23211,24 @@
       "status": "verified",
       "source_statuses": {
         "同花顺-fuyao": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].PAR_VALUE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE#_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录 @ 2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+      "canonical": "ipo_record_par_value",
+      "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+      "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -46615,6 +46642,9 @@
     "kph_industry_limit_up_count": [
       "开盘红",
       "开盘红(Levistock适配)"
+    ],
+    "ipo_record_par_value": [
+      "东财-event_dc(IPO发行记录)"
     ]
   },
   "mappings": [
@@ -270497,6 +270527,106 @@
             "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds() -> eastmoney_datacenter(reportName=\"RPT_BOND_CB_LIST\") response row.PBV_RATIO -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.convertible_bonds[].PBV_RATIO",
             "locator": "quoteColumns 项 f23~01~CONVERT_STOCK_CODE~PBV_RATIO；详情页“正股市净率”。",
             "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].PAR_VALUE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].PAR_VALUE",
+      "path": "ipo_calendar[].PAR_VALUE",
+      "canonical": "ipo_record_par_value",
+      "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE#_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录 @ 2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE#_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录 @ 2026-11-20 保留响应核验；该接口未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-par-value"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-par-value"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE#_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录 @ 2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+          "canonical": "ipo_record_par_value",
+          "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-par-value",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-par-value",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY",
+            "revision": "2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE",
+            "locator": "_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录",
+            "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_par_value",
+              "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-par-value",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_par_value.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_par_value",
+              "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "项目以 RPTA_APP_IPOAPPLY 请求新股历史记录；ipo_calendar() 将每条响应原样写入 raw_event_dc.ipo_calendar[]，没有重命名或计算 PAR_VALUE。保留样本 20/20 行有值，19 行为 1、1 行为 20。发行人正式文件对代码 000001 记载 1989 年 3 月第三期普通股每股面值 20 元、1990 年拆细后为 1 元，与样本 PAR_VALUE=20 一致，并排除“当前面值”解释。代码 000002 的值 1 也与万科正式公司资料中的历史股份面额相符。事件日期按发行历史记录核对；目录 data_date、采集时间和 UP_DATE 均不被当作发行日期。结论仅定案该来源路径的字段角色与单位，不建立跨源映射。",
+          "source_contract": {
+            "authority": "东方财富 Choice IPO 数据 / datacenter-web RPTA_APP_IPOAPPLY",
+            "revision": "2026-11-20 保留响应核验；该接口未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PAR_VALUE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PAR_VALUE",
+            "locator": "_events.py 的 ipo_calendar reportName 配置及直接透传逻辑；2026-11-19 归档中代码 000001/000002 的完整历史记录；发行人资料见配套证据备忘录",
+            "url": "https://datapc.eastmoney.com/da/Purchase/Index"
           }
         }
       ]

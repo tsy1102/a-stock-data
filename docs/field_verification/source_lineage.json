@@ -930,6 +930,18 @@
       "anchor_note": "仅指 event_dc.convertible_bonds[] 的 RPT_BOND_CB_LIST 字段路径；与通用 datacenter 字段路径分开登记，均属于 Eastmoney 来源族",
       "repository_mapping_status": "unconfirmed",
       "repositories": []
+    },
+    "东财-event_dc(IPO发行记录)": {
+      "runtime_aliases": [
+        "event_dc"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "仅指 event_dc.ipo_calendar[] 的 RPTA_APP_IPOAPPLY IPO 申购/发行记录字段；与 convertible_bonds[] 的 RPT_BOND_CB_LIST 分开登记，均属 Eastmoney 来源族",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": []
     }
   },
   "source_aliases": {
@@ -979,7 +991,8 @@
     "Levistock历史未归属": null,
     "开盘红(Levistock适配)": "kph",
     "FTShare REST": "ftshare_rest",
-    "东财-event_dc(可转债列表)": "event_dc"
+    "东财-event_dc(可转债列表)": "event_dc",
+    "东财-event_dc(IPO发行记录)": "event_dc"
   },
   "runtime_sources": {
     "axdata": {

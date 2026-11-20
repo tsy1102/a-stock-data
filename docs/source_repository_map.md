@@ -39,6 +39,7 @@
 | 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | FTShare REST | active | ftshare_rest | FTShare public REST Gateway; the underlying data provider is unconfirmed | 未确认（unconfirmed） | 否 | unconfirmed | pending |
 | 东财-event_dc(可转债列表) | active | event_dc | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
+| 东财-event_dc(IPO发行记录) | active | event_dc | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
 
 ## 项目级历史参考基线
 
@@ -282,6 +283,12 @@
 ### 东财-event_dc(可转债列表)
 
 - 来源说明：仅指 event_dc.convertible_bonds[] 的 RPT_BOND_CB_LIST 字段路径；与通用 datacenter 字段路径分开登记，均属于 Eastmoney 来源族。
+- 对话确认：pending。关系待通过对话逐项确认。
+- GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
+
+### 东财-event_dc(IPO发行记录)
+
+- 来源说明：仅指 event_dc.ipo_calendar[] 的 RPTA_APP_IPOAPPLY IPO 申购/发行记录字段；与 convertible_bonds[] 的 RPT_BOND_CB_LIST 分开登记，均属 Eastmoney 来源族。
 - 对话确认：pending。关系待通过对话逐项确认。
 - GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
 

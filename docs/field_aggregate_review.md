@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 611 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 612 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -800,7 +800,7 @@
 
 ### `date` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -813,6 +813,7 @@
 | 市场源(market_sources) · `date` | date | 日期 | — | `verified` |
 | 开盘啦(kpl) · `date` | — | — | — | `unverified` |
 | 新浪(扩展API) · `date` | — | — | — | `unverified` |
+| 新浪(研报列表) · `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | 日期 | `verified` |
 
 ### `encodeUrl` — incomplete
 
@@ -3881,6 +3882,7 @@
 | 新浪(扩展API) | `trade` | trade | 个股资金流记录中 opendate 对应行的行情价格快照（元/股）；不能默认视为官方收盘价 | `verified` |
 | 新浪(扩展API) | `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | `verified` |
 | 新浪(扩展API) | `vega` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
+| 新浪(研报列表) | `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | `verified` |
 | 沪深交易所 | `etf_sz.listing_date` | szse_etf_listing_date | 深交所基金列表中，该基金在深圳证券交易所开始上市交易的日期；不是基金合同生效日、募集成立日或公告日。 | `verified` |
 | 沪深交易所 | `zqdm` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 沪深交易所 | `zqjc` | zqdm / zqjc | 代码 / 简称 | `verified` |

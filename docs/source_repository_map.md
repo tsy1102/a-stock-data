@@ -33,6 +33,7 @@
 | 开盘红 | active | kph | KPH / 开盘红（项目自有分页适配器） | kph（confirmed） | 是 | unconfirmed | pending |
 | 新浪(hq.sinajs) | active | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 新浪(研报列表) | active | research_sina | Sina Finance research report listing | sina（confirmed） | 否 | unconfirmed | pending |
 | 沪深交易所 | active | exchange, etf | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
 | 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
@@ -247,6 +248,12 @@
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
 - [https://github.com/mpquant/Ashare](https://github.com/mpquant/Ashare) — historical_kline_reference；confirmed。按用户确认作为新浪扩展 API 中历史 K 线部分的参考；不扩展到该来源记录中的其他 API。
   - 项目内证据：scripts/capture_field_probe.py
+
+### 新浪(研报列表)
+
+- 来源说明：Sina Finance research-report listing endpoint; same provider family as Sina quote and extension APIs, retained as a separate runtime source identity.。
+- 对话确认：pending。This source is identified from its live Sina Finance endpoint; no separate upstream repository mapping has been confirmed.
+- GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
 
 ### 沪深交易所
 

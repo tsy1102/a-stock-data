@@ -72,6 +72,7 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
         "巨潮(cninfo)",
         "市场源(market_sources)",
         "开盘红",
+        "新浪(研报列表)",
         "沪深交易所",
         "百度(baidu)",
     }
@@ -152,6 +153,20 @@ def test_kph_and_kpl_remain_distinct_products_and_runtime_source_families():
     assert "kaipanla.com" in kpl["anchor_note"]
     assert "apphis.longhuvip.com" in kpl["anchor_note"]
     assert "market_sources" in legacy_kpl_label["anchor_note"]
+
+
+def test_sina_research_listing_has_its_own_runtime_identity_within_sina_family():
+    lineage = lineage_api.load_source_lineage()
+
+    research = lineage["sources"]["新浪(研报列表)"]
+    extension = lineage["sources"]["新浪(扩展API)"]
+
+    assert lineage_api.runtime_aliases_for_source("新浪(研报列表)", lineage) == ["research_sina"]
+    assert lineage_api.runtime_aliases_for_source("新浪(扩展API)", lineage) == ["sina_extended"]
+    assert lineage_api.runtime_family("research_sina", lineage) == "sina"
+    assert lineage_api.runtime_family("sina_extended", lineage) == "sina"
+    assert research["runtime_aliases"] != extension["runtime_aliases"]
+    assert research["anchor_eligible"] is False
 
 
 @pytest.mark.parametrize(

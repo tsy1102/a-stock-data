@@ -563,8 +563,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
     # IPO par value, issue shares, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
-    # quote and issue fields; zhuying_shouru uses an empirical correction instead.
-    assert len(pairs) == 163
+    # quote and issue fields, plus the separate Sina research-list date path;
+    # zhuying_shouru uses an empirical correction instead.
+    assert len(pairs) == 164
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -602,6 +603,14 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         assert row["status"] == "verified"
         assert row["status_resolution"] == "verified_by_source_contract"
         assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
+    sina_research_row = records_by_pair[("新浪(研报列表)", "date")]
+    assert sina_research_row["status"] == "verified"
+    assert sina_research_row["status_resolution"] == "verified_by_source_contract"
+    assert sina_research_row["canonical"] == "sina_research_report_publication_date"
+    assert sina_research_row["status_evidence"]["source_contract_adjudication_ids"] == [
+        "20261120-sina-research-report-publication-date"
+    ]
+    assert matrix["sina_research_report_publication_date"] == {"新浪(研报列表)"}
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs

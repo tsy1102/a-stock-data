@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_sina_research_report_date.md",
+  "evidence_sha256": "70f7d3d8f7c788e131231fead8d6612828e3500e9241882f0e9f36bd5cea49b7",
+  "decisions": [
+    {
+      "id": "20261120-sina-research-report-publication-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "新浪(研报列表)",
+        "code": "date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sina_research_report_publication_date",
+      "meaning": "新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。",
+      "unit": "日期",
+      "section": "2026-11-20 Sina research report list publication date source-contract adjudication",
+      "rationale": "新浪财经官方最新滚动研报页列名为“序号、标题、报告类型、发布日期、机构、研究员”；项目 _research_sina.py 按同一列顺序解析，取第四个单元格并经 normalize_compact_date() 输出为 date。现有 2026-11-19 数据日、2026-11-20 采集日归档覆盖市场最新页和 5 个个股页共 233 条记录，233 个唯一报告 ID、101 个不同发布日期，且 233/233 日期有效。一次响应中的多条记录不作为独立日期样本；接口未提供来源实际 as_of_date，因此不据此判定列表快照新鲜度。",
+      "source_contract": {
+        "authority": "新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义",
+        "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+        "path": "registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date",
+        "locator": "最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。",
+        "url": "https://vip.stock.finance.sina.com.cn/q/go.php/vReport_List/kind/lastest/index.phtml"
+      }
+    }
+  ]
+}

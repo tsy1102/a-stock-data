@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-11-19",
+  "updated": "2026-11-20",
   "description": "运行时来源别名、提供方独立性、客户端/服务仓库关系与锚点资格；AxData/Levistock 框架和包装关系不等同于底层独立数据源。",
   "sources": {
     "AxData": {
@@ -726,6 +726,22 @@
         "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
       }
     },
+    "新浪(研报列表)": {
+      "runtime_aliases": [
+        "research_sina"
+      ],
+      "provider": "Sina Finance research report listing",
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "anchor_eligible": false,
+      "anchor_note": "Sina Finance research-report listing endpoint; same provider family as Sina quote and extension APIs, retained as a separate runtime source identity.",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "This source is identified from its live Sina Finance endpoint; no separate upstream repository mapping has been confirmed."
+      }
+    },
     "沪深交易所": {
       "runtime_aliases": [
         "exchange",
@@ -992,7 +1008,8 @@
     "开盘红(Levistock适配)": "kph",
     "FTShare REST": "ftshare_rest",
     "东财-event_dc(可转债列表)": "event_dc",
-    "东财-event_dc(IPO发行记录)": "event_dc"
+    "东财-event_dc(IPO发行记录)": "event_dc",
+    "新浪(研报列表)": "research_sina"
   },
   "runtime_sources": {
     "axdata": {

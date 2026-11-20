@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1655,
+      "verified": 1656,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 512
+      "verified_by_source_contract": 513
     },
     "updated_at": "2026-11-19"
   },
@@ -313,6 +313,12 @@
       "section_patterns": [
         "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
       ],
+      "status": "active"
+    },
+    {
+      "name": "新浪(研报列表)",
+      "verify_file": null,
+      "section_patterns": [],
       "status": "active"
     },
     {
@@ -13146,7 +13152,8 @@
         "巨潮(cninfo)",
         "市场源(market_sources)",
         "开盘啦(kpl)",
-        "新浪(扩展API)"
+        "新浪(扩展API)",
+        "新浪(研报列表)"
       ],
       "section": "",
       "canonical": "",
@@ -13164,7 +13171,8 @@
         "巨潮(cninfo)": "unverified",
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "unverified",
-        "新浪(扩展API)": "unverified"
+        "新浪(扩展API)": "unverified",
+        "新浪(研报列表)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -13173,6 +13181,7 @@
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -47401,6 +47410,9 @@
     ],
     "convertible_bond_priority_placement_amount_yuan_per_share": [
       "东财-event_dc(可转债列表)"
+    ],
+    "sina_research_report_publication_date": [
+      "新浪(研报列表)"
     ]
   },
   "mappings": [
@@ -274983,6 +274995,106 @@
             "path": "official data.eastmoney.com/xg/xg/?mkt=kzz table data-field -> xglist.js loadKzzTable() RPT_BOND_CB_LIST/columns=ALL -> stock_common/sc_datasource/_convertible.py -> raw_event_dc.convertible_bonds[].FIRST_PER_PREPLACING",
             "locator": "表头 `data-field=\"FIRST_PER_PREPLACING\"` 标签为“每股配售额”；官网 FAQ 明确“单位：元/股”。保留响应 499/500 非空。",
             "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+          }
+        }
+      ]
+    },
+    {
+      "source": "新浪(研报列表)",
+      "code": "date",
+      "identity": "新浪(研报列表)::date",
+      "path": "date",
+      "canonical": "sina_research_report_publication_date",
+      "meaning": "新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。",
+      "unit": "日期",
+      "section": "source contract: 新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义 · registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date#最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+      "sections": [
+        "source contract: 新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义 · registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date#最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。 @ 2026-11-20 核查；网页未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-sina-research-report-publication-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-sina-research-report-publication-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义 · registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date#最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+          "canonical": "sina_research_report_publication_date",
+          "meaning": "新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。",
+          "unit": "日期",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-sina-research-report-publication-date",
+          "status": "verified",
+          "adjudication_id": "20261120-sina-research-report-publication-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date",
+            "locator": "最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。",
+            "url": "https://vip.stock.finance.sina.com.cn/q/go.php/vReport_List/kind/lastest/index.phtml"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sina_research_report_publication_date",
+              "meaning": "新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。",
+              "unit": "日期"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-sina-research-report-publication-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_sina_research_report_date.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sina_research_report_publication_date",
+              "meaning": "新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。",
+              "unit": "日期"
+            }
+          },
+          "rationale": "新浪财经官方最新滚动研报页列名为“序号、标题、报告类型、发布日期、机构、研究员”；项目 _research_sina.py 按同一列顺序解析，取第四个单元格并经 normalize_compact_date() 输出为 date。现有 2026-11-19 数据日、2026-11-20 采集日归档覆盖市场最新页和 5 个个股页共 233 条记录，233 个唯一报告 ID、101 个不同发布日期，且 233/233 日期有效。一次响应中的多条记录不作为独立日期样本；接口未提供来源实际 as_of_date，因此不据此判定列表快照新鲜度。",
+          "source_contract": {
+            "authority": "新浪财经官方机构研报列表页面；最新滚动与个股搜索页面字段列定义",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date",
+            "locator": "最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。",
+            "url": "https://vip.stock.finance.sina.com.cn/q/go.php/vReport_List/kind/lastest/index.phtml"
           }
         }
       ]

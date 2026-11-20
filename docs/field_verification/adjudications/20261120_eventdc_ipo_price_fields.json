@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_eventdc_ipo_price_fields.md",
+  "evidence_sha256": "fd32c89d643ff6999ac035d3773155263438ea24f7214d6b83f9999c8802a406",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-ipo-lately-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].LATELY_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_record_latest_price",
+      "meaning": "东方财富新股申购页所列的该证券最新价；响应没有给出此价格自身的来源实际日期，不得自动解释为目录目标数据日的收盘价。",
+      "unit": "",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY LATELY_PRICE source-contract adjudication",
+      "rationale": "东方财富官方新股申购页模板将 item.LATELY_PRICE 绑定到“最新价”列。项目把 RPTA_APP_IPOAPPLY 返回行原样保存在 raw_event_dc.ipo_calendar[]。2026-11-19 目标数据日留存的 20 条 IPO 记录中该字段 20/20 非空且值互异。响应中的 UP_DATE 是记录更新字段，并不证明该报价的 as_of_date；因此只定案“最新价”角色，不把值用于未对齐日期的日频碰撞。相同 20 条记录中 TNEW_PRICE 与 LATELY_PRICE 20/20 相等，但页面模板没有把 TNEW_PRICE 绑定到该显示列，不据此建立别名。页面模板未明确币种/单位，unit 留空。只登记本来源路径，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面模板与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].LATELY_PRICE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].LATELY_PRICE",
+        "locator": "东方财富新股申购页模板中 item.LATELY_PRICE 对应“最新价”，经 precision(1,2) 显示；配套备忘录列出 20 条留存响应及日期边界",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    },
+    {
+      "id": "20261120-eventdc-ipo-close-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].CLOSE_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_record_first_day_close_price",
+      "meaning": "该证券上市首日收盘价；不是当前最新价或发行价。",
+      "unit": "",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY CLOSE_PRICE source-contract adjudication",
+      "rationale": "东方财富官方新股申购页模板将 item.CLOSE_PRICE 绑定到“首日收盘价”列。项目把 RPTA_APP_IPOAPPLY 返回行原样保存在 raw_event_dc.ipo_calendar[]。2026-11-19 目标数据日留存的 20 条 IPO 记录中该字段 20/20 非空且值互异。该字段描述 IPO 上市事件首日的历史收盘价，不是随采集时点更新的报价；模板未明确币种/单位，unit 留空。只登记本来源路径，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面模板与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].CLOSE_PRICE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].CLOSE_PRICE",
+        "locator": "东方财富新股申购页模板中 item.CLOSE_PRICE 对应“首日收盘价”，经 precision(1,2) 显示；配套备忘录列出 20 条留存响应",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    }
+  ]
+}

@@ -14,6 +14,9 @@
 
 ## 近期裁决与研究记录
 
+- [单源裁决后的 7 日碰撞回归](20261119/issue_way_explain_adjudication/20261119_collision_report.md)：报告完整、无完整性问题；主攻未知目标由 64 降至 63，`ISSUE_WAY_EXPLAIN` 不再列为目标。候选审阅台账仍有 81 项待人工处置。
+- [`adjudications/20261121_eventdc_ipo_issue_way_explain.md`](adjudications/20261121_eventdc_ipo_issue_way_explain.md)、[结构化裁决](adjudications/20261121_eventdc_ipo_issue_way_explain.json)与[逐条样本](research/20261121_eventdc_ipo_issue_way_explain_samples.csv)：东方财富官方详情前端明确区分 `ISSUE_WAY`（发行方式类型）和 `ISSUE_WAY_EXPLAIN`（发行方式说明）；对照项目 `RPTA_APP_IPOAPPLY` 的 20 条留存记录，说明值分布为“历史遗留”16、“本地发行”3、“认购证”1，四条官方详情响应覆盖全部已观察值并与归档两字段精确一致。按单源契约路径注册，不建跨源映射；两报表端点的未来契约一致性不作推断。
+
 - [`adjudications/20261121_eventdc_total_issue_num.md`](adjudications/20261121_eventdc_total_issue_num.md)、[结构化裁决](adjudications/20261121_eventdc_total_issue_num.json)与[逐条样本](research/20261121_eventdc_total_issue_num_samples.csv)：以东方财富官方前端对 `ISSUE_NUM` 的“发行总数”定义为锚，核对 `RPTA_APP_IPOAPPLY` 留存的全部 20 行，`TOTAL_ISSUE_NUM` 与 `ISSUE_NUM` 20/20 精确相等，登记为同源同值别名；注明官方未独立标注 `TOTAL_ISSUE_NUM`，若后续出现分歧需重核，不建跨源映射。按 2026-11-19 归档重跑后的[完整 7 日碰撞报告](20261121/total_issue_num_alias/20261121_collision_report.md)不再将该路径列为待破解目标，主攻目标由 65 降至 64。
 - [`adjudications/20261121_exchange_etf_shares_contract.md`](adjudications/20261121_exchange_etf_shares_contract.md)：按官方字段标签和项目响应映射，分别定案 `沪深交易所::etf_sh.shares_10k`（上交所 ETF 总份额，万份）与 `etf_sz.shares_10k`（深交所 ETF 当前规模，万份）；保留两套接口和更新时间边界，不建跨所映射。KPH（开盘红）和 KPL（开盘啦）也继续按不同产品、官网和来源族区分，详见[来源身份裁决](adjudications/20261119_kph_kpl_source_identity.md)。
 - [`research/20261121_st_list_route_provenance_audit.md`](research/20261121_st_list_route_provenance_audit.md)：审计发现 `st_list` 可在东财失败时回退到 Baostock，但旧 raw/meta 固定记录 `em.clist`。四份同形历史名单很像回退输出，却没有运行路由证据，故不追认来源；新采集改为记录实际沪深与北交所路由，并保留历史样本未定来源边界。

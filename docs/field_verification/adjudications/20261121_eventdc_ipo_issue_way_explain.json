@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-ipo-issue-way-explain",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].ISSUE_WAY_EXPLAIN"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_issue_way_explanation",
+      "meaning": "该 IPO 发行记录中对发行方式的文字说明；它与 ISSUE_WAY（发行方式类型）是不同字段。当前保留样本观察到“历史遗留”“本地发行”“认购证”等说明值。本结论确认字段角色，不表示完整发行流程分类，也不穷尽所有可能取值。",
+      "unit": "",
+      "section": "2026-11-21 Eastmoney IPO ISSUE_WAY_EXPLAIN source-contract adjudication",
+      "rationale": "项目将 ipo_calendar 配置到东方财富数据中心 RPTA_APP_IPOAPPLY，默认请求 columns=ALL，并把 result.data[*] 原样返回到 raw_event_dc.ipo_calendar[]；因此目标完整路径精确对应该响应键。东方财富官方新股详情前端 xgdetail.js 另请求 RPT_IPO_OTHERDETAILS，选取同名 ISSUE_WAY_EXPLAIN，并把 data.ISSUE_WAY_EXPLAIN 渲染为“发行方式说明”，同时将 ISSUE_WAY 单独标为“发行方式类型”。在 2026-11-19 归档的全部 20 条 IPO 记录中，目标字段均有值，出现“历史遗留”16 条、“本地发行”3 条和“认购证”1 条，而 ISSUE_WAY 均为“其他发行方式”。对照官方 RPT_IPO_OTHERDETAILS 的 4 条代表记录（000001、000002、000011、000025），覆盖全部三种已观察说明值，detail 接口的 ISSUE_WAY 与 ISSUE_WAY_EXPLAIN 均与归档逐项完全相同。本裁决适用于当前精确运行路径及已观察字段角色；官方未发布版本化 schema，RPTA_APP_IPOAPPLY 与 RPT_IPO_OTHERDETAILS 是不同报表端点，故不声称二者未来接口契约必然相同，不外推未观察枚举，也不建立跨源映射。",
+      "source_contract": {
+        "authority": "东方财富官方新股详情前端及东方财富数据中心 RPT_IPO_OTHERDETAILS",
+        "revision": "东方财富 xgdetail.js 于 2026-11-21 核查（SHA-256 见配套记录）；详情接口代表值于 2026-11-21 查询；项目 RPTA_APP_IPOAPPLY 留存目标数据日 2026-11-19、采集自然日 2026-11-20；上游未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].ISSUE_WAY_EXPLAIN -> ipo_calendar() -> raw_event_dc.ipo_calendar[].ISSUE_WAY_EXPLAIN; official detail comparison: RPT_IPO_OTHERDETAILS response.data[*].ISSUE_WAY_EXPLAIN",
+        "locator": "官方 xgdetail.js 请求 RPT_IPO_OTHERDETAILS 且 columns 包含 ISSUE_WAY、ISSUE_WAY_EXPLAIN；前端分别将 data.ISSUE_WAY 标为“发行方式类型”、data.ISSUE_WAY_EXPLAIN 标为“发行方式说明”。4 条代表详情响应与同证券代码的 RPTA_APP_IPOAPPLY 留存值逐字段一致，覆盖归档中所有已观察到的 ISSUE_WAY_EXPLAIN 值；完整样本与路径边界见配套记录。",
+        "url": "https://data.eastmoney.com/newstatic/js/xg/xgdetail.js"
+      }
+    }
+  ]
+}

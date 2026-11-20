@@ -6,7 +6,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1786 个字段 / 1995 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1787 个字段 / 1996 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -185,7 +185,7 @@
 | 连板天数 | 2 | 同花顺-fuyao、东财 |
 | kph_industry_limit_up_count | 2 | 开盘红、开盘红(Levistock适配) |
 
-**B.2 单来源关系字段（1618 个；仅登记一个来源标签）**
+**B.2 单来源关系字段（1619 个；仅登记一个来源标签）**
 
 - **ZHB（85）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、shareholder_change_date、shareholder_change_shares_wan、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market、stat2.zt_seal_amount
   - … 其余 25 个见正文
@@ -214,7 +214,7 @@
 - **ZHB-tipinfo（5）**：[13]、equity_incentive_date、forecast_date_recent、forecast_type、suspend_major_event_date
 - **reports（10）**：column、indvIsNew、上一年度实际每股收益、研报 PDF 附件大小、研报 PDF 附件页数、研报目标价区间上限、研报目标价区间下限、研报附件类型代码、首次公开发行价格、首次公开发行市盈率
 - **东财-em_kline_f61（2）**：daily_kline_record_count、f59
-- **东财-event_dc(IPO发行记录)（30）**：ipo_ballot_number_announcement_date、ipo_consecutive_one_word_board_count、ipo_first_day_average_price_yuan、ipo_first_day_close_change_pct、ipo_first_day_high_change_pct、ipo_first_day_open_premium_pct、ipo_first_day_open_price_yuan、ipo_first_day_turnover_rate_pct、ipo_issue_price_per_share、ipo_offline_initial_inquiry_cumulative_multiple、ipo_offline_placement_quote_object_count、ipo_online_issue_shares、ipo_online_subscription_upper_shares、ipo_online_winning_rate_pct、ipo_open_board_average_price_yuan、ipo_open_board_date、ipo_prospectus_document_code、ipo_record_after_issue_pe、ipo_record_first_day_close_price、ipo_record_industry_pe、ipo_record_latest_price、ipo_record_listing_date、ipo_record_par_value、ipo_record_per_sign_profit_yuan、ipo_record_subscription_date、ipo_record_total_gain_pct、ipo_registration_system_flag、ipo_subscription_payment_date、ipo_top_subscription_market_value_wan_yuan、ipo_total_issue_shares_wan
+- **东财-event_dc(IPO发行记录)（31）**：ipo_ballot_number_announcement_date、ipo_consecutive_one_word_board_count、ipo_first_day_average_price_yuan、ipo_first_day_close_change_pct、ipo_first_day_high_change_pct、ipo_first_day_open_premium_pct、ipo_first_day_open_price_yuan、ipo_first_day_turnover_rate_pct、ipo_issue_price_per_share、ipo_issue_way_explanation、ipo_offline_initial_inquiry_cumulative_multiple、ipo_offline_placement_quote_object_count、ipo_online_issue_shares、ipo_online_subscription_upper_shares、ipo_online_winning_rate_pct、ipo_open_board_average_price_yuan、ipo_open_board_date、ipo_prospectus_document_code、ipo_record_after_issue_pe、ipo_record_first_day_close_price、ipo_record_industry_pe、ipo_record_latest_price、ipo_record_listing_date、ipo_record_par_value、ipo_record_per_sign_profit_yuan、ipo_record_subscription_date、ipo_record_total_gain_pct、ipo_registration_system_flag、ipo_subscription_payment_date、ipo_top_subscription_market_value_wan_yuan、ipo_total_issue_shares_wan
 - **东财-event_dc(可转债列表)（19）**：bond_coupon_rate_current_interest_year_pct、convertible_bond_conversion_premium_ratio、convertible_bond_conversion_value、convertible_bond_credit_rating、convertible_bond_current_conversion_price、convertible_bond_current_market_price、convertible_bond_equity_registration_date、convertible_bond_initial_conversion_price、convertible_bond_issue_scale、convertible_bond_lottery_number_publication_date、convertible_bond_online_lottery_win_rate_pct、convertible_bond_online_subscription_limit_thousand_yuan、convertible_bond_priority_placement_amount_yuan_per_share、convertible_bond_profit_per_lot_yuan、convertible_bond_redemption_trigger_price、convertible_bond_resale_trigger_price、convertible_bond_term_years、convertible_bond_underlying_stock_pb_ratio、convertible_bond_underlying_stock_price
 - **东财-push2(stock/get)（9）**：eastmoney_stock_get_dividend_yield、eastmoney_stock_get_inner_volume、eastmoney_stock_get_outer_volume、eps_ttm(f108)、f163、f176、f190、f55、f92
 - **东财-push2ex（3）**：push2ex.total_market_value、push2ex.tradable_a_market_value、sector

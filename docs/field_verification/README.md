@@ -14,6 +14,8 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261120_eventdc_ipo_semantics.md`](adjudications/20261120_eventdc_ipo_semantics.md)、[结构化裁决](adjudications/20261120_eventdc_ipo_semantics.json)与[逐条样本](research/20261120_eventdc_ipo_semantics_samples.csv)：依据东方财富官方新股页字段模板，登记 IPO 发行市盈率、行业市盈率、涨幅及每签获利四条完整来源路径；20 条留存发行记录支持样本公式核验，不把页面预测回退、固定中签股数或未公开公式外推为字段定义。`LD_CLOSE_CHANGE` 的页面提示范围与早期样本不一致，继续未定。重跑完整七日碰撞后，未知目标由 86 降至 82，L1/L1-C 为 0、L4 为 2；[回归报告](20261120/after_ipo_official_semantics_20261120/20261120_collision_report.md)。
+
 - [`adjudications/20261120_kph_levistock_industry_id_alias.md`](adjudications/20261120_kph_levistock_industry_id_alias.md) 与[结构化裁决](adjudications/20261120_kph_levistock_industry_id_alias.json)、[`adjudications/20261120_kph_levistock_industry_zt_alias.md`](adjudications/20261120_kph_levistock_industry_zt_alias.md) 与[结构化裁决](adjudications/20261120_kph_levistock_industry_zt_alias.json)：分别将 `开盘红(Levistock适配)::industry_id` 定义为 KPH 自身行业分类 ID，将 `industry_zt` 按同一 `HisDaBanList` 响应 `row[27]` 归入 `kph_industry_limit_up_count`（按 KPH 自身 `industry_id` 分类关联的当日涨停股票家数，家）。KPH/KPL 是独立来源；KPH 分类体系、层级和计数全集仍未知，不建立跨源映射。本次用两项来源内裁决取代此前两个路径的合并释义，不改变统计范围未决结论。
 
 - [`adjudications/20261120_eventdc_ipo_par_value.md`](adjudications/20261120_eventdc_ipo_par_value.md) 与[结构化裁决](adjudications/20261120_eventdc_ipo_par_value.json)：将 `东财-event_dc(IPO发行记录)::ipo_calendar[].PAR_VALUE` 定案为 IPO 历史发行记录中普通股每股面值（元/股），不是当前面值；以平安银行、万科发行人正式材料核对样本中的 20 元与 1 元。IPO `RPTA_APP_IPOAPPLY` 与可转债 `RPT_BOND_CB_LIST` 保持分开的来源路径；更正先前登记到通用 `datacenter` 身份导致碰撞器未识别的问题。使用 2026-11-19 目标数据日的现有归档重跑 7 日碰撞后，该字段退出未知目标，报告完整，主攻目标 90、L1/L1-C 为 0、L4 为 2；[回归报告](20261120/source_identity_fixed_20261120/20261120_collision_report.md)。

@@ -560,10 +560,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares, issue price, event dates and quoted prices
-    # plus convertible-bond issue scale, term, coupon-rate and quote fields;
-    # zhuying_shouru uses an empirical correction instead.
-    assert len(pairs) == 133
+    # IPO par value, issue shares, issue price, event dates, quoted prices and
+    # four IPO semantic fields, plus convertible-bond fields; zhuying_shouru
+    # uses an empirical correction instead.
+    assert len(pairs) == 137
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -578,6 +578,14 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert matrix["ipo_record_latest_price"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].CLOSE_PRICE") in pairs
     assert matrix["ipo_record_first_day_close_price"] == {"东财-event_dc(IPO发行记录)"}
+    for code, canonical in (
+        ("ipo_calendar[].AFTER_ISSUE_PE", "ipo_record_after_issue_pe"),
+        ("ipo_calendar[].INDUSTRY_PE_NEW", "ipo_record_industry_pe"),
+        ("ipo_calendar[].TOTAL_CHANGE", "ipo_record_total_gain_pct"),
+        ("ipo_calendar[].PROFIT", "ipo_record_per_sign_profit_yuan"),
+    ):
+        assert ("东财-event_dc(IPO发行记录)", code) in pairs
+        assert matrix[canonical] == {"东财-event_dc(IPO发行记录)"}
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
@@ -616,6 +624,19 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "anchor_date": "20261115-eltdx-kline-anchor-date-source-contract",
     }
     records_by_pair = {(row["source"], row["code"]): row for row in records}
+    ipo_source = "东财-event_dc(IPO发行记录)"
+    ipo_decision_ids = {
+        "ipo_calendar[].AFTER_ISSUE_PE": "20261120-eventdc-ipo-after-issue-pe",
+        "ipo_calendar[].INDUSTRY_PE_NEW": "20261120-eventdc-ipo-industry-pe-new",
+        "ipo_calendar[].TOTAL_CHANGE": "20261120-eventdc-ipo-total-change",
+        "ipo_calendar[].PROFIT": "20261120-eventdc-ipo-profit",
+    }
+    for code, decision_id in ipo_decision_ids.items():
+        row = records_by_pair[(ipo_source, code)]
+        assert row["status"] == "verified"
+        assert row["status_resolution"] == "verified_by_source_contract"
+        assert row["status_evidence"]["source_contract_adjudication_ids"] == [decision_id]
+
     trade_tick_source = "TDX-eltdx(适配层)"
     trade_tick_decision_ids = {
         "index": "eltdx-trade-tick-index-20261116",

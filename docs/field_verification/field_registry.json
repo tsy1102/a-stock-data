@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1625,
+      "verified": 1629,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 482
+      "verified_by_source_contract": 486
     },
     "updated_at": "2026-11-19"
   },
@@ -23216,6 +23216,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].AFTER_ISSUE_PE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE#官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_record_after_issue_pe",
+      "meaning": "该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。",
+      "unit": "倍",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].APPLY_DATE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23243,6 +23261,24 @@
       "canonical": "ipo_record_first_day_close_price",
       "meaning": "该证券上市首日收盘价；不是当前最新价或发行价。",
       "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].INDUSTRY_PE_NEW",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW#官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_record_industry_pe",
+      "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+      "unit": "倍",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -23333,6 +23369,42 @@
       "canonical": "ipo_record_par_value",
       "meaning": "该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。",
       "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].PROFIT",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT#官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_record_per_sign_profit_yuan",
+      "meaning": "每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。",
+      "unit": "元/签",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].TOTAL_CHANGE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE#官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_record_total_gain_pct",
+      "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+      "unit": "%",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -46770,6 +46842,18 @@
       "东财-event_dc(IPO发行记录)"
     ],
     "ipo_record_first_day_close_price": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_record_after_issue_pe": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_record_industry_pe": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_record_total_gain_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_record_per_sign_profit_yuan": [
       "东财-event_dc(IPO发行记录)"
     ]
   },
@@ -271353,6 +271437,406 @@
             "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].CLOSE_PRICE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].CLOSE_PRICE",
             "locator": "东方财富新股申购页模板中 item.CLOSE_PRICE 对应“首日收盘价”，经 precision(1,2) 显示；配套备忘录列出 20 条留存响应",
             "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].AFTER_ISSUE_PE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].AFTER_ISSUE_PE",
+      "path": "ipo_calendar[].AFTER_ISSUE_PE",
+      "canonical": "ipo_record_after_issue_pe",
+      "meaning": "该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。",
+      "unit": "倍",
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE#官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE#官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-after-issue-pe"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-after-issue-pe"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE#官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_record_after_issue_pe",
+          "meaning": "该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-after-issue-pe",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-after-issue-pe",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE",
+            "locator": "官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_after_issue_pe",
+              "meaning": "该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。",
+              "unit": "倍"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-after-issue-pe",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_semantics.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_after_issue_pe",
+              "meaning": "该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。",
+              "unit": "倍"
+            }
+          },
+          "rationale": "东方财富官方页面以 AFTER_ISSUE_PE 作为发行市盈率列的排序键；前端请求 RPTA_APP_IPOAPPLY 时包含该原始响应键，并在其非空时直接用于显示。页面空值时另走预测逻辑，故预测回退不并入原始字段定义。保留响应中 20 条记录有 4 条非空、16 条为空；空值未以页面预测结果补齐。本裁决确认精确来源字段的含义与倍数单位，不确定预测回退算法或字段的估值时点，不新增跨来源映射。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].AFTER_ISSUE_PE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].AFTER_ISSUE_PE",
+            "locator": "官方页面发行市盈率列的 data-sortname 为 AFTER_ISSUE_PE；官方前端在响应字段非空时直接渲染 item.AFTER_ISSUE_PE，字段为空时使用预测回退",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].INDUSTRY_PE_NEW",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].INDUSTRY_PE_NEW",
+      "path": "ipo_calendar[].INDUSTRY_PE_NEW",
+      "canonical": "ipo_record_industry_pe",
+      "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+      "unit": "倍",
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW#官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW#官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-industry-pe-new"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-industry-pe-new"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW#官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_record_industry_pe",
+          "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-industry-pe-new",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-industry-pe-new",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW",
+            "locator": "官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_industry_pe",
+              "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+              "unit": "倍"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-industry-pe-new",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_semantics.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_industry_pe",
+              "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+              "unit": "倍"
+            }
+          },
+          "rationale": "东方财富官方页面以 INDUSTRY_PE_NEW 作为行业市盈率列的精确 data-field，并说明沪深 A 股与北交所使用不同的行业分类体系。官方前端请求 RPTA_APP_IPOAPPLY 时包含该键。保留响应中 20/20 条非空、共 12 个不同值。此裁决仅确认 INDUSTRY_PE_NEW，不将其与同一响应里的 INDUSTRY_PE、INDUSTRY_PE_RATIO 或其他来源的行业 PE 合并；具体计算时点和公式保持未确认，不新增跨来源映射。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW",
+            "locator": "官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].TOTAL_CHANGE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].TOTAL_CHANGE",
+      "path": "ipo_calendar[].TOTAL_CHANGE",
+      "canonical": "ipo_record_total_gain_pct",
+      "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE#官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE#官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-total-change"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-total-change"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE#官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_record_total_gain_pct",
+          "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-total-change",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-total-change",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE",
+            "locator": "官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_total_gain_pct",
+              "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-total-change",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_semantics.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_total_gain_pct",
+              "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+              "unit": "%"
+            }
+          },
+          "rationale": "官方页面将 TOTAL_CHANGE 直接绑定到涨幅列，提示文字明确区分注册制首日成交均价与审批制首个非一字板交易日成交均价两个参照口径。官方前端按百分比格式输出该字段。保留期 20 条历史记录均非空；按原始 AVERAGE_PRICE 与 ISSUE_PRICE 复算 `(AVERAGE_PRICE - ISSUE_PRICE) / ISSUE_PRICE * 100`，20/20 误差不超过 0.02 个百分点，最大误差 0.004286 个百分点。样本来自早期深圳 IPO 记录，不据此外推所有制度或年代的交易日；语义以官方制度分支说明为准。该裁决只确认此精确来源字段，不新增跨来源映射。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE",
+            "locator": "官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].PROFIT",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].PROFIT",
+      "path": "ipo_calendar[].PROFIT",
+      "canonical": "ipo_record_per_sign_profit_yuan",
+      "meaning": "每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。",
+      "unit": "元/签",
+      "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT#官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT#官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-profit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-profit"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT#官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_record_per_sign_profit_yuan",
+          "meaning": "每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。",
+          "unit": "元/签",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-profit",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-profit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT",
+            "locator": "官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_per_sign_profit_yuan",
+              "meaning": "每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。",
+              "unit": "元/签"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-profit",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_semantics.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_per_sign_profit_yuan",
+              "meaning": "每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。",
+              "unit": "元/签"
+            }
+          },
+          "rationale": "官方页面将 PROFIT 直接绑定到每中一签获利列，并以提示文字明确说明注册制和审批制采用的成交均价参照日。保留期 20 条历史记录均非空。对这批记录，使用显示到分的平均价与 500 股计算 `(round(AVERAGE_PRICE, 2) - ISSUE_PRICE) * 500`，20/20 与 PROFIT 完全相等；其中 19 条 EACHBALLOT_SHARES 为 500，另 1 条没有有效股数值。该结果支持官方的每签获利定义和本批历史样本的展示精度，但不把 500 股推广到其他发行制度或市场。精确来源路径语义已定案，跨板块股数规则不在本次确认范围内，不新增跨来源映射。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及其官方前端字段模板",
+            "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT",
+            "locator": "官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
           }
         }
       ]

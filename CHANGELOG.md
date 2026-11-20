@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 依据东方财富官方 IPO 页面契约登记 `AFTER_ISSUE_PE`、`INDUSTRY_PE_NEW`、`TOTAL_CHANGE` 和 `PROFIT` 四个完整来源路径；结合 20 条留存发行记录核对字段值与成交均价关系，不推断页面空值回退、统一中签股数或未公开公式。保留与官方提示范围冲突的 `LD_CLOSE_CHANGE` 为未定；完整七日碰撞将未知目标从 86 降至 82，报告见 [`20261120_collision_report.md`](docs/field_verification/20261120/after_ipo_official_semantics_20261120/20261120_collision_report.md)。
 - 将 `开盘红::industry_limit_up_count` 来源内定案为按 KPH 自身行业分类关联的当日涨停股票家数（家）；保留统计集合和行业分类体系未知的边界。该字段现退出未知字段破解目标；不与开盘啦 `col_20` 建立映射，两产品仍按不同来源身份采集和核验。
 - 明确已登记错误字段映射的撤回闭环：按完整路径保留旧关系及证据，删除精确活动映射，重生成投影并回归受影响碰撞。
 - 按东方财富可转债详情页的 `RPT_BOND_CB_LIST` 请求补齐行情 `quoteColumns`，并依据官方字段到页面标签的映射登记 10 个完整来源路径，包括可转债初始/当前转股价、转股价值、正股价、两个债券现价回退键、溢价率、触发价及正股市净率；撤回初始转股价与转股价值的旧同义映射。未登录请求采用官网 `hsaDelay()` 对应的 `quoteType=0`。行情字段未提供来源报价日期时不作为日期合格的历史碰撞样本。

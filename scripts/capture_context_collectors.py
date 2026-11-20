@@ -223,11 +223,13 @@ def collect_sse_e_interaction(pool: list) -> dict:
 
 def collect_st_list(pool: list) -> dict:
     """V17.4.1 吸收层: ST/*ST 名单(§6.8, 沪深京风险警示板)。市场级(全市场当日快照)。"""
-    from stock_common.sc_datasource import st_stock_list
+    from stock_common.sc_datasource import st_stock_list_with_provenance
 
     out: Dict[str, Any] = {}
     try:
-        out["st_list"] = st_stock_list()
+        rows, provenance = st_stock_list_with_provenance()
+        out["st_list"] = rows
+        out["__source_meta__"] = {"source_provenance": provenance}
     except Exception as e:
         out["st_list"] = {"__error__": str(e)[:150]}
     return out

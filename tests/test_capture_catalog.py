@@ -19,6 +19,7 @@ def test_capture_catalog_keeps_eastmoney_field_schemes_distinct():
     assert capture_catalog.EM_FULL_FIELDS.split(",")[-1] == "f250"
     assert len(capture_catalog.EM_FULL_FIELDS.split(",")) == 250
     assert capture_catalog.EM_ULIST_RESEARCH_FIELDS == ("f297",)
+    assert capture_catalog.SOURCE_SCHEME["st_list"] == "project.st_list_routed"
 
 
 def test_kph_ladder_catalog_does_not_treat_request_date_as_source_date():

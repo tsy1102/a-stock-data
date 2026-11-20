@@ -1520,6 +1520,32 @@ def _startup_scope_label(selected_sources: list[str], include_context: bool) -> 
     return f"源范围: {source_scope} | 市场上下文: {context_scope}"
 
 
+def _source_provenance_entry(
+    data: Any,
+    previous_entry: Any = None,
+    preserve_previous_snapshot: bool = False,
+) -> Dict[str, Any]:
+    """Copy the route that produced the snapshot into source-level run metadata."""
+    if preserve_previous_snapshot:
+        previous_provenance = (
+            previous_entry.get("source_provenance") if isinstance(previous_entry, dict) else None
+        )
+        return (
+            {"source_provenance": previous_provenance}
+            if isinstance(previous_provenance, dict)
+            else {}
+        )
+    if not isinstance(data, dict):
+        return {}
+    source_meta = data.get("__source_meta__")
+    if not isinstance(source_meta, dict):
+        return {}
+    provenance = source_meta.get("source_provenance")
+    if not isinstance(provenance, dict):
+        return {}
+    return {"source_provenance": provenance}
+
+
 def _refresh_closed_snapshot_validations(out_dir, data_date, pool, snapshot_meta):
     return CAPA._refresh_closed_snapshot_validations(
         out_dir=out_dir,
@@ -2437,6 +2463,13 @@ def main() -> None:
                 else:
                     meta["source_as_of_dates"].pop(name, None)
             _entry.update(_info)
+            _entry.update(
+                _source_provenance_entry(
+                    data,
+                    previous_entry=previous_source_entry,
+                    preserve_previous_snapshot=preserve_previous_snapshot,
+                )
+            )
             if name in {"axdata", "kph"} and isinstance(data, dict):
                 _identity = data.get("__source_meta__")
                 if isinstance(_identity, dict) and isinstance(

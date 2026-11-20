@@ -9,6 +9,7 @@ from uuid import uuid4
 import pytest
 
 import stock_common
+from stock_common import sc_datasource
 from stock_common import sc_fuyao
 from stock_common import sc_network
 from stock_common.sc_datasource import _st_list
@@ -2102,6 +2103,88 @@ def test_baostock_fallback_uses_public_login_signature(monkeypatch):
             "pct_change": None,
         }
     ]
+
+
+def test_st_list_route_provenance_records_baostock_fallback(monkeypatch):
+    fallback_rows = [
+        {
+            "code": "600001",
+            "market": "sh",
+            "name": "ST Sample",
+            "st_type": "ST",
+            "price": None,
+            "pct_change": None,
+        }
+    ]
+
+    def fake_em_clist(fs, _fields):
+        if fs == "m:0+f:4,m:1+f:4":
+            raise RuntimeError("primary route unavailable")
+        return [], "https://push2delay.eastmoney.com/api/qt/clist/get"
+
+    monkeypatch.setattr(_st_list, "_em_clist_all", fake_em_clist)
+    monkeypatch.setattr(_st_list, "_st_list_baostock", lambda: fallback_rows)
+
+    rows, provenance = _st_list.st_stock_list_with_provenance()
+
+    assert rows == fallback_rows
+    assert provenance["routes"]["shsz"] == {
+        "provider": "baostock",
+        "interface": "query_stock_basic",
+        "status": "fallback_used",
+        "record_count": 1,
+        "primary_attempt": {
+            "provider": "eastmoney",
+            "interface": "clist/get",
+            "status": "failed",
+            "failure_type": "RuntimeError",
+        },
+    }
+    assert provenance["routes"]["bj"]["provider"] == "eastmoney"
+    assert provenance["routes"]["bj"]["status"] == "ok"
+    assert "f2" in provenance["field_lineage"]["price"]
+    assert "f3" in provenance["field_lineage"]["pct_change"]
+
+
+def test_collect_st_list_persists_provider_provenance(monkeypatch):
+    from scripts.capture_context_collectors import collect_st_list
+
+    rows = [{"code": "600001", "st_type": "ST"}]
+    provenance = {"schema_version": 1, "routes": {"shsz": {"provider": "baostock"}}}
+    monkeypatch.setattr(
+        sc_datasource,
+        "st_stock_list_with_provenance",
+        lambda: (rows, provenance),
+    )
+
+    result = collect_st_list([])
+
+    assert result == {
+        "st_list": rows,
+        "__source_meta__": {"source_provenance": provenance},
+    }
+    assert capture_probe._source_provenance_entry(result) == {"source_provenance": provenance}
+
+
+def test_preserved_snapshot_keeps_only_its_existing_source_provenance():
+    previous_provenance = {"routes": {"shsz": {"provider": "baostock"}}}
+    failed_attempt = {
+        "__source_meta__": {"source_provenance": {"routes": {"shsz": {"provider": "eastmoney"}}}}
+    }
+
+    assert capture_probe._source_provenance_entry(
+        failed_attempt,
+        previous_entry={"source_provenance": previous_provenance},
+        preserve_previous_snapshot=True,
+    ) == {"source_provenance": previous_provenance}
+    assert (
+        capture_probe._source_provenance_entry(
+            failed_attempt,
+            previous_entry={},
+            preserve_previous_snapshot=True,
+        )
+        == {}
+    )
 
 
 def test_kph_history_date_uses_trading_calendar_and_stays_before_today(monkeypatch):

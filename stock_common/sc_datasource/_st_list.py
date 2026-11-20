@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 import threading
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlsplit
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
@@ -176,6 +177,116 @@ def _st_list_baostock() -> List[Dict[str, Any]]:
     return box.get("rows", [])
 
 
+def _route_provenance(
+    provider: str,
+    interface: str,
+    status: str,
+    record_count: int,
+    *,
+    url: Optional[str] = None,
+    primary_attempt: Optional[Dict[str, str]] = None,
+) -> Dict[str, Any]:
+    route: Dict[str, Any] = {
+        "provider": provider,
+        "interface": interface,
+        "status": status,
+        "record_count": record_count,
+    }
+    if url:
+        parsed = urlsplit(url)
+        route["host"] = parsed.netloc
+        route["path"] = parsed.path
+    if primary_attempt:
+        route["primary_attempt"] = primary_attempt
+    return route
+
+
+def st_stock_list_with_provenance() -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Return the normalized list and the effective provider route for this run."""
+
+    fields = "f12,f13,f14,f2,f3"
+    shsz_rows: List[Dict[str, Any]] = []
+    try:
+        shsz, shsz_url = _em_clist_all("m:0+f:4,m:1+f:4", fields)
+        for rec in shsz:
+            p = _parse_st_rec(rec, is_bj=False)
+            if p:
+                shsz_rows.append(p)
+        shsz_route = _route_provenance(
+            "eastmoney",
+            "clist/get",
+            "ok",
+            len(shsz_rows),
+            url=shsz_url,
+        )
+    except RuntimeError as exc:
+        _debug_log(f"st_stock_list: 沪深主源(东财)不可达({exc}), 尝试 baostock 兜底(仅沪深)")
+        shsz_rows = _st_list_baostock()
+        shsz_route = _route_provenance(
+            "baostock",
+            "query_stock_basic",
+            "fallback_used",
+            len(shsz_rows),
+            primary_attempt={
+                "provider": "eastmoney",
+                "interface": "clist/get",
+                "status": "failed",
+                "failure_type": type(exc).__name__,
+            },
+        )
+    if not shsz_rows:
+        raise RuntimeError("ST名单(沪深)主源与 baostock 兜底均不可用")
+
+    rows: List[Dict[str, Any]] = list(shsz_rows)
+    # 北交所: 东财 clist 软补充(可选; baostock 不支持北交所)
+    try:
+        bj, bj_url = _em_clist_all("m:0+t:81+s:2048", fields)
+    except RuntimeError as exc:
+        _debug_log(f"st_stock_list: 北交所补充失败, 仅用沪深({exc})")
+        bj = []
+        bj_route = _route_provenance(
+            "eastmoney",
+            "clist/get",
+            "unavailable",
+            0,
+            primary_attempt={
+                "provider": "eastmoney",
+                "interface": "clist/get",
+                "status": "failed",
+                "failure_type": type(exc).__name__,
+            },
+        )
+    else:
+        bj_route = _route_provenance(
+            "eastmoney",
+            "clist/get",
+            "ok",
+            len(bj),
+            url=bj_url,
+        )
+    for rec in bj:
+        p = _parse_st_rec(rec, is_bj=True)
+        if p:
+            rows.append(p)
+    if not rows:
+        raise RuntimeError("ST名单解析后为空, 疑似结构改变")
+
+    provenance = {
+        "schema_version": 1,
+        "routes": {"shsz": shsz_route, "bj": bj_route},
+        "field_lineage": {
+            "code": "provider route by market",
+            "market": "provider route by market",
+            "name": "provider route by market",
+            "st_type": "project-derived from name prefix: *ST when name starts with '*', otherwise ST",
+            "price": "Eastmoney clist f2; null on BaoStock fallback",
+            "pct_change": "Eastmoney clist f3; null on BaoStock fallback",
+        },
+        "date_evidence": "upstream as_of_date is not returned; capture date is not source date",
+    }
+    return rows, provenance
+
+
 def st_stock_list() -> List[Dict[str, Any]]:
     """全市场 ST / *ST 名单(风险警示) — 当日快照。
 
@@ -185,33 +296,7 @@ def st_stock_list() -> List[Dict[str, Any]]:
     北交所: 东财 clist 软补充; baostock 不支持北交所, 故 BJ 仅来自东财(上游 §6.8 已知限制)。
     坏记录跳过而非中断整张名单。
     """
-    fields = "f12,f13,f14,f2,f3"
-    shsz_rows: List[Dict[str, Any]] = []
-    try:
-        shsz, _ = _em_clist_all("m:0+f:4,m:1+f:4", fields)
-        for rec in shsz:
-            p = _parse_st_rec(rec, is_bj=False)
-            if p:
-                shsz_rows.append(p)
-    except RuntimeError as exc:
-        _debug_log(f"st_stock_list: 沪深主源(东财)不可达({exc}), 尝试 baostock 兜底(仅沪深)")
-        shsz_rows = _st_list_baostock()
-    if not shsz_rows:
-        raise RuntimeError("ST名单(沪深)主源与 baostock 兜底均不可用")
-
-    rows: List[Dict[str, Any]] = list(shsz_rows)
-    # 北交所: 东财 clist 软补充(可选; baostock 不支持北交所)
-    try:
-        bj, _ = _em_clist_all("m:0+t:81+s:2048", fields)
-    except RuntimeError as exc:
-        _debug_log(f"st_stock_list: 北交所补充失败, 仅用沪深({exc})")
-        bj = []
-    for rec in bj:
-        p = _parse_st_rec(rec, is_bj=True)
-        if p:
-            rows.append(p)
-    if not rows:
-        raise RuntimeError("ST名单解析后为空, 疑似结构改变")
+    rows, _ = st_stock_list_with_provenance()
     return rows
 
 

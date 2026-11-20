@@ -61,7 +61,9 @@ SOURCE_SCHEME = {
     "etf": "sse/szse.etf_shares",  # ETF 份额(万份, §4.7)
     "news_wscn_cctv": "cctv.news",  # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
     "sse_e_interaction": "sse.e_interaction",  # 上证e互动(§10.3)
-    "st_list": "em.clist",  # ST/*ST 名单(§6.8, 风险警示板过滤)
+    # Normalized output can use Eastmoney clist or its BaoStock fallback; the raw
+    # payload and meta.sources record the provider route selected for this run.
+    "st_list": "project.st_list_routed",
 }
 
 # Composite collectors expose stable sub-interface units for selective recapture

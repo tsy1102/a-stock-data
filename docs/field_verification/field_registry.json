@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1664,
+      "verified": 1665,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 522
+      "verified_by_source_contract": 523
     },
     "updated_at": "2026-11-19"
   },
@@ -23494,6 +23494,24 @@
       "canonical": "ipo_record_subscription_date",
       "meaning": "该 IPO 记录所列的申购日期，是发行事件日期；不是采集日、来源数据日或上市日期。",
       "unit": "日期字符串",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].AVERAGE_PRICE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE#官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。 @ 官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+      "canonical": "ipo_total_change_reference_average_price_yuan",
+      "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+      "unit": "元/股",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -47589,6 +47607,9 @@
     ],
     "ipo_issue_way_explanation": [
       "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_total_change_reference_average_price_yuan": [
+      "东财-event_dc(IPO发行记录)"
     ]
   },
   "mappings": [
@@ -53019,47 +53040,11 @@
     {
       "from": {
         "source": "event_dc",
-        "code": "OPEN_AVERAGE_PRICE"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "AVERAGE_PRICE"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=1.00·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
-        "code": "OPEN_AVERAGE_PRICE"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "LD_AVERAGE_PRICE"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=1.00·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
         "code": "LATELY_PRICE"
       },
       "to": {
         "source": "event_dc",
         "code": "TNEW_PRICE"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=1.00·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
-        "code": "AVERAGE_PRICE"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "LD_AVERAGE_PRICE"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1·hit=1.00·3d"
@@ -276260,6 +276245,106 @@
             "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].ISSUE_WAY_EXPLAIN -> ipo_calendar() -> raw_event_dc.ipo_calendar[].ISSUE_WAY_EXPLAIN; official detail comparison: RPT_IPO_OTHERDETAILS response.data[*].ISSUE_WAY_EXPLAIN",
             "locator": "官方 xgdetail.js 请求 RPT_IPO_OTHERDETAILS 且 columns 包含 ISSUE_WAY、ISSUE_WAY_EXPLAIN；前端分别将 data.ISSUE_WAY 标为“发行方式类型”、data.ISSUE_WAY_EXPLAIN 标为“发行方式说明”。4 条代表详情响应与同证券代码的 RPTA_APP_IPOAPPLY 留存值逐字段一致，覆盖归档中所有已观察到的 ISSUE_WAY_EXPLAIN 值；完整样本与路径边界见配套记录。",
             "url": "https://data.eastmoney.com/newstatic/js/xg/xgdetail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].AVERAGE_PRICE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].AVERAGE_PRICE",
+      "path": "ipo_calendar[].AVERAGE_PRICE",
+      "canonical": "ipo_total_change_reference_average_price_yuan",
+      "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE#官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。 @ 官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE#官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。 @ 官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261121-eventdc-ipo-average-price-reference"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-eventdc-ipo-average-price-reference"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE#官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。 @ 官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+          "canonical": "ipo_total_change_reference_average_price_yuan",
+          "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-eventdc-ipo-average-price-reference",
+          "status": "verified",
+          "adjudication_id": "20261121-eventdc-ipo-average-price-reference",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY",
+            "revision": "官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE",
+            "locator": "官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_total_change_reference_average_price_yuan",
+              "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261121-eventdc-ipo-average-price-reference",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_eventdc_ipo_average_price.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_total_change_reference_average_price_yuan",
+              "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "项目精确调用 RPTA_APP_IPOAPPLY 并将响应行原始键 AVERAGE_PRICE 直通至 ipo_calendar[].AVERAGE_PRICE。东方财富新股页对 TOTAL_CHANGE 的官方说明定义了按发行规则选择的成交均价参考日；在 2026-11-19 归档的全部 20 条可比历史记录中，AVERAGE_PRICE 与 ISSUE_PRICE、TOTAL_CHANGE 均非空，按 (AVERAGE_PRICE / ISSUE_PRICE - 1) × 100 复算的最大误差为 0.004285714286 个百分点。20 条中 AVERAGE_PRICE 与 LD_AVERAGE_PRICE 相同，且 OPEN_DATE 与 LISTING_DATE 相同，故不据数值相同建立同义映射，也不把参考日外推为固定的上市日或开板日。样本与规范摘要见配套证据文件。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY",
+            "revision": "官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE",
+            "locator": "官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
           }
         }
       ]

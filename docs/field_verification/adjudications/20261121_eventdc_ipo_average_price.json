@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_eventdc_ipo_average_price.md",
+  "evidence_sha256": "37b0e7da7b486ec3faad5c85166d1ebd170fd630a62977c621f3c60e30bf9d33",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-ipo-average-price-reference",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].AVERAGE_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_total_change_reference_average_price_yuan",
+      "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+      "unit": "元/股",
+      "section": "2026-11-21 Eastmoney RPTA_APP_IPOAPPLY IPO return reference average price source-contract adjudication",
+      "rationale": "项目精确调用 RPTA_APP_IPOAPPLY 并将响应行原始键 AVERAGE_PRICE 直通至 ipo_calendar[].AVERAGE_PRICE。东方财富新股页对 TOTAL_CHANGE 的官方说明定义了按发行规则选择的成交均价参考日；在 2026-11-19 归档的全部 20 条可比历史记录中，AVERAGE_PRICE 与 ISSUE_PRICE、TOTAL_CHANGE 均非空，按 (AVERAGE_PRICE / ISSUE_PRICE - 1) × 100 复算的最大误差为 0.004285714286 个百分点。20 条中 AVERAGE_PRICE 与 LD_AVERAGE_PRICE 相同，且 OPEN_DATE 与 LISTING_DATE 相同，故不据数值相同建立同义映射，也不把参考日外推为固定的上市日或开板日。样本与规范摘要见配套证据文件。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面及数据中心 RPTA_APP_IPOAPPLY",
+        "revision": "官方页面与前端字段说明于 2026-11-20 核查；样本目标数据日 2026-11-19；未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].AVERAGE_PRICE -> _events.ipo_calendar() -> raw_event_dc.ipo_calendar[].AVERAGE_PRICE",
+        "locator": "官方新股页将 TOTAL_CHANGE 标为涨幅并说明按发行规则选择成交均价参考日；项目适配器原样保留 AVERAGE_PRICE 响应键。20 条留存响应按 ISSUE_PRICE 与 TOTAL_CHANGE 复算，完整逐股样本见配套证据文件。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    }
+  ]
+}

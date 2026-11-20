@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 618 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 619 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3566,6 +3566,7 @@
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | `disproved` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].AFTER_ISSUE_PE` | ipo_record_after_issue_pe | 该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].APPLY_DATE` | ipo_record_subscription_date | 该 IPO 记录所列的申购日期，是发行事件日期；不是采集日、来源数据日或上市日期。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].AVERAGE_PRICE` | ipo_total_change_reference_average_price_yuan | 东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].BALLOT_PAY_DATE` | ipo_subscription_payment_date | 该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].CLOSE_PRICE` | ipo_record_first_day_close_price | 该证券上市首日收盘价；不是当前最新价或发行价。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].CONTINUOUS_1WORD_NUM` | ipo_consecutive_one_word_board_count | 该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。 | `verified` |

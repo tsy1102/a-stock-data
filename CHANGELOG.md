@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - 按 Fuyao 官方契约区分 `auction_final.auction_price`（竞价价格）与 `auction_final.open_price`（开盘价），修正旧路径错义并撤回 5 组将竞价价映射为开盘价的活动关系。竞价来源日期缺失的样本只用于同响应字段区分，不作为跨源碰撞证据；详见[裁决](docs/field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)。
+- 将 Eastmoney IPO `AVERAGE_PRICE` 登记为 `TOTAL_CHANGE` 计算所用的规则选择基准成交均价；撤回三条仅凭同源三日数值相等而建立、与首日/开板日期语义冲突的旧活动映射。详见[字段裁决](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price.md)与[映射撤回清单](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price_mapping_withdrawal.json)。
 
 ### Fixed
 

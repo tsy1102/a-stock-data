@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "action": "withdraw_unsupported_active_mappings",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_eventdc_ipo_average_price.md",
+  "evidence_sha256": "37b0e7da7b486ec3faad5c85166d1ebd170fd630a62977c621f3c60e30bf9d33",
+  "rationale": "旧关系来自同一 RPTA_APP_IPOAPPLY 响应内的 2026-09-24 数值 L1 线索，而不是独立来源的语义验证。当前官方定义将上市首日均价、开板日均价和 TOTAL_CHANGE 的规则选择均价区分为不同角色；留存样本中三者因 OPEN_DATE 与 LISTING_DATE 重合而数值相同，不能证明为普遍同义。撤回活动等价声明，不宣称观测值必然不同，不改写源样本。",
+  "withdrawn_mappings": [
+    {
+      "from": {"source": "event_dc", "code": "OPEN_AVERAGE_PRICE"},
+      "to": {"source": "event_dc", "code": "AVERAGE_PRICE"},
+      "relation": "same_number_same_meaning",
+      "original_evidence": "20260924 对撞 L1·hit=1.00·3d",
+      "resolved_from_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "resolved_to_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].AVERAGE_PRICE",
+      "reason": "开板日均价与涨幅计算基准均价的角色并不由三日数值相等证明；留存历史记录的开板日与上市日重合。"
+    },
+    {
+      "from": {"source": "event_dc", "code": "OPEN_AVERAGE_PRICE"},
+      "to": {"source": "event_dc", "code": "LD_AVERAGE_PRICE"},
+      "relation": "same_number_same_meaning",
+      "original_evidence": "20260924 对撞 L1·hit=1.00·3d",
+      "resolved_from_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "resolved_to_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_AVERAGE_PRICE",
+      "reason": "官方标签分别为开板日均价和上市首日成交均价；事件角色不同，早期样本日期重合不能建立同义关系。"
+    },
+    {
+      "from": {"source": "event_dc", "code": "AVERAGE_PRICE"},
+      "to": {"source": "event_dc", "code": "LD_AVERAGE_PRICE"},
+      "relation": "same_number_same_meaning",
+      "original_evidence": "20260924 对撞 L1·hit=1.00·3d",
+      "resolved_from_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].AVERAGE_PRICE",
+      "resolved_to_identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_AVERAGE_PRICE",
+      "reason": "AVERAGE_PRICE 是 TOTAL_CHANGE 计算所用的规则选择基准均价，LD_AVERAGE_PRICE 固定指上市首日；当前样本仅证明值相同，不证明事件日期与语义普遍相同。"
+    }
+  ]
+}

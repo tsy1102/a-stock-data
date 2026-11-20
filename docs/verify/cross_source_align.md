@@ -394,10 +394,7 @@
 | push2.f57 | exchange.zqdm | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·4d |
 | event_dc.ISSUE_NUM | event_dc.TOTAL_ISSUE_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.INDUSTRY_PE | event_dc.INDUSTRY_PE_NEW | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
-| event_dc.OPEN_AVERAGE_PRICE | event_dc.AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
-| event_dc.OPEN_AVERAGE_PRICE | event_dc.LD_AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.LATELY_PRICE | event_dc.TNEW_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
-| event_dc.AVERAGE_PRICE | event_dc.LD_AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.TOTAL_RAISE_FUNDS | event_dc.DEC_SUMFINA | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.PREDICT_ISSUE_PRICE1 | event_dc.CURRENT_ONEWORD_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
 | event_dc.CURRENT_ONEWORD_NUM | event_dc.IS_RISKWARNING | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |

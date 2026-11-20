@@ -21,6 +21,8 @@ from scripts.collision_dates import (
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
 from scripts.date_utils import normalize_unix_seconds_date
 
+_EVENT_DC_TRACE_FIELDS = frozenset({"source", "source_url", "fetched_at"})
+
 
 def _collision_value(value, *, include_structured=False):
     """Convert JSON source values into stable values the pair matcher can compare."""
@@ -87,6 +89,7 @@ def _flatten(
         if (
             not isinstance(sub, str)
             or sub.startswith("__")
+            or (source == "event_dc" and sub in _EVENT_DC_TRACE_FIELDS)
             or sub
             in (
                 "scheme",

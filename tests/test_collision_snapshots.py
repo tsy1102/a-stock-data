@@ -147,8 +147,24 @@ def test_event_dc_top_level_collections_keep_full_field_paths():
         path="raw_event_dc.json",
         document={
             "scheme": {"name": "em.datacenter"},
-            "convertible_bonds": [{"SECURITY_CODE": "110003", "ACTUAL_ISSUE_SCALE": 27.6}],
-            "ipo_calendar": [{"SECURITY_CODE": "600000", "CHANGE": "申购"}],
+            "convertible_bonds": [
+                {
+                    "SECURITY_CODE": "110003",
+                    "ACTUAL_ISSUE_SCALE": 27.6,
+                    "source": "convertible_bonds",
+                    "source_url": "https://example.invalid/convertible_bonds",
+                    "fetched_at": 1795129149.85995,
+                }
+            ],
+            "ipo_calendar": [
+                {
+                    "SECURITY_CODE": "600000",
+                    "CHANGE": "申购",
+                    "source": "ipo_calendar",
+                    "source_url": "https://example.invalid/ipo_calendar",
+                    "fetched_at": 1795129149.85995,
+                }
+            ],
         },
         meta={},
         phase="closed",
@@ -172,6 +188,9 @@ def test_event_dc_top_level_collections_keep_full_field_paths():
     assert store["event_dc.ipo_calendar[].CHANGE"]["vals"] == {
         ("600000", "T:20261119"): "申购",
     }
+    for collection in ("convertible_bonds[]", "ipo_calendar[]"):
+        for field in ("source", "source_url", "fetched_at"):
+            assert f"event_dc.{collection}.{field}" not in store
     assert "event_dc.ACTUAL_ISSUE_SCALE" not in store
 
 

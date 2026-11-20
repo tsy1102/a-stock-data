@@ -560,10 +560,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares, issue price, event dates, quoted prices and
-    # four IPO semantic fields, plus convertible-bond fields; zhuying_shouru
-    # uses an empirical correction instead.
-    assert len(pairs) == 137
+    # IPO par value, issue shares, issue price, event dates, quoted prices,
+    # first-day/subscription fields and semantic fields, plus convertible-bond
+    # fields; zhuying_shouru uses an empirical correction instead.
+    assert len(pairs) == 156
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -626,6 +626,25 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     records_by_pair = {(row["source"], row["code"]): row for row in records}
     ipo_source = "东财-event_dc(IPO发行记录)"
     ipo_decision_ids = {
+        "ipo_calendar[].OPEN_PRICE": "20261120-eventdc-ipo-open-price",
+        "ipo_calendar[].LD_OPEN_PREMIUM": "20261120-eventdc-ipo-ld-open-premium",
+        "ipo_calendar[].LD_CLOSE_CHANGE": "20261120-eventdc-ipo-ld-close-change",
+        "ipo_calendar[].TURNOVERRATE": "20261120-eventdc-ipo-turnoverrate",
+        "ipo_calendar[].LD_HIGH_CHANG": "20261120-eventdc-ipo-ld-high-chang",
+        "ipo_calendar[].LD_AVERAGE_PRICE": "20261120-eventdc-ipo-ld-average-price",
+        "ipo_calendar[].OPEN_DATE": "20261120-eventdc-ipo-open-date",
+        "ipo_calendar[].OPEN_AVERAGE_PRICE": "20261120-eventdc-ipo-open-average-price",
+        "ipo_calendar[].CONTINUOUS_1WORD_NUM": "20261120-eventdc-ipo-continuous-1word-num",
+        "ipo_calendar[].INFO_CODE": "20261120-eventdc-ipo-info-code",
+        "ipo_calendar[].IS_REGISTRATION": "20261120-eventdc-ipo-is-registration",
+        "ipo_calendar[].ONLINE_ISSUE_NUM": "20261120-eventdc-ipo-online-issue-num",
+        "ipo_calendar[].TOP_APPLY_MARKETCAP": "20261120-eventdc-ipo-top-apply-marketcap",
+        "ipo_calendar[].ONLINE_APPLY_UPPER": "20261120-eventdc-ipo-online-apply-upper",
+        "ipo_calendar[].BALLOT_NUM_DATE": "20261120-eventdc-ipo-ballot-num-date",
+        "ipo_calendar[].BALLOT_PAY_DATE": "20261120-eventdc-ipo-ballot-pay-date",
+        "ipo_calendar[].ONLINE_ISSUE_LWR": "20261120-eventdc-ipo-online-issue-lwr",
+        "ipo_calendar[].INITIAL_MULTIPLE": "20261120-eventdc-ipo-initial-multiple",
+        "ipo_calendar[].OFFLINE_EP_OBJECT": "20261120-eventdc-ipo-offline-ep-object",
         "ipo_calendar[].AFTER_ISSUE_PE": "20261120-eventdc-ipo-after-issue-pe",
         "ipo_calendar[].INDUSTRY_PE_NEW": "20261120-eventdc-ipo-industry-pe-new",
         "ipo_calendar[].TOTAL_CHANGE": "20261120-eventdc-ipo-total-change",

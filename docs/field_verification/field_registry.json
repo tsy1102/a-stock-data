@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1629,
+      "verified": 1648,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 486
+      "verified_by_source_contract": 505
     },
     "updated_at": "2026-11-19"
   },
@@ -23252,6 +23252,42 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].BALLOT_NUM_DATE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_ballot_number_announcement_date",
+      "meaning": "该 IPO 记录对应中签号码公布日期。",
+      "unit": "日期字符串",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].BALLOT_PAY_DATE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_subscription_payment_date",
+      "meaning": "该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。",
+      "unit": "日期字符串",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].CLOSE_PRICE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23270,6 +23306,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].CONTINUOUS_1WORD_NUM",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_consecutive_one_word_board_count",
+      "meaning": "该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。",
+      "unit": "板",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].INDUSTRY_PE_NEW",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23278,6 +23332,42 @@
       "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].INDUSTRY_PE_NEW -> ipo_calendar() -> raw_event_dc.ipo_calendar[].INDUSTRY_PE_NEW#官方页面 th[data-field='INDUSTRY_PE_NEW'] 标题为行业市盈率，并附行业分类说明；官方前端请求列包含 INDUSTRY_PE_NEW @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
       "canonical": "ipo_record_industry_pe",
       "meaning": "该 IPO 记录所列的行业市盈率。官方页面说明沪深 A 股使用证监会行业分类，北交所使用中证行业分类。具体计算时点和公式未公开。",
+      "unit": "倍",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].INFO_CODE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_prospectus_document_code",
+      "meaning": "东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].INITIAL_MULTIPLE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_offline_initial_inquiry_cumulative_multiple",
+      "meaning": "该 IPO 记录对应初步询价累计报价倍数。",
       "unit": "倍",
       "status_raw": "",
       "status": "verified",
@@ -23324,6 +23414,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].IS_REGISTRATION",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_registration_system_flag",
+      "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].LATELY_PRICE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23342,6 +23450,78 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].LD_AVERAGE_PRICE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_average_price_yuan",
+      "meaning": "该 IPO 记录对应股票上市首日成交均价。",
+      "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].LD_CLOSE_CHANGE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_close_change_pct",
+      "meaning": "该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].LD_HIGH_CHANG",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_high_change_pct",
+      "meaning": "该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].LD_OPEN_PREMIUM",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_open_premium_pct",
+      "meaning": "该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].LISTING_DATE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23351,6 +23531,132 @@
       "canonical": "ipo_record_listing_date",
       "meaning": "该 IPO 记录所列的上市日期，是证券开始上市交易的业务日期；不是申购日期或采集日期。",
       "unit": "日期字符串",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].OFFLINE_EP_OBJECT",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_offline_placement_quote_object_count",
+      "meaning": "该 IPO 记录对应网下配售对象报价家数。",
+      "unit": "家",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].ONLINE_APPLY_UPPER",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_online_subscription_upper_shares",
+      "meaning": "该 IPO 记录对应网上申购数量上限。",
+      "unit": "股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].ONLINE_ISSUE_LWR",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_online_winning_rate_pct",
+      "meaning": "该 IPO 记录对应网上发行中签率。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].ONLINE_ISSUE_NUM",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_online_issue_shares",
+      "meaning": "该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。",
+      "unit": "股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_open_board_average_price_yuan",
+      "meaning": "该 IPO 记录对应股票开板日的成交均价，不等同于首日成交均价路径。",
+      "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].OPEN_DATE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_open_board_date",
+      "meaning": "该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。",
+      "unit": "日期字符串",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].OPEN_PRICE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_open_price_yuan",
+      "meaning": "该 IPO 记录对应股票上市首日的开盘价。",
+      "unit": "元/股",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -23396,6 +23702,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].TOP_APPLY_MARKETCAP",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_top_subscription_market_value_wan_yuan",
+      "meaning": "该 IPO 记录对应网上顶格申购所需配售市值。",
+      "unit": "万元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].TOTAL_CHANGE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -23404,6 +23728,24 @@
       "section": "source contract: 东方财富新股申购官方页面及其官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].TOTAL_CHANGE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].TOTAL_CHANGE#官方页面 th[data-field='TOTAL_CHANGE'] 标题为涨幅，提示文字列明注册制/审批制两种成交均价参照日；前端将该字段格式化为百分比 @ 页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
       "canonical": "ipo_record_total_gain_pct",
       "meaning": "东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。",
+      "unit": "%",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].TURNOVERRATE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "canonical": "ipo_first_day_turnover_rate_pct",
+      "meaning": "该 IPO 记录对应股票上市首日换手率。",
       "unit": "%",
       "status_raw": "",
       "status": "verified",
@@ -46854,6 +47196,63 @@
       "东财-event_dc(IPO发行记录)"
     ],
     "ipo_record_per_sign_profit_yuan": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_open_price_yuan": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_open_premium_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_close_change_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_turnover_rate_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_high_change_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_first_day_average_price_yuan": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_open_board_date": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_open_board_average_price_yuan": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_consecutive_one_word_board_count": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_prospectus_document_code": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_registration_system_flag": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_online_issue_shares": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_top_subscription_market_value_wan_yuan": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_online_subscription_upper_shares": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_ballot_number_announcement_date": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_subscription_payment_date": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_online_winning_rate_pct": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_offline_initial_inquiry_cumulative_multiple": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_offline_placement_quote_object_count": [
       "东财-event_dc(IPO发行记录)"
     ]
   },
@@ -271836,6 +272235,1906 @@
             "revision": "页面和脚本于 2026-11-20 核查；未提供版本化字段 schema",
             "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].PROFIT -> ipo_calendar() -> raw_event_dc.ipo_calendar[].PROFIT",
             "locator": "官方页面 th[data-field='PROFIT'] 标题为每中一签获利（元），提示文字列明注册制/审批制两种成交均价参照日",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].OPEN_PRICE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OPEN_PRICE",
+      "path": "ipo_calendar[].OPEN_PRICE",
+      "canonical": "ipo_first_day_open_price_yuan",
+      "meaning": "该 IPO 记录对应股票上市首日的开盘价。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-open-price"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-open-price"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_open_price_yuan",
+          "meaning": "该 IPO 记录对应股票上市首日的开盘价。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-open-price",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-open-price",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_open_price_yuan",
+              "meaning": "该 IPO 记录对应股票上市首日的开盘价。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-open-price",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_open_price_yuan",
+              "meaning": "该 IPO 记录对应股票上市首日的开盘价。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "东方财富详情页按 OPEN_PRICE 显示首日开盘价（元）；留存样本 20/20 有值。本裁决只绑定字段和页面标签，不把其它来源报价并入。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_PRICE；东方财富官方字段标签/前端渲染对应“首日开盘价(元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].LD_OPEN_PREMIUM",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_OPEN_PREMIUM",
+      "path": "ipo_calendar[].LD_OPEN_PREMIUM",
+      "canonical": "ipo_first_day_open_premium_pct",
+      "meaning": "该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ld-open-premium"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ld-open-premium"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_open_premium_pct",
+          "meaning": "该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ld-open-premium",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ld-open-premium",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_open_premium_pct",
+              "meaning": "该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ld-open-premium",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_open_premium_pct",
+              "meaning": "该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。",
+              "unit": "%"
+            }
+          },
+          "rationale": "东方财富详情页以 LD_OPEN_PREMIUM 显示首日开盘溢价。保留样本 20/20 非空，按 ISSUE_PRICE 与 OPEN_PRICE 复算的最大误差为 4.736842105263e-13 个百分点；公式仅作为该路径的样本核验。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_OPEN_PREMIUM；东方财富官方字段标签/前端渲染对应“首日开盘溢价”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].LD_CLOSE_CHANGE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_CLOSE_CHANGE",
+      "path": "ipo_calendar[].LD_CLOSE_CHANGE",
+      "canonical": "ipo_first_day_close_change_pct",
+      "meaning": "该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ld-close-change"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ld-close-change"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_close_change_pct",
+          "meaning": "该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ld-close-change",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ld-close-change",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_close_change_pct",
+              "meaning": "该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ld-close-change",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_close_change_pct",
+              "meaning": "该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。",
+              "unit": "%"
+            }
+          },
+          "rationale": "东方财富详情页以 LD_CLOSE_CHANGE 绑定首日收盘涨幅；保留样本 20/20 误差不超过 0.01 个百分点，最大误差 0.0000680672269 个百分点。20 行中 19 行与 TOTAL_CHANGE 不同；300059 详情值 CLOSE_PRICE=58.35、ISSUE_PRICE=40.58、LD_CLOSE_CHANGE=43.79、TOTAL_CHANGE=47.63，分别支持收盘价和成交均价口径。此前对北交所另一接口的同短码疑虑不改变本项目 RPTA_APP_IPOAPPLY 完整路径。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_CLOSE_CHANGE；东方财富官方字段标签/前端渲染对应“首日收盘涨幅”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].TURNOVERRATE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].TURNOVERRATE",
+      "path": "ipo_calendar[].TURNOVERRATE",
+      "canonical": "ipo_first_day_turnover_rate_pct",
+      "meaning": "该 IPO 记录对应股票上市首日换手率。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-turnoverrate"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-turnoverrate"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_turnover_rate_pct",
+          "meaning": "该 IPO 记录对应股票上市首日换手率。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-turnoverrate",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-turnoverrate",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_turnover_rate_pct",
+              "meaning": "该 IPO 记录对应股票上市首日换手率。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-turnoverrate",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_turnover_rate_pct",
+              "meaning": "该 IPO 记录对应股票上市首日换手率。",
+              "unit": "%"
+            }
+          },
+          "rationale": "东方财富详情页将 TURNOVERRATE 直接绑定到首日换手率；留存样本 20/20 有值。单位按官方百分比显示格式确认，不外推分母或复权口径。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 TURNOVERRATE；东方财富官方字段标签/前端渲染对应“首日换手率”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].LD_HIGH_CHANG",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_HIGH_CHANG",
+      "path": "ipo_calendar[].LD_HIGH_CHANG",
+      "canonical": "ipo_first_day_high_change_pct",
+      "meaning": "该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ld-high-chang"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ld-high-chang"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_high_change_pct",
+          "meaning": "该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ld-high-chang",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ld-high-chang",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_high_change_pct",
+              "meaning": "该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ld-high-chang",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_high_change_pct",
+              "meaning": "该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。",
+              "unit": "%"
+            }
+          },
+          "rationale": "东方财富详情页将 LD_HIGH_CHANG 直接绑定到首日最高涨幅并按百分比显示；留存样本 20/20 有值。本裁决不延伸到未由页面说明的最高价基准公式。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_HIGH_CHANG；东方财富官方字段标签/前端渲染对应“首日最高涨幅”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].LD_AVERAGE_PRICE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].LD_AVERAGE_PRICE",
+      "path": "ipo_calendar[].LD_AVERAGE_PRICE",
+      "canonical": "ipo_first_day_average_price_yuan",
+      "meaning": "该 IPO 记录对应股票上市首日成交均价。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ld-average-price"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ld-average-price"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_first_day_average_price_yuan",
+          "meaning": "该 IPO 记录对应股票上市首日成交均价。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ld-average-price",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ld-average-price",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_average_price_yuan",
+              "meaning": "该 IPO 记录对应股票上市首日成交均价。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ld-average-price",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_first_day_average_price_yuan",
+              "meaning": "该 IPO 记录对应股票上市首日成交均价。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "东方财富详情页将 LD_AVERAGE_PRICE 直接绑定到首日成交均价（元）；留存样本 20/20 有值。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 LD_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“首日成交均价(元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].OPEN_DATE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OPEN_DATE",
+      "path": "ipo_calendar[].OPEN_DATE",
+      "canonical": "ipo_open_board_date",
+      "meaning": "该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。",
+      "unit": "日期字符串",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-open-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-open-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_open_board_date",
+          "meaning": "该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。",
+          "unit": "日期字符串",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-open-date",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-open-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_open_board_date",
+              "meaning": "该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。",
+              "unit": "日期字符串"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-open-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_open_board_date",
+              "meaning": "该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。",
+              "unit": "日期字符串"
+            }
+          },
+          "rationale": "东方财富详情页将 OPEN_DATE 绑定到开板日期。留存样本 20/20 有值，且均与 LISTING_DATE 相同；同日是早期 IPO 上市首日开板的样本事实，不构成字段别名或日期语义合并。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_DATE；东方财富官方字段标签/前端渲染对应“开板日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "path": "ipo_calendar[].OPEN_AVERAGE_PRICE",
+      "canonical": "ipo_open_board_average_price_yuan",
+      "meaning": "该 IPO 记录对应股票开板日的成交均价，不等同于首日成交均价路径。",
+      "unit": "元/股",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-open-average-price"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-open-average-price"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_open_board_average_price_yuan",
+          "meaning": "该 IPO 记录对应股票开板日的成交均价，不等同于首日成交均价路径。",
+          "unit": "元/股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-open-average-price",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-open-average-price",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_open_board_average_price_yuan",
+              "meaning": "该 IPO 记录对应股票开板日的成交均价，不等同于首日成交均价路径。",
+              "unit": "元/股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-open-average-price",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_open_board_average_price_yuan",
+              "meaning": "该 IPO 记录对应股票开板日的成交均价，不等同于首日成交均价路径。",
+              "unit": "元/股"
+            }
+          },
+          "rationale": "东方财富详情页将 OPEN_AVERAGE_PRICE 绑定到开板日均价。留存样本 20/20 有值，且均与 LD_AVERAGE_PRICE 相同；样本中 OPEN_DATE 与 LISTING_DATE 重合，故不据数值相等建立别名。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OPEN_AVERAGE_PRICE；东方财富官方字段标签/前端渲染对应“开板日均价”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].CONTINUOUS_1WORD_NUM",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].CONTINUOUS_1WORD_NUM",
+      "path": "ipo_calendar[].CONTINUOUS_1WORD_NUM",
+      "canonical": "ipo_consecutive_one_word_board_count",
+      "meaning": "该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。",
+      "unit": "板",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-continuous-1word-num"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-continuous-1word-num"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_consecutive_one_word_board_count",
+          "meaning": "该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。",
+          "unit": "板",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-continuous-1word-num",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-continuous-1word-num",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_consecutive_one_word_board_count",
+              "meaning": "该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。",
+              "unit": "板"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-continuous-1word-num",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_consecutive_one_word_board_count",
+              "meaning": "该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。",
+              "unit": "板"
+            }
+          },
+          "rationale": "东方财富详情页字段标签为连续一字板数，官方前端在 IS_REGISTRATION=1 时不统计并显示占位符。保留样本 20/20 均为 1，未以恒定值做碰撞或推断；直接释义来自官方键标签和渲染分支。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 CONTINUOUS_1WORD_NUM；东方财富官方字段标签/前端渲染对应“连续一字板数”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].INFO_CODE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].INFO_CODE",
+      "path": "ipo_calendar[].INFO_CODE",
+      "canonical": "ipo_prospectus_document_code",
+      "meaning": "东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。",
+      "unit": "",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-info-code"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-info-code"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_prospectus_document_code",
+          "meaning": "东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-info-code",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-info-code",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_prospectus_document_code",
+              "meaning": "东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。",
+              "unit": ""
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-info-code",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_prospectus_document_code",
+              "meaning": "东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。",
+              "unit": ""
+            }
+          },
+          "rationale": "官方 xglist.js 请求 INFO_CODE，并用该值拼接 pdf.dfcfw.com/pdf/H2_<INFO_CODE>_1.pdf；列表标签为招股说明书/意向书。留存样本 13/20 有值，缺失值不补零。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 INFO_CODE；东方财富官方字段标签/前端渲染对应“招股说明书/意向书”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].IS_REGISTRATION",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].IS_REGISTRATION",
+      "path": "ipo_calendar[].IS_REGISTRATION",
+      "canonical": "ipo_registration_system_flag",
+      "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
+      "unit": "",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-is-registration"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-is-registration"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_registration_system_flag",
+          "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-is-registration",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-is-registration",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/001365.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_registration_system_flag",
+              "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
+              "unit": ""
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-is-registration",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_registration_system_flag",
+              "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
+              "unit": ""
+            }
+          },
+          "rationale": "官方 xglist.js 将 IS_REGISTRATION 纳入 RPTA_APP_IPOAPPLY 请求列，并据其值切换注册制与审批制首日表现展示。留存的 20 条早期样本均为 0；东方财富 001365 详情页记录值为 1，核实另一分支。本释义仅覆盖已观察的 0/1。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 IS_REGISTRATION；东方财富官方字段标签/前端渲染对应“注册制/审批制前端分支标记”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/001365.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].ONLINE_ISSUE_NUM",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].ONLINE_ISSUE_NUM",
+      "path": "ipo_calendar[].ONLINE_ISSUE_NUM",
+      "canonical": "ipo_online_issue_shares",
+      "meaning": "该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。",
+      "unit": "股",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-online-issue-num"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-online-issue-num"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_online_issue_shares",
+          "meaning": "该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-online-issue-num",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-online-issue-num",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_issue_shares",
+              "meaning": "该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。",
+              "unit": "股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-online-issue-num",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_issue_shares",
+              "meaning": "该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。",
+              "unit": "股"
+            }
+          },
+          "rationale": "官方 xglist.js 请求 ONLINE_ISSUE_NUM，详情页以股数显示。300059 详情记录原值 28,000,000，深交所公告称网上发行 2,800 万股，吻合；1988—1993 留存样本 0/20 有值，未作经验推断。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_NUM；东方财富官方字段标签/前端渲染对应“网上发行数量(万股/股)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].TOP_APPLY_MARKETCAP",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].TOP_APPLY_MARKETCAP",
+      "path": "ipo_calendar[].TOP_APPLY_MARKETCAP",
+      "canonical": "ipo_top_subscription_market_value_wan_yuan",
+      "meaning": "该 IPO 记录对应网上顶格申购所需配售市值。",
+      "unit": "万元",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-top-apply-marketcap"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-top-apply-marketcap"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_top_subscription_market_value_wan_yuan",
+          "meaning": "该 IPO 记录对应网上顶格申购所需配售市值。",
+          "unit": "万元",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-top-apply-marketcap",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-top-apply-marketcap",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_top_subscription_market_value_wan_yuan",
+              "meaning": "该 IPO 记录对应网上顶格申购所需配售市值。",
+              "unit": "万元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-top-apply-marketcap",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_top_subscription_market_value_wan_yuan",
+              "meaning": "该 IPO 记录对应网上顶格申购所需配售市值。",
+              "unit": "万元"
+            }
+          },
+          "rationale": "东方财富详情页将 TOP_APPLY_MARKETCAP 绑定到网上顶格申购需配市值（万元）；300059 记录值为 28。1988—1993 留存样本 0/20 有值，不将空值作为零。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 TOP_APPLY_MARKETCAP；东方财富官方字段标签/前端渲染对应“网上顶格申购需配市值(万元)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].ONLINE_APPLY_UPPER",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].ONLINE_APPLY_UPPER",
+      "path": "ipo_calendar[].ONLINE_APPLY_UPPER",
+      "canonical": "ipo_online_subscription_upper_shares",
+      "meaning": "该 IPO 记录对应网上申购数量上限。",
+      "unit": "股",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-online-apply-upper"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-online-apply-upper"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_online_subscription_upper_shares",
+          "meaning": "该 IPO 记录对应网上申购数量上限。",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-online-apply-upper",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-online-apply-upper",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_subscription_upper_shares",
+              "meaning": "该 IPO 记录对应网上申购数量上限。",
+              "unit": "股"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-online-apply-upper",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_subscription_upper_shares",
+              "meaning": "该 IPO 记录对应网上申购数量上限。",
+              "unit": "股"
+            }
+          },
+          "rationale": "东方财富详情页将 ONLINE_APPLY_UPPER 绑定到申购数量上限（股）；300059 记录值为 28,000 股。列表视图按万股缩放显示。1988—1993 留存样本 0/20 有值。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_APPLY_UPPER；东方财富官方字段标签/前端渲染对应“申购数量上限(股/万股)”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].BALLOT_NUM_DATE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].BALLOT_NUM_DATE",
+      "path": "ipo_calendar[].BALLOT_NUM_DATE",
+      "canonical": "ipo_ballot_number_announcement_date",
+      "meaning": "该 IPO 记录对应中签号码公布日期。",
+      "unit": "日期字符串",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ballot-num-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ballot-num-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_ballot_number_announcement_date",
+          "meaning": "该 IPO 记录对应中签号码公布日期。",
+          "unit": "日期字符串",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ballot-num-date",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ballot-num-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_ballot_number_announcement_date",
+              "meaning": "该 IPO 记录对应中签号码公布日期。",
+              "unit": "日期字符串"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ballot-num-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_ballot_number_announcement_date",
+              "meaning": "该 IPO 记录对应中签号码公布日期。",
+              "unit": "日期字符串"
+            }
+          },
+          "rationale": "东方财富详情页将 BALLOT_NUM_DATE 绑定到中签号公布日期。300059 页面值 2010-03-12，与深交所公告载明的公布日一致；1988—1993 留存样本 0/20 有值。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 BALLOT_NUM_DATE；东方财富官方字段标签/前端渲染对应“中签号公布日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].BALLOT_PAY_DATE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].BALLOT_PAY_DATE",
+      "path": "ipo_calendar[].BALLOT_PAY_DATE",
+      "canonical": "ipo_subscription_payment_date",
+      "meaning": "该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。",
+      "unit": "日期字符串",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-ballot-pay-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-ballot-pay-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_subscription_payment_date",
+          "meaning": "该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。",
+          "unit": "日期字符串",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-ballot-pay-date",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-ballot-pay-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_subscription_payment_date",
+              "meaning": "该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。",
+              "unit": "日期字符串"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-ballot-pay-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_subscription_payment_date",
+              "meaning": "该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。",
+              "unit": "日期字符串"
+            }
+          },
+          "rationale": "东方财富详情页将 BALLOT_PAY_DATE 绑定到中签缴款日期。300059 的记录值为 2010-03-09，与 APPLY_DATE 相同；深交所 2009 年资金申购办法要求投资者在申购日 T 日缴足申购款，故该历史值符合当时发行安排，并非目录日期错位。1988—1993 留存样本 0/20 有值。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 BALLOT_PAY_DATE；东方财富官方字段标签/前端渲染对应“中签缴款日期”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].ONLINE_ISSUE_LWR",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].ONLINE_ISSUE_LWR",
+      "path": "ipo_calendar[].ONLINE_ISSUE_LWR",
+      "canonical": "ipo_online_winning_rate_pct",
+      "meaning": "该 IPO 记录对应网上发行中签率。",
+      "unit": "%",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-online-issue-lwr"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-online-issue-lwr"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_online_winning_rate_pct",
+          "meaning": "该 IPO 记录对应网上发行中签率。",
+          "unit": "%",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-online-issue-lwr",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-online-issue-lwr",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_winning_rate_pct",
+              "meaning": "该 IPO 记录对应网上发行中签率。",
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-online-issue-lwr",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_online_winning_rate_pct",
+              "meaning": "该 IPO 记录对应网上发行中签率。",
+              "unit": "%"
+            }
+          },
+          "rationale": "东方财富详情页字段标签为网上发行中签率并按百分比显示。300059 原值 0.8387405891 与深交所公告公布的 0.8387405891% 完全相符；1988—1993 留存样本 0/20 有值。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 ONLINE_ISSUE_LWR；东方财富官方字段标签/前端渲染对应“网上发行中签率”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].INITIAL_MULTIPLE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].INITIAL_MULTIPLE",
+      "path": "ipo_calendar[].INITIAL_MULTIPLE",
+      "canonical": "ipo_offline_initial_inquiry_cumulative_multiple",
+      "meaning": "该 IPO 记录对应初步询价累计报价倍数。",
+      "unit": "倍",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-initial-multiple"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-initial-multiple"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_offline_initial_inquiry_cumulative_multiple",
+          "meaning": "该 IPO 记录对应初步询价累计报价倍数。",
+          "unit": "倍",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-initial-multiple",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-initial-multiple",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_offline_initial_inquiry_cumulative_multiple",
+              "meaning": "该 IPO 记录对应初步询价累计报价倍数。",
+              "unit": "倍"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-initial-multiple",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_offline_initial_inquiry_cumulative_multiple",
+              "meaning": "该 IPO 记录对应初步询价累计报价倍数。",
+              "unit": "倍"
+            }
+          },
+          "rationale": "东方财富详情页以 INITIAL_MULTIPLE 填充初步询价累计报价倍数。此字段在 1988—1993 留存样本中 0/20 有值；不与网上中签率或其它倍率字段混同。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 INITIAL_MULTIPLE；东方财富官方字段标签/前端渲染对应“初步询价累计报价倍数”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/detail/300059.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].OFFLINE_EP_OBJECT",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].OFFLINE_EP_OBJECT",
+      "path": "ipo_calendar[].OFFLINE_EP_OBJECT",
+      "canonical": "ipo_offline_placement_quote_object_count",
+      "meaning": "该 IPO 记录对应网下配售对象报价家数。",
+      "unit": "家",
+      "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-eventdc-ipo-offline-ep-object"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-eventdc-ipo-offline-ep-object"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面、详情页及官方前端字段模板 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>#RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。 @ 页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+          "canonical": "ipo_offline_placement_quote_object_count",
+          "meaning": "该 IPO 记录对应网下配售对象报价家数。",
+          "unit": "家",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-eventdc-ipo-offline-ep-object",
+          "status": "verified",
+          "adjudication_id": "20261120-eventdc-ipo-offline-ep-object",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_offline_placement_quote_object_count",
+              "meaning": "该 IPO 记录对应网下配售对象报价家数。",
+              "unit": "家"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-eventdc-ipo-offline-ep-object",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_eventdc_ipo_first_day_contracts.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_offline_placement_quote_object_count",
+              "meaning": "该 IPO 记录对应网下配售对象报价家数。",
+              "unit": "家"
+            }
+          },
+          "rationale": "东方财富新股申购列表将 OFFLINE_EP_OBJECT 对应到配售对象报价家数，前端以字符串字段直接显示。1988—1993 留存样本 0/20 有值；未用空值推断该指标适用范围。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面、详情页及官方前端字段模板",
+            "revision": "页面与前端脚本于 2026-11-20 核查；未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> _events.ipo_calendar() -> _eastmoney.eastmoney_datacenter(columns='ALL') -> _datacenter.query_datacenter() preserves result.data[*] keys -> raw_event_dc.ipo_calendar[].<FIELD>",
+            "locator": "RPTA_APP_IPOAPPLY 请求列 OFFLINE_EP_OBJECT；东方财富官方字段标签/前端渲染对应“配售对象报价家数”；项目适配器将响应行原键透传至目标完整路径。",
             "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
           }
         }

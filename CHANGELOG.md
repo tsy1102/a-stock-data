@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 按 `RPTA_APP_IPOAPPLY` 完整来源路径及东方财富官方新股页/详情页契约，登记 19 条 IPO 首日表现与申购字段；20 条留存发行记录核对字段覆盖及公式误差。修复此前把北交所另一接口复用的 `LD_CLOSE_CHANGE` 短码误作本路径语义冲突的问题，并确认 `BALLOT_PAY_DATE` 按发行制度确定、不能固定推为 T+2。未建立跨源映射；以 2026-11-19 为数据日终点的七日碰撞报告完整，未知目标 75、锚 614、L1/L1-C 为 0、L4 为 2，详见 [`20261119_collision_report.md`](docs/field_verification/20261119/post_ipo_first_day_contracts_asof_20261119/20261119_collision_report.md)。
 - 依据东方财富官方 IPO 页面契约登记 `AFTER_ISSUE_PE`、`INDUSTRY_PE_NEW`、`TOTAL_CHANGE` 和 `PROFIT` 四个完整来源路径；结合 20 条留存发行记录核对字段值与成交均价关系，不推断页面空值回退、统一中签股数或未公开公式。保留与官方提示范围冲突的 `LD_CLOSE_CHANGE` 为未定；完整七日碰撞将未知目标从 86 降至 82，报告见 [`20261120_collision_report.md`](docs/field_verification/20261120/after_ipo_official_semantics_20261120/20261120_collision_report.md)。
 - 将 `开盘红::industry_limit_up_count` 来源内定案为按 KPH 自身行业分类关联的当日涨停股票家数（家）；保留统计集合和行业分类体系未知的边界。该字段现退出未知字段破解目标；不与开盘啦 `col_20` 建立映射，两产品仍按不同来源身份采集和核验。
 - 明确已登记错误字段映射的撤回闭环：按完整路径保留旧关系及证据，删除精确活动映射，重生成投影并回归受影响碰撞。

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 596 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 605 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3564,11 +3564,20 @@
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | `disproved` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].AFTER_ISSUE_PE` | ipo_record_after_issue_pe | 该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].APPLY_DATE` | ipo_record_subscription_date | 该 IPO 记录所列的申购日期，是发行事件日期；不是采集日、来源数据日或上市日期。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].BALLOT_PAY_DATE` | ipo_subscription_payment_date | 该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].CLOSE_PRICE` | ipo_record_first_day_close_price | 该证券上市首日收盘价；不是当前最新价或发行价。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].CONTINUOUS_1WORD_NUM` | ipo_consecutive_one_word_board_count | 该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].INFO_CODE` | ipo_prospectus_document_code | 东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_NUM` | ipo_total_issue_shares_wan | 该 IPO 发行记录的发行总股数，官方页面以万股显示；不是网上发行数量或发行后总股本。历史记录可能存在取整、截断或旧数据差异，万科样本与正式股数折算结果相差约 0.31%。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_PRICE` | ipo_issue_price_per_share | 该 IPO 发行记录的每股发行价格，不是上市首日价格或当前价格。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].IS_REGISTRATION` | ipo_registration_system_flag | 东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LATELY_PRICE` | ipo_record_latest_price | 东方财富新股申购页所列的该证券最新价；响应没有给出此价格自身的来源实际日期，不得自动解释为目录目标数据日的收盘价。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_CLOSE_CHANGE` | ipo_first_day_close_change_pct | 该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_HIGH_CHANG` | ipo_first_day_high_change_pct | 该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_OPEN_PREMIUM` | ipo_first_day_open_premium_pct | 该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LISTING_DATE` | ipo_record_listing_date | 该 IPO 记录所列的上市日期，是证券开始上市交易的业务日期；不是申购日期或采集日期。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].ONLINE_ISSUE_NUM` | ipo_online_issue_shares | 该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].OPEN_DATE` | ipo_open_board_date | 该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PAR_VALUE` | ipo_record_par_value | 该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PROFIT` | ipo_record_per_sign_profit_yuan | 每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].TOTAL_CHANGE` | ipo_record_total_gain_pct | 东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。 | `verified` |

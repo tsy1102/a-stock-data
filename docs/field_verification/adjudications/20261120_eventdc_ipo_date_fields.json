@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_eventdc_ipo_date_fields.md",
+  "evidence_sha256": "34c001cd201b915f3e7cea9f28049988a00c0e9448f9db57a03d74d8b54520da",
+  "decisions": [
+    {
+      "id": "20261120-eventdc-ipo-apply-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].APPLY_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_record_subscription_date",
+      "meaning": "该 IPO 记录所列的申购日期，是发行事件日期；不是采集日、来源数据日或上市日期。",
+      "unit": "日期字符串",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY APPLY_DATE source-contract adjudication",
+      "rationale": "东方财富官方新股申购页将模板 item.APPLY_DATE 绑定到“申购日期”列。项目把 RPTA_APP_IPOAPPLY 返回行原样保存到 raw_event_dc.ipo_calendar[]。现有 20 条发行记录中该字段 20/20 非空、可解析为日期且日期互异；20/20 均早于对应 LISTING_DATE。万科样本 APPLY_DATE 为 1988-12-28、LISTING_DATE 为 1991-01-29，证明该业务日期不能与上市日或采集日期混为一谈。万科正式材料确认其 1988 年公开发行，但未在本次查到的发行人文件中独立列明 12 月 28 日；故精确申购日按东方财富官方页面字段标签与原始响应定案，不声称有发行人逐日独立核验。页面显示格式经过 MM-dd 格式化，本决定不将该显示格式误当作来源原值。只登记本来源路径，不推定 ONLINE_ISSUE_DATE 与其同义，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面模板与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].APPLY_DATE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].APPLY_DATE",
+        "locator": "东方财富新股申购页表格模板中 item.APPLY_DATE 对应“申购日期”；配套备忘录列出 20 条留存记录及日期分离核对",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    },
+    {
+      "id": "20261120-eventdc-ipo-listing-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].LISTING_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_record_listing_date",
+      "meaning": "该 IPO 记录所列的上市日期，是证券开始上市交易的业务日期；不是申购日期或采集日期。",
+      "unit": "日期字符串",
+      "section": "2026-11-20 Eastmoney RPTA_APP_IPOAPPLY LISTING_DATE source-contract adjudication",
+      "rationale": "东方财富官方新股申购页将模板 item.LISTING_DATE 绑定到“上市日期”列。项目把 RPTA_APP_IPOAPPLY 返回行原样保存到 raw_event_dc.ipo_calendar[]。现有 20 条发行记录中该字段 20/20 非空、可解析为日期且日期互异。万科代码 000002 的采集值为 1991-01-29，与巨潮资讯所载万科公司股权分置改革说明书中“1991年1月29日” A 股在深交所挂牌交易一致。页面另一个更详细的表格使用 SELECT_LISTING_DATE 键；本决定只定义 LISTING_DATE，不根据相似标签将其他路径并入。只登记本来源路径，不创建跨源映射。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面字段模板及 datacenter-web RPTA_APP_IPOAPPLY 原始响应路径",
+        "revision": "官方页面模板与 2026-11-19 目标数据日的保留响应于 2026-11-20 核验；页面未提供版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].LISTING_DATE -> ipo_calendar() -> raw_event_dc.ipo_calendar[].LISTING_DATE",
+        "locator": "东方财富新股申购页表格模板中 item.LISTING_DATE 对应“上市日期”；万科发行人样本与巨潮正式文件核对；配套备忘录列出 20 条留存记录",
+        "url": "https://datapc.eastmoney.com/da/Purchase/Index"
+      }
+    }
+  ]
+}

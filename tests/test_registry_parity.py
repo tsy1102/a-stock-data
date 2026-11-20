@@ -560,12 +560,16 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares and issue price plus convertible-bond issue
-    # scale, term, coupon-rate and quote fields; zhuying_shouru uses an empirical
-    # correction instead.
-    assert len(pairs) == 129
+    # IPO par value, issue shares, issue price and event dates plus
+    # convertible-bond issue scale, term, coupon-rate and quote fields;
+    # zhuying_shouru uses an empirical correction instead.
+    assert len(pairs) == 131
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
+    assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
+    assert matrix["ipo_record_subscription_date"] == {"东财-event_dc(IPO发行记录)"}
+    assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].LISTING_DATE") in pairs
+    assert matrix["ipo_record_listing_date"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].ISSUE_NUM") in pairs
     assert matrix["ipo_total_issue_shares_wan"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].ISSUE_PRICE") in pairs

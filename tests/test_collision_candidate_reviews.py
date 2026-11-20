@@ -48,7 +48,7 @@ def test_candidate_id_binds_source_method_and_sample_evidence_but_ignores_review
     assert reviews.candidate_id(candidate, "l1_candidate") != identifier
 
 
-def test_candidate_method_v8_preserves_v7_legacy_identity():
+def test_candidate_method_v9_preserves_v8_legacy_identity():
     candidate = _candidate()
     legacy_identity = reviews.candidate_identity_payload(
         candidate, "method_pair", method_version="collision-candidate-v1"
@@ -71,9 +71,12 @@ def test_candidate_method_v8_preserves_v7_legacy_identity():
     v7_identity = reviews.candidate_identity_payload(
         candidate, "method_pair", method_version="collision-candidate-v7"
     )
+    v8_identity = reviews.candidate_identity_payload(
+        candidate, "method_pair", method_version="collision-candidate-v8"
+    )
     current_identity = reviews.candidate_identity_payload(candidate, "method_pair")
 
-    assert current_identity["method_version"] == "collision-candidate-v8"
+    assert current_identity["method_version"] == "collision-candidate-v9"
     assert legacy_identity["method_version"] == "collision-candidate-v1"
     assert previous_identity["method_version"] == "collision-candidate-v2"
     assert v3_identity["method_version"] == "collision-candidate-v3"
@@ -81,6 +84,7 @@ def test_candidate_method_v8_preserves_v7_legacy_identity():
     assert v5_identity["method_version"] == "collision-candidate-v5"
     assert v6_identity["method_version"] == "collision-candidate-v6"
     assert v7_identity["method_version"] == "collision-candidate-v7"
+    assert v8_identity["method_version"] == "collision-candidate-v8"
     assert reviews.candidate_id_from_payload(legacy_identity) != reviews.candidate_id_from_payload(
         current_identity
     )
@@ -97,6 +101,9 @@ def test_candidate_method_v8_preserves_v7_legacy_identity():
         current_identity
     )
     assert reviews.candidate_id_from_payload(v6_identity) != reviews.candidate_id_from_payload(
+        current_identity
+    )
+    assert reviews.candidate_id_from_payload(v8_identity) != reviews.candidate_id_from_payload(
         current_identity
     )
     assert reviews.candidate_id_from_payload(v7_identity) != reviews.candidate_id_from_payload(

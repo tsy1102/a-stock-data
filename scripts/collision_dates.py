@@ -23,6 +23,7 @@ _capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_s
 MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
 raw_capture_sources = _capture_store_module.raw_capture_sources
 read_capture_json = _capture_store_module.read_capture_json
+SZSE_ETF_DATE_BASIS = "szse_current_scale_column_header"
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -623,6 +624,12 @@ def record_source_as_of_date(source: str, record: Any) -> date | None:
     """Return an explicit per-record market date for composite source payloads."""
     if source != "etf" or not isinstance(record, dict):
         return None
+    if str(record.get("exchange", "")).upper() == "SZ":
+        source_meta = record.get("__source_meta__")
+        if not isinstance(source_meta, dict) or source_meta.get("date_basis") != (
+            SZSE_ETF_DATE_BASIS
+        ):
+            return None
     return parse_date(record.get("date"))
 
 

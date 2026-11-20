@@ -1034,6 +1034,10 @@ def test_collect_etf_uses_recent_market_sessions(monkeypatch):
     ]
     assert result["etf_sh"][0]["code"] == "510300"
     assert result["etf_sz"][0]["code"] == "159919"
+    assert result["etf_sh"][0].get("__source_meta__") is None
+    assert result["etf_sz"][0]["__source_meta__"]["date_basis"] == (
+        "szse_current_scale_column_header"
+    )
 
 
 def test_capture_date_validation_uses_trading_days_for_market_sources():

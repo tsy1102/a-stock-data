@@ -6,6 +6,8 @@ functions own only source calls and the existing raw payload shape.
 
 from typing import Any, Callable, Dict, List
 
+from scripts.collision_dates import SZSE_ETF_DATE_BASIS
+
 __all__ = [
     "collect_datacenter",
     "collect_event_dc",
@@ -169,6 +171,12 @@ def collect_etf(pool: list, recent_trade_days_fn: Callable[[int], list]) -> dict
                 "attempted_dates": attempted,
             }
         else:
+            if ex == "SZ":
+                for row in got:
+                    if isinstance(row, dict):
+                        source_meta = row.setdefault("__source_meta__", {})
+                        if isinstance(source_meta, dict):
+                            source_meta["date_basis"] = SZSE_ETF_DATE_BASIS
             out[f"etf_{ex.lower()}"] = got
     return out
 

@@ -26,8 +26,15 @@ def _etf_snapshot() -> Snapshot:
                     "date": "2026-11-17",
                     "exchange": "SZ",
                     "code": "159001",
+                    "__source_meta__": {"date_basis": "szse_current_scale_column_header"},
                     "listing_date": "2011-12-09",
-                }
+                },
+                {
+                    "date": "2026-11-17",
+                    "exchange": "SZ",
+                    "code": "159002",
+                    "listing_date": "2012-01-09",
+                },
             ],
         },
         meta={},
@@ -63,8 +70,10 @@ def test_etf_rows_use_their_own_market_date_and_reject_ineligible_rows():
     assert store["etf.etf_sz.listing_date"]["vals"] == {
         ("159001", "T:20261117"): "2011-12-09",
     }
+    assert ("159002", "T:20261117") not in store["etf.etf_sz.date"]["vals"]
+    assert ("159002", "T:20261117") not in store["etf.etf_sz.listing_date"]["vals"]
     assert store["etf.etf_sz.date"]["sample_meta"][("159001", "T:20261117")]["phase"] == "closed"
-    assert any("1 条市场记录缺少可解析的来源交易日" in item for item in diagnostics)
+    assert any("2 条市场记录缺少可解析的来源交易日" in item for item in diagnostics)
     assert any("1 条市场记录不在所选交易日窗口内" in item for item in diagnostics)
 
 

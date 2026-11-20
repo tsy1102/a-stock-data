@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_szse_etf_scale_data_date.md",
+  "evidence_sha256": "686a3adc19c613b53fea62b48319d81454d45b624332202b5770cdffe671f6c8",
+  "decisions": [
+    {
+      "id": "20261120-szse-etf-current-scale-measurement-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "etf_sz.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "szse_etf_current_scale_measurement_date",
+      "meaning": "深交所 ETF 列表中“当前规模（万份）”数值对应的统计日期，由官方列元数据 metadata.cols.dqgm 标题括号中的日期确定；不是列表页面日期、采集运行日或目录目标数据日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-20 SZSE ETF current-scale measurement date source-contract adjudication",
+      "rationale": "2026-11-20 21:36:59–21:37:00（北京时间）直接读取深交所官方 ETF 列表 API，HTTP 200。同一响应的 metadata.name 为“基金列表”、metadata.subname 为 2026-11-20；metadata.cols.dqgm 官方列标题标为“当前规模（万份）”，注明 T 日晚间更新值仅供参考、以 T+1 日早间更新的 T 日规模为准，并在括号中标明 2026-11-19。项目精确路径将同一行 dqgm 数值映射为 shares_10k，将该列标题日期映射为 date。页面日期和字段数据日期在同一响应中不同，故不能用 subname 代替当前规模数据日期。此为来源内精确路径裁决，不建立跨源映射。",
+      "source_contract": {
+        "authority": "深圳证券交易所基金业务专区 ETF 列表及其 ShowReport 官方接口",
+        "revision": "2026-11-20 21:36:59–21:37:00（北京时间）直接响应核验；接口未提供版本化 schema",
+        "path": "沪深交易所::etf_sz.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_szse_host(host, day) -> /api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=1000_lf&TABKEY=tab1&selectJjlb=ETF&PAGENO=1&pagesize=2000 -> metadata.cols.dqgm 列标题日期 -> output record date -> raw_etf.json etf_sz[].date; 同一行 dqgm 数值 -> shares_10k",
+        "locator": "响应 metadata.name=基金列表、metadata.subname=2026-11-20、recordcount=772、pagesize=20；metadata.cols.dqgm 显示“当前规模（万份）”，注明 T 日晚间更新值仅供参考、T+1 日早间更新值为准，括号日期为 2026-11-19。",
+        "url": "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON&CATALOGID=1000_lf&TABKEY=tab1&selectJjlb=ETF&PAGENO=1&pagesize=2000"
+      }
+    }
+  ]
+}

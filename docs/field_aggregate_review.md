@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 614 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 615 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3886,6 +3886,7 @@
 | 新浪(扩展API) | `vega` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(研报列表) | `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | `verified` |
 | 沪深交易所 | `etf_sh.date` | sse_etf_scale_statistics_date | 上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。 | `verified` |
+| 沪深交易所 | `etf_sz.date` | szse_etf_current_scale_measurement_date | 深交所 ETF 列表中“当前规模（万份）”数值对应的统计日期，由官方列元数据 metadata.cols.dqgm 标题括号中的日期确定；不是列表页面日期、采集运行日或目录目标数据日。 | `verified` |
 | 沪深交易所 | `etf_sz.listing_date` | szse_etf_listing_date | 深交所基金列表中，该基金在深圳证券交易所开始上市交易的日期；不是基金合同生效日、募集成立日或公告日。 | `verified` |
 | 沪深交易所 | `zqdm` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 沪深交易所 | `zqjc` | zqdm / zqjc | 代码 / 简称 | `verified` |

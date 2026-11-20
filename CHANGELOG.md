@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正深交所 ETF `date` 的归日口径：`metadata.subname` 是列表页日期，不保证等于 `shares_10k` 的统计日期；现在使用官方“当前规模（万份）”列标题日期，并保留日期来源标记。修复前缺少该标记的历史 SZ ETF 行不再进入正式日期碰撞，原始归档不改写。候选身份方法版本升为 v9，兼容读取 v1–v8 报告。以 2026-11-19 为目标数据日重跑七日碰撞，报告完整，主攻目标 68、锚 619、L1/L1-C 为 0、L4 为 2。详见[来源契约裁决](docs/field_verification/adjudications/20261120_szse_etf_scale_data_date.md)与[回归报告](docs/field_verification/20261119/post_szse_etf_scale_date_20261120/20261119_collision_report.md)。
 - 修复碰撞快照把 `raw_market_sources.json` 顶层 `__source_meta__` 误当记录容器的问题；KPH `requested_trade_date` 只作为项目请求参数留在元数据中，不再伪装成来源日期字段进入破解队列，真实 KPH 行记录仍按 `limit_time` 日期处理。
 - 修复候选审阅无法跨报告归并不同方法版本候选的问题：现在分别验证新候选与代表候选存在于被引用的碰撞报告中，允许按原证据结论归并版本升级后重复出现的候选。
 - 修复可转债列表请求缺少官方页面 `quoteColumns` 的问题：保留起点之后的 20 个旧快照中，9,452/9,452 组可比转股价值与初始转股价相等，且当前转股价、正股价和触发价均未返回，不能作为同义证据；使用详情页相同参数后可读取分开的行情指标。

@@ -103,6 +103,8 @@ CAPTURE_ENDPOINTS: dict[str, dict[str, Any]] = {
     },
     "kph_limit_up_history": {
         "source": "kph",
+        # KPH (开盘红) and KPL (开盘啦) are separate products and API sources.
+        # KPL is only a passive field-comparison reference; it never suppresses KPH capture.
         "reference_source": "kpl",
         "source_aliases": ["kph"],
         "allow_redundancy_suppression": False,

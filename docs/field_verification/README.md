@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`research/20261120_zhb_tipinfo_17_18_low_information.md`](research/20261120_zhb_tipinfo_17_18_low_information.md) 与[逐包覆盖清单](research/20261120_zhb_tipinfo_17_18_coverage.csv)：保留期内 23 个日期化 ZHB 归档、130,068 行样本中，`tipinfo.dat` 原始列 `[17]`、`[18]` 均恒空。两字段维持未验证并暂缓常规碰撞；出现非空观察后再恢复研究，不据恒空推定业务含义。
 - [`adjudications/20261120_eventdc_convertible_quote_fields.md`](adjudications/20261120_eventdc_convertible_quote_fields.md)、[结构化来源契约决定](adjudications/20261120_eventdc_convertible_quote_fields.json)、[154 条逐行行情样本](research/20261120_eventdc_quote_fields_samples.csv)与[保留期逐日请求形状审计](research/20261120_eventdc_quote_coverage_history.csv)：按东财可转债详情页正式 `quoteColumns` 请求补登记 10 个完整字段路径，并撤回 `INITIAL_TRANSFER_PRICE ↔ TRANSFER_VALUE` 旧同义映射。旧请求下 9,452/9,452 个可比值相等，但行情键缺失；更正接口后转股价值公式 154/154 相符。动态报价未带来源实际日期，不作为目标数据日碰撞证据。
 - [`20261119/eventdc_quote_fields_reviewed_20261120/20261119_collision_report.md`](20261119/eventdc_quote_fields_reviewed_20261120/20261119_collision_report.md) 与 [`adjudications/20261120_kph_kpl_l4_candidate_reviews.json`](adjudications/20261120_kph_kpl_l4_candidate_reviews.json)：11 月 19 日目标数据日基于 6 个采集目录、7 个交易日、1,318 个字段和 360,736 个样本值生成完整报告；L1/L1-C 为 0、L4 为 3。KPH/KPL 的 103 组对齐样本仍是两个已确认不同来源族；一条直接等价候选拒绝，另一条弱重叠及一条未确认日期候选保留待证。候选总数84，已审3，余81条方法线索待后续研究；报告方法候选 frontier 为0。
 - [`research/20261119_tdx_date_path_scope.md`](research/20261119_tdx_date_path_scope.md)：核对通达信官方四类接口复用大写 `Date` 的情况，确认其承载记录日期，但股本、市场统计、板块统计和日线资金统计的数据域不同。保留期内 66 个 `raw_tdx*.json` 无该键，当前代码也没有对应接口调用；因此 `TDX(双命名源)::Date` 暂不定为股本日期等具体角色，待接口级路径证据补齐。与 `开盘啦(kpl)::Date` 保持独立身份。

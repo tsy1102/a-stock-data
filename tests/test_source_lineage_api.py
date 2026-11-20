@@ -75,6 +75,7 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
         "新浪(研报列表)",
         "沪深交易所",
         "百度(baidu)",
+        "央视网(新闻联播)",
     }
     assert lineage["project_reference"]["url"] == "https://github.com/simonlin1212/a-stock-data"
     assert lineage["sources"]["AxData"]["anchor_eligible"] is False
@@ -167,6 +168,24 @@ def test_sina_research_listing_has_its_own_runtime_identity_within_sina_family()
     assert lineage_api.runtime_family("sina_extended", lineage) == "sina"
     assert research["runtime_aliases"] != extension["runtime_aliases"]
     assert research["anchor_eligible"] is False
+
+
+def test_cctv_news_listing_is_not_mislabeled_as_a_mixed_wscn_source():
+    lineage = lineage_api.load_source_lineage()
+
+    cctv = lineage["sources"]["央视网(新闻联播)"]
+
+    assert lineage_api.runtime_aliases_for_source("央视网(新闻联播)", lineage) == ["news_wscn_cctv"]
+    assert lineage_api.source_aliases("央视网(新闻联播)", lineage) == []
+    assert lineage_api.runtime_family("news_wscn_cctv", lineage) == "cctv"
+    assert cctv["independence_status"] == "confirmed"
+    assert cctv["anchor_eligible"] is False
+    assert "WSCN 宏观日历是独立采集路径" in cctv["anchor_note"]
+
+    # KPH and KPL remain separate products and families after this source addition.
+    assert lineage_api.runtime_family("kph", lineage) == "kph"
+    assert lineage_api.runtime_family("kpl", lineage) == "kpl"
+    assert lineage_api.runtime_family("kph", lineage) != lineage_api.runtime_family("kpl", lineage)
 
 
 @pytest.mark.parametrize(

@@ -35,6 +35,7 @@
 | 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(研报列表) | active | research_sina | Sina Finance research report listing | sina（confirmed） | 否 | unconfirmed | pending |
 | 沪深交易所 | active | exchange, etf | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
+| 央视网(新闻联播) | active | news_wscn_cctv | CCTV.com (央视网), CCTV News Broadcast daily archive | cctv（confirmed） | 否 | unconfirmed | pending |
 | 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
@@ -259,6 +260,12 @@
 
 - 来源说明：交易所官方数据合并源。
 - 对话确认：pending。截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。
+- GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
+
+### 央视网(新闻联播)
+
+- 来源说明：官方《新闻联播》按日栏目归档；当前采集器实际请求 tv.cctv.com。WSCN 宏观日历是独立采集路径，不属于此来源。
+- 对话确认：pending。来源身份由当前采集代码和央视网官方栏目页面确认；未登记第三方仓库映射。
 - GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
 
 ### 百度(baidu)

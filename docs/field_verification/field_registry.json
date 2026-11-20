@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1656,
+      "verified": 1658,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 513
+      "verified_by_source_contract": 515
     },
     "updated_at": "2026-11-19"
   },
@@ -326,6 +326,14 @@
       "verify_file": null,
       "section_patterns": [
         "12.8.17 沪深交易所官方（龙虎榜/行情/公告备胎）✅"
+      ],
+      "status": "active"
+    },
+    {
+      "name": "央视网(新闻联播)",
+      "verify_file": null,
+      "section_patterns": [
+        "央视网《新闻联播》按日栏目页（runtime alias news_wscn_cctv）"
       ],
       "status": "active"
     },
@@ -13149,6 +13157,7 @@
         "ZHB-tdxstat2",
         "东财-datacenter(英文键)",
         "同花顺-fuyao",
+        "央视网(新闻联播)",
         "巨潮(cninfo)",
         "市场源(market_sources)",
         "开盘啦(kpl)",
@@ -13172,7 +13181,8 @@
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "unverified",
         "新浪(扩展API)": "unverified",
-        "新浪(研报列表)": "verified"
+        "新浪(研报列表)": "verified",
+        "央视网(新闻联播)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -14566,6 +14576,24 @@
         "canonical_incomplete",
         "meaning_incomplete"
       ]
+    },
+    {
+      "code": "etf_sh.date",
+      "source": "沪深交易所",
+      "sources": [
+        "沪深交易所"
+      ],
+      "section": "source contract: 上海证券交易所 ETF 规模页面及其 commonQuery 官方接口 · 沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date#官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+      "canonical": "sse_etf_scale_statistics_date",
+      "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+      "unit": "YYYY-MM-DD",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "沪深交易所": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "etf_sz.listing_date",
@@ -47413,6 +47441,12 @@
     ],
     "sina_research_report_publication_date": [
       "新浪(研报列表)"
+    ],
+    "sse_etf_scale_statistics_date": [
+      "沪深交易所"
+    ],
+    "cctv_news_broadcast_edition_date": [
+      "央视网(新闻联播)"
     ]
   },
   "mappings": [
@@ -275095,6 +275129,206 @@
             "path": "registry 新浪(研报列表)::date (runtime alias research_sina) <- 官方 Sina Finance 研报列表 -> 序号/标题/报告类型/发布日期/机构/研究员表格第 4 列 -> stock_common/sc_datasource/_research_sina.py::_SINA_REPORT_ROW day -> normalize_compact_date() -> record date -> raw_research_sina.market_latest[].date 或 stocks[code][].date",
             "locator": "最新滚动研报页表头明确显示“序号 | 标题 | 报告类型 | 发布日期 | 机构 | 研究员”；项目正则将第四个表格单元格解析为 day。",
             "url": "https://vip.stock.finance.sina.com.cn/q/go.php/vReport_List/kind/lastest/index.phtml"
+          }
+        }
+      ]
+    },
+    {
+      "source": "沪深交易所",
+      "code": "etf_sh.date",
+      "identity": "沪深交易所::etf_sh.date",
+      "path": "etf_sh.date",
+      "canonical": "sse_etf_scale_statistics_date",
+      "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+      "unit": "YYYY-MM-DD",
+      "section": "source contract: 上海证券交易所 ETF 规模页面及其 commonQuery 官方接口 · 沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date#官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+      "sections": [
+        "source contract: 上海证券交易所 ETF 规模页面及其 commonQuery 官方接口 · 沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date#官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。 @ 2026-11-20 核查；网页未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-sse-etf-scale-statistics-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-sse-etf-scale-statistics-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 上海证券交易所 ETF 规模页面及其 commonQuery 官方接口 · 沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date#官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+          "canonical": "sse_etf_scale_statistics_date",
+          "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+          "unit": "YYYY-MM-DD",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-sse-etf-scale-statistics-date",
+          "status": "verified",
+          "adjudication_id": "20261120-sse-etf-scale-statistics-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "上海证券交易所 ETF 规模页面及其 commonQuery 官方接口",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date",
+            "locator": "官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。",
+            "url": "https://www.sse.com.cn/market/funddata/volumn/etfvolumn/"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sse_etf_scale_statistics_date",
+              "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+              "unit": "YYYY-MM-DD"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-sse-etf-scale-statistics-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_exchange_cctv_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "sse_etf_scale_statistics_date",
+              "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+              "unit": "YYYY-MM-DD"
+            }
+          },
+          "rationale": "项目适配器请求上交所官方 ETF 规模 commonQuery 接口并传入 STAT_DATE；只有响应中每条 STAT_DATE 与请求值完全相等时才输出，输出 date 即该上游值。上交所 ETF 规模页面将其描述为规模统计并注明数据为当日清算后数据。五个保留目录的 SH 记录均为单一有效日期，日期可能早于目录目标日（例如 20261116 目录中的返回日为 2026-11-13），符合按来源真实统计日期标注的语义；不将目录日或采集日替代此值。",
+          "source_contract": {
+            "authority": "上海证券交易所 ETF 规模页面及其 commonQuery 官方接口",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date",
+            "locator": "官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。",
+            "url": "https://www.sse.com.cn/market/funddata/volumn/etfvolumn/"
+          }
+        }
+      ]
+    },
+    {
+      "source": "央视网(新闻联播)",
+      "code": "date",
+      "identity": "央视网(新闻联播)::date",
+      "path": "date",
+      "canonical": "cctv_news_broadcast_edition_date",
+      "meaning": "央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。",
+      "unit": "YYYY-MM-DD",
+      "section": "source contract: 中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面 · 央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date#官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+      "sections": [
+        "source contract: 中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面 · 央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date#官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。 @ 2026-11-20 核查；网页未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261120-cctv-news-broadcast-edition-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261120-cctv-news-broadcast-edition-date"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面 · 央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date#官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。 @ 2026-11-20 核查；网页未提供版本化字段 schema",
+          "canonical": "cctv_news_broadcast_edition_date",
+          "meaning": "央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。",
+          "unit": "YYYY-MM-DD",
+          "status_raw": "人工核验上游契约 2026-11-20：20261120-cctv-news-broadcast-edition-date",
+          "status": "verified",
+          "adjudication_id": "20261120-cctv-news-broadcast-edition-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date",
+            "locator": "官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。",
+            "url": "https://tv.cctv.com/lm/xwlb/index.shtml"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cctv_news_broadcast_edition_date",
+              "meaning": "央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。",
+              "unit": "YYYY-MM-DD"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261120-cctv-news-broadcast-edition-date",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-20",
+          "decision_file": "adjudications/20261120_exchange_cctv_date_fields.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cctv_news_broadcast_edition_date",
+              "meaning": "央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。",
+              "unit": "YYYY-MM-DD"
+            }
+          },
+          "rationale": "当前运行别名 news_wscn_cctv 的采集器只调用 CCTV_DAY_URL=/lm/xwlb/day/{ymd}.shtml；cctv_news 将请求日期归一化后写入每条输出记录的 date。央视网官方栏目页按日期展示《新闻联播》节目期次，官方 2026-11-12、11-16 和 11-18 页面均以相同日期标识对应节目/条目。五个保留目录共 69 条节目列表记录，出现四个实际期次日；2026-11-17 目录与 11-16 目录的 17 条记录原始归档 hash 相同，作为重复归档而非独立期次样本。此结论仅定义当前精确来源路径。",
+          "source_contract": {
+            "authority": "中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面",
+            "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+            "path": "央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date",
+            "locator": "官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。",
+            "url": "https://tv.cctv.com/lm/xwlb/index.shtml"
           }
         }
       ]

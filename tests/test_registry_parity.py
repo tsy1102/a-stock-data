@@ -12,6 +12,15 @@ def test_financial_comparison_group_label_is_not_a_field_matrix_key():
     assert registry_parity.gm.clean_field("历史清单未列出的其余 18 项") == ""
 
 
+def test_field_matrix_renders_registered_sources_missing_from_static_order():
+    rendered = registry_parity.gm.render(
+        {"cctv_news_broadcast_edition_date": {"央视网(新闻联播)"}},
+        records=1,
+    )
+
+    assert "**央视网(新闻联播)（1）**：cctv_news_broadcast_edition_date" in rendered
+
+
 def test_field_matrix_treats_eltdx_adapter_as_the_same_source_family(monkeypatch):
     monkeypatch.setattr(
         registry_parity.gm,
@@ -563,9 +572,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
     # IPO par value, issue shares, issue price, event dates, quoted prices,
     # first-day/subscription fields and semantic fields, plus convertible-bond
-    # quote and issue fields, plus the separate Sina research-list date path;
-    # zhuying_shouru uses an empirical correction instead.
-    assert len(pairs) == 164
+    # quote and issue fields, plus separate Sina research-list, SSE ETF and
+    # CCTV News Broadcast date paths; zhuying_shouru uses an empirical correction.
+    assert len(pairs) == 166
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PAR_VALUE") in pairs
     assert matrix["ipo_record_par_value"] == {"东财-event_dc(IPO发行记录)"}
     assert ("东财-event_dc(IPO发行记录)", "ipo_calendar[].APPLY_DATE") in pairs
@@ -611,6 +620,23 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "20261120-sina-research-report-publication-date"
     ]
     assert matrix["sina_research_report_publication_date"] == {"新浪(研报列表)"}
+    sse_etf_date = records_by_pair[("沪深交易所", "etf_sh.date")]
+    assert sse_etf_date["status"] == "verified"
+    assert sse_etf_date["status_resolution"] == "verified_by_source_contract"
+    assert sse_etf_date["canonical"] == "sse_etf_scale_statistics_date"
+    assert sse_etf_date["status_evidence"]["source_contract_adjudication_ids"] == [
+        "20261120-sse-etf-scale-statistics-date"
+    ]
+    assert matrix["sse_etf_scale_statistics_date"] == {"沪深交易所"}
+    assert ("沪深交易所", "etf_sz.date") not in pairs
+    cctv_date = records_by_pair[("央视网(新闻联播)", "date")]
+    assert cctv_date["status"] == "verified"
+    assert cctv_date["status_resolution"] == "verified_by_source_contract"
+    assert cctv_date["canonical"] == "cctv_news_broadcast_edition_date"
+    assert cctv_date["status_evidence"]["source_contract_adjudication_ids"] == [
+        "20261120-cctv-news-broadcast-edition-date"
+    ]
+    assert matrix["cctv_news_broadcast_edition_date"] == {"央视网(新闻联播)"}
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs

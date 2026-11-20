@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 612 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 614 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -809,6 +809,7 @@
 | ZHB-tdxstat2 · `date` | date | 统计日期 | - | `verified` |
 | 东财-datacenter(英文键) · `date` | — | — | — | `unverified` |
 | 同花顺-fuyao · `date` | — | — | — | `unverified` |
+| 央视网(新闻联播) · `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | YYYY-MM-DD | `verified` |
 | 巨潮(cninfo) · `date` | — | — | — | `unverified` |
 | 市场源(market_sources) · `date` | date | 日期 | — | `verified` |
 | 开盘啦(kpl) · `date` | — | — | — | `unverified` |
@@ -3784,6 +3785,7 @@
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | `unverified` |
 | 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `weighted_roe` | profitability.index_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。 | `disproved` |
+| 央视网(新闻联播) | `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | `verified` |
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |
@@ -3883,6 +3885,7 @@
 | 新浪(扩展API) | `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | `verified` |
 | 新浪(扩展API) | `vega` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(研报列表) | `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | `verified` |
+| 沪深交易所 | `etf_sh.date` | sse_etf_scale_statistics_date | 上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。 | `verified` |
 | 沪深交易所 | `etf_sz.listing_date` | szse_etf_listing_date | 深交所基金列表中，该基金在深圳证券交易所开始上市交易的日期；不是基金合同生效日、募集成立日或公告日。 | `verified` |
 | 沪深交易所 | `zqdm` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 沪深交易所 | `zqjc` | zqdm / zqjc | 代码 / 简称 | `verified` |

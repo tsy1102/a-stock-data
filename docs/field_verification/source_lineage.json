@@ -759,6 +759,22 @@
         "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
       }
     },
+    "央视网(新闻联播)": {
+      "runtime_aliases": [
+        "news_wscn_cctv"
+      ],
+      "provider": "CCTV.com (央视网), CCTV News Broadcast daily archive",
+      "independence_family": "cctv",
+      "independence_status": "confirmed",
+      "anchor_eligible": false,
+      "anchor_note": "官方《新闻联播》按日栏目归档；当前采集器实际请求 tv.cctv.com。WSCN 宏观日历是独立采集路径，不属于此来源",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "来源身份由当前采集代码和央视网官方栏目页面确认；未登记第三方仓库映射。"
+      }
+    },
     "百度(baidu)": {
       "runtime_aliases": [
         "baidu"
@@ -998,6 +1014,7 @@
     "新浪(hq.sinajs)": "sina",
     "新浪(扩展API)": "sina_extended",
     "沪深交易所": "exchange",
+    "央视网(新闻联播)": "news_wscn_cctv",
     "百度": "baidu",
     "百度(baidu)": "baidu",
     "腾讯": "tencent",
@@ -1108,9 +1125,9 @@
       "note": "composite dataset from multiple sources"
     },
     "news_wscn_cctv": {
-      "independence_family": null,
-      "independence_status": "unconfirmed",
-      "note": "mixed WSCN/CCTV data source"
+      "independence_family": "cctv",
+      "independence_status": "confirmed",
+      "note": "Legacy runtime alias; current collector requests only the CCTV News Broadcast daily archive. WSCN macro calendar is a separate collector and source."
     },
     "push2": {
       "independence_family": "eastmoney",

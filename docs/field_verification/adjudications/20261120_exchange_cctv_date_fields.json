@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-20",
+  "evidence_file": "docs/field_verification/adjudications/20261120_exchange_cctv_date_fields.md",
+  "evidence_sha256": "a48cda8b06b177f80ea3fe19015dd7cab94d9d8597e88944a17b8a27138d10e1",
+  "decisions": [
+    {
+      "id": "20261120-sse-etf-scale-statistics-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "etf_sh.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sse_etf_scale_statistics_date",
+      "meaning": "上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-20 SSE ETF scale statistics date source-contract adjudication",
+      "rationale": "项目适配器请求上交所官方 ETF 规模 commonQuery 接口并传入 STAT_DATE；只有响应中每条 STAT_DATE 与请求值完全相等时才输出，输出 date 即该上游值。上交所 ETF 规模页面将其描述为规模统计并注明数据为当日清算后数据。五个保留目录的 SH 记录均为单一有效日期，日期可能早于目录目标日（例如 20261116 目录中的返回日为 2026-11-13），符合按来源真实统计日期标注的语义；不将目录日或采集日替代此值。",
+      "source_contract": {
+        "authority": "上海证券交易所 ETF 规模页面及其 commonQuery 官方接口",
+        "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+        "path": "沪深交易所::etf_sh.date (runtime alias etf) <- stock_common/sc_datasource/_etf.py::_etf_shares_sse(day) -> query.sse.com.cn/commonQuery.do, sqlId=COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L, STAT_DATE=day -> response result[].STAT_DATE (verified equal to day) -> output record date -> raw_etf.json etf_sh[].date",
+        "locator": "官方 ETF 规模页面注明统计数据为当日清算后数据；官方接口请求使用 STAT_DATE 参数，项目逐条检查响应 STAT_DATE 与请求日期相等后才发出 date。",
+        "url": "https://www.sse.com.cn/market/funddata/volumn/etfvolumn/"
+      }
+    },
+    {
+      "id": "20261120-cctv-news-broadcast-edition-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "央视网(新闻联播)",
+        "code": "date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cctv_news_broadcast_edition_date",
+      "meaning": "央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-20 CCTV News Broadcast edition date source-contract adjudication",
+      "rationale": "当前运行别名 news_wscn_cctv 的采集器只调用 CCTV_DAY_URL=/lm/xwlb/day/{ymd}.shtml；cctv_news 将请求日期归一化后写入每条输出记录的 date。央视网官方栏目页按日期展示《新闻联播》节目期次，官方 2026-11-12、11-16 和 11-18 页面均以相同日期标识对应节目/条目。五个保留目录共 69 条节目列表记录，出现四个实际期次日；2026-11-17 目录与 11-16 目录的 17 条记录原始归档 hash 相同，作为重复归档而非独立期次样本。此结论仅定义当前精确来源路径。",
+      "source_contract": {
+        "authority": "中央广播电视总台央视网《新闻联播》官方栏目及按日归档页面",
+        "revision": "2026-11-20 核查；网页未提供版本化字段 schema",
+        "path": "央视网(新闻联播)::date (runtime alias news_wscn_cctv) <- stock_common/sc_datasource/_news_wscn_cctv.py::cctv_news(date) -> CCTV_DAY_URL /lm/xwlb/day/{ymd}.shtml -> normalized requested edition date -> output record date -> raw_news_wscn_cctv.json cctv_xwlb[].date",
+        "locator": "官方栏目页面按日期展示完整节目；2026-11-16 完整节目页面标题为《新闻联播》20261116 21:00。项目使用对应日栏目 URL 并将该 URL 日期写入列表条目的 date 字段。",
+        "url": "https://tv.cctv.com/lm/xwlb/index.shtml"
+      }
+    }
+  ]
+}

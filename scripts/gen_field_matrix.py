@@ -318,7 +318,8 @@ def render(name_sources, records) -> str:
     out.append(
         f"**B.2 单来源关系字段（{len(name_sources) - len(multi)} 个；仅登记一个来源标签）**\n"
     )
-    for src in SOURCE_ORDER:
+    source_order = [*SOURCE_ORDER, *sorted(set(single) - set(SOURCE_ORDER))]
+    for src in source_order:
         fields = sorted(single.get(src, []))
         if not fields:
             continue

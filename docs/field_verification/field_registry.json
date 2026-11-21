@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 942,
-      "verified": 1674,
+      "verified": 1675,
       "verified_by_empirical_addendum": 221,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 536
+      "verified_by_source_contract": 537
     },
     "updated_at": "2026-11-19"
   },
@@ -12196,6 +12196,24 @@
       "canonical": "convertible_bond_initial_conversion_price",
       "meaning": "发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。",
       "unit": "元/股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].ISSUE_YEAR",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "source contract: 东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别 · data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR#detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file. @ 2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+      "canonical": "convertible_bond_approval_year",
+      "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+      "unit": "年",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -47782,6 +47800,9 @@
     ],
     "ipo_planned_fundraising_target_yi_cny": [
       "东财-event_dc(IPO发行记录)"
+    ],
+    "convertible_bond_approval_year": [
+      "东财-event_dc(可转债列表)"
     ]
   },
   "mappings": [
@@ -277919,6 +277940,106 @@
             "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS",
             "locator": "官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。",
             "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_APP_IPOAPPLY&columns=ALL&pageNumber=1&pageSize=50&sortColumns=APPLY_DATE&sortTypes=-1&source=WEB&client=WEB"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].ISSUE_YEAR",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].ISSUE_YEAR",
+      "path": "convertible_bonds[].ISSUE_YEAR",
+      "canonical": "convertible_bond_approval_year",
+      "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+      "unit": "年",
+      "section": "source contract: 东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别 · data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR#detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file. @ 2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别 · data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR#detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file. @ 2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261121-eventdc-convertible-approval-year"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-eventdc-convertible-approval-year"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别 · data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR#detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file. @ 2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+          "canonical": "convertible_bond_approval_year",
+          "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+          "unit": "年",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-eventdc-convertible-approval-year",
+          "status": "verified",
+          "adjudication_id": "20261121-eventdc-convertible-approval-year",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别",
+            "revision": "2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+            "path": "data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR",
+            "locator": "detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file.",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_approval_year",
+              "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+              "unit": "年"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261121-eventdc-convertible-approval-year",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_eventdc_convertible_issue_year.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_approval_year",
+              "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+              "unit": "年"
+            }
+          },
+          "rationale": "东方财富第一方详情脚本 loadinfo() 请求 reportName=RPT_BOND_CB_LIST、columns=ALL，并以 data.ISSUE_YEAR 渲染页面标签“债券年度”；项目 stock_common/sc_datasource/_convertible.py 使用相同 reportName 和 columns，stock_common/sc_datasource/_datacenter.py 原样返回官方响应字典行，采集路径为 raw_event_dc.convertible_bonds[].ISSUE_YEAR。2026-11-19 保留响应 500/500 有值，其中全部 5 条与 VALUE_DATE/PUBLIC_START_DATE 年份不一致的记录均与相应中国证监会核准批复文号年份一致；五份发行人正式公告与 2026-11-21 东方财富当前接口响应逐项复核，且与项目归档一致。字段定义限定为可转债核准年度，不以 `ISSUE_YEAR` 字面推断实际发行日年份。",
+          "source_contract": {
+            "authority": "东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别",
+            "revision": "2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+            "path": "data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR",
+            "locator": "detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file.",
+            "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
           }
         }
       ]

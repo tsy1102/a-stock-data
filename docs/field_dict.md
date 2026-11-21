@@ -26,7 +26,7 @@
 ## 当前覆盖
 
 - 来源身份与参考登记：37 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2739 条；verified 1674、unverified 942、candidate 1、conflict 17、disproved 105。
+- 逐源字段路径：2740 条；verified 1675、unverified 942、candidate 1、conflict 17、disproved 105。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。

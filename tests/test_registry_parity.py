@@ -573,14 +573,14 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, fundraising total, MAIN_BUSINESS, issue price,
     # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, planned fundraising target,
     # event dates, quoted prices,
-    # first-day/subscription and semantic fields, plus convertible-bond quote/issue/execution
+    # first-day/subscription and semantic fields, plus convertible-bond quote/issue/approval-year/execution
     # fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
     # uses an empirical correction. CLS telegraph level retains its original
     # contract adjudication in history, while its current metadata state is the
     # separately validated empirical addendum.
-    assert len(pairs) == 182
+    assert len(pairs) == 183
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"

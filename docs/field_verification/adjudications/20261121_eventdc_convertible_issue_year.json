@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_eventdc_convertible_issue_year.md",
+  "evidence_sha256": "4ded451f572a1ca49fe7a5c47434206ab4366b11cc5264b1ec16385415925c98",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-convertible-approval-year",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ISSUE_YEAR"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_approval_year",
+      "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
+      "unit": "年",
+      "section": "2026-11-21 Eastmoney RPT_BOND_CB_LIST official field path and cross-year approval-year verification",
+      "rationale": "东方财富第一方详情脚本 loadinfo() 请求 reportName=RPT_BOND_CB_LIST、columns=ALL，并以 data.ISSUE_YEAR 渲染页面标签“债券年度”；项目 stock_common/sc_datasource/_convertible.py 使用相同 reportName 和 columns，stock_common/sc_datasource/_datacenter.py 原样返回官方响应字典行，采集路径为 raw_event_dc.convertible_bonds[].ISSUE_YEAR。2026-11-19 保留响应 500/500 有值，其中全部 5 条与 VALUE_DATE/PUBLIC_START_DATE 年份不一致的记录均与相应中国证监会核准批复文号年份一致；五份发行人正式公告与 2026-11-21 东方财富当前接口响应逐项复核，且与项目归档一致。字段定义限定为可转债核准年度，不以 `ISSUE_YEAR` 字面推断实际发行日年份。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页第一方 detail.js 与 RPT_BOND_CB_LIST 官方数据中心接口；发行人正式公告用于核验核准年度与发行日期的区别",
+        "revision": "2026-11-21 核查；detail.js SHA-256 ca2b2b77647eabdd03121487f6540c0918212c176c42cf6bed0ce0028e4c7dcc；官方接口未提供版本化字段 schema",
+        "path": "data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR",
+        "locator": "detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file.",
+        "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+      }
+    }
+  ]
+}

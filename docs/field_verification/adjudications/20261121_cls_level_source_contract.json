@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-cls-telegraph-level-display-code",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "财联社(cls)",
+        "code": "level"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "level",
+        "meaning": "快讯等级（重要性分级）",
+        "unit": ""
+      },
+      "canonical": "cls_telegraph_display_level_code",
+      "meaning": "财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。",
+      "unit": "",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "level",
+          "meaning": "快讯等级（重要性分级）",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "cls_telegraph_display_level_code",
+          "meaning": "财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。",
+          "unit": ""
+        },
+        "rationale": "旧含义未经验证且把通用 level 直接解释为重要性分级，证据不足以支持重要性排序；官方前端源码只证明网页展示样式。将释义收窄到已直接观察到的展示作用，并用来源唯一规范名避免与 reports::level 聚合；旧值和此修正均保留在裁决历史。"
+      },
+      "rationale": "项目 stock_common/sc_datasource/_eastmoney.py::cls_telegraph 请求财联社 /v1/roll/get_roll_list，将 response.data.roll_data[*].level 原样写入 raw_cls.json 的 telegraph[].level。财联社官方电报前端调用同一路径并从 roll_data 读取记录；卡片组件直接检查 item.level，为 A/B 分配红色样式、为 A 额外加粗。这一官方客户端行为足以确认该精确路径是前端展示等级代码，不支持将其解释为完整的重要性排序或具体业务类别。保留期内 21 个非空归档日、1,050 条记录均有非空字符串 level，观察到 A=2、B=122、C=926，未见其他值；逐日审计与原始文件摘要见 docs/field_verification/research/20261121_cls_level_retained_audit.csv。reports::level 是不同来源路径，使用唯一规范名避免误聚合；不建立映射。",
+      "source_contract": {
+        "authority": "上海财联社官方网站电报页面及其官方 Web 前端；前端请求财联社电报列表接口",
+        "revision": "官方 telegraph-4347dce294585c13.js；2026-11-21 核查；SHA-256 745941d158ae0fd488d6fb8bca1a6b9b7daefd8c4fb721a41dcfe28d3f3409b12",
+        "path": "财联社 /v1/roll/get_roll_list response.data.roll_data[*].level -> stock_common/sc_datasource/_eastmoney.py::cls_telegraph() -> raw_cls.json.telegraph[].level",
+        "locator": "官方电报页脚本读取 response.data.data.roll_data，并在电报卡片中按 item.level 分支：A/B 使用 c-de0422 红色文本类，A 使用粗体、其余常规字重；官方页面另有“加红”导航筛选。页面代码只定义展示行为，不给出完整 API 字典或 A/B/C 的业务分类全集。",
+        "url": "https://wwwjs.cls.cn/_next/static/chunks/pages/telegraph-4347dce294585c13.js"
+      }
+    }
+  ]
+}

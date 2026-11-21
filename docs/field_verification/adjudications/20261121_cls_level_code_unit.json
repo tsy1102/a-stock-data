@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_cls_level_code_unit.md",
+  "evidence_sha256": "974a6a9c232522818fff51c6564ef95b43852615579de7da5234447143fb1e53",
+  "decisions": [
+    {
+      "id": "20261121-cls-level-code-unit",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "财联社(cls)",
+        "code": "level"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "cls_telegraph_display_level_code",
+        "meaning": "财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。",
+        "unit": ""
+      },
+      "canonical": "cls_telegraph_display_level_code",
+      "meaning": "财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。",
+      "unit": "代码",
+      "section": "2026-11-21 财联社电报 level 类别代码单位补充核验",
+      "rationale": "按精确来源路径读取保留期内全部现存 raw_cls.json 记录；1,050/1,050 条 level 是非空字符串代码，另有一个日期文件无记录，不计为观测。财联社官方前端直接读取 item.level 并按 A/B/C 等值应用显示分支。将 unit 从空值更正为“代码”仅标记类别型代码，不推断完整枚举或重要性语义；原始来源契约已证明该字段的展示角色，reports::level 不受影响。",
+      "sample": {
+        "scope": "2026-10-15 至 2026-11-20 的保留 raw_cls.json 归档；22 个文件中 2026-10-15 为空，其余 21 个日期共 1,050 条 CLS 电报记录，逐条检查精确路径 telegraph[].level 的类型与空值。",
+        "comparison_count": 1050,
+        "matched_count": 1050,
+        "counterexample_count": 0,
+        "observation_count": 1050,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 0
+      }
+    }
+  ]
+}

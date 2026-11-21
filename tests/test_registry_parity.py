@@ -576,8 +576,24 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
-    # uses an empirical correction.
+    # uses an empirical correction. CLS telegraph level retains its original
+    # contract adjudication in history, while its current metadata state is the
+    # separately validated empirical addendum.
     assert len(pairs) == 180
+    cls_level = records_by_pair[("财联社(cls)", "level")]
+    assert cls_level["status"] == "verified"
+    assert cls_level["status_resolution"] == "verified_by_empirical_addendum"
+    assert cls_level["canonical"] == "cls_telegraph_display_level_code"
+    assert cls_level["unit"] == "代码"
+    assert any(
+        item.get("id") == "20261121-cls-telegraph-level-display-code"
+        for item in cls_level["adjudications"]
+    )
+    assert registry["field_matrix"]["cls_telegraph_display_level_code"] == ["财联社(cls)"]
+    reports_level = records_by_pair[("reports", "level")]
+    assert reports_level["status"] == "unverified"
+    assert reports_level["canonical"] == "level"
+    assert "财联社(cls)" not in registry["field_matrix"].get("level", [])
     issue_way_explanation = records_by_pair[
         ("东财-event_dc(IPO发行记录)", "ipo_calendar[].ISSUE_WAY_EXPLAIN")
     ]

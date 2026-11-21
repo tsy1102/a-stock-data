@@ -14,6 +14,9 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261121_cls_level_source_contract.md`](adjudications/20261121_cls_level_source_contract.md) 与[结构化裁决](adjudications/20261121_cls_level_source_contract.json)确认财联社官方前端将 `telegraph[].level` 用作网页展示等级代码，A/B 显示红色、A 额外加粗；这不提供完整代码表或重要性排序。[单位补充核验](adjudications/20261121_cls_level_code_unit.md)与[结构化决定](adjudications/20261121_cls_level_code_unit.json)按保留期 1,050/1,050 条字符串观测，将单位栏补为“代码”，消除空单位造成的元数据缺口提示。取值为 A=2、B=122、C=926；仅裁决 CLS 路径，不与 `reports::level` 合并，也不新增跨源映射。[逐日审计](research/20261121_cls_level_retained_audit.csv)。
+- [CLS `level` 裁决后的七日碰撞回归](20261119/post_cls_level_unit_20261121/20261119_collision_report.md)：沿用 2026-11-19 数据日的 7 日窗口，目标 58、字段 1,284、样本值 324,213，报告完整；CLS `level` 已退出主攻目标和字段名提示区。KPH 与 KPL 仍按独立来源比较；报告中的两条 L4 仅为弱值重叠线索，不建立来源合并或字段映射。
+
 - [2026-11-19 归档的 7 日碰撞回归](20261119/post_ipo_main_business_20261121/20261119_collision_report.md)：报告结构完整，主攻目标 60→59、锚 625→626，L1/L1-C 为 0、L4 为 2；其余字段的人工候选审阅仍有 81 项待处理。
 
 - [`adjudications/20261121_eventdc_ipo_main_business.md`](adjudications/20261121_eventdc_ipo_main_business.md) 与[结构化裁决](adjudications/20261121_eventdc_ipo_main_business.json)：官方 `RPTA_APP_IPOAPPLY` 列表脚本请求 `MAIN_BUSINESS` 并用于行提示；官方公司详情脚本区分“主营业务”和“经营范围”，巨潮资讯平安银行年报与万科公告核对支持归档内容的主营业务角色。20 条 IPO 记录 20/20 非空。来源未提供该文本的独立有效日期，因此只定案为附带的业务描述，不推断 IPO 时点或当前经营状态。

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 623 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 624 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2494,12 +2494,12 @@
 
 ### `level` — ambiguous
 
-聚合问题：meaning_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | reports · `level` | level | 待破解 | — | `unverified` |
-| 财联社(cls) · `level` | level | 快讯等级（重要性分级） | — | `unverified` |
+| 财联社(cls) · `level` | cls_telegraph_display_level_code | 财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。 | 代码 | `verified` |
 
 ### `limit_count` — ambiguous
 
@@ -3912,6 +3912,7 @@
 | 腾讯(qt.gtimg) | `[9]` | [9]-[18] | 买一~买五 价/量 | `verified` |
 | 财联社(cls) | `brief` | title / brief | 标题 / 摘要 | `verified` |
 | 财联社(cls) | `cur_heat` | rank / cur_heat | 当前热度排名 / 热度值 | `unverified` |
+| 财联社(cls) | `level` | cls_telegraph_display_level_code | 财联社电报记录的网页展示等级代码。当前官方电报页对 A、B 使用红色文本，对 A 额外加粗；其他值走默认文本样式。官方页面脚本没有给出完整代码全集、代码业务名称、重要性排序或分类判定规则。 | `verified` |
 | 财联社(cls) | `plate_code` | plate_code / plate_name | 板块代码 / 名称（风口板块） | `unverified` |
 | 财联社(cls) | `plate_name` | plate_code / plate_name | 板块代码 / 名称（风口板块） | `unverified` |
 | 财联社(cls) | `plates` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | `unverified` |

@@ -1,0 +1,8 @@
+security_code,security_name,apply_date,predict_raise_funds_yi_cny,total_raise_funds_yi_cny,issuer_document_date,issuer_planned_funds_wan_cny,issuer_planned_funds_yi_cny,predict_minus_plan_yi_cny,predict_minus_total_raise_yi_cny,comparison,official_document_url
+001381,皇冠新材,2026-10-19,9.186813,9.560550,2026-09-30,91868.13,9.186813,0.000000,-0.373737,exact planned-funds match,https://static.cninfo.com.cn/finalpage/2026-09-30/1225588418.PDF
+301718,通则康威,2026-10-09,13.811148,9.797760,2026-10-08,138111.48,13.811148,0.000000,4.013388,exact planned-funds match,https://static.cninfo.com.cn/finalpage/2026-10-08/1225590589.PDF
+301569,联亚药业,2026-09-28,9.500000,9.361769,2026-09-17,95000.00,9.500000,0.000000,0.138231,exact planned-funds match,https://static.cninfo.com.cn/finalpage/2026-09-17/1225568048.PDF
+301660,粤芯半导体,2026-09-24,75.000000,61.568785,2026-04-29,750000.00,75.000000,0.000000,13.431215,exact planned-funds match,https://dataclouds.cninfo.com.cn/sjother2/documents/2026/20260429/c9d66470c0b94497a1b6535eb61e2b82.pdf
+001246,力勤资源,2026-09-18,40.468225,36.704547,2026-05,404682.25,40.468225,0.000000,3.763678,exact planned-funds match to original prospectus plan,https://reportdocs.static.szse.cn/UpFiles/rasinfodisc1/202605/RAS_202605_291950BF8CE10A164B46D2A079E3001A3F6C2B.pdf
+301716,鸿富诚,2026-09-16,12.203918,14.396344,2026-09-22,122039.18,12.203918,0.000000,-2.192426,exact planned-funds match,https://static.cninfo.com.cn/finalpage/2026-09-22/1225574817.PDF
+601091,沈鼓集团,2026-09-08,21.344695,13.652911,2026-09-14,213446.95,21.344695,0.000000,7.691784,exact planned-funds match,https://static.cninfo.com.cn/finalpage/2026-09-14/1225562038.PDF

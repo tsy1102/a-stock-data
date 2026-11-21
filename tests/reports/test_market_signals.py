@@ -83,6 +83,39 @@ def test_ipo_calendar_closes_same_day_after_application_cutoff_and_estimates_rai
     assert not any("920309" in line and "待申购" in line for line in after_cutoff)
 
 
+def test_ipo_calendar_keeps_planned_fundraising_separate_from_gross(monkeypatch):
+    rows = [
+        {
+            "APPLY_DATE": "2026-11-04",
+            "SECURITY_CODE": "600001",
+            "SECURITY_NAME_ABBR": "已披露样本",
+            "ISSUE_PRICE": 10.0,
+            "TOTAL_ISSUE_NUM": 10000.0,
+            "TOTAL_RAISE_FUNDS": 8.0,
+            "PREDICT_RAISE_FUNDS": 2.0,
+            "TRADE_MARKET": "沪市",
+        },
+        {
+            "APPLY_DATE": "2026-11-04",
+            "SECURITY_CODE": "600002",
+            "SECURITY_NAME_ABBR": "估算样本",
+            "ISSUE_PRICE": 10.0,
+            "TOTAL_ISSUE_NUM": 10000.0,
+            "TOTAL_RAISE_FUNDS": None,
+            "PREDICT_RAISE_FUNDS": 2.0,
+            "TRADE_MARKET": "沪市",
+        },
+    ]
+    monkeypatch.setattr(datasource, "ipo_calendar_recent", lambda _limit: rows)
+
+    lines = market_signals.render_ipo_calendar_section(
+        "2026-11-03", now=datetime(2026, 11, 3, 14, 0)
+    )
+
+    assert any("| 600001 | 已披露样本 | 10.0 | 8.00 |" in line for line in lines)
+    assert any("| 600002 | 估算样本 | 10.0 | 10.00 |" in line for line in lines)
+
+
 def test_market_appendices_disclose_display_caps(monkeypatch):
     research = [
         {"date": "2026-11-04", "title": f"研报{i}", "org": "机构", "type": "公司"}

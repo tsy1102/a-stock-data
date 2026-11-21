@@ -86,10 +86,9 @@ def render_ipo_calendar_section(
 ) -> List[str]:
     """近期新股申购日历 → 资金分流/抽水压力监测。
 
-    抽水压力 = 当前时点起 lookahead_days 日内仍待申购的新股数 + 预计募资合计(亿元)。
-    TOTAL_RAISE_FUNDS 已核实为东财标注的“实际募集资金总额(亿元)”；
-    PREDICT_RAISE_FUNDS 是未单独定案的预测候选字段，仅作为估算值回退。
-    两者均缺失时，可用 TOTAL_ISSUE_NUM * ISSUE_PRICE / 1e4 估算发行总额。
+    抽水压力 = 当前时点起 lookahead_days 日内仍待申购的新股数 + 发行募集总额(亿元)。
+    TOTAL_RAISE_FUNDS 是东财标注的实际募集资金总额；缺失时用发行数量乘发行价估算。
+    PREDICT_RAISE_FUNDS 是募资计划预测值，按招股文件样本对应拟投入募集资金，不能替代发行总额。
     数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY)，字段路径原样透传。
     """
     out: List[str] = ["## 【G. 近期新股申购日历 · 资金抽水压力监测】", ""]
@@ -128,10 +127,8 @@ def render_ipo_calendar_section(
         return _parse_date(r.get("APPLY_DATE"))
 
     def _rf(r: Dict[str, Any]) -> Optional[float]:
-        # 仅 TOTAL_RAISE_FUNDS 的含义和单位已定案；预测值及公式值仍按估算处理。
+        # 保持募集总额口径一致；PREDICT_RAISE_FUNDS 是募资计划口径，不能混入。
         reported = _num(r.get("TOTAL_RAISE_FUNDS"))
-        if reported is None:
-            reported = _num(r.get("PREDICT_RAISE_FUNDS"))
         if reported is not None:
             return reported
         issue_shares_10k = _num(r.get("TOTAL_ISSUE_NUM"))
@@ -171,7 +168,7 @@ def render_ipo_calendar_section(
     out.append(
         f"  💧 **抽水压力(以申购只数计)**: 当前时点起 {lookahead_days} 日内有 **{len(in_horizon)}** 只待申购新股"
         + (
-            f"，预计募资约 **{total_raise:.1f} 亿元**（已定价/预测口径，待定价以预测值占位）"
+            f"，预计发行募集总额约 **{total_raise:.1f} 亿元**（已披露值优先，缺失时按发行数量和发行价估算）"
             if total_raise > 0
             else ""
         )
@@ -179,7 +176,7 @@ def render_ipo_calendar_section(
     )
     out.append("")
     out.append("  **即将申购（按申购日）:**")
-    out.append("  | 申购日 | 代码 | 名称 | 发行价 | 募资(亿) | 市场 | 状态 |")
+    out.append("  | 申购日 | 代码 | 名称 | 发行价 | 发行总额(亿元) | 市场 | 状态 |")
     out.append("  |---|---|---|---|---|---|---|")
     for r in sorted(upcoming, key=lambda r: (_ad(r) or datetime.max))[:12]:
         ad = (r.get("APPLY_DATE") or "")[:10]
@@ -214,7 +211,7 @@ def render_ipo_calendar_section(
     out.append("")
     out.append(
         "  ⚠️ 抽水压力为定性监测指标：申购冻结资金会阶段性抽离二级市场流动性；"
-        "募资额优先采用已披露口径；缺失时按发行数量和发行价推算，未定价且缺发行数量时显示待定；不构成投资建议。"
+        "发行总额优先采用已披露实际募集总额；缺失时按发行数量和发行价估算。PREDICT_RAISE_FUNDS 表示募资计划金额，不混入发行总额；不构成投资建议。"
     )
     return out
 

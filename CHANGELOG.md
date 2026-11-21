@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 将 `东财-event_dc(IPO发行记录)::ipo_calendar[].PREDICT_RAISE_FUNDS` 定案为募资计划预测金额（亿元）：7 个 IPO 事件与发行人正式文件中的拟投入募集资金合计逐项吻合；明确它不同于实际募集总额，不建立跨源映射。详见[来源契约裁决](docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md)和[逐项样本](docs/field_verification/research/20261121_eventdc_ipo_predict_raise_funds_samples.csv)。
 - 按官方字段标签、响应到运行路径的精确映射及上交所逐值样本，分别定案 `沪深交易所::etf_sh.shares_10k`（总份额，万份）和 `etf_sz.shares_10k`（当前规模，万份）。保留沪深接口、更新时间和字段身份的边界，不建立跨所映射；详情见[来源契约裁决](docs/field_verification/adjudications/20261121_exchange_etf_shares_contract.md)。
 - 根据上交所 `STAT_DATE` 接口契约及央视网《新闻联播》按日栏目页契约，分别定案 `沪深交易所::etf_sh.date` 与 `央视网(新闻联播)::date`；修正 `news_wscn_cctv` 仅采集 CCTV 却标为 WSCN/CCTV 混合来源的 lineage，并修复字段矩阵遗漏静态来源顺序外已登记来源的问题。样本分列目标数据日、来源采集日和来源开始时间；深交所 `etf_sz.date` 仍待官方字段定义，不建跨源映射。KPH（开盘红）与 KPL（开盘啦）维持独立来源。详见[裁决](docs/field_verification/adjudications/20261120_exchange_cctv_date_fields.md)和样本 [`20261120_exchange_cctv_date_samples.csv`](docs/field_verification/research/20261120_exchange_cctv_date_samples.csv)。
 - 将 Sina 研报列表登记为独立来源 `新浪(研报列表)`（运行别名 `research_sina`），与同属 Sina 提供方家族的行情/扩展 API 保留不同来源身份；按新浪官方列表表头及项目解析链定案 `date` 为研报发布日期。233 条归档记录对应 101 个发布日期，响应未提供快照 `as_of_date`，不将该字段作快照新鲜度证据；不建立跨源映射。七日碰撞报告完整，日期语义队列从 4 项降至 3 项，KPH/KPL 仍独立；详见[裁决](docs/field_verification/adjudications/20261120_sina_research_report_date.md)和[回归报告](docs/field_verification/20261119/post_sina_research_source_fix_20261120/20261119_collision_report.md)。
@@ -39,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- IPO 资金压力报告统一按实际募集总额或“发行数量×发行价”估算发行总额，不再把募资计划预测值 `PREDICT_RAISE_FUNDS` 混作发行总额回退。
 - 对齐 TDX 财务股本字段的适配器输出单位与注册表：0x0010 原始万股值统一乘 10,000 输出为股；将 ELTDX 总股本键修正为 `zongguben`，以恢复总股本缓存和消费者读取。保留转换前归档，不把两种单位口径混入同一历史比较。
 - 按 Fuyao 官方契约区分 `auction_final.auction_price`（竞价价格）与 `auction_final.open_price`（开盘价），修正旧路径错义并撤回 5 组将竞价价映射为开盘价的活动关系。竞价来源日期缺失的样本只用于同响应字段区分，不作为跨源碰撞证据；详见[裁决](docs/field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)。
 - 将 Eastmoney IPO `AVERAGE_PRICE` 登记为 `TOTAL_CHANGE` 计算所用的规则选择基准成交均价；撤回三条仅凭同源三日数值相等而建立、与首日/开板日期语义冲突的旧活动映射。详见[字段裁决](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price.md)与[映射撤回清单](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price_mapping_withdrawal.json)。

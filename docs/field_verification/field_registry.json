@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 942,
-      "verified": 1673,
+      "verified": 1674,
       "verified_by_empirical_addendum": 221,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 535
+      "verified_by_source_contract": 536
     },
     "updated_at": "2026-11-19"
   },
@@ -24079,6 +24079,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].PREDICT_RAISE_FUNDS",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS#官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。 @ 2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。",
+      "canonical": "ipo_planned_fundraising_target_yi_cny",
+      "meaning": "东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。",
+      "unit": "亿元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].PROFIT",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -47760,6 +47778,9 @@
       "财联社(cls)"
     ],
     "ipo_actual_fundraising_total_yi_cny": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_planned_fundraising_target_yi_cny": [
       "东财-event_dc(IPO发行记录)"
     ]
   },
@@ -277798,6 +277819,106 @@
             "path": "项目 stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].TOTAL_RAISE_FUNDS -> ipo_calendar() 原样透传 -> raw_event_dc.ipo_calendar[].TOTAL_RAISE_FUNDS；官方详情核对路径为 RPT_IPO_OTHERDETAILS response.result.data[*].TOTAL_RAISE_FUNDS。",
             "locator": "官方 xgdetail.js 的新股详情请求使用 RPT_IPO_OTHERDETAILS，columns 包含 TOTAL_RAISE_FUNDS；前端调用 fieldfmt(data.TOTAL_RAISE_FUNDS, {num: 2, zoom: -8, omit: false})，行内标签为“实际募集资金总额(亿元)”。同证券代码 000002 和 000021 的详情 API 返回值分别为 28000000、119388750 元，与项目 RPTA_APP_IPOAPPLY 留存值按 1e8 换算一致。接口、样本和发行人原始公告差异详见配套裁决记录及样本 CSV。",
             "url": "https://data.eastmoney.com/newstatic/js/xg/xgdetail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].PREDICT_RAISE_FUNDS",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].PREDICT_RAISE_FUNDS",
+      "path": "ipo_calendar[].PREDICT_RAISE_FUNDS",
+      "canonical": "ipo_planned_fundraising_target_yi_cny",
+      "meaning": "东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。",
+      "unit": "亿元",
+      "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS#官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。 @ 2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。",
+      "sections": [
+        "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS#官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。 @ 2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261121-eventdc-ipo-predict-raise-funds"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-eventdc-ipo-predict-raise-funds"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS#官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。 @ 2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。",
+          "canonical": "ipo_planned_fundraising_target_yi_cny",
+          "meaning": "东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。",
+          "unit": "亿元",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-eventdc-ipo-predict-raise-funds",
+          "status": "verified",
+          "adjudication_id": "20261121-eventdc-ipo-predict-raise-funds",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色",
+            "revision": "2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS",
+            "locator": "官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。",
+            "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_APP_IPOAPPLY&columns=ALL&pageNumber=1&pageSize=50&sortColumns=APPLY_DATE&sortTypes=-1&source=WEB&client=WEB"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_planned_fundraising_target_yi_cny",
+              "meaning": "东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。",
+              "unit": "亿元"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261121-eventdc-ipo-predict-raise-funds",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_eventdc_ipo_predict_raise_funds.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_planned_fundraising_target_yi_cny",
+              "meaning": "东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。",
+              "unit": "亿元"
+            }
+          },
+          "rationale": "项目 ipo_calendar() 路由到东方财富数据中心 RPTA_APP_IPOAPPLY，默认请求 columns=ALL，并将响应行中的 PREDICT_RAISE_FUNDS 原样保留至 raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS。东方财富官方新股页说明预估值会受募集资金、发行数量和发行费用变化影响，实际数据公布后会更新；该页没有发布精确字段 schema 或该键的专属中文列名，因此以发行人正式发行文件进行区分性核验。2026-11-21 14:26（北京时间）直接查询官方 RPTA_APP_IPOAPPLY 接口，并核对七个不同 IPO 事件：001381、301718、301569、301660、001246、301716、601091。七条 PREDICT_RAISE_FUNDS 均与各自可比发行文件中的拟投入募集资金/募资需求总额按万元除以 10000 后精确相等，差值为 0；同一响应的 TOTAL_RAISE_FUNDS 实际募集总额七条均不同于预测值。通则康威发行风险公告还直接列示计划需求 138111.48 万元与发行募集总额 97977.60 万元。力勤资源样本显示 PREDICT 保留原计划 404682.25 万元，而发行后公司将拟投入募集资金调整为 340418.85 万元，故定义限定为原发行计划预测目标，不外推为发行后最新预算。逐行代码、事件日期、API 值、发行人文件、换算及差值见证据文件。该决定只登记这一精确 Eastmoney 字段，不建立跨来源映射。",
+          "source_contract": {
+            "authority": "东方财富数据中心 RPTA_APP_IPOAPPLY 与东方财富官方新股申购页；发行人正式发行文件用于实证区分字段金额角色",
+            "revision": "2026-11-21 查询官方数据中心 API 与官方页面；对照文件版本及日期见样本 CSV。东方财富未提供该响应键的版本化字段 schema。",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] = RPTA_APP_IPOAPPLY -> response.result.data[*].PREDICT_RAISE_FUNDS -> ipo_calendar() 原样透传 -> scripts/capture_context_collectors.py::collect_event_dc() -> raw_event_dc.ipo_calendar[].PREDICT_RAISE_FUNDS",
+            "locator": "官方 API 响应行的精确键 PREDICT_RAISE_FUNDS。东方财富新股页说明斜体预估值会随募资金额、发行数量和发行费用变化，实际数据公布后更新，但不提供该键的专属列名/schema。七份不同发行人正式文件与 API 数值逐项核对，详见 docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md 和对应样本 CSV。",
+            "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_APP_IPOAPPLY&columns=ALL&pageNumber=1&pageSize=50&sortColumns=APPLY_DATE&sortTypes=-1&source=WEB&client=WEB"
           }
         }
       ]

@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261121_eventdc_ipo_predict_raise_funds.md`](adjudications/20261121_eventdc_ipo_predict_raise_funds.md)、[结构化裁决](adjudications/20261121_eventdc_ipo_predict_raise_funds.json)和[逐项样本](research/20261121_eventdc_ipo_predict_raise_funds_samples.csv)：东方财富官方新股页说明预估值会随募资金额、发行数量及发行费用变化；按当前官方 API 响应与 7 份发行人正式文件核对，`PREDICT_RAISE_FUNDS` 均等于计划投入募集资金总额（万元换算为亿元），并与同记录实际募集总额不同。11/19 留存列表只包含最早 20 条记录且该字段有值的 7 条均为零，因列表默认升序而不构成反证。此字段只定案其自身来源语义，不建立跨源映射。
 - [`adjudications/20261121_cls_level_source_contract.md`](adjudications/20261121_cls_level_source_contract.md) 与[结构化裁决](adjudications/20261121_cls_level_source_contract.json)确认财联社官方前端将 `telegraph[].level` 用作网页展示等级代码，A/B 显示红色、A 额外加粗；这不提供完整代码表或重要性排序。[单位补充核验](adjudications/20261121_cls_level_code_unit.md)与[结构化决定](adjudications/20261121_cls_level_code_unit.json)按保留期 1,050/1,050 条字符串观测，将单位栏补为“代码”，消除空单位造成的元数据缺口提示。取值为 A=2、B=122、C=926；仅裁决 CLS 路径，不与 `reports::level` 合并，也不新增跨源映射。[逐日审计](research/20261121_cls_level_retained_audit.csv)。
 - [CLS `level` 裁决后的七日碰撞回归](20261119/post_cls_level_unit_20261121/20261119_collision_report.md)：沿用 2026-11-19 数据日的 7 日窗口，目标 58、字段 1,284、样本值 324,213，报告完整；CLS `level` 已退出主攻目标和字段名提示区。KPH 与 KPL 仍按独立来源比较；报告中的两条 L4 仅为弱值重叠线索，不建立来源合并或字段映射。
 

@@ -571,7 +571,8 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
     # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, fundraising total, MAIN_BUSINESS, issue price,
-    # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, event dates, quoted prices,
+    # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, planned fundraising target,
+    # event dates, quoted prices,
     # first-day/subscription and semantic fields, plus convertible-bond quote/issue/execution
     # fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
@@ -579,7 +580,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # uses an empirical correction. CLS telegraph level retains its original
     # contract adjudication in history, while its current metadata state is the
     # separately validated empirical addendum.
-    assert len(pairs) == 181
+    assert len(pairs) == 182
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"
@@ -607,6 +608,14 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert ipo_total_raise_funds["status"] == "verified"
     assert ipo_total_raise_funds["status_resolution"] == "verified_by_source_contract"
     assert ipo_total_raise_funds["canonical"] == "ipo_actual_fundraising_total_yi_cny"
+    ipo_predict_raise_funds = records_by_pair[
+        ("东财-event_dc(IPO发行记录)", "ipo_calendar[].PREDICT_RAISE_FUNDS")
+    ]
+    assert ipo_predict_raise_funds["status"] == "verified"
+    assert ipo_predict_raise_funds["status_resolution"] == "verified_by_source_contract"
+    assert ipo_predict_raise_funds["canonical"] == "ipo_planned_fundraising_target_yi_cny"
+    assert ipo_predict_raise_funds["unit"] == "亿元"
+    assert matrix["ipo_planned_fundraising_target_yi_cny"] == {"东财-event_dc(IPO发行记录)"}
     assert ipo_total_raise_funds["unit"] == "亿元"
     assert matrix["ipo_actual_fundraising_total_yi_cny"] == {"东财-event_dc(IPO发行记录)"}
     assert any(

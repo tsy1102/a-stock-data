@@ -106,7 +106,7 @@ _FREQ_TO_ELTDX = {
 #   原始值为千元，须按金额转换为角；不能按名称当作股数透传。
 _FIN_MAP = [
     ("liu_tong_gu_ben_raw_float", "liutongguben", "shares"),
-    ("zong_gu_ben_raw_float", "zhongguben", "shares"),
+    ("zong_gu_ben_raw_float", "zongguben", "shares"),
     ("guo_jia_gu_raw_float", "guojiagu", "shares"),
     ("fa_qi_ren_fa_ren_gu_raw_float", "fajirenfarengu", "qy2jiao"),
     ("fa_ren_gu_raw_float", "farengu", "qy2jiao"),

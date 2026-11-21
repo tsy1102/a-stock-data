@@ -304,7 +304,7 @@ flowchart TD
 
 ### 2.1 TDX 0x0010 逆向解析的 37 个槽位
 
-> **单位边界**：表中的协议槽位原值与项目适配器返回值是两个口径。0x0010 金额槽位原值按千元解读，适配器乘 10,000 转为角；股本槽位原值按万股解读，适配器乘 10,000 转为股。股东户数保持户数，每股净资产保持元/股。2026-11-11 的 17 个保留采集目录中，两个历史命名为“发起人法人股/法人股”的槽位实际与上年同期归母净利润、营业收入对应；这两个名称是旧解析器标签，不是已证实的当前业务释义，逐样本证据见 [`20261111_eltdx_share_slots_empirical_semantics.md`](field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
+> **单位边界**：表中的协议槽位原值与项目适配器返回值是两个口径。0x0010 金额槽位原值按千元解读，适配器乘 10,000 转为角；股本槽位原值按万股解读，适配器乘 10,000 转为股。股东户数保持户数，每股净资产保持元/股。22 个保留日期目录的同次 TDX/ELTDX 配对显示：2026-10-15 至 11-10 的 17 个目录仍直出原万股值，2026-11-12 至 11-19 的 5 个目录已输出股值；跨边界的 `raw_tdx` 历史值不可直接按同一单位碰撞。当前总股本键规范为 `zongguben`；历史拼写 `zhongguben` 不再由 ELTDX 适配器输出。逐日计数、来源采集时间与单位边界见[2026-11-21 TDX 股本输出单位核查](field_verification/adjudications/20261121_tdx_finance_share_units.md)。两个历史命名为“发起人法人股/法人股”的槽位实际与上年同期归母净利润、营业收入对应；这两个名称是旧解析器标签，不是已证实的当前业务释义，逐样本证据见 [`20261111_eltdx_share_slots_empirical_semantics.md`](field_verification/adjudications/20261111_eltdx_share_slots_empirical_semantics.md)。
 
 | 协议偏移 | 字段名 (`key`) | 当前样本语义 / 历史解析器标签 | 类型 | 协议原值单位 | 适配器输出单位 | 字段分组 | 项目代码使用 |
 |:---:|:---|:---|:---:|:---|:---|:---|:---:|
@@ -453,13 +453,33 @@ TDX 服务器 (端口 7709)
 
 > 历史清单的第一组实际列出 19 个代码（旧标题写作 18 项）；第二组补列另外 18 个代码，两组共覆盖 37 个不同代码，分别对应本表偏移 0–36。这里校正的是列表计数和字段路径身份；该清单不是通达信官方字段定义，也不单独证明中文业务含义。
 
-| Gemini 历史字段清单（19 项） | 核实状态 |
+<!-- 本表逐行提供当前 field_matrix 所保留的 19 个精确投影路径；不据此判定中文语义或单位。 -->
+| 当前矩阵中的 TDX 0x0010 路径 | 说明 |
 |:---|:---|
-| `gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry` | 第一组实际含 19 个独立槽位代码。 |
-| 历史清单未列出的其余 18 项 | `market/code/guojiagu/faqirenfarengu/farengu/bgu/hgu/zhigonggu/liudongzichan/gudingzichan/wuxingzichan/zhuyinglirun/yingyelirun/touzishouyu/zongxianjinliu/lirunzonghe/shuihoulirun/baoliu2` |
+| `changqifuzhai` | 历史投影路径 |
+| `cunhuo` | 历史投影路径 |
+| `gudongrenshu` | 历史投影路径 |
+| `industry` | 历史投影路径 |
+| `ipo_date` | 历史投影路径 |
+| `jinglirun` | 历史投影路径 |
+| `jingyingxianjinliu` | 历史投影路径 |
+| `jingzichan` | 历史投影路径 |
+| `liudongfuzhai` | 历史投影路径 |
+| `liutongguben` | 历史投影路径 |
+| `meigujingzichan` | 历史投影路径 |
+| `province` | 历史投影路径 |
+| `updated_date` | 历史投影路径 |
+| `weifenpeilirun` | 当前槽位表精确键；旧清单写作 `weifenlirun` |
+| `yingshouzhangkuan` | 历史投影路径 |
+| `zhuyingshouru` | 历史投影路径 |
+| `zibengongjijin` | 历史投影路径 |
+| `zongguben` | 历史投影路径 |
+| `zongzichan` | 历史投影路径 |
 
-> 两个斜杠分隔清单是分组索引，不构成字段路径；第二组的 18 个代码与第一组无重复，合计 37 个不同槽位代码。字段语义仍以逐字段证据为准。
+旧清单第一组的 19 个代码为：`gudongrenshu`、`zongzichan`、`liudongfuzhai`、`changqifuzhai`、`jingzichan`、`zhuyingshouru`、`jinglirun`、`jingyingxianjinliu`、`ipo_date`、`liutongguben`、`zongguben`、`meigujingzichan`、`cunhuo`、`yingshouzhangkuan`、`zibengongjijin`、`weifenlirun`、`updated_date`、`province`、`industry`。
+旧清单未列出的另 18 个代码为：`market`、`code`、`guojiagu`、`faqirenfarengu`、`farengu`、`bgu`、`hgu`、`zhigonggu`、`liudongzichan`、`gudingzichan`、`wuxingzichan`、`zhuyinglirun`、`yingyelirun`、`touzishouyu`、`zongxianjinliu`、`lirunzonghe`、`shuihoulirun`、`baoliu2`。
 
+以上两组仅用于旧清单计数与覆盖范围核对，不是字段表，不声明字段的 canonical、含义或单位；两组无重复，合计覆盖本表 0–36 共 37 个槽位。字段语义仍以逐字段证据为准。
 > **2026-11-13 精确输出路径补证**：`TDX(双命名源)::zhuyinglyrun` 是独立键，实测对应合并利润表“营业成本”，单位为角；不要与已定案为主营业务利润的 `zhuyinglirun` 混同。`ipodate` 与 `updateddate` 分别是 `ipo_date`、`updated_date` 的无下划线兼容别名；后者表示财务记录更新日，不是报告期或采集日。具体样本与适配器格式边界见 [`20261113_tdx_finance_aliases_evidence.md`](field_verification/adjudications/20261113_tdx_finance_aliases_evidence.md)。
 
 ---

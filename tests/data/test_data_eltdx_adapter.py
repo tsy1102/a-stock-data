@@ -87,7 +87,8 @@ def test_eltdx_finance_normalizes_share_and_reclassified_finance_slots():
 
     assert calls == [("600519", False)]
     assert row["liutongguben"] == 1250081562.5
-    assert row["zhongguben"] == 1250081562.5
+    assert row["zongguben"] == 1250081562.5
+    assert "zhongguben" not in row.index
     assert row["guojiagu"] == 12150000.0
     assert row["bgu"] == 25000.0
     assert row["hgu"] == 35000.0

@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 749,
+      "matched": 744,
       "mixed_source_capture_passthrough": 5,
       "not_field_schema_token": 18,
       "official_contract": 31,
@@ -36,7 +36,7 @@
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 523
+      "verified_by_source_contract": 528
     },
     "updated_at": "2026-11-19"
   },
@@ -9203,7 +9203,7 @@
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "bgu",
       "meaning": "B股",
-      "unit": "万股",
+      "unit": "股",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -22223,7 +22223,7 @@
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "guojiagu",
       "meaning": "国家股",
-      "unit": "万股",
+      "unit": "股",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -22388,7 +22388,7 @@
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "canonical": "hgu",
       "meaning": "H股",
-      "unit": "万股",
+      "unit": "股",
       "status_raw": "✅",
       "status": "verified",
       "source_statuses": {
@@ -26560,7 +26560,7 @@
       "section": "20261014/20261014_collision_report.json",
       "canonical": "liutongguben",
       "meaning": "流通股本",
-      "unit": "万股",
+      "unit": "股",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -41616,19 +41616,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
+      "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+      "canonical": "zongguben",
       "meaning": "总股本",
-      "unit": "万股",
+      "unit": "股",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
         "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zongxianjinliu",
@@ -84039,13 +84037,14 @@
       "path": "bgu",
       "canonical": "bgu",
       "meaning": "B股",
-      "unit": "万股",
+      "unit": "股",
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -84059,6 +84058,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261121-tdx-bgu-output-share-unit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-tdx-bgu-output-share-unit"
         ]
       },
       "reference_evidence": [
@@ -84069,6 +84074,35 @@
           "unit": "万股",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+          "canonical": "bgu",
+          "meaning": "B股",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-tdx-bgu-output-share-unit",
+          "status": "verified",
+          "adjudication_id": "20261121-tdx-bgu-output-share-unit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "股"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -84083,7 +84117,56 @@
         "meaning": "B股",
         "unit": "万股",
         "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261121-tdx-bgu-output-share-unit",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_tdx_finance_share_units.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确该 0x0010 原始槽位单位为万股；项目 TDX 兼容适配器乘 10,000 后输出股。22 个留存目录的同次 raw_eltdx/raw_tdx 配对中，2026-11-10 以前输出等于原值，2026-11-12 起输出等于原值乘 10,000；当前注册表记录当前适配器输出契约，历史 raw 文件保持不变。",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "万股"
+            },
+            "updated": {
+              "canonical": "bgu",
+              "meaning": "B股",
+              "unit": "股"
+            },
+            "rationale": "把当前 TDX 兼容输出的登记单位由协议原值单位改为项目实际返回单位；保留所有旧 raw 快照及原始槽位单位说明。"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -88126,13 +88209,14 @@
       "path": "guojiagu",
       "canonical": "guojiagu",
       "meaning": "国家股",
-      "unit": "万股",
+      "unit": "股",
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -88146,6 +88230,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261121-tdx-guojiagu-output-share-unit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-tdx-guojiagu-output-share-unit"
         ]
       },
       "reference_evidence": [
@@ -88156,6 +88246,35 @@
           "unit": "万股",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+          "canonical": "guojiagu",
+          "meaning": "国家股",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-tdx-guojiagu-output-share-unit",
+          "status": "verified",
+          "adjudication_id": "20261121-tdx-guojiagu-output-share-unit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "股"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -88170,7 +88289,56 @@
         "meaning": "国家股",
         "unit": "万股",
         "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261121-tdx-guojiagu-output-share-unit",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_tdx_finance_share_units.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确该 0x0010 原始槽位单位为万股；项目 TDX 兼容适配器乘 10,000 后输出股。22 个留存目录的同次 raw_eltdx/raw_tdx 配对中，2026-11-10 以前输出等于原值，2026-11-12 起输出等于原值乘 10,000；当前注册表记录当前适配器输出契约，历史 raw 文件保持不变。",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "万股"
+            },
+            "updated": {
+              "canonical": "guojiagu",
+              "meaning": "国家股",
+              "unit": "股"
+            },
+            "rationale": "把当前 TDX 兼容输出的登记单位由协议原值单位改为项目实际返回单位；保留所有旧 raw 快照及原始槽位单位说明。"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -88217,13 +88385,14 @@
       "path": "hgu",
       "canonical": "hgu",
       "meaning": "H股",
-      "unit": "万股",
+      "unit": "股",
       "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位",
       "sections": [
-        "2.1 TDX 0x0010 逆向解析的 37 个槽位"
+        "2.1 TDX 0x0010 逆向解析的 37 个槽位",
+        "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -88237,6 +88406,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261121-tdx-hgu-output-share-unit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-tdx-hgu-output-share-unit"
         ]
       },
       "reference_evidence": [
@@ -88247,6 +88422,35 @@
           "unit": "万股",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+          "canonical": "hgu",
+          "meaning": "H股",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-tdx-hgu-output-share-unit",
+          "status": "verified",
+          "adjudication_id": "20261121-tdx-hgu-output-share-unit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "股"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -88261,7 +88465,56 @@
         "meaning": "H股",
         "unit": "万股",
         "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261121-tdx-hgu-output-share-unit",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_tdx_finance_share_units.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确该 0x0010 原始槽位单位为万股；项目 TDX 兼容适配器乘 10,000 后输出股。22 个留存目录的同次 raw_eltdx/raw_tdx 配对中，2026-11-10 以前输出等于原值，2026-11-12 起输出等于原值乘 10,000；农业银行发行人股本披露也支持股单位的数量级。当前注册表记录当前适配器输出契约，历史 raw 文件保持不变。",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "万股"
+            },
+            "updated": {
+              "canonical": "hgu",
+              "meaning": "H股",
+              "unit": "股"
+            },
+            "rationale": "把当前 TDX 兼容输出的登记单位由协议原值单位改为项目实际返回单位；保留所有旧 raw 快照及原始槽位单位说明。"
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -90557,15 +90810,16 @@
       "path": "liutongguben",
       "canonical": "liutongguben",
       "meaning": "流通股本",
-      "unit": "万股",
+      "unit": "股",
       "section": "20261014/20261014_collision_report.json",
       "sections": [
         "2.1 TDX 0x0010 逆向解析的 37 个槽位",
         "2.6 与 Gemini 核实字段清单的逐项对照",
-        "20261014/20261014_collision_report.json"
+        "20261014/20261014_collision_report.json",
+        "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -90582,7 +90836,11 @@
           "verified"
         ],
         "adjudication_ids": [
-          "20261014-ulist-f39-float-shares-anchor"
+          "20261014-ulist-f39-float-shares-anchor",
+          "20261121-tdx-liutongguben-output-share-unit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-tdx-liutongguben-output-share-unit"
         ]
       },
       "reference_evidence": [
@@ -90626,14 +90884,38 @@
             "https://pkg.go.dev/github.com/injoyai/tdx/protocol",
             "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
           ]
+        },
+        {
+          "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+          "canonical": "liutongguben",
+          "meaning": "流通股本",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-tdx-liutongguben-output-share-unit",
+          "status": "verified",
+          "adjudication_id": "20261121-tdx-liutongguben-output-share-unit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "股"
+            }
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
-          "liutongguben"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "liutongguben",
         "sources": [
@@ -90677,6 +90959,59 @@
             "https://pkg.go.dev/github.com/injoyai/tdx/protocol",
             "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
           ]
+        },
+        {
+          "id": "20261121-tdx-liutongguben-output-share-unit",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_tdx_finance_share_units.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 明确该 0x0010 原始槽位单位为万股；项目 TDX 兼容适配器乘 10,000 后输出股，供消费者按股使用。22 个留存目录的同次 raw_eltdx/raw_tdx 配对中，2026-11-10 以前输出等于原值，2026-11-12 起输出等于原值乘 10,000；当前注册表记录当前适配器输出契约。历史文件不回写，单位边界另有逐日证据。",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "万股"
+            },
+            "updated": {
+              "canonical": "liutongguben",
+              "meaning": "流通股本",
+              "unit": "股"
+            },
+            "rationale": "把当前 TDX 兼容输出的登记单位由协议原值单位改为项目实际返回单位；保留所有旧 raw 快照及原始槽位单位说明。"
+          },
+          "resolved_attribute_conflicts": {
+            "canonical": [
+              "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+              "liutongguben"
+            ]
+          }
         }
       ]
     },
@@ -98561,16 +98896,17 @@
       "code": "zongguben",
       "identity": "TDX(双命名源)::zongguben",
       "path": "zongguben",
-      "canonical": "",
+      "canonical": "zongguben",
       "meaning": "总股本",
-      "unit": "万股",
-      "section": "",
+      "unit": "股",
+      "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
       "sections": [
         "2.1 TDX 0x0010 逆向解析的 37 个槽位",
-        "2.6 与 Gemini 核实字段清单的逐项对照"
+        "2.6 与 Gemini 核实字段清单的逐项对照",
+        "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -98585,6 +98921,12 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261121-tdx-zongguben-output-share-unit"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-tdx-zongguben-output-share-unit"
         ]
       },
       "reference_evidence": [
@@ -98603,14 +98945,38 @@
           "unit": "",
           "status_raw": "✅ 全部正确，key 命名 100% 一致",
           "status": "verified"
+        },
+        {
+          "section": "source contract: ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器 · docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py#上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支 @ ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+          "canonical": "zongguben",
+          "meaning": "总股本",
+          "unit": "股",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-tdx-zongguben-output-share-unit",
+          "status": "verified",
+          "adjudication_id": "20261121-tdx-zongguben-output-share-unit",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "总股本",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "zongguben",
+              "meaning": "总股本",
+              "unit": "股"
+            }
+          }
         }
       ],
-      "attribute_conflicts": {
-        "canonical": [
-          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
-          "zongguben"
-        ]
-      },
+      "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zongguben",
         "sources": [
@@ -98622,7 +98988,62 @@
         "meaning": "总股本",
         "unit": "万股",
         "section": "2.1 TDX 0x0010 逆向解析的 37 个槽位"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261121-tdx-zongguben-output-share-unit",
+          "action": "correct_verified_metadata",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_tdx_finance_share_units.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "verified",
+          "status_resolution_change": {
+            "before": "matched",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "总股本",
+              "unit": "万股"
+            },
+            "after": {
+              "canonical": "zongguben",
+              "meaning": "总股本",
+              "unit": "股"
+            }
+          },
+          "rationale": "ELTDX v3.3.2 的 zong_gu_ben_raw_float 原始单位为万股，项目适配器输出乘 10,000 后的股数。适配器此前把该值写入 zhongguben，导致读取 zongguben 的消费者取不到总股本；本次同时修正映射键。22 个留存目录的同次 raw_eltdx/raw_tdx 配对验证了旧键在转换前后分别等于原值及原值乘 10,000；官方农业银行股本结构资料支持当前输出的数量级。",
+          "source_contract": {
+            "authority": "ELTDX 7709 0x0010 FinanceRecord 原始字段契约及项目 TDX 兼容适配器",
+            "revision": "ELTDX v3.3.2 tag commit 646c7a5d53cae3c243a1d6b705188fe9880a3e03; project code reviewed 2026-11-21",
+            "path": "docs/methods/7709-财务基础信息.md + core/eltdx_adapter.py",
+            "locator": "上游解析字段 rows 258-270 与派生字段 rows 301-306；项目 _FIN_MAP shares 映射及 _EltdxAdapter.finance() 的万股乘 10,000 转股分支",
+            "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/methods/7709-%E8%B4%A2%E5%8A%A1%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF.md"
+          },
+          "metadata_correction": {
+            "previous": {
+              "canonical": "",
+              "meaning": "总股本",
+              "unit": "万股"
+            },
+            "updated": {
+              "canonical": "zongguben",
+              "meaning": "总股本",
+              "unit": "股"
+            },
+            "rationale": "将当前兼容输出路径规范为实际消费者使用的 zongguben，并登记乘 10,000 后的股单位；旧 zhongguben 归档键保持只读。"
+          },
+          "resolved_attribute_conflicts": {
+            "canonical": [
+              "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+              "zongguben"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",

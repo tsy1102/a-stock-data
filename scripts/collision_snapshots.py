@@ -90,6 +90,7 @@ def _flatten(
             not isinstance(sub, str)
             or sub.startswith("__")
             or (source == "event_dc" and sub in _EVENT_DC_TRACE_FIELDS)
+            or (source == "clist" and sub == "_board_type")
             or sub
             in (
                 "scheme",
@@ -223,6 +224,9 @@ def _record_containers(doc, source=None, include_context=False):
             "records",
             "auction_snapshot_meta",
         ):
+            continue
+        if source == "clist" and key == "by_type":
+            # by_type carries collector pagination counts, not market records.
             continue
         if source == "market_sources" and key == "kph_limit_ladder":
             # The composite capture date is only the request date for this

@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修复 `clist` 碰撞将项目生成的 `_board_type` 和 `by_type` 分页计数 `n/total` 当成上游业务字段的问题；保留真正的板块行及其中的 `fN` 响应键参与碰撞，不改原始采集数据。
 - 修复 `event_dc` 逐条注入的 `source`、`source_url`、`fetched_at` 溯源信息被碰撞器误当业务字段的问题；这些追踪值不再进入未知字段目标，原始采集与元数据留存不变。以保留样本重跑的 2026-11-21 碰撞报告结构完整，未知目标由 67 项降为 65 项，见[回归报告](docs/field_verification/20261121/event_dc_trace_metadata_fix/20261121_collision_report.md)。
 - 修复 `st_list` 在东财失败并回退到 Baostock 时仍记录为 `em.clist` 的来源血缘错误。后续 raw/meta 会记录沪深与北交所的实际提供方、接口和路由状态；旧快照缺乏路由证据，保持来源未确认且不改写。详见[审计记录](docs/field_verification/research/20261121_st_list_route_provenance_audit.md)。
 - 修正深交所 ETF `date` 的归日口径：`metadata.subname` 是列表页日期，不保证等于 `shares_10k` 的统计日期；现在使用官方“当前规模（万份）”列标题日期，并保留日期来源标记。修复前缺少该标记的历史 SZ ETF 行不再进入正式日期碰撞，原始归档不改写。候选身份方法版本升为 v9，兼容读取 v1–v8 报告。以 2026-11-19 为目标数据日重跑七日碰撞，报告完整，主攻目标 68、锚 619、L1/L1-C 为 0、L4 为 2。详见[来源契约裁决](docs/field_verification/adjudications/20261120_szse_etf_scale_data_date.md)与[回归报告](docs/field_verification/20261119/post_szse_etf_scale_date_20261120/20261119_collision_report.md)。

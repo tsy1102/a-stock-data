@@ -241,3 +241,44 @@ def test_market_sources_request_metadata_is_not_flattened_as_a_field():
     }
     assert "market_sources.requested_trade_date" not in store
     assert not any("requested_trade_date" in field for field in store)
+
+
+def test_clist_pagination_and_board_type_metadata_are_not_fields():
+    snapshot = Snapshot(
+        source="clist",
+        domain=TRADING,
+        sample_date=date(2026, 11, 18),
+        capture_date=date(2026, 11, 18),
+        folder="20261118",
+        path="raw_clist.json",
+        document={
+            "scheme": {"name": "em.clist"},
+            "records": [
+                {
+                    "f12": "BK0001",
+                    "f14": "测试行业",
+                    "f208": "600000",
+                    "_board_type": "industry",
+                }
+            ],
+            "by_type": {
+                "industry": {"n": 1, "total": 496},
+                "concept": {"n": 1, "total": 554},
+                "area": {"n": 1, "total": 31},
+            },
+        },
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=1,
+        captured_at=datetime(2026, 11, 18, 17, 0),
+        date_origin="capture_date",
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}})
+
+    load_snapshots([snapshot], store, [], allowed_trading_dates={"20261118"})
+
+    assert store["clist.f208"]["vals"] == {("BK0001", "T:20261118"): "600000"}
+    assert "clist._board_type" not in store
+    assert "clist.n" not in store
+    assert "clist.total" not in store

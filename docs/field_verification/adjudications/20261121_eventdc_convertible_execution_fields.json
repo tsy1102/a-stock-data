@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-21",
+  "evidence_file": "docs/field_verification/adjudications/20261121_eventdc_convertible_execution_fields.md",
+  "evidence_sha256": "23addb6b4a9831b6c86717247cadd7b264acd4c4ada1343788602e69570b9ab3",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-convertible-put-execution-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_PRICE_HS"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_put_execution_price_yuan_per_bond",
+      "meaning": "东方财富可转债记录中最近一次回售的执行价格，单位为元/张。该字段对应回售事件，不是赎回价格或转股价格。",
+      "unit": "元/张",
+      "section": "2026-11-21 Eastmoney convertible bond execution field adjudication",
+      "rationale": "东方财富可转债详情页将回售价格与赎回价格分列；项目 RPT_BOND_CB_LIST 响应键经 _convertible.py 和采集器原键透传到该完整运行路径。保留样本中，110003 新钢转债的 EXECUTE_PRICE_HS=104，与发行人 2013-08-05 回售提示公告的 104 元/张完全一致；123001 蓝标转债的值 100.1849，与发行人 2019-02-19 回售结果公告完全一致。样本覆盖 130 条非空记录；本结论确认字段角色和单位，不外推回售原因编码。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页的回售/赎回分列标签、RPT_BOND_CB_LIST 项目路径和发行人正式公告逐值核验",
+        "revision": "东方财富详情页于 2026-11-21 核查；未提供版本化响应 schema",
+        "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_PRICE_HS -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_PRICE_HS",
+        "locator": "官方详情页列出“回售价格”和“最新回售执行日”；样本债券 110003 的回售价 104 元/张、123001 的回售价 100.1849 元/张，分别与发行人公告逐值一致。",
+        "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+      }
+    },
+    {
+      "id": "20261121-eventdc-convertible-redemption-execution-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_PRICE_SH"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_redemption_execution_price_yuan_per_bond",
+      "meaning": "东方财富可转债记录中最近一次赎回的执行/兑付价格，单位为元/张。该字段对应赎回事件，不是回售价格或转股价格。",
+      "unit": "元/张",
+      "section": "2026-11-21 Eastmoney convertible bond execution field adjudication",
+      "rationale": "东方财富可转债详情页将赎回价格与回售价格分列；项目 RPT_BOND_CB_LIST 响应键经 _convertible.py 和采集器原键透传到该完整运行路径。保留样本中，110003 新钢转债的 EXECUTE_PRICE_SH=107，与发行人到期兑付公告的 107 元/张一致；123001 蓝标转债的值 101.24，与发行人赎回实施公告的 101.24 元/张一致。样本覆盖 346 条非空记录；本结论确认字段角色和单位，不外推赎回原因编码或计息公式。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页的回售/赎回分列标签、RPT_BOND_CB_LIST 项目路径和发行人正式公告逐值核验",
+        "revision": "东方财富详情页于 2026-11-21 核查；未提供版本化响应 schema",
+        "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_PRICE_SH -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_PRICE_SH",
+        "locator": "官方详情页列出“赎回价格”；样本债券 110003 的兑付价 107 元/张、123001 的赎回价 101.24 元/张，分别与发行人公告逐值一致。",
+        "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+      }
+    },
+    {
+      "id": "20261121-eventdc-convertible-put-application-start-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_START_DATEHS"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_put_application_start_date",
+      "meaning": "东方财富可转债记录中最近一次回售申报期首日。若申报日分成多个不连续日期区间，该字段只表示最早申报日，不表示整个申报日集合。",
+      "unit": "日期",
+      "section": "2026-11-21 Eastmoney convertible bond execution field adjudication",
+      "rationale": "官方详情页将该角色显示为“最新回售执行日”。110003 原始日期 2013-08-09 与发行人公告的回售申报起始日一致；123001 原始日期 2019-02-01 与发行人列出的首个回售申报日一致，其余申报日另有 2 月 11 日至 14 日区间。130 条非空回售价格记录的首日字段均非空。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页回售日期标签、RPT_BOND_CB_LIST 项目路径和发行人正式公告逐值核验",
+        "revision": "东方财富详情页于 2026-11-21 核查；未提供版本化响应 schema",
+        "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_START_DATEHS -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_START_DATEHS",
+        "locator": "官方详情页列出“最新回售执行日”；110003 原始 2013-08-09、123001 原始 2019-02-01 均与发行人公告的首个回售申报日一致。",
+        "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+      }
+    },
+    {
+      "id": "20261121-eventdc-convertible-put-application-end-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_END_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_put_application_end_date",
+      "meaning": "东方财富可转债记录中最近一次回售申报期末日。若申报日分成多个不连续日期区间，该字段只表示最晚申报日，不表示中间日期连续开放。",
+      "unit": "日期",
+      "section": "2026-11-21 Eastmoney convertible bond execution field adjudication",
+      "rationale": "官方详情页将该字段角色显示为“最新回售截止日”。110003 的原始日期 2013-08-15 与发行人公布的回售申报期末日一致；123001 的原始日期 2019-02-14 与发行人列出的最后申报日一致。130 条非空回售价格记录均有末日字段。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页回售截止标签、RPT_BOND_CB_LIST 项目路径和发行人正式公告逐值核验",
+        "revision": "东方财富详情页于 2026-11-21 核查；未提供版本化响应 schema",
+        "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_END_DATE -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_END_DATE",
+        "locator": "官方详情页列出“最新回售截止日”；110003 原始 2013-08-15、123001 原始 2019-02-14 均与发行人公告的最后回售申报日一致。",
+        "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+      }
+    },
+    {
+      "id": "20261121-eventdc-convertible-redemption-execution-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_START_DATESH"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_redemption_execution_date",
+      "meaning": "东方财富可转债记录中最近一次赎回执行日/兑付日；不同于赎回公告日、赎回登记日或债券退市日。",
+      "unit": "日期",
+      "section": "2026-11-21 Eastmoney convertible bond execution field adjudication",
+      "rationale": "官方详情页将该角色显示为“最新赎回执行日”。110003 的原始日期 2013-08-27 与发行人公告的到期兑付日期一致；123001 的原始日期 2019-10-16 与发行人赎回实施公告的赎回日一致。346 条非空赎回价格记录中 345 条有该日期；113575 东时转债一条缺值保留为数据缺口，不改变字段语义。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页赎回日期标签、RPT_BOND_CB_LIST 项目路径和发行人正式公告逐值核验",
+        "revision": "东方财富详情页于 2026-11-21 核查；未提供版本化响应 schema",
+        "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_START_DATESH -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_START_DATESH",
+        "locator": "官方详情页列出“最新赎回执行日”；110003 原始 2013-08-27、123001 原始 2019-10-16 均与发行人公告的兑付/赎回执行日一致。",
+        "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+      }
+    }
+  ]
+}

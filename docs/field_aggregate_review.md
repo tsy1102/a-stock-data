@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 619 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 622 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3591,6 +3591,9 @@
 | 东财-event_dc(可转债列表) | `convertible_bonds[].COUPON_IR` | bond_coupon_rate_current_interest_year_pct | 按采样时点所处计息年度从原票面利率表选出的票面利率，数值单位为百分比（例如2表示2.0%）。计息年度以起息日VALUE_DATE的周年日切换。提前赎回或退市记录仍可能按原利率表继续滚动该值，因此它不证明债券仍存续、当前仍有应付利息，也不是实际收益率或利息金额。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].CURRENT_BOND_PRICE` | convertible_bond_current_market_price | 可转债当前市场价格；当前页面回退字段，仅在 CURRENT_BOND_PRICENEW 为空时显示。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].CURRENT_BOND_PRICENEW` | convertible_bond_current_market_price | 可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_PRICE_HS` | convertible_bond_put_execution_price_yuan_per_bond | 东方财富可转债记录中最近一次回售的执行价格，单位为元/张。该字段对应回售事件，不是赎回价格或转股价格。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_PRICE_SH` | convertible_bond_redemption_execution_price_yuan_per_bond | 东方财富可转债记录中最近一次赎回的执行/兑付价格，单位为元/张。该字段对应赎回事件，不是回售价格或转股价格。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_START_DATESH` | convertible_bond_redemption_execution_date | 东方财富可转债记录中最近一次赎回执行日/兑付日；不同于赎回公告日、赎回登记日或债券退市日。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].FIRST_PER_PREPLACING` | convertible_bond_priority_placement_amount_yuan_per_share | 东方财富可转债申购列表中原股东优先配售的每股配售额。页面明确说明适用对象为股权登记日持股的原股东，单位为元/股。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].INITIAL_TRANSFER_PRICE` | convertible_bond_initial_conversion_price | 发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ONLINE_GENERAL_AAU` | convertible_bond_online_subscription_limit_thousand_yuan | 东方财富可转债申购列表中的网上申购上限金额。接口原始单位为千元；页面显示时除以 10 换算为万元。 | `verified` |

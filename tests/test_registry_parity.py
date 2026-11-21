@@ -572,12 +572,12 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
     # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, issue price,
     # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, event dates, quoted prices,
-    # first-day/subscription and semantic fields, plus convertible-bond quote/issue
+    # first-day/subscription and semantic fields, plus convertible-bond quote/issue/execution
     # fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
     # uses an empirical correction.
-    assert len(pairs) == 174
+    assert len(pairs) == 179
     issue_way_explanation = records_by_pair[
         ("东财-event_dc(IPO发行记录)", "ipo_calendar[].ISSUE_WAY_EXPLAIN")
     ]

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-eventdc-ipo-total-raise-funds",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TOTAL_RAISE_FUNDS"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_actual_fundraising_total_yi_cny",
+      "meaning": "东方财富 IPO 发行记录中标注的实际募集资金总额，单位为亿元；这是平台报告值，历史个例可能与发行人原始公告存在精度差异。",
+      "unit": "亿元",
+      "section": "2026-11-21 Eastmoney IPO TOTAL_RAISE_FUNDS source-contract adjudication",
+      "rationale": "项目 ipo_calendar() 调用东方财富数据中心 RPTA_APP_IPOAPPLY，默认请求 columns=ALL；eastmoney_datacenter() 原样返回 result.data[*]，目标值到 raw_event_dc.ipo_calendar[].TOTAL_RAISE_FUNDS 不经过重命名或单位换算。东方财富官方 xgdetail.js 对 RPT_IPO_OTHERDETAILS 请求包含同名 TOTAL_RAISE_FUNDS，前端用 zoom=-8 格式化，并明确标注“实际募集资金总额(亿元)”。该详情端点与项目列表端点不同；2026-11-21 对两条代表记录的详情 API 响应均与项目留存列表值按 1e8 换算完全相符：000002 为 28000000 元 / 0.28 亿元，000021 为 119388750 元 / 1.1938875 亿元。完整保留样本核算中，20 个非空采集归档有 280 个 TOTAL_RAISE_FUNDS 非空观测，覆盖 15 个不同证券；ISSUE_NUM 与 TOTAL_ISSUE_NUM 各自按返回数值尺度乘 ISSUE_PRICE 再除以 10000 的结果均 280/280 精确等于目标值，DEC_SUMFINA 也 280/280 数值相等。重复归档不是独立股票或独立业务事件证据；DEC_SUMFINA 数值相等不据此扩展为语义映射，本决定不新增或修改 mappings。巨潮 2005 年万科股权分置改革说明书记载首次公开发行 28086000 股、每股 1 元、募集 28086000 元，而东方财富对应历史记录为 28000000 元，差 86000 元（相对原始公告约 0.3062%）。此差异未归因于舍入，故定案范围是东方财富平台对字段角色与展示单位的定义，不承诺每条历史数值逐笔等同发行人原始公告。目标数据日 2026-11-19 的归档于自然日 2026-11-20 06:57:34 采集，event_dc.as_of_date 为空；这些是由 APPLY_DATE、LISTING_DATE 标识的历史 IPO 事件记录，不以采集日或目录日替代其事件日期。当前归档内有值的代码为 14 个；跨 20 个非空归档合计 15 个不同代码，000016 仅出现在最早三个归档。PREDICT_RAISE_FUNDS 与 DEC_SUMFINA 的语义均不由本决定裁定。",
+      "source_contract": {
+        "authority": "东方财富官方新股详情前端与东方财富数据中心",
+        "revision": "2026-11-21 核查官方 xgdetail.js，SHA-256 e681def470ece2ae827fd9a870baf108e692f8020d48d316ef45d5108c9aeeef；官方详情 API 代表记录于 2026-11-21 查询。上游未提供版本化 schema。",
+        "path": "项目 stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.result.data[*].TOTAL_RAISE_FUNDS -> ipo_calendar() 原样透传 -> raw_event_dc.ipo_calendar[].TOTAL_RAISE_FUNDS；官方详情核对路径为 RPT_IPO_OTHERDETAILS response.result.data[*].TOTAL_RAISE_FUNDS。",
+        "locator": "官方 xgdetail.js 的新股详情请求使用 RPT_IPO_OTHERDETAILS，columns 包含 TOTAL_RAISE_FUNDS；前端调用 fieldfmt(data.TOTAL_RAISE_FUNDS, {num: 2, zoom: -8, omit: false})，行内标签为“实际募集资金总额(亿元)”。同证券代码 000002 和 000021 的详情 API 返回值分别为 28000000、119388750 元，与项目 RPTA_APP_IPOAPPLY 留存值按 1e8 换算一致。接口、样本和发行人原始公告差异详见配套裁决记录及样本 CSV。",
+        "url": "https://data.eastmoney.com/newstatic/js/xg/xgdetail.js"
+      }
+    }
+  ]
+}

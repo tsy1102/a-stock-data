@@ -87,9 +87,10 @@ def render_ipo_calendar_section(
     """近期新股申购日历 → 资金分流/抽水压力监测。
 
     抽水压力 = 当前时点起 lookahead_days 日内仍待申购的新股数 + 预计募资合计(亿元)。
-    募资额字段(TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS)单位=亿元: 对撞确认；
-    缺失时可用 TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 推算发行总额。
-    数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY, 已对撞校正)。
+    TOTAL_RAISE_FUNDS 已核实为东财标注的“实际募集资金总额(亿元)”；
+    PREDICT_RAISE_FUNDS 是未单独定案的预测候选字段，仅作为估算值回退。
+    两者均缺失时，可用 TOTAL_ISSUE_NUM * ISSUE_PRICE / 1e4 估算发行总额。
+    数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY)，字段路径原样透传。
     """
     out: List[str] = ["## 【G. 近期新股申购日历 · 资金抽水压力监测】", ""]
     try:
@@ -127,7 +128,7 @@ def render_ipo_calendar_section(
         return _parse_date(r.get("APPLY_DATE"))
 
     def _rf(r: Dict[str, Any]) -> Optional[float]:
-        # 募资额单位: 亿元(对撞确认, 见模块 docstring)
+        # 仅 TOTAL_RAISE_FUNDS 的含义和单位已定案；预测值及公式值仍按估算处理。
         reported = _num(r.get("TOTAL_RAISE_FUNDS"))
         if reported is None:
             reported = _num(r.get("PREDICT_RAISE_FUNDS"))

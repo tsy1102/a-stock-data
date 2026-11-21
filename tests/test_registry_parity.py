@@ -570,7 +570,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, MAIN_BUSINESS, issue price,
+    # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, fundraising total, MAIN_BUSINESS, issue price,
     # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, event dates, quoted prices,
     # first-day/subscription and semantic fields, plus convertible-bond quote/issue/execution
     # fields, plus separate Sina research-list, SSE ETF and
@@ -579,7 +579,7 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # uses an empirical correction. CLS telegraph level retains its original
     # contract adjudication in history, while its current metadata state is the
     # separately validated empirical addendum.
-    assert len(pairs) == 180
+    assert len(pairs) == 181
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"
@@ -601,6 +601,18 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert issue_way_explanation["status_resolution"] == "verified_by_source_contract"
     assert issue_way_explanation["canonical"] == "ipo_issue_way_explanation"
     assert matrix["ipo_issue_way_explanation"] == {"东财-event_dc(IPO发行记录)"}
+    ipo_total_raise_funds = records_by_pair[
+        ("东财-event_dc(IPO发行记录)", "ipo_calendar[].TOTAL_RAISE_FUNDS")
+    ]
+    assert ipo_total_raise_funds["status"] == "verified"
+    assert ipo_total_raise_funds["status_resolution"] == "verified_by_source_contract"
+    assert ipo_total_raise_funds["canonical"] == "ipo_actual_fundraising_total_yi_cny"
+    assert ipo_total_raise_funds["unit"] == "亿元"
+    assert matrix["ipo_actual_fundraising_total_yi_cny"] == {"东财-event_dc(IPO发行记录)"}
+    assert any(
+        item.get("id") == "20261121-eventdc-ipo-total-raise-funds"
+        for item in ipo_total_raise_funds["adjudications"]
+    )
     ipo_main_business = records_by_pair[
         ("东财-event_dc(IPO发行记录)", "ipo_calendar[].MAIN_BUSINESS")
     ]

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 622 条逐源记录。
+> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 623 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3580,6 +3580,7 @@
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_HIGH_CHANG` | ipo_first_day_high_change_pct | 该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_OPEN_PREMIUM` | ipo_first_day_open_premium_pct | 该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LISTING_DATE` | ipo_record_listing_date | 该 IPO 记录所列的上市日期，是证券开始上市交易的业务日期；不是申购日期或采集日期。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].MAIN_BUSINESS` | ipo_record_main_business_description | IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ONLINE_ISSUE_NUM` | ipo_online_issue_shares | 该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].OPEN_DATE` | ipo_open_board_date | 该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PAR_VALUE` | ipo_record_par_value | 该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。 | `verified` |

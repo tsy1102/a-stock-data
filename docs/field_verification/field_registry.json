@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 943,
-      "verified": 1670,
+      "verified": 1671,
       "verified_by_empirical_addendum": 220,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 533
+      "verified_by_source_contract": 534
     },
     "updated_at": "2026-11-19"
   },
@@ -23917,6 +23917,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].MAIN_BUSINESS",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS#官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。 @ 官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema",
+      "canonical": "ipo_record_main_business_description",
+      "meaning": "IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].OFFLINE_EP_OBJECT",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -47713,6 +47731,9 @@
     ],
     "convertible_bond_redemption_execution_date": [
       "东财-event_dc(可转债列表)"
+    ],
+    "ipo_record_main_business_description": [
+      "东财-event_dc(IPO发行记录)"
     ]
   },
   "mappings": [
@@ -277371,6 +277392,106 @@
             "path": "Eastmoney RPT_BOND_CB_LIST response.data[*].EXECUTE_START_DATESH -> stock_common/sc_datasource/_convertible.py::convertible_bonds() preserves response keys -> raw_event_dc.convertible_bonds[].EXECUTE_START_DATESH",
             "locator": "官方详情页列出“最新赎回执行日”；110003 原始 2013-08-27、123001 原始 2019-10-16 均与发行人公告的兑付/赎回执行日一致。",
             "url": "https://data.eastmoney.com/kzz/detail/110003.html"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].MAIN_BUSINESS",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].MAIN_BUSINESS",
+      "path": "ipo_calendar[].MAIN_BUSINESS",
+      "canonical": "ipo_record_main_business_description",
+      "meaning": "IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。",
+      "unit": "",
+      "section": "source contract: 东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS#官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。 @ 官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS#官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。 @ 官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261121-eventdc-ipo-main-business"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261121-eventdc-ipo-main-business"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对 · stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS#官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。 @ 官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema",
+          "canonical": "ipo_record_main_business_description",
+          "meaning": "IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-21：20261121-eventdc-ipo-main-business",
+          "status": "verified",
+          "adjudication_id": "20261121-eventdc-ipo-main-business",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对",
+            "revision": "官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS",
+            "locator": "官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。",
+            "url": "https://data.eastmoney.com/newstatic/js/xg/xglist.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_main_business_description",
+              "meaning": "IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。",
+              "unit": ""
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261121-eventdc-ipo-main-business",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-21",
+          "decision_file": "adjudications/20261121_eventdc_ipo_main_business.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_main_business_description",
+              "meaning": "IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目调用链将 ipo_calendar 路由到东方财富 RPTA_APP_IPOAPPLY，并将响应 data 行的 MAIN_BUSINESS 原样保留到 raw_event_dc.ipo_calendar[].MAIN_BUSINESS。东方财富官方 xglist.js 的 RPTA_APP_IPOAPPLY 查询列明确包含 MAIN_BUSINESS，且把 row.MAIN_BUSINESS 用作发行记录行提示文本；官方 xgdetail.js 在另一报表 RPT_HSF9_BASIC_ORGINFO 中把同名 MAIN_BUSINESS 与 BUSINESS_SCOPE 分别显示为“主营业务”和“经营范围”，仅作为语义佐证，不合并两接口的更新契约。2026-11-19 目标数据日的全部 20 条留存记录中该字段 20/20 非空且 20 个值各不相同。平安银行记录中的商业银行业务描述与巨潮资讯 2025 年年度报告“报告期内公司从事的主要业务”相符；万科记录的业务项与巨潮资讯 2024-11-26 担保公告在被担保人基本情况中列明的主营业务一致，连接符有差异。event_dc 未提供 as_of_date，因此不把自然日、目录数据日或公开报告日期当作该文本的字段有效日。本裁决只登记精确来源路径，不建立跨源映射，也不外推字段历史版本或未来 API 契约。",
+          "source_contract": {
+            "authority": "东方财富官方新股申购前端 RPTA_APP_IPOAPPLY；公司详情官方前端 RPT_HSF9_BASIC_ORGINFO 仅作字段标签佐证；平安银行年度报告与万科担保公告作内容核对",
+            "revision": "官方 xglist.js 与 xgdetail.js 于 2026-11-21 核查；留存归档目标数据日 2026-11-19、采集自然日 2026-11-20；event_dc 未提供 as_of_date；上游未提供版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::_EM_REPORTS['ipo_calendar'] -> RPTA_APP_IPOAPPLY response.data[*].MAIN_BUSINESS -> ipo_calendar() -> raw_event_dc.ipo_calendar[].MAIN_BUSINESS",
+            "locator": "官方 xglist.js 的 RPTA_APP_IPOAPPLY columns 包含 MAIN_BUSINESS，rowattributes 读取 row.MAIN_BUSINESS 作为提示文本；官方 xgdetail.js 对另一报表 RPT_HSF9_BASIC_ORGINFO 中 BUSINESS_SCOPE 和 MAIN_BUSINESS 分别标注“经营范围”和“主营业务”。20 条本地归档样本全量非空；平安银行年度报告和万科担保公告核对见配套记录。",
+            "url": "https://data.eastmoney.com/newstatic/js/xg/xglist.js"
           }
         }
       ]

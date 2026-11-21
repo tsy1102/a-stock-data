@@ -14,6 +14,10 @@
 
 ## 近期裁决与研究记录
 
+- [2026-11-19 归档的 7 日碰撞回归](20261119/post_ipo_main_business_20261121/20261119_collision_report.md)：报告结构完整，主攻目标 60→59、锚 625→626，L1/L1-C 为 0、L4 为 2；其余字段的人工候选审阅仍有 81 项待处理。
+
+- [`adjudications/20261121_eventdc_ipo_main_business.md`](adjudications/20261121_eventdc_ipo_main_business.md) 与[结构化裁决](adjudications/20261121_eventdc_ipo_main_business.json)：官方 `RPTA_APP_IPOAPPLY` 列表脚本请求 `MAIN_BUSINESS` 并用于行提示；官方公司详情脚本区分“主营业务”和“经营范围”，巨潮资讯平安银行年报与万科公告核对支持归档内容的主营业务角色。20 条 IPO 记录 20/20 非空。来源未提供该文本的独立有效日期，因此只定案为附带的业务描述，不推断 IPO 时点或当前经营状态。
+
 - [`adjudications/20261121_tdx_finance_share_units.md`](adjudications/20261121_tdx_finance_share_units.md) 与[逐日单位核对表](research/20261121_tdx_share_unit_transition.csv)：ELTDX 0x0010 原始股本字段为万股，TDX 兼容输出乘 10,000 为股；22 个留存目录中观察到 11 月 10 日前后适配器单位边界。修正 `zongguben` 输出 key 及五个当前股本路径的 registry 单位，原始归档不变。旧 `zhongguben` 只作为历史键保留；KPH（开盘红）和 KPL（开盘啦）仍是独立来源。
 - [单源裁决后的 7 日碰撞回归](20261119/issue_way_explain_adjudication/20261119_collision_report.md)：报告完整、无完整性问题；主攻未知目标由 64 降至 63，`ISSUE_WAY_EXPLAIN` 不再列为目标。候选审阅台账仍有 81 项待人工处置。
 - [`adjudications/20261121_eventdc_ipo_issue_way_explain.md`](adjudications/20261121_eventdc_ipo_issue_way_explain.md)、[结构化裁决](adjudications/20261121_eventdc_ipo_issue_way_explain.json)与[逐条样本](research/20261121_eventdc_ipo_issue_way_explain_samples.csv)：东方财富官方详情前端明确区分 `ISSUE_WAY`（发行方式类型）和 `ISSUE_WAY_EXPLAIN`（发行方式说明）；对照项目 `RPTA_APP_IPOAPPLY` 的 20 条留存记录，说明值分布为“历史遗留”16、“本地发行”3、“认购证”1，四条官方详情响应覆盖全部已观察值并与归档两字段精确一致。按单源契约路径注册，不建跨源映射；两报表端点的未来契约一致性不作推断。

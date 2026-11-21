@@ -570,14 +570,14 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
 
     assert problems == []
     # Includes existing ELTDX paths, four new limit_ladder outputs, Eastmoney
-    # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, issue price,
+    # IPO par value, issue shares, TOTAL_ISSUE_NUM alias, MAIN_BUSINESS, issue price,
     # AVERAGE_PRICE return basis, ISSUE_WAY_EXPLAIN, event dates, quoted prices,
     # first-day/subscription and semantic fields, plus convertible-bond quote/issue/execution
     # fields, plus separate Sina research-list, SSE ETF and
     # CCTV News Broadcast, SZSE ETF scale date, SSE/SZSE ETF shares paths,
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
     # uses an empirical correction.
-    assert len(pairs) == 179
+    assert len(pairs) == 180
     issue_way_explanation = records_by_pair[
         ("东财-event_dc(IPO发行记录)", "ipo_calendar[].ISSUE_WAY_EXPLAIN")
     ]
@@ -585,6 +585,13 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert issue_way_explanation["status_resolution"] == "verified_by_source_contract"
     assert issue_way_explanation["canonical"] == "ipo_issue_way_explanation"
     assert matrix["ipo_issue_way_explanation"] == {"东财-event_dc(IPO发行记录)"}
+    ipo_main_business = records_by_pair[
+        ("东财-event_dc(IPO发行记录)", "ipo_calendar[].MAIN_BUSINESS")
+    ]
+    assert ipo_main_business["status"] == "verified"
+    assert ipo_main_business["status_resolution"] == "verified_by_source_contract"
+    assert ipo_main_business["canonical"] == "ipo_record_main_business_description"
+    assert matrix["ipo_record_main_business_description"] == {"东财-event_dc(IPO发行记录)"}
     auction_price = records_by_pair[("同花顺-fuyao", "auction_final.auction_price")]
     auction_open_price = records_by_pair[("同花顺-fuyao", "auction_final.open_price")]
     assert auction_price["status"] == "verified"

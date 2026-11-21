@@ -14,6 +14,12 @@
 
 ## 近期裁决与研究记录
 
+- [`adjudications/20261122_tdx_remaining_unknowns.md`](adjudications/20261122_tdx_remaining_unknowns.md)、[逐文件路径扫描](research/20261122_tdx_remaining_unknown_path_audit.csv)、[官方字段契约](adjudications/20261122_tdx_official_field_contracts.json)和[接口级日期契约](adjudications/20261122_tdx_scoped_date_contracts.json)：完成 29 条 TDX 裸未知路径穷尽复核。`Date` 裸路径按未限定旧路径退役，并新增 8 个对应行情、股本、统计序列和公式结果的完整日期路径；保留“YYYYMMDD 是日期值格式”及各接口业务日期域边界。其余路径按项目派生、混合回退、token、旧伪路径批量处置。22 个保留日期目录、88 份 TDX/ELTDX raw 仅用于结构审计；官方 TQ 路径不代表当前采集器调用，也不自动映射到 TCP/包装字段。
+
+- [`adjudications/20261121_tdx_bare_quote_capture_provenance.md`](adjudications/20261121_tdx_bare_quote_capture_provenance.md) 与[逐股逐字段审计表](research/20261121_tdx_bare_path_provenance.csv)：补查五个 TDX 裸输出键。旧复合行情 accessor 的 2026-10-15 输出逐项来自 ZHB，5 项各 20/20 精确匹配，现从 TDX 上游原始字段队列移出；只裁定历史来源归属，不裁定业务语义、不建立跨源映射，也不外推未来 raw 响应。
+
+- [`adjudications/20261121_tdx_finance_alias_batch.md`](adjudications/20261121_tdx_finance_alias_batch.md)、[结构化决定](adjudications/20261121_tdx_finance_alias_batch.json)及[逐行解析样本](research/20261121_tdx_finance_alias_batch_samples.csv)：按固定 Easy-TDX 解析实现核对 15 个下划线财务键和 `reserve2`。生成的去下划线兼容键 300/300 相等；与 ELTDX 同槽路径 280/280 相等（`zhigong_gu` 无 ELTDX 对应槽）。修正 `zhigonggu` 当前兼容输出单位为“股”，清理五条字段历史清单 token 冲突，并保留 `reserve2` 与 `baoliu2` 的来源内证据；不把适配器同源对照算作独立来源。
+
 - [`adjudications/20261121_eventdc_ipo_predict_raise_funds.md`](adjudications/20261121_eventdc_ipo_predict_raise_funds.md)、[结构化裁决](adjudications/20261121_eventdc_ipo_predict_raise_funds.json)和[逐项样本](research/20261121_eventdc_ipo_predict_raise_funds_samples.csv)：东方财富官方新股页说明预估值会随募资金额、发行数量及发行费用变化；按当前官方 API 响应与 7 份发行人正式文件核对，`PREDICT_RAISE_FUNDS` 均等于计划投入募集资金总额（万元换算为亿元），并与同记录实际募集总额不同。11/19 留存列表只包含最早 20 条记录且该字段有值的 7 条均为零，因列表默认升序而不构成反证。此字段只定案其自身来源语义，不建立跨源映射。
 - [`adjudications/20261121_cls_level_source_contract.md`](adjudications/20261121_cls_level_source_contract.md) 与[结构化裁决](adjudications/20261121_cls_level_source_contract.json)确认财联社官方前端将 `telegraph[].level` 用作网页展示等级代码，A/B 显示红色、A 额外加粗；这不提供完整代码表或重要性排序。[单位补充核验](adjudications/20261121_cls_level_code_unit.md)与[结构化决定](adjudications/20261121_cls_level_code_unit.json)按保留期 1,050/1,050 条字符串观测，将单位栏补为“代码”，消除空单位造成的元数据缺口提示。取值为 A=2、B=122、C=926；仅裁决 CLS 路径，不与 `reports::level` 合并，也不新增跨源映射。[逐日审计](research/20261121_cls_level_retained_audit.csv)。
 - [CLS `level` 裁决后的七日碰撞回归](20261119/post_cls_level_unit_20261121/20261119_collision_report.md)：沿用 2026-11-19 数据日的 7 日窗口，目标 58、字段 1,284、样本值 324,213，报告完整；CLS `level` 已退出主攻目标和字段名提示区。KPH 与 KPL 仍按独立来源比较；报告中的两条 L4 仅为弱值重叠线索，不建立来源合并或字段映射。

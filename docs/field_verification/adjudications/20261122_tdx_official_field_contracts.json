@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-22",
+  "decisions": [
+    {
+      "id": "tdx-stock-info-errorid-20261122",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ErrorId"
+      },
+      "canonical": "ErrorId",
+      "meaning": "get_stock_info 官方样例响应中的 ErrorId 键；示例值为 0，完整错误码表及成功/失败映射未说明",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "rationale": "通达信量化平台 get_stock_info 官方响应样例明确包含精确键 `ErrorId`，样例值为 `0`。文档没有给出该键的完整错误码表或成功/失败映射，因此仅登记官方样例中确有该键，不把 0 解释为成功，也不声称本项目 7709/TCP 采集器收到此键。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 数据样例",
+        "locator": "样例响应字段 `ErrorId`（示例值 `0`；错误码映射未说明）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-name-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "Name"
+      },
+      "canonical": "Name",
+      "meaning": "证券名称",
+      "unit": "",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `Name` 定义为证券名称，官方样例返回 `财富趋势`。该 PascalCase 路径与项目其它接口中的小写 `name` 不自动视为同路径，也不声称当前 TDX TCP 采集器调用了 get_stock_info。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `Name`（类型 str；说明：证券名称）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-activecapital-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ActiveCapital"
+      },
+      "canonical": "ActiveCapital",
+      "meaning": "流通股本",
+      "unit": "万股",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `ActiveCapital` 定义为流通股本，单位万股。它是 TDX Quant 基本信息接口路径；不与项目 0x0010 的 `liutongguben` 或 F10 提示解析键 `float_capital` 自动合并。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `ActiveCapital`（类型 str；说明：流通股本(万股)）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-j-zgb-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "J_zgb"
+      },
+      "canonical": "J_zgb",
+      "meaning": "总股本",
+      "unit": "万股",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `J_zgb` 定义为总股本，单位万股。它与项目 0x0010 `zongguben`、ELTDX 适配层路径及 `latest_indicators.total_capital` 属于不同接口/包装路径；本裁决不据相似名称宣称逐值等价。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `J_zgb`（类型 str；说明：总股本(万股)）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-j-mgjzc-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "J_mgjzc"
+      },
+      "canonical": "J_mgjzc",
+      "meaning": "每股净资产",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `J_mgjzc` 定义为每股净资产，官方样例也给出该键的数值。字段表没有明确标注单位；不把它与 0x0010 `meigujingzichan`、`bvps` 或 `FN4` 认定为同路径/逐值别名。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `J_mgjzc`（类型 str；说明：每股净资产）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-j-mggjj-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "J_mggjj"
+      },
+      "canonical": "J_mggjj",
+      "meaning": "每股公积金",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `J_mggjj` 定义为每股公积金。字段表没有标注单位；该精确路径不等同于 0x0010 的总额字段 `zibengongjijin`，也不证明文档伪路径 `meigugongji` 是本接口返回键。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `J_mggjj`（类型 str；说明：每股公积金）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-stock-info-j-mgwfp-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "J_mgwfp"
+      },
+      "canonical": "J_mgwfp",
+      "meaning": "每股未分配利润",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_stock_info 官方返回字段表将精确键 `J_mgwfp` 定义为每股未分配。字段表没有标注单位；该精确路径不等同于 0x0010 的总额字段 `weifenpeilirun`，也不证明文档伪路径 `meiguweifenpei` 是本接口返回键。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_stock_info 返回数据字段表",
+        "locator": "字段 `J_mgwfp`（类型 str；说明：每股未分配）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+      }
+    },
+    {
+      "id": "tdx-financial-data-fn4-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FN4"
+      },
+      "canonical": "FN4",
+      "meaning": "每股净资产",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_financial_data 官方返回表将 `FN4` 定义为每股净资产。该数据接口与 get_stock_info、项目 0x0010 财务记录及 F10 文本解析器是不同路径；这里只确认 FN4 自身契约，不宣称它与 `bvps` 或 `meigujingzichan` 是逐值别名。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_financial_data 输出字段表",
+        "locator": "字段 `FN4`（类型 double；说明：每股净资产）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html"
+      }
+    },
+    {
+      "id": "tdx-financial-data-fn8-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FN8"
+      },
+      "canonical": "FN8",
+      "meaning": "货币资金",
+      "unit": "元",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_financial_data 官方返回表将 `FN8` 定义为货币资金；同页单位说明明确未单列单位的资金项以元计。FN8 与 get_more_info_batch 的 `CashZJ`（万元）是不同接口路径和单位口径，不建立别名。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_financial_data 输出字段表及单位说明",
+        "locator": "字段 `FN8`（类型 double；说明：货币资金；同页说明资金项单位为元）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html"
+      }
+    },
+    {
+      "id": "tdx-financial-data-fn202-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FN202"
+      },
+      "canonical": "FN202",
+      "meaning": "销售毛利率（非金融类指标）",
+      "unit": "%",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_financial_data 官方返回表明确将 `FN202` 定义为销售毛利率(%)，并标注非金融类指标。项目 F10 helper 读取的标签是“营业毛利率”；两者用词不同，在没有同接口样本或公式核验前不认定为同一精确字段。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_financial_data 输出字段表",
+        "locator": "字段 `FN202`（类型 double；说明：销售毛利率(%)(非金融类指标)）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html"
+      }
+    },
+    {
+      "id": "tdx-financial-data-fn281-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "FN281"
+      },
+      "canonical": "FN281",
+      "meaning": "加权净资产收益率（每股指标分类）",
+      "unit": "官方文档未注明",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "get_financial_data 官方返回表将 `FN281` 定义为加权净资产收益率，并注明其位于“每股指标”分类；字段说明没有显式标出单位。这里只登记官方文字，不与 get_stock_info 的 `J_jyl` 或项目 helper 输出 `roe` 合并。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_financial_data 输出字段表",
+        "locator": "字段 `FN281`（类型 double；说明：加权净资产收益率(每股指标)）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html"
+      }
+    }
+  ]
+}

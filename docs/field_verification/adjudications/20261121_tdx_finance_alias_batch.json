@@ -1,0 +1,816 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-21",
+  "decisions": [
+    {
+      "id": "20261121-tdx-zhigonggu-output-share-unit",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhigonggu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "zhigonggu",
+        "meaning": "职工股",
+        "unit": "万股"
+      },
+      "canonical": "zhigonggu",
+      "meaning": "职工股",
+      "unit": "股",
+      "rationale": "TDX 0x0010 当前 Easy-TDX 1.20.8 解析器将股本原始槽位乘 10,000；项目 _EasyTdxAdapter.finance() 保留并原样输出该解析值。FinanceInfo 模型注释仍写“股本（万股）”，与固定版本 parse_response() 的返回值转换相矛盾。注册表记录当前兼容输出单位，不能用原始槽位单位覆盖实际返回单位。该槽位在 ELTDX适配器没有字段映射，因此本裁决限定为 Easy-TDX 兜底输出。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "zhigonggu",
+          "meaning": "职工股",
+          "unit": "万股"
+        },
+        "updated": {
+          "canonical": "zhigonggu",
+          "meaning": "职工股",
+          "unit": "股"
+        },
+        "rationale": "将兼容适配器交付值的单位从解析器历史注释所称万股修正为 parse_response()实际返回的股；不改 0x0010 原始单位或历史样本。"
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码实现与项目兼容适配器",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 对 zhigong_gu 赋值乘以 _SCALE=10000；项目 finance()将解析结果保留并只新增去下划线别名",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-changqifuzhai-checklist-token-conflict-cleanup",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "changqifuzhai"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "长期负债",
+        "unit": "角"
+      },
+      "canonical": "changqifuzhai",
+      "meaning": "长期负债",
+      "unit": "角",
+      "rationale": "保留的 2.1 节逐槽位登记对该精确 TDX 0x0010 路径已有唯一字段名、中文释义及单位；2.6 节的一条复核清单把多个字段路径拼成一个整体 token，被旧登记器误存为该字段 canonical，产生伪属性冲突。该整体 token 已按独立审计归类为非字段清单文本。本裁决只恢复精确字段 canonical 并记录原冲突快照，不修改释义、单位、原始证据或已验证状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "长期负债",
+          "unit": "角"
+        },
+        "updated": {
+          "canonical": "changqifuzhai",
+          "meaning": "长期负债",
+          "unit": "角"
+        },
+        "rationale": "移除误由历史复核清单 token 引入的 canonical 冲突；保留 2.1 节字段定义，并在 adjudication history 中保存冲突原值。"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "changqifuzhai",
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry"
+        ]
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码路径与项目精确字段登记",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + TDX 0x0010 registry path",
+        "locator": "字段 changqifuzhai 的 2.1 逐槽位登记；2.6 拼接清单 token 的非字段身份见逐路径审计表",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-jingzichan-checklist-token-conflict-cleanup",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "jingzichan"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "净资产 / 股东权益",
+        "unit": "角"
+      },
+      "canonical": "jingzichan",
+      "meaning": "净资产 / 股东权益",
+      "unit": "角",
+      "rationale": "保留的 2.1 节逐槽位登记对该精确 TDX 0x0010 路径已有唯一字段名、中文释义及单位；2.6 节的一条复核清单把多个字段路径拼成一个整体 token，被旧登记器误存为该字段 canonical，产生伪属性冲突。该整体 token 已按独立审计归类为非字段清单文本。本裁决只恢复精确字段 canonical 并记录原冲突快照，不修改释义、单位、原始证据或已验证状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "净资产 / 股东权益",
+          "unit": "角"
+        },
+        "updated": {
+          "canonical": "jingzichan",
+          "meaning": "净资产 / 股东权益",
+          "unit": "角"
+        },
+        "rationale": "移除误由历史复核清单 token 引入的 canonical 冲突；保留 2.1 节字段定义，并在 adjudication history 中保存冲突原值。"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "jingzichan"
+        ]
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码路径与项目精确字段登记",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + TDX 0x0010 registry path",
+        "locator": "字段 jingzichan 的 2.1 逐槽位登记；2.6 拼接清单 token 的非字段身份见逐路径审计表",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-jingyingxianjinliu-checklist-token-conflict-cleanup",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "jingyingxianjinliu"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "经营活动现金流",
+        "unit": "角"
+      },
+      "canonical": "jingyingxianjinliu",
+      "meaning": "经营活动现金流",
+      "unit": "角",
+      "rationale": "保留的 2.1 节逐槽位登记对该精确 TDX 0x0010 路径已有唯一字段名、中文释义及单位；2.6 节的一条复核清单把多个字段路径拼成一个整体 token，被旧登记器误存为该字段 canonical，产生伪属性冲突。该整体 token 已按独立审计归类为非字段清单文本。本裁决只恢复精确字段 canonical 并记录原冲突快照，不修改释义、单位、原始证据或已验证状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "经营活动现金流",
+          "unit": "角"
+        },
+        "updated": {
+          "canonical": "jingyingxianjinliu",
+          "meaning": "经营活动现金流",
+          "unit": "角"
+        },
+        "rationale": "移除误由历史复核清单 token 引入的 canonical 冲突；保留 2.1 节字段定义，并在 adjudication history 中保存冲突原值。"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "jingyingxianjinliu"
+        ]
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码路径与项目精确字段登记",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + TDX 0x0010 registry path",
+        "locator": "字段 jingyingxianjinliu 的 2.1 逐槽位登记；2.6 拼接清单 token 的非字段身份见逐路径审计表",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-meigujingzichan-checklist-token-conflict-cleanup",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "meigujingzichan"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "每股净资产",
+        "unit": "元/股"
+      },
+      "canonical": "meigujingzichan",
+      "meaning": "每股净资产",
+      "unit": "元/股",
+      "rationale": "保留的 2.1 节逐槽位登记对该精确 TDX 0x0010 路径已有唯一字段名、中文释义及单位；2.6 节的一条复核清单把多个字段路径拼成一个整体 token，被旧登记器误存为该字段 canonical，产生伪属性冲突。该整体 token 已按独立审计归类为非字段清单文本。本裁决只恢复精确字段 canonical 并记录原冲突快照，不修改释义、单位、原始证据或已验证状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "每股净资产",
+          "unit": "元/股"
+        },
+        "updated": {
+          "canonical": "meigujingzichan",
+          "meaning": "每股净资产",
+          "unit": "元/股"
+        },
+        "rationale": "移除误由历史复核清单 token 引入的 canonical 冲突；保留 2.1 节字段定义，并在 adjudication history 中保存冲突原值。"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "meigujingzichan"
+        ]
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码路径与项目精确字段登记",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + TDX 0x0010 registry path",
+        "locator": "字段 meigujingzichan 的 2.1 逐槽位登记；2.6 拼接清单 token 的非字段身份见逐路径审计表",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-yingshouzhangkuan-checklist-token-conflict-cleanup",
+      "action": "correct_verified_metadata",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "yingshouzhangkuan"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "",
+        "meaning": "应收账款",
+        "unit": "角"
+      },
+      "canonical": "yingshouzhangkuan",
+      "meaning": "应收账款",
+      "unit": "角",
+      "rationale": "保留的 2.1 节逐槽位登记对该精确 TDX 0x0010 路径已有唯一字段名、中文释义及单位；2.6 节的一条复核清单把多个字段路径拼成一个整体 token，被旧登记器误存为该字段 canonical，产生伪属性冲突。该整体 token 已按独立审计归类为非字段清单文本。本裁决只恢复精确字段 canonical 并记录原冲突快照，不修改释义、单位、原始证据或已验证状态。",
+      "metadata_correction": {
+        "previous": {
+          "canonical": "",
+          "meaning": "应收账款",
+          "unit": "角"
+        },
+        "updated": {
+          "canonical": "yingshouzhangkuan",
+          "meaning": "应收账款",
+          "unit": "角"
+        },
+        "rationale": "移除误由历史复核清单 token 引入的 canonical 冲突；保留 2.1 节字段定义，并在 adjudication history 中保存冲突原值。"
+      },
+      "previous_attribute_conflicts": {
+        "canonical": [
+          "gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry",
+          "yingshouzhangkuan"
+        ]
+      },
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码路径与项目精确字段登记",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + TDX 0x0010 registry path",
+        "locator": "字段 yingshouzhangkuan 的 2.1 逐槽位登记；2.6 拼接清单 token 的非字段身份见逐路径审计表",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-b_gu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "b_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "bgu",
+      "meaning": "B股",
+      "unit": "股",
+      "rationale": "Easy-TDX b_gu 与项目兼容器生成的 bgu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "bgu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=b_gu, generated_alias_path=bgu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-changqi_fuzhai",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "changqi_fuzhai"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "changqifuzhai",
+      "meaning": "长期负债",
+      "unit": "角",
+      "rationale": "Easy-TDX changqi_fuzhai 与项目兼容器生成的 changqifuzhai 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "changqifuzhai",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=changqi_fuzhai, generated_alias_path=changqifuzhai",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-guojia_gu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "guojia_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "guojiagu",
+      "meaning": "国家股",
+      "unit": "股",
+      "rationale": "Easy-TDX guojia_gu 与项目兼容器生成的 guojiagu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "guojiagu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=guojia_gu, generated_alias_path=guojiagu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-h_gu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "h_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "hgu",
+      "meaning": "H股",
+      "unit": "股",
+      "rationale": "Easy-TDX h_gu 与项目兼容器生成的 hgu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "hgu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=h_gu, generated_alias_path=hgu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-jing_lirun",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "jing_lirun"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "parent_holder_net_profit",
+      "meaning": "归属于母公司股东的净利润",
+      "unit": "角",
+      "rationale": "Easy-TDX jing_lirun 与项目兼容器生成的 jinglirun 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "jinglirun",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=jing_lirun, generated_alias_path=jinglirun",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-jing_zichan",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "jing_zichan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "jingzichan",
+      "meaning": "净资产 / 股东权益",
+      "unit": "角",
+      "rationale": "Easy-TDX jing_zichan 与项目兼容器生成的 jingzichan 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "jingzichan",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=jing_zichan, generated_alias_path=jingzichan",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-jingying_xianjinliu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "jingying_xianjinliu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "jingyingxianjinliu",
+      "meaning": "经营活动现金流",
+      "unit": "角",
+      "rationale": "Easy-TDX jingying_xianjinliu 与项目兼容器生成的 jingyingxianjinliu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "jingyingxianjinliu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=jingying_xianjinliu, generated_alias_path=jingyingxianjinliu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-liutong_guben",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "liutong_guben"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "liutongguben",
+      "meaning": "流通股本",
+      "unit": "股",
+      "rationale": "Easy-TDX liutong_guben 与项目兼容器生成的 liutongguben 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "liutongguben",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=liutong_guben, generated_alias_path=liutongguben",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-meigujing_zichan",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "meigujing_zichan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "meigujingzichan",
+      "meaning": "每股净资产",
+      "unit": "元/股",
+      "rationale": "Easy-TDX meigujing_zichan 与项目兼容器生成的 meigujingzichan 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "meigujingzichan",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=meigujing_zichan, generated_alias_path=meigujingzichan",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-shuihou_lirun",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "shuihou_lirun"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "shuihoulirun",
+      "meaning": "税后利润",
+      "unit": "角",
+      "rationale": "Easy-TDX shuihou_lirun 与项目兼容器生成的 shuihoulirun 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "shuihoulirun",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=shuihou_lirun, generated_alias_path=shuihoulirun",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-touzi_shouyu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "touzi_shouyu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "touzishouyu",
+      "meaning": "投资收益",
+      "unit": "角",
+      "rationale": "Easy-TDX touzi_shouyu 与项目兼容器生成的 touzishouyu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "touzishouyu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=touzi_shouyu, generated_alias_path=touzishouyu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-wuxing_zichan",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "wuxing_zichan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "wuxingzichan",
+      "meaning": "无形资产",
+      "unit": "角",
+      "rationale": "Easy-TDX wuxing_zichan 与项目兼容器生成的 wuxingzichan 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "wuxingzichan",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=wuxing_zichan, generated_alias_path=wuxingzichan",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-yingshou_zhangkuan",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "yingshou_zhangkuan"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "yingshouzhangkuan",
+      "meaning": "应收账款",
+      "unit": "角",
+      "rationale": "Easy-TDX yingshou_zhangkuan 与项目兼容器生成的 yingshouzhangkuan 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "yingshouzhangkuan",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=yingshou_zhangkuan, generated_alias_path=yingshouzhangkuan",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-zhigong_gu",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhigong_gu"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zhigonggu",
+      "meaning": "职工股",
+      "unit": "股",
+      "rationale": "Easy-TDX zhigong_gu 与项目兼容器生成的 zhigonggu 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "zhigonggu",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=zhigong_gu, generated_alias_path=zhigonggu",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-finance-alias-zong_guben",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zong_guben"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "zongguben",
+      "meaning": "总股本",
+      "unit": "股",
+      "rationale": "Easy-TDX zong_guben 与项目兼容器生成的 zongguben 别名在 2026-11-10 同一批 20 条 0x0010 record_hex 上逐条精确相等；项目代码按删除字段名下划线生成该兼容别名。除 zhigong_gu 外，其余 14 条还与 ELTDX 同一原始记录的对应字段及当前单位转换 20/20 精确相等。含义和单位继承同源已验证路径；不把多个适配器计作独立来源，也不新增跨源映射。",
+      "source_contract": {
+        "authority": "Easy-TDX 固定提交的 0x0010 FinanceInfo 解码器与项目兼容别名实现",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/commands/finance_info.py + core/tdx_client.py::_EasyTdxAdapter.finance",
+        "locator": "parse_response() 的对应 FinanceInfo 字段；项目 finance() 中 key.replace('_', '')生成无下划线别名；见逐路径逐股票同记录证据",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/commands/finance_info.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "zongguben",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv",
+        "locator": "target_path=zong_guben, generated_alias_path=zongguben",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    },
+    {
+      "id": "20261121-tdx-reserve2-baoliu2-raw-slot-alias",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "reserve2"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "report_period_end_month",
+      "meaning": "财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证",
+      "unit": "月",
+      "rationale": "Easy-TDX FinanceInfo documents reserve2 as the original baoliu2 slot. Re-decoding the retained 2026-11-10 record_hex and comparing both the ELTDX raw field bao_liu_2_raw_float and the TDX normalized finance_info.baoliu2 yields 20/20 exact matches. The already adjudicated TDX baoliu2 evidence establishes the observed report-period-end month semantics (6 and 9 only); this alias decision does not claim an official TDX semantic contract for other report periods and does not create a cross-source mapping.",
+      "source_contract": {
+        "authority": "Easy-TDX FinanceInfo model plus fixed 0x0010 decoder and project ELTDX field adapter",
+        "revision": "easy-tdx commit 41e56376fafa3abae0f6538f271eafd6af26d27f; ELTDX v3.3.2; a-stock-data commit f670b70; reviewed 2026-11-21",
+        "path": "src/easy_tdx/models/finance.py::FinanceInfo.reserve2 + core/eltdx_adapter.py::_FIN_MAP",
+        "locator": "FinanceInfo.reserve2 comment identifies the original baoliu2 slot; 0x0010 parser assigns the final float to reserve2 without scaling; ELTDX maps bao_liu_2_raw_float to baoliu2",
+        "url": "https://github.com/yanwei99521/easy-tdx/blob/41e56376fafa3abae0f6538f271eafd6af26d27f/src/easy_tdx/models/finance.py"
+      },
+      "same_source_alias": {
+        "source": "TDX(双命名源)",
+        "code": "baoliu2",
+        "evidence_path": "docs/field_verification/research/20261121_tdx_reserve2_baoliu2_samples.csv",
+        "locator": "20 same-response records; reserve2 == bao_liu_2_raw_float == finance_info.baoliu2",
+        "observed_pairs": 20,
+        "mismatches": 0
+      }
+    }
+  ]
+}

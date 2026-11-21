@@ -872,6 +872,100 @@ def test_source_contract_resolves_legacy_conflict_through_verified_same_source_a
     assert repeat_stats["already_applied"] == 1
 
 
+def _set_empirically_verified_alias_anchor(anchor, evidence_relative, evidence_path):
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_path.write_text("verified empirical anchor evidence\n", encoding="utf-8")
+    anchor.update(
+        {
+            "status": "verified",
+            "status_resolution": "verified_by_empirical_addendum",
+            "status_evidence": {
+                "reference_statuses": ["unverified"],
+                "registry_aggregate_status": "unverified",
+                "values": ["verified"],
+                "adjudication_ids": ["e3-anchor"],
+                "evidence_basis": "empirical_source_field_semantics",
+                "evidence_level": "E3",
+                "evidence_file": evidence_relative,
+            },
+            "reference_evidence": [
+                {"status": "unverified"},
+                {
+                    "status": "verified",
+                    "adjudication_id": "e3-anchor",
+                    "evidence_basis": "empirical_source_field_semantics",
+                    "evidence_level": "E3",
+                    "evidence_file": evidence_relative,
+                },
+            ],
+            "adjudications": [
+                {
+                    "id": "e3-anchor",
+                    "action": "verify_empirical_source_semantics",
+                    "status": "verified",
+                    "evidence_basis": "empirical_source_field_semantics",
+                    "evidence_level": "E3",
+                    "decision_file": evidence_relative,
+                    "sample": {"observation_count": 20, "counterexample_count": 0},
+                }
+            ],
+        }
+    )
+
+
+def test_source_contract_accepts_complete_empirical_anchor_with_legacy_unverified_reference(
+    tmp_path, monkeypatch
+):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    alias_evidence_path = verify_dir / "research" / "alias_evidence.md"
+    anchor_evidence_path = verify_dir / "adjudications" / "anchor_empirical.md"
+    alias_evidence_path.parent.mkdir(parents=True)
+    alias_evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(alias_evidence_path)
+    anchor = next(row for row in registry["source_fields"] if row["code"] == "raw.value")
+    _set_empirically_verified_alias_anchor(
+        anchor,
+        "docs/field_verification/adjudications/anchor_empirical.md",
+        anchor_evidence_path,
+    )
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["code"] == "unknown.value")
+    assert target["status"] == "verified"
+    assert target["adjudications"][0]["same_source_alias"]["code"] == "raw.value"
+    assert stats["status_conflicts_resolved"] == 1
+
+
+def test_source_contract_rejects_empirical_anchor_with_candidate_reference_status(
+    tmp_path, monkeypatch
+):
+    verify_dir = tmp_path / "docs" / "field_verification"
+    alias_evidence_path = verify_dir / "research" / "alias_evidence.md"
+    anchor_evidence_path = verify_dir / "adjudications" / "anchor_empirical.md"
+    alias_evidence_path.parent.mkdir(parents=True)
+    alias_evidence_path.write_text("reviewed alias evidence\n", encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    registry, document = _same_source_alias_conflict_inputs(alias_evidence_path)
+    anchor = next(row for row in registry["source_fields"] if row["code"] == "raw.value")
+    _set_empirically_verified_alias_anchor(
+        anchor,
+        "docs/field_verification/adjudications/anchor_empirical.md",
+        anchor_evidence_path,
+    )
+    anchor["status_evidence"]["reference_statuses"].append("candidate")
+
+    with pytest.raises(ValueError, match="not unambiguously verified"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
 def _verified_metadata_correction_inputs():
     registry, document = _source_contract_inputs()
     target = registry["source_fields"][0]

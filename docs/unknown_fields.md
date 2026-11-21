@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2740；日常来源路径 2596：unverified 822、candidate 1、conflict 17、disproved 105；历史来源路径 144。
+> 注册字段路径 2758；日常来源路径 2614：unverified 772、candidate 1、conflict 17、disproved 138；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,17 +15,17 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 690 |
+| 含义栏为空/占位 | 640 |
 | 含义栏有文本（仍未验证） | 132 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 281 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 264 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 406 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 373 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（17）
@@ -56,60 +56,10 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（822）
+## 三、待破解字段（772）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| TDX(双命名源) | `Date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `ErrorId` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `b_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `bvps` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `change_pct_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `change_pct_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `changqi_fuzhai` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `entrust_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `float_capital` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `float_mcap_yi` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `gross_margin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `guojia_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `h_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `huobi_zijin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `jing_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `jing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `jingying_xianjinliu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `limit_down` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `limit_down_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `limit_up` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `liutong_guben` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `locked_amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `long_term_debt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `market_snapshot` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `mcap_yi` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `meigugongji` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `meigujing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `meiguweifenpei` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `more_info` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `pb` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `pe_lyr` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `pe_static` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `pe_ttm` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `reserve2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `roe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `shiyebianma` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `short_term_debt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `shuihou_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `total_capital` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `touzi_shouyu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `turnover_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `ushort` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `vol_ratio` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `wuxing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `zhigong_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `zong_guben` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `ColName` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `Content` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `Count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -883,25 +833,58 @@
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（105）
+## 四、已证伪（默认不重复破解）（138）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
+| TDX(双命名源) | `Date` | — | 日期键本身有效，但该旧 registry 身份未限定接口或父对象，无法唯一指向 K 线日、股本记录日、统计数据日或公式结果日。只退役裸路径身份；精确日期含义保存在接口级契约中。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `YYYYMMDD` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `amount_1d` | amount_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_1d，20/20 同股值与 ZHB stat2.amount_1d 和合并对象 full.amount_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX 裸行情输出键回退来源审计（2026-11-21） |
+| TDX(双命名源) | `amount_2d` | amount_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_2d，20/20 同股值与 ZHB stat2.amount_2d 和合并对象 full.amount_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX 裸行情输出键回退来源审计（2026-11-21） |
+| TDX(双命名源) | `bvps` | — | 旧英文别名登记，不是当前 TDX adapter 的原始响应路径；项目 0x0010 的 meigujingzichan 及 TQ FN4/J_mgjzc 是各自独立路径，本裁决不建立别名。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `byte` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `change_pct_1d` | change_pct_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_1d，20/20 同股值与 ZHB stat.change_pct_1d 和合并对象 full.change_pct_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX 裸行情输出键回退来源审计（2026-11-21） |
+| TDX(双命名源) | `change_pct_2d` | change_pct_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_2d，20/20 同股值与 ZHB stat.change_pct_2d 和合并对象 full.change_pct_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX 裸行情输出键回退来源审计（2026-11-21） |
+| TDX(双命名源) | `entrust_ratio` | tdx_get_quote_full.entrust_ratio | 统一行情包装层的委比值；当前 easy_tdx SecurityQuote 模型不含该字段，值只能来自包装层回退，不是本项目当前 TDX 原始快照字段。 | % | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `float` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `float_capital` | reminders.latest_indicators.float_capital | 项目从 TDX F10「最新提示」中的“实际流通A股(万股)”文本解析并组装出的字段；不是 TDX 上游返回键。通达信 Quant 的 ActiveCapital 属于另一接口路径，不据名称相近建立别名。 | 万股 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `float_mcap_yi` | tdx_get_quote_full.float_mcap_yi | 统一行情包装层的流通市值值（亿元）；来自 Tencent 行情回退，不是 TDX 原始快照字段。官方 TQ Ltsz 为另一接口路径，不自动映射。 | 亿元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `gross_margin` | get_gross_margin_and_roe.gross_margin | 项目财务 helper 输出：优先解析 TDX F10“营业毛利率”，缺失时可按营业收入与营业成本计算或走新浪回退；不是单一 TDX 原始字段。官方 FN202“销售毛利率”是另一精确接口路径，未据此合并。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-16 TDX composite field-list identity audit |
+| TDX(双命名源) | `huobi_zijin` | — | 旧文档伪字段名，不是当前 TDX 0x0010 或行情原始响应键；TQ CashZJ 是另一精确接口代码，不自动映射。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `latest_indicators` | reminders.latest_indicators | 项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX F10 输出路径审计（2026-11-16） |
+| TDX(双命名源) | `limit_down` | tdx_get_quote_full.limit_down | 项目行情包装层按昨收和证券价格限制规则计算的跌停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | 元 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `limit_down_price` | tdx_get_quote_full.limit_down_price | Tencent 行情槽位包装出的跌停价（元）；不是 TDX 原始响应字段。官方 TQ DTPrice 是另一接口的独立契约路径。 | 元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `limit_up` | tdx_get_quote_full.limit_up | 项目行情包装层按昨收和证券价格限制规则计算的涨停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | 元 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `locked_amount` | — | TDX(双命名源) 的旧错误来源身份；项目已验证的 locked_amount 属于 TDX-eltdx(适配层) 的不同来源/完整路径，不移植到此身份。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `long_term_debt` | — | 旧文档伪路径；项目没有 TDX long_term_debt 原始字段。现存 changqifuzhai 等负债项不能改释为长期借款或长期债务。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `market/code/guojiagu/faqirenfarengu/farengu/bgu/hgu/zhigonggu/liudongzichan/gudingzichan/wuxingzichan/zhuyinglirun/yingyelirun/touzishouyu/zongxianjinliu/lirunzonghe/shuihoulirun/baoliu2` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-16 TDX composite field-list identity audit |
+| TDX(双命名源) | `market_snapshot` | — | 当前 TDX registry 中的未限定名称不是响应字段；TDX Quant 文档中的 market snapshot 是接口/方法概念，其他来源出现的同名容器必须按其来源及父级路径登记。 | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `mcap_yi` | tdx_get_quote_full.mcap_yi | 统一行情包装层的总市值值（亿元）；来自 Tencent 行情回退，不是 TDX 原始快照字段。官方 TQ Zsz 为另一接口路径，不自动映射。 | 亿元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `meigugongji` | — | 旧拼音伪路径，不是当前 TDX 0x0010 返回键；TQ J_mggjj 是另一接口精确字段，不证明本路径存在。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `meiguweifenpei` | — | 旧拼音伪路径，不是当前 TDX 0x0010 返回键；TQ J_mgwfp 是另一接口精确字段，不证明本路径存在。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `more_info` | — | 接口方法名的旧缩写 token，不是响应字段；官方接口名为 get_more_info_batch，返回键需逐个登记。 | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `name` | tdx_get_quote_full.name | 统一行情包装层中的证券名称字段；TDX 快照 SecurityQuote 不含名称，当前包装值来自回退上下文。raw_eltdx 中的 name 是 global_helpers.realtime_rank.rows[].name 的另一来源/完整路径。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | — |
+| TDX(双命名源) | `pb` | tdx_get_quote_full.pb | 统一行情包装层的市净率值；当前 TDX 快照模型没有 PB 字段，包装层可由 ZHB/Tencent 回退填充。官方 TQ PB_MRQ 是另一接口路径，不自动映射。 | 倍 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `pe_lyr` | tdx_get_quote_full.pe_lyr | 统一行情包装层从 Tencent 静态 PE 槽位透传的值；当前 TDX 快照模型无该字段。官方 TQ MorePE 的口径按证券类型变化，不自动映射。 | 倍 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `pe_static` | — | 已删除的重复包装输出键；代码自 2026-09-04 起只保留 pe_lyr，当前 TDX adapter/raw 也没有 pe_static 原始路径。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `pe_ttm` | pe_ttm | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.pe_ttm，20/20 同股值与 ZHB stat.pe_ttm 和合并对象 full.pe_ttm 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX 裸行情输出键回退来源审计（2026-11-21） |
 | TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | 万元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | 万元 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.change_pct_1d` | quote_full.change_pct_1d | 该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。 | % | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.change_pct_2d` | quote_full.change_pct_2d | 该完整路径仅在 2026-10-15 历史记录中出现，值来自 ZHB 回退，不是 TDX 行情适配器原始字段。 | % | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
 | TDX(双命名源) | `quote_full.pe_ttm` | quote_full.pe_ttm | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | 倍 | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕 |
+| TDX(双命名源) | `roe` | get_gross_margin_and_roe.roe | 项目财务 helper 输出：优先解析 TDX F10“加权净资产收益率”，缺失时可能经财务公式或新浪数据回退；不是单一 TDX 原始字段。官方 FN281/J_jyl 属于各自接口的独立路径，未建立别名。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `shiyebianma` | — | 旧拼音/错字伪路径，不是当前 TDX 返回键；项目中的 industry 字段为独立路径，不据此建立别名。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `short_term_debt` | — | 旧文档伪路径；项目没有 TDX short_term_debt 原始字段，liudongfuzhai 表示流动负债而非短期借款/短期债务。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `str` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `total_capital` | reminders.latest_indicators.total_capital | 项目从 TDX F10「最新提示」中的“总股本(万股)”文本解析并组装出的字段；不是 TDX 上游返回键。通达信 Quant 的 J_zgb 属于另一接口路径，不据名称相近建立别名。 | 万股 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `turnover_pct` | tdx_get_quote_full.turnover_pct | 统一行情包装层的换手率值；当前 easy_tdx 快照模型不含该字段，值由 ZHB/Tencent 回退提供。官方 TQ fHSL 是另一接口路径，不自动映射。 | % | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
 | TDX(双命名源) | `uint` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 TDX 类型/格式 token 路径裁决 |
+| TDX(双命名源) | `ushort` | — | 协议/编程类型 token，不是 JSON 响应字段或 TDX 采集路径。 | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | TDX unknown path batch audit (2026-11-22) |
+| TDX(双命名源) | `vol_ratio` | tdx_get_quote_full.vol_ratio | 统一行情包装层从 Tencent 槽位透传的量比值；当前 TDX 快照模型不含该字段。其它来源的同名字段按其完整路径独立处理。 | — | 历史回退串源路径（不是该来源原始字段） | mixed_source_capture_passthrough | TDX unknown path batch audit (2026-11-22) |
 | TDX-eltdx(适配层) | `bool` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-10 ELTDX 类型 token 非字段路径裁决 |
 | TDX-eltdx(适配层) | `code` | shortline.code | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |
 | TDX-eltdx(适配层) | `exchange` | shortline.exchange | 已退役的未限定旧路径身份 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）；2026-11-15 ELTDX Helper 未限定字段路径退役核查 |

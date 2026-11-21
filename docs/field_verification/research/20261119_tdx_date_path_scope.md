@@ -27,6 +27,10 @@
 - `TDX::HqDate`、`TDX::updated_date`、`TDX::ipo_date` 和小写 `TDX::date` 各有各自的官方契约/路径；不得移植这些字段的含义到大写 `Date`。
 - 注册表中 `TDX(双命名源)::Date` 与 `开盘啦(kpl)::Date` 是两个独立身份。相同拼写不代表同源，也不支持跨源映射。
 
-## 后续可定案条件
+## 后续可定案条件（截至 2026-11-19）
 
 只有在项目采集结果或权威来源记录能保存接口/父对象路径时，才按对应接口契约定案。例如，若真实完整路径为 `get_gb_info_by_date[].Date`，可定为股本记录日期；若为 `get_scjy_value.SCxx[].Date`，则是市场统计数据日。不能只凭字段名、YYYYMMDD 格式、相邻样本行或其他来源同名字段选定其中之一。
+
+## 2026-11-22 后续闭环
+
+官方文档复核进一步列出 8 个可精确限定的 TQ 日期字段路径，包括 K 线日期、股本历史记录日期、个股资金统计日期、个股/板块/市场指标序列日期和公式结果日期。它们说明大写 `Date` 确实承载日期值，但业务域各自不同。注册表中的 `TDX(双命名源)::Date` 仍无接口或父对象路径，且保留期 raw 未出现该键，因此已作为**未限定的旧路径身份**退役；日期语义本身没有被删除。8 个精确契约已登记在 [`20261122_tdx_scoped_date_contracts.json`](../adjudications/20261122_tdx_scoped_date_contracts.json)，逐项说明见 [`20261122_tdx_remaining_unknowns.md`](../adjudications/20261122_tdx_remaining_unknowns.md)。这些契约不代表当前 7709/TCP 采集器调用相应 TQ 接口，也不与当前 raw 建立映射。

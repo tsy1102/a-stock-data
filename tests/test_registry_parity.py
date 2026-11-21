@@ -579,8 +579,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # and Fuyao's distinct auction/open price response fields; zhuying_shouru
     # uses an empirical correction. CLS telegraph level retains its original
     # contract adjudication in history, while its current metadata state is the
-    # separately validated empirical addendum.
-    assert len(pairs) == 183
+    # separately validated empirical addendum. The latest TDX batch adds 16
+    # FinanceInfo alias contracts, ten official TQ field contracts plus the
+    # ErrorId sample-key decision, and eight API-scoped Date contracts.
+    assert len(pairs) == 218
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"

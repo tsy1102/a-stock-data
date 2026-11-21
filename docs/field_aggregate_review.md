@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 153 个 code；聚合定义不完整 175 个 code；疑似合并文本 627 条逐源记录。
+> 聚合歧义 166 个 code；聚合定义不完整 164 个 code；疑似合并文本 665 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -98,6 +98,15 @@
 | reports · `DEAL_NET_RATIO` | DEAL_NET_RATIO | 净额占比 | — | `unverified` |
 | 市场源(market_sources) · `DEAL_NET_RATIO` | — | — | — | `unverified` |
 
+### `Date` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX(双命名源) · `Date` | — | 日期键本身有效，但该旧 registry 身份未限定接口或父对象，无法唯一指向 K 线日、股本记录日、统计数据日或公式结果日。只退役裸路径身份；精确日期含义保存在接口级契约中。 | — | `disproved` |
+| 开盘啦(kpl) · `Date` | — | — | — | `unverified` |
+
 ### `EXPLAIN` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -133,6 +142,15 @@
 |:--|:--|:--|:--|:--|
 | reports · `NET_BS_AMT` | NET_BS_AMT | 净买卖额 | — | `unverified` |
 | 市场源(market_sources) · `NET_BS_AMT` | — | — | — | `unverified` |
+
+### `Name` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX(双命名源) · `Name` | Name | 证券名称 | — | `verified` |
+| 开盘啦(kpl) · `Name` | — | — | — | `unverified` |
 
 ### `SECURITY_CODE` — incomplete
 
@@ -623,23 +641,23 @@
 | 开盘啦(kpl) · `amount` | amount | 成交额 | 元 | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | 元 | `verified` |
 
-### `amount_1d` — incomplete
+### `amount_1d` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `amount_1d` | — | — | — | `unverified` |
+| TDX(双命名源) · `amount_1d` | amount_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_1d，20/20 同股值与 ZHB stat2.amount_1d 和合并对象 full.amount_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | `disproved` |
 | ZHB-tdxstat2 · `amount_1d` | amount_1d | 前一交易日总成交额 | 万元 | `verified` |
 | 同花顺-fuyao · `amount_1d` | — | — | — | `unverified` |
 
-### `amount_2d` — incomplete
+### `amount_2d` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `amount_2d` | — | — | — | `unverified` |
+| TDX(双命名源) · `amount_2d` | amount_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_2d，20/20 同股值与 ZHB stat2.amount_2d 和合并对象 full.amount_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | `disproved` |
 | ZHB-tdxstat2 · `amount_2d` | amount_2d | 前第二交易日总成交额 | 万元 | `verified` |
 | 同花顺-fuyao · `amount_2d` | — | — | — | `unverified` |
 
@@ -714,22 +732,22 @@
 | 市场源(market_sources) · `change_pct` | change_pct | 涨跌幅 | — | `verified` |
 | 开盘啦(kpl) · `change_pct` | change_pct | 涨跌幅% | % | `unverified` |
 
-### `change_pct_1d` — incomplete
+### `change_pct_1d` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `change_pct_1d` | — | — | — | `unverified` |
+| TDX(双命名源) · `change_pct_1d` | change_pct_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_1d，20/20 同股值与 ZHB stat.change_pct_1d 和合并对象 full.change_pct_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | `disproved` |
 | ZHB-tdxstat · `change_pct_1d` | change_pct_1d | T-1 日涨跌幅 | % | `verified` |
 
-### `change_pct_2d` — incomplete
+### `change_pct_2d` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `change_pct_2d` | — | — | — | `unverified` |
+| TDX(双命名源) · `change_pct_2d` | change_pct_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_2d，20/20 同股值与 ZHB stat.change_pct_2d 和合并对象 full.change_pct_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | `disproved` |
 | ZHB-tdxstat · `change_pct_2d` | change_pct_2d | T-2 日涨跌幅 | % | `verified` |
 
 ### `change_rate` — ambiguous
@@ -2512,22 +2530,22 @@
 | 开盘红 · `limit_count` | limit_count | 连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致 | 板 | `verified` |
 | 开盘红(Levistock适配) · `limit_count` | limit_tag / limit_count | 待破解 | — | `unverified` |
 
-### `limit_down` — incomplete
+### `limit_down` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `limit_down` | — | — | — | `unverified` |
+| TDX(双命名源) · `limit_down` | tdx_get_quote_full.limit_down | 项目行情包装层按昨收和证券价格限制规则计算的跌停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | 元 | `disproved` |
 | 新浪(扩展API) · `limit_down` | limit_up / limit_down | 涨跌停价 | — | `unverified` |
 
-### `limit_down_price` — incomplete
+### `limit_down_price` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `limit_down_price` | — | — | — | `unverified` |
+| TDX(双命名源) · `limit_down_price` | tdx_get_quote_full.limit_down_price | Tencent 行情槽位包装出的跌停价（元）；不是 TDX 原始响应字段。官方 TQ DTPrice 是另一接口的独立契约路径。 | 元 | `disproved` |
 | TDX-eltdx(适配层) · `limit_down_price` | limit_down_price | 跌停价 | — | `verified` |
 
 ### `limit_tag` — ambiguous
@@ -2549,13 +2567,13 @@
 | 开盘红 · `limit_time` | limit_time | 涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致 | Unix 秒 | `verified` |
 | 开盘红(Levistock适配) · `limit_time` | limit_time | 涨停时间；值为 Unix 秒时间戳。首次封板或末次封板口径未由本证据单独确认。 | Unix 秒 | `verified` |
 
-### `limit_up` — incomplete
+### `limit_up` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `limit_up` | — | — | — | `unverified` |
+| TDX(双命名源) · `limit_up` | tdx_get_quote_full.limit_up | 项目行情包装层按昨收和证券价格限制规则计算的涨停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | 元 | `disproved` |
 | 新浪(扩展API) · `limit_up` | limit_up / limit_down | 涨跌停价 | — | `unverified` |
 
 ### `limit_up_count` — incomplete
@@ -2577,13 +2595,13 @@
 | 开盘啦(kpl) · `list` | — | — | — | `unverified` |
 | 财联社(cls) · `list` | — | — | — | `unverified` |
 
-### `locked_amount` — incomplete
+### `locked_amount` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `locked_amount` | — | — | — | `unverified` |
+| TDX(双命名源) · `locked_amount` | — | TDX(双命名源) 的旧错误来源身份；项目已验证的 locked_amount 属于 TDX-eltdx(适配层) 的不同来源/完整路径，不移植到此身份。 | — | `disproved` |
 | TDX-eltdx(适配层) · `locked_amount` | locked_amount | 买一档挂单金额；按 bid1 × bid_vol1 × 100 计算，不等同涨停总封单金额 | 元 | `verified` |
 
 ### `low` — ambiguous
@@ -2756,7 +2774,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `name` | name | 证券名称 | — | `verified` |
-| TDX(双命名源) · `name` | — | — | — | `unverified` |
+| TDX(双命名源) · `name` | tdx_get_quote_full.name | 统一行情包装层中的证券名称字段；TDX 快照 SecurityQuote 不含名称，当前包装值来自回退上下文。raw_eltdx 中的 name 是 global_helpers.realtime_rank.rows[].name 的另一来源/完整路径。 | — | `disproved` |
 | TDX-eltdx(适配层) · `name` | name | — | — | `unverified` |
 | 东财-push2ex · `name` | stock_name | 东财涨停股池记录对应的证券简称，对应东方财富官方页面“名称”列。 | — | `verified` |
 | 东财-热榜(em_hot) · `name` | — | — | — | `verified` |
@@ -2813,13 +2831,13 @@
 | 开盘红 · `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | — | `unverified` |
 | 开盘红(Levistock适配) · `open_time` | limit_time / open_time | 待破解 | — | `unverified` |
 
-### `pb` — incomplete
+### `pb` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `pb` | — | — | — | `unverified` |
+| TDX(双命名源) · `pb` | tdx_get_quote_full.pb | 统一行情包装层的市净率值；当前 TDX 快照模型没有 PB 字段，包装层可由 ZHB/Tencent 回退填充。官方 TQ PB_MRQ 是另一接口路径，不自动映射。 | 倍 | `disproved` |
 | 开盘啦(kpl) · `pb` | pb | 市净率 | 倍 | `unverified` |
 
 ### `pct` — incomplete
@@ -2839,32 +2857,32 @@
 |:--|:--|:--|:--|:--|
 | 开盘啦(kpl) · `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | `conflict` |
 
-### `pe_lyr` — incomplete
+### `pe_lyr` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `pe_lyr` | — | — | — | `unverified` |
+| TDX(双命名源) · `pe_lyr` | tdx_get_quote_full.pe_lyr | 统一行情包装层从 Tencent 静态 PE 槽位透传的值；当前 TDX 快照模型无该字段。官方 TQ MorePE 的口径按证券类型变化，不自动映射。 | 倍 | `disproved` |
 | ZHB-tdxstat · `pe_lyr` | pe_lyr | 静态市盈率（LYR/上一完整年度业绩口径）；180 组、9 个来源日期与已验证静态 PE 参照相符，最大差 0.006 倍；精度差异不证明跨源逐值相同。 | 倍 | `verified` |
 
-### `pe_static` — incomplete
+### `pe_static` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `pe_static` | — | — | — | `unverified` |
+| TDX(双命名源) · `pe_static` | — | 已删除的重复包装输出键；代码自 2026-09-04 起只保留 pe_lyr，当前 TDX adapter/raw 也没有 pe_static 原始路径。 | — | `disproved` |
 | 开盘啦(kpl) · `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | `conflict` |
 
 ### `pe_ttm` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `pe_ttm` | pe_ttm | 滚动市盈率（TTM） | — | `verified` |
-| TDX(双命名源) · `pe_ttm` | — | — | — | `unverified` |
+| TDX(双命名源) · `pe_ttm` | pe_ttm | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.pe_ttm，20/20 同股值与 ZHB stat.pe_ttm 和合并对象 full.pe_ttm 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | — | `disproved` |
 | TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | 滚动市盈率 | 倍 | `verified` |
 | ZHB-tdxstat · `pe_ttm` | pe_ttm | 市盈率（TTM） | 倍 | `verified` |
 | 同花顺-fuyao · `pe_ttm` | valuation.pe_ttm | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_ttm。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | 倍 | `disproved` |
@@ -3185,13 +3203,13 @@
 | 开盘红(Levistock适配) · `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | `unverified` |
 | 新浪(扩展API) · `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | 万分比 | `verified` |
 
-### `turnover_pct` — incomplete
+### `turnover_pct` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `turnover_pct` | — | — | — | `unverified` |
+| TDX(双命名源) · `turnover_pct` | tdx_get_quote_full.turnover_pct | 统一行情包装层的换手率值；当前 easy_tdx 快照模型不含该字段，值由 ZHB/Tencent 回退提供。官方 TQ fHSL 是另一接口路径，不自动映射。 | % | `disproved` |
 | 开盘啦(kpl) · `turnover_pct` | turnover_pct | 换手率% | % | `unverified` |
 
 ### `turnover_rate` — ambiguous
@@ -3233,13 +3251,13 @@
 | 市场源(market_sources) · `value` | value | 待破解 | — | `unverified` |
 | 开盘啦(kpl) · `value` | — | — | — | `unverified` |
 
-### `vol_ratio` — incomplete
+### `vol_ratio` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `vol_ratio` | — | — | — | `unverified` |
+| TDX(双命名源) · `vol_ratio` | tdx_get_quote_full.vol_ratio | 统一行情包装层从 Tencent 槽位透传的量比值；当前 TDX 快照模型不含该字段。其它来源的同名字段按其完整路径独立处理。 | — | `disproved` |
 | 市场源(market_sources) · `vol_ratio` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `vol_ratio` | vol_ratio | 量比 | — | `unverified` |
 
@@ -3312,6 +3330,8 @@
 | FTShare REST | `change_rate` | change_rate | 日涨跌幅；0.03 表示 3% | `verified` |
 | FTShare REST | `close` | close | 收盘价/最新价 | `verified` |
 | FTShare REST | `symbol_id` | symbol_id | FTShare A股行情列表返回中的六位证券代码字符串；与同一记录 symbol 去除交易所后缀后的数字部分相同。结论限于该接口及已观察 A 股样本，不推定为跨接口通用证券 ID。 | `verified` |
+| TDX(双命名源) | `Date` | — | 日期键本身有效，但该旧 registry 身份未限定接口或父对象，无法唯一指向 K 线日、股本记录日、统计数据日或公式结果日。只退役裸路径身份；精确日期含义保存在接口级契约中。 | `disproved` |
+| TDX(双命名源) | `ErrorId` | ErrorId | get_stock_info 官方样例响应中的 ErrorId 键；示例值为 0，完整错误码表及成功/失败映射未说明 | `verified` |
 | TDX(双命名源) | `Inside` | Inside | 内盘；板块指数时表示跌停家数 | `verified` |
 | TDX(双命名源) | `IsT0Fund` | IsT0Fund | 是否是 T+0 基金 | `verified` |
 | TDX(双命名源) | `JZC` | JZC | 净资产/股东权益 | `verified` |
@@ -3319,34 +3339,70 @@
 | TDX(双命名源) | `Outside` | Outside | 外盘；板块指数时表示涨停家数 | `verified` |
 | TDX(双命名源) | `ShapeValue` | ShapeValue | 短期形态+中期形态+长期形态编号 | `verified` |
 | TDX(双命名源) | `Yield` | Yield | 应计利息(债券)/占款天数(回购) | `verified` |
+| TDX(双命名源) | `amount_1d` | amount_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_1d，20/20 同股值与 ZHB stat2.amount_1d 和合并对象 full.amount_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
+| TDX(双命名源) | `amount_2d` | amount_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.amount_2d，20/20 同股值与 ZHB stat2.amount_2d 和合并对象 full.amount_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
 | TDX(双命名源) | `amount_wan` | amount_wan | TDX 行情快照成交金额；由原始 amount 以元计值除以 10000 得到，输出单位为万元。 | `verified` |
 | TDX(双命名源) | `average_price` | average_price | 均价；源端有值时返回（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `b_vol` | b_vol | 外盘成交量（主动买入侧）；板块指数时表示涨停家数。 | `verified` |
 | TDX(双命名源) | `baoliu2` | report_period_end_month | 财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证 | `verified` |
+| TDX(双命名源) | `bvps` | — | 旧英文别名登记，不是当前 TDX adapter 的原始响应路径；项目 0x0010 的 meigujingzichan 及 TQ FN4/J_mgjzc 是各自独立路径，本裁决不建立别名。 | `disproved` |
 | TDX(双命名源) | `category_name` | category_name | ELTDX CapitalChangeRecord 中 XDXR 事件类别的可读名称；与 category_raw/category 类别编号区分。具体类别码表不在本次确认范围内。 | `verified` |
 | TDX(双命名源) | `change_amt` | change_amt | TDX 行情快照涨跌额，即最新价减昨收价；价格单位为元/股。 | `verified` |
+| TDX(双命名源) | `change_pct_1d` | change_pct_1d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_1d，20/20 同股值与 ZHB stat.change_pct_1d 和合并对象 full.change_pct_1d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
+| TDX(双命名源) | `change_pct_2d` | change_pct_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_2d，20/20 同股值与 ZHB stat.change_pct_2d 和合并对象 full.change_pct_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares | 流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | `verified` |
+| TDX(双命名源) | `entrust_ratio` | tdx_get_quote_full.entrust_ratio | 统一行情包装层的委比值；当前 easy_tdx SecurityQuote 模型不含该字段，值只能来自包装层回退，不是本项目当前 TDX 原始快照字段。 | `disproved` |
 | TDX(双命名源) | `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | `verified` |
+| TDX(双命名源) | `float_capital` | reminders.latest_indicators.float_capital | 项目从 TDX F10「最新提示」中的“实际流通A股(万股)”文本解析并组装出的字段；不是 TDX 上游返回键。通达信 Quant 的 ActiveCapital 属于另一接口路径，不据名称相近建立别名。 | `disproved` |
+| TDX(双命名源) | `float_mcap_yi` | tdx_get_quote_full.float_mcap_yi | 统一行情包装层的流通市值值（亿元）；来自 Tencent 行情回退，不是 TDX 原始快照字段。官方 TQ Ltsz 为另一接口路径，不自动映射。 | `disproved` |
+| TDX(双命名源) | `get_gpjy_value.<GPxx>[].Date` | get_gpjy_value.<GPxx>[].Date | 个股交易/事件指标序列记录日期 | `verified` |
+| TDX(双命名源) | `get_market_data.Date` | get_market_data.Date | K线记录日期；具体粒度由 period 指定 | `verified` |
+| TDX(双命名源) | `gross_margin` | get_gross_margin_and_roe.gross_margin | 项目财务 helper 输出：优先解析 TDX F10“营业毛利率”，缺失时可按营业收入与营业成本计算或走新浪回退；不是单一 TDX 原始字段。官方 FN202“销售毛利率”是另一精确接口路径，未据此合并。 | `disproved` |
 | TDX(双命名源) | `gudongrenshu` | gudongrenshu | 股东户数；样本对应发行人报告期末普通股股东总数，按来源计数口径记录。 | `verified` |
+| TDX(双命名源) | `huobi_zijin` | — | 旧文档伪字段名，不是当前 TDX 0x0010 或行情原始响应键；TQ CashZJ 是另一精确接口代码，不自动映射。 | `disproved` |
 | TDX(双命名源) | `inside_volume` | inside_volume | 内盘量（指数场景为跌停家数；AxData TDX 快照模型路径，官方概念为 Inside） | `verified` |
 | TDX(双命名源) | `ipodate` | ipodate | ipo_date 的无下划线兼容别名，表示证券上市日期；不是报告或采集日期。 | `verified` |
-| TDX(双命名源) | `jingzichan` | — | 净资产 / 股东权益 | `verified` |
+| TDX(双命名源) | `jing_zichan` | jingzichan | 净资产 / 股东权益 | `verified` |
+| TDX(双命名源) | `jingzichan` | jingzichan | 净资产 / 股东权益 | `verified` |
 | TDX(双命名源) | `last_price` | last_price | 最新价或最新值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `latest_indicators` | reminders.latest_indicators | 项目从 TDX F10「最新提示」文本按标签和模式解析后组装的指标容器，不是上游独立响应字段；当前归档位置为 stocks.<code>.reminders.latest_indicators。此裁决只确认输出路径来源，不确认子项语义、报告期或单位。 | `disproved` |
+| TDX(双命名源) | `limit_down` | tdx_get_quote_full.limit_down | 项目行情包装层按昨收和证券价格限制规则计算的跌停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | `disproved` |
+| TDX(双命名源) | `limit_down_price` | tdx_get_quote_full.limit_down_price | Tencent 行情槽位包装出的跌停价（元）；不是 TDX 原始响应字段。官方 TQ DTPrice 是另一接口的独立契约路径。 | `disproved` |
+| TDX(双命名源) | `limit_up` | tdx_get_quote_full.limit_up | 项目行情包装层按昨收和证券价格限制规则计算的涨停价（元）；可能在缺值时再由其他行情回退补充，不是 TDX wire 字段。 | `disproved` |
+| TDX(双命名源) | `locked_amount` | — | TDX(双命名源) 的旧错误来源身份；项目已验证的 locked_amount 属于 TDX-eltdx(适配层) 的不同来源/完整路径，不移植到此身份。 | `disproved` |
+| TDX(双命名源) | `long_term_debt` | — | 旧文档伪路径；项目没有 TDX long_term_debt 原始字段。现存 changqifuzhai 等负债项不能改释为长期借款或长期债务。 | `disproved` |
+| TDX(双命名源) | `market_snapshot` | — | 当前 TDX registry 中的未限定名称不是响应字段；TDX Quant 文档中的 market snapshot 是接口/方法概念，其他来源出现的同名容器必须按其来源及父级路径登记。 | `disproved` |
+| TDX(双命名源) | `mcap_yi` | tdx_get_quote_full.mcap_yi | 统一行情包装层的总市值值（亿元）；来自 Tencent 行情回退，不是 TDX 原始快照字段。官方 TQ Zsz 为另一接口路径，不自动映射。 | `disproved` |
+| TDX(双命名源) | `meigugongji` | — | 旧拼音伪路径，不是当前 TDX 0x0010 返回键；TQ J_mggjj 是另一接口精确字段，不证明本路径存在。 | `disproved` |
+| TDX(双命名源) | `meiguweifenpei` | — | 旧拼音伪路径，不是当前 TDX 0x0010 返回键；TQ J_mgwfp 是另一接口精确字段，不证明本路径存在。 | `disproved` |
+| TDX(双命名源) | `more_info` | — | 接口方法名的旧缩写 token，不是响应字段；官方接口名为 get_more_info_batch，返回键需逐个登记。 | `disproved` |
+| TDX(双命名源) | `name` | tdx_get_quote_full.name | 统一行情包装层中的证券名称字段；TDX 快照 SecurityQuote 不含名称，当前包装值来自回退上下文。raw_eltdx 中的 name 是 global_helpers.realtime_rank.rows[].name 的另一来源/完整路径。 | `disproved` |
 | TDX(双命名源) | `net_profit` | finance_info.jinglirun | 旧统一层别名，不是独立 TDX 原始路径；当前原始路径为 finance_info.jinglirun | `disproved` |
 | TDX(双命名源) | `net_profit_yuan` | net_profit_yuan | 净利润金额；由 jing_li_run_raw_float（千元）乘 1000 得到 | `verified` |
 | TDX(双命名源) | `outside_volume` | outside_volume | 外盘量（指数场景为涨停家数；AxData TDX 快照模型路径，官方概念为 Outside） | `verified` |
+| TDX(双命名源) | `pb` | tdx_get_quote_full.pb | 统一行情包装层的市净率值；当前 TDX 快照模型没有 PB 字段，包装层可由 ZHB/Tencent 回退填充。官方 TQ PB_MRQ 是另一接口路径，不自动映射。 | `disproved` |
+| TDX(双命名源) | `pe_lyr` | tdx_get_quote_full.pe_lyr | 统一行情包装层从 Tencent 静态 PE 槽位透传的值；当前 TDX 快照模型无该字段。官方 TQ MorePE 的口径按证券类型变化，不自动映射。 | `disproved` |
+| TDX(双命名源) | `pe_static` | — | 已删除的重复包装输出键；代码自 2026-09-04 起只保留 pe_lyr，当前 TDX adapter/raw 也没有 pe_static 原始路径。 | `disproved` |
+| TDX(双命名源) | `pe_ttm` | pe_ttm | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.pe_ttm，20/20 同股值与 ZHB stat.pe_ttm 和合并对象 full.pe_ttm 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
 | TDX(双命名源) | `pre_close` | pre_close | 前收盘价或上一期值（AxData TDX 实时快照模型语义；不表示当前项目采集路径） | `verified` |
 | TDX(双命名源) | `quote_full.amount_1d` | quote_full.amount_1d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.amount_2d` | quote_full.amount_2d | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
 | TDX(双命名源) | `quote_full.change_pct` | quote_full.change_pct | 涨跌幅；当前字段探针按 (price - last_close) / last_close * 100 派生，并非通达信行情适配器原始键。2026-10-15 的历史复合采集值来自 ZHB 回退。 | `disproved` |
 | TDX(双命名源) | `quote_full.pe_ttm` | quote_full.pe_ttm | 历史复合采集回退值；保留期仅在 2026-10-15 记录中出现，逐值来自 ZHB。该路径不是通达信行情适配器字段。 | `disproved` |
+| TDX(双命名源) | `reserve2` | report_period_end_month | 财务记录对应的报告期末月份；本轮实测 6 对应 2026-06-30、9 对应 2026-09-30，其他月份和年份未验证 | `verified` |
 | TDX(双命名源) | `rise_speed` | rise_speed | 涨速百分比指标；具体计算窗口及与官方协议槽位的对应关系未确认（AxData TDX 快照模型语义，不证明当前项目采集路径） | `verified` |
+| TDX(双命名源) | `roe` | get_gross_margin_and_roe.roe | 项目财务 helper 输出：优先解析 TDX F10“加权净资产收益率”，缺失时可能经财务公式或新浪数据回退；不是单一 TDX 原始字段。官方 FN281/J_jyl 属于各自接口的独立路径，未建立别名。 | `disproved` |
 | TDX(双命名源) | `s_vol` | s_vol | 内盘成交量（主动卖出侧）；板块指数时表示跌停家数。 | `verified` |
+| TDX(双命名源) | `shiyebianma` | — | 旧拼音/错字伪路径，不是当前 TDX 返回键；项目中的 industry 字段为独立路径，不据此建立别名。 | `disproved` |
+| TDX(双命名源) | `short_term_debt` | — | 旧文档伪路径；项目没有 TDX short_term_debt 原始字段，liudongfuzhai 表示流动负债而非短期借款/短期债务。 | `disproved` |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan | 总资产金额；由 zong_zi_chan_raw_float（千元）乘 1000 得到 | `verified` |
+| TDX(双命名源) | `total_capital` | reminders.latest_indicators.total_capital | 项目从 TDX F10「最新提示」中的“总股本(万股)”文本解析并组装出的字段；不是 TDX 上游返回键。通达信 Quant 的 J_zgb 属于另一接口路径，不据名称相近建立别名。 | `disproved` |
 | TDX(双命名源) | `total_shares` | total_shares | 总股本；由 zong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
+| TDX(双命名源) | `turnover_pct` | tdx_get_quote_full.turnover_pct | 统一行情包装层的换手率值；当前 easy_tdx 快照模型不含该字段，值由 ZHB/Tencent 回退提供。官方 TQ fHSL 是另一接口路径，不自动映射。 | `disproved` |
 | TDX(双命名源) | `updateddate` | updateddate | updated_date 的无下划线兼容别名，表示该证券财务记录的更新日期；不等同报告期末、公告披露日、采集日或来源级数据日期。 | `verified` |
+| TDX(双命名源) | `ushort` | — | 协议/编程类型 token，不是 JSON 响应字段或 TDX 采集路径。 | `disproved` |
+| TDX(双命名源) | `vol_ratio` | tdx_get_quote_full.vol_ratio | 统一行情包装层从 Tencent 槽位透传的量比值；当前 TDX 快照模型不含该字段。其它来源的同名字段按其完整路径独立处理。 | `disproved` |
 | TDX(双命名源) | `volume` | volume | 成交量，按 AxData TDX 快照模型的源端行情口径返回；不表示当前项目采集路径 | `verified` |
 | TDX(双命名源) | `vzangsu` | vzangsu | 量涨速（官方未说明单位、计算窗口和算法） | `verified` |
 | TDX(双命名源) | `zhuying_lirun` | zhuyinglirun | 营业成本；当前实证范围为非金融发行人合并利润表 2026 年第三季度年初至报告期末值。 | `verified` |

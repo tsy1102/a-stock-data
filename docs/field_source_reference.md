@@ -396,15 +396,17 @@ flowchart TD
 | ❌ 错误 key | ✅ 应改为 | 问题位置 | 影响 |
 |:---|:---|:---|:---|
 | `gudong_renshu` | `gudongrenshu` | [sc_datasource.py:228](../stock_common/sc_datasource.py#L228) `_holder_fetch_tdx_optimized` | **股东户数永远拿不到**（拼写错误，多了下划线） |
-| `total_capital` | `zongguben` | [sc_capital_cache.py:125](../stock_common/sc_capital_cache.py#L125) `_fetch_share_capital` | **TDX 总股本永远拿不到**（错用股本 cache 的 key） |
-| `float_capital` | `liutongguben` | [sc_capital_cache.py:126](../stock_common/sc_capital_cache.py#L126) `_fetch_share_capital` | **TDX 流通股本永远拿不到** |
+| `total_capital` | `zongguben` | 旧股本缓存曾错用该 helper 键，现已修复；它也会由 F10“总股本(万股)”提示解析器生成在 `reminders.latest_indicators` | 项目提示输出键，不是当前 0x0010 原始字段路径；官方 TQ 精确键 `J_zgb` 是另一路接口 |
+| `float_capital` | `liutongguben` | 旧股本缓存曾错用该 helper 键，现已修复；它也会由 F10“实际流通A股(万股)”提示解析器生成在 `reminders.latest_indicators` | 项目提示输出键，不是当前 0x0010 原始字段路径；官方 TQ 精确键 `ActiveCapital` 是另一路接口 |
 | `latest_indicators` | **项目对 TDX F10「最新提示」文本解析生成的容器**（不是上游响应字段） | 历史错配记录：旧股本缓存曾从 0x0010 读取此键，现已修复 | 容器写在个股记录的提醒子对象中；容器子项的业务口径须分别核验 |
-| `short_term_debt` | `liudongfuzhai` | 仅在 [docs/field_dict.md](../docs/field_dict.md) 文档 | 文档错误，代码未引用 |
-| `long_term_debt` | `changqifuzhai` | 同上 | 文档错误，代码未引用 |
-| `meigugongji` | `zibengongjijin / 10000` | 同上 | 文档错误，应是 zibengongjijin 除以 10000 |
-| `meiguweifenpei` | `weifenpeilirun / 10000` | 同上 | 文档错误，应是 weifenpeilirun 除以 10000 |
-| `shiyebianma` | `industry` | 同上 | 文档错误，协议中是 industry |
-| `huobi_zijin` | **F10 接口字段**（0x0010 不含） | 同上 | 文档错误，0x0010 不含货币资金字段 |
+| `short_term_debt` | 无已登记精确 TDX 路径 | 仅在旧字段说明中 | 不能将 `liudongfuzhai`（流动负债）等同于短期借款/短期债务 |
+| `long_term_debt` | 无已登记精确 TDX 路径 | 仅在旧字段说明中 | 不能将 `changqifuzhai`（长期负债）等同于长期借款/长期债务 |
+| `meigugongji` | `zibengongjijin` 是 0x0010 总额字段 | 仅在旧字段说明中 | 不可用总额简单除以 10000 伪造每股值；官方 TQ 的每股字段精确代码是另一接口的 `J_mggjj` |
+| `meiguweifenpei` | `weifenpeilirun` 是 0x0010 总额字段 | 仅在旧字段说明中 | 不可用总额简单除以 10000 伪造每股值；官方 TQ 的每股字段精确代码是另一接口的 `J_mgwfp` |
+| `shiyebianma` | `industry` | 仅在旧字段说明中 | 不是协议字段名；0x0010 使用 `industry` |
+| `huobi_zijin` | 无此 0x0010 路径 | 仅在旧字段说明中 | 官方 TQ `get_more_info_batch` 的精确字段名为 `CashZJ`（货币资金，万元）；不将旧伪键登记为其别名 |
+
+> **2026-11-22 路径边界补充**：上表中的小写名字不是都属于 TDX 上游响应。`float_capital`、`total_capital`、`gross_margin` 和 `roe` 等可能是项目从 F10 文本构造的 helper 输出；`pb`、`mcap_yi`、`pe_lyr`、`turnover_pct` 等可能来自 ZHB/Tencent 复合回退。逐路径处置和证据见 [`20261122_tdx_remaining_unknowns.md`](field_verification/adjudications/20261122_tdx_remaining_unknowns.md)。通达信量化平台 `get_stock_info`、`get_more_info_batch`、`get_financial_data` 的官方代码路径（如 `Name`、`ActiveCapital`、`J_zgb`、`FN4`、`FN202`）单独登记；不据名称相似认定它们已由当前 7709/TCP 采集器获取或与小写键逐值相等。
 
 ### 2.4 字段组在策略中的典型应用公式
 

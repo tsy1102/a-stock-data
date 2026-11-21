@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-22",
+  "decisions": [
+    {
+      "id": "tdx-scoped-market-data-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_market_data.Date"
+      },
+      "canonical": "get_market_data.Date",
+      "meaning": "K线记录日期；具体粒度由 period 指定",
+      "unit": "YYYYMMDD / 官方示例显示为日期索引",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_market_data 返回字段表将 Date 定义为行情数据日期，并与 Time、OHLC、Volume、Amount 并列。此处以接口名限定路径，语义为所请求周期的 K 线日期；该 TQ 接口不是本项目当前 TCP 原始采集器。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_market_data 返回字段表",
+        "locator": "`Date`（str，日期；与 Time、OHLC、Volume、Amount 并列的行情数据日期）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10g60jt68sc.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-gb-info-by-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_gb_info_by_date[].Date"
+      },
+      "canonical": "get_gb_info_by_date[].Date",
+      "meaning": "个股股本历史记录日期",
+      "unit": "日期数值（官方样例为 YYYYMMDD）",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_gb_info_by_date 输出把 Date 与同条记录中的 Zgb、Ltgb 配对，样例为 YYYYMMDD 数值，因此此完整路径表示个股股本历史记录日期。仅确认 TQ 接口契约，不将其映射到裸 Date、项目 0x0010 或 F10 派生键。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_gb_info_by_date 输出数据",
+        "locator": "记录键 `Date`（double，日期；同一记录包含 Zgb、Ltgb）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1hc4303vsv1fk.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-exday-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_exday_data[].Date"
+      },
+      "canonical": "get_exday_data[].Date",
+      "meaning": "个股日线资金统计记录日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_exday_data 将 Date 定义为日线资金统计数据的日期，并与资金统计字段同条返回。只确认此接口的记录日期，不解释为采集日期、报告期或其他接口日期。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_exday_data 输出数据",
+        "locator": "记录键 `Date`（str，日期；与成交笔数、成交量/额分布及挂单统计同条返回）",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1hh9gktmqsv5c.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-scjy-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_scjy_value.<SCxx>[].Date"
+      },
+      "canonical": "get_scjy_value.<SCxx>[].Date",
+      "meaning": "市场级指标序列记录日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_scjy_value 样例按指标代码返回 Date/Value 记录。该路径日期属于市场级指标序列；其事件/披露滞后仍按具体指标定义判断，不等同于行情运行日。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_scjy_value 数据样例",
+        "locator": "SC01/SC02 等指标的序列记录键 `Date`（样例 20250102），与 `Value` 并列",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10p8op6ia9g.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-bkjy-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_bkjy_value.<BKxx>[].Date"
+      },
+      "canonical": "get_bkjy_value.<BKxx>[].Date",
+      "meaning": "板块级指标序列记录日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_bkjy_value 样例按板块指标代码返回 Date/Value 记录。此为板块级指标序列日期，不与市场级、个股级或报告期日期合并。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_bkjy_value 数据样例",
+        "locator": "BK5/BK6 等指标的序列记录键 `Date`（样例 20250102），与 `Value` 并列",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10p0ncmp5mc.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-gpjy-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "get_gpjy_value.<GPxx>[].Date"
+      },
+      "canonical": "get_gpjy_value.<GPxx>[].Date",
+      "meaning": "个股交易/事件指标序列记录日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 get_gpjy_value 样例按个股指标代码返回 Date/Value 记录；接口字段含股东人数、融资融券、分红及其他事件型指标。此路径表达记录日期，具体指标还需按官方指标说明解释日期有效性。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "get_gpjy_value 数据样例",
+        "locator": "GP03 等个股指标的序列记录键 `Date`（样例 20250102），与 `Value` 并列",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10muc82r55k.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-formula-by-file-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "formula_by_file.<stock>.<output>[].Date"
+      },
+      "canonical": "formula_by_file.<stock>.<output>[].Date",
+      "meaning": "通达信公式输出值对应日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 formula_by_file 文档说明仅当 return_date=True 时，输出线记录含 Date/Value，Date 是结果对应日期。它是公式计算窗口内的指标日期，不是采集时间或财报更新日期。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "formula_by_file 返回数据",
+        "locator": "`return_date=True` 时输出线记录键 `Date`；文档说明为结果对应的日期",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1h3hrvkp4sc0g/mindoc-1hnil4jq8t5f4.html"
+      }
+    },
+    {
+      "id": "tdx-scoped-formula-process-mul-date-20261122",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "formula_process_mul.<stock>.<output>[].Date"
+      },
+      "canonical": "formula_process_mul.<stock>.<output>[].Date",
+      "meaning": "批量通达信公式输出值对应日期",
+      "unit": "YYYYMMDD 字符串",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "rationale": "官方 formula_process_mul 文档明确 return_date 控制结果是否附带日期，样例按 Date/Value 返回公式输出。此路径表示公式结果日期，和其它接口的 Date 保持独立。 本次只登记完整接口路径和日期含义，不声明本项目现有采集调用该接口、不建立别名或跨源映射。",
+      "source_contract": {
+        "authority": "通达信量化平台官方文档",
+        "path": "formula_process_mul 返回数据",
+        "locator": "`return_date=True` 时输出线记录键 `Date`；文档样例为日期/值序列",
+        "revision": "官方网页于 2026-11-22 核验",
+        "url": "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1h3hrvkp4sc0g/mindoc-1h4ad5lisvdfg.html"
+      }
+    }
+  ]
+}

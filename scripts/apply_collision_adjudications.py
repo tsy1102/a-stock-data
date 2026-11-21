@@ -89,11 +89,11 @@ EMPIRICAL_RESOLVABLE_CONFLICT_RESOLUTIONS = {
 
 
 def _inside_verification_dir(
-    path_value: str, label: str, relative_base: Path = REPO_ROOT
+    path_value: str, label: str, relative_base: Path | None = None
 ) -> tuple[Path, str]:
     candidate = Path(path_value)
     if not candidate.is_absolute():
-        candidate = relative_base / candidate
+        candidate = (relative_base or REPO_ROOT) / candidate
     resolved = candidate.resolve()
     try:
         relative = resolved.relative_to(VERIFY_DIR.resolve())
@@ -493,31 +493,118 @@ def _validate_same_source_alias(
         raise ValueError("same-source alias anchor must already be verified")
     if alias_record.get("attribute_conflicts") not in (None, {}, []):
         raise ValueError("same-source alias anchor has attribute conflicts")
+    if alias_record.get("attribute_ambiguities") not in (None, {}, []):
+        raise ValueError("same-source alias anchor has attribute ambiguities")
     alias_status_evidence = alias_record.get("status_evidence")
     if not isinstance(alias_status_evidence, dict):
         raise ValueError("same-source alias anchor must retain verified status evidence")
     reference_statuses = alias_status_evidence.get("reference_statuses")
     values = alias_status_evidence.get("values")
-    if (
-        not isinstance(reference_statuses, list)
-        or any(not isinstance(status, str) for status in reference_statuses)
-        or set(reference_statuses) != {"verified"}
-        or alias_status_evidence.get("registry_aggregate_status") != "verified"
-        or not isinstance(values, list)
-        or any(not isinstance(status, str) for status in values)
-        or set(values) != {"verified"}
-    ):
-        raise ValueError("same-source alias anchor status evidence is not unambiguously verified")
     reference_evidence = alias_record.get("reference_evidence")
-    if (
-        not isinstance(reference_evidence, list)
-        or not reference_evidence
-        or any(
-            not isinstance(item, dict) or item.get("status") != "verified"
+    strict_verified_anchor = (
+        isinstance(reference_statuses, list)
+        and all(isinstance(status, str) for status in reference_statuses)
+        and set(reference_statuses) == {"verified"}
+        and alias_status_evidence.get("registry_aggregate_status") == "verified"
+        and isinstance(values, list)
+        and all(isinstance(status, str) for status in values)
+        and set(values) == {"verified"}
+        and isinstance(reference_evidence, list)
+        and bool(reference_evidence)
+        and all(
+            isinstance(item, dict) and item.get("status") == "verified"
             for item in reference_evidence
         )
+    )
+
+    empirical_verified_anchor = False
+    if (
+        alias_record.get("status_resolution") == "verified_by_empirical_addendum"
+        and alias_status_evidence.get("evidence_basis") == "empirical_source_field_semantics"
+        and alias_status_evidence.get("evidence_level") == "E3"
+        and values == ["verified"]
+        and isinstance(reference_statuses, list)
+        and all(status in {"verified", "unverified"} for status in reference_statuses)
+        and alias_status_evidence.get("registry_aggregate_status") in {"verified", "unverified"}
     ):
-        raise ValueError("same-source alias anchor reference evidence is not verified")
+        evidence_file_value = alias_status_evidence.get("evidence_file")
+        evidence_digest = alias_status_evidence.get("evidence_sha256")
+        if isinstance(evidence_file_value, str) and evidence_file_value.strip():
+            evidence_file, _ = _inside_verification_dir(
+                evidence_file_value, "empirically verified same-source alias anchor evidence"
+            )
+
+            def anchor_evidence_path_matches(value: Any) -> bool:
+                if not isinstance(value, str) or not value.strip():
+                    return False
+                try:
+                    candidate_path, _ = _inside_verification_dir(
+                        value, "empirically verified same-source alias anchor evidence"
+                    )
+                except ValueError:
+                    return False
+                return candidate_path == evidence_file
+
+            adjudication_ids = alias_status_evidence.get("adjudication_ids", [])
+            if not isinstance(adjudication_ids, list):
+                adjudication_ids = []
+            anchor_adjudications = alias_record.get("adjudications")
+            if not isinstance(anchor_adjudications, list):
+                anchor_adjudications = []
+            empirical_adjudication = next(
+                (
+                    item
+                    for item in anchor_adjudications
+                    if isinstance(item, dict)
+                    and item.get("id") in adjudication_ids
+                    and item.get("action")
+                    in {
+                        "verify_empirical_source_semantics",
+                        "append_empirical_source_evidence",
+                    }
+                    and item.get("status") == "verified"
+                    and item.get("evidence_basis") == "empirical_source_field_semantics"
+                    and item.get("evidence_level") == "E3"
+                    and anchor_evidence_path_matches(
+                        item.get("evidence_file") or item.get("decision_file")
+                    )
+                ),
+                None,
+            )
+            empirical_sample = (
+                empirical_adjudication.get("sample")
+                if isinstance(empirical_adjudication, dict)
+                else None
+            )
+            sample_is_complete = (
+                isinstance(empirical_sample, dict)
+                and type(empirical_sample.get("observation_count")) is int
+                and empirical_sample["observation_count"] > 0
+                and empirical_sample.get("counterexample_count") == 0
+            )
+            empirical_reference_exists = isinstance(reference_evidence, list) and any(
+                isinstance(item, dict)
+                and item.get("status") == "verified"
+                and item.get("evidence_basis") == "empirical_source_field_semantics"
+                and item.get("evidence_level") == "E3"
+                and anchor_evidence_path_matches(item.get("evidence_file"))
+                and item.get("adjudication_id")
+                in {None, empirical_adjudication.get("id") if empirical_adjudication else None}
+                for item in reference_evidence
+            )
+            digest_is_valid = evidence_digest is None or (
+                isinstance(evidence_digest, str)
+                and evidence_digest in text_file_sha256_candidates(evidence_file)
+            )
+            empirical_verified_anchor = (
+                evidence_file.is_file()
+                and digest_is_valid
+                and sample_is_complete
+                and empirical_reference_exists
+                and isinstance(empirical_adjudication, dict)
+            )
+    if not strict_verified_anchor and not empirical_verified_anchor:
+        raise ValueError("same-source alias anchor status evidence is not unambiguously verified")
     alias_metadata = _metadata(alias_record)
     if not alias_metadata["meaning"]:
         raise ValueError("same-source alias anchor must have a verified meaning")

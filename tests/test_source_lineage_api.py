@@ -208,6 +208,8 @@ def test_cctv_news_listing_is_not_mislabeled_as_a_mixed_wscn_source():
         ("kpl", "raw_columns.col_08", "main_inflow"),
         ("kpl", "raw_columns.col_11", "amount"),
         ("kpl", "raw_columns.col_14", "turnover_real"),
+        ("sse_e_interaction", "id", "sse_e_interaction[].id"),
+        ("sse_e_interaction", "answer_time", "sse_e_interaction[].answer_time"),
         ("zhb", "full.amount", "amount"),
         ("sina", "[9]", "[9]"),
     ],

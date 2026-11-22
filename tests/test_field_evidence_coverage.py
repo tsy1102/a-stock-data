@@ -124,6 +124,37 @@ def test_same_runtime_code_owned_by_two_identities_is_not_counted():
     assert any("ambiguous_runtime_identity" in item for item in result["diagnostics"])
 
 
+def test_sse_feed_item_contract_paths_resolve_to_verified_registry_identity():
+    source_fields = [
+        {
+            "source": "沪深交易所",
+            "code": "sse_e_interaction[].id",
+            "status": "verified",
+        },
+        {
+            "source": "沪深交易所",
+            "code": "sse_e_interaction[].answer_time",
+            "status": "verified",
+        },
+    ]
+    lineage = _lineage(("沪深交易所", "exchange"))
+    lineage["sources"]["沪深交易所"]["runtime_aliases"] = ["sse_e_interaction"]
+    lineage["runtime_sources"]["sse_e_interaction"] = {}
+    owners, source_records = coverage._identity_index(source_fields, lineage)
+
+    identity, id_reason = coverage._resolve_runtime_identity(
+        "sse_e_interaction.id", owners, source_records, lineage
+    )
+    answer_identity, answer_reason = coverage._resolve_runtime_identity(
+        "sse_e_interaction.answer_time", owners, source_records, lineage
+    )
+
+    assert identity == ("沪深交易所", "sse_e_interaction[].id")
+    assert id_reason == "exact_runtime_identity"
+    assert answer_identity == ("沪深交易所", "sse_e_interaction[].answer_time")
+    assert answer_reason == "exact_runtime_identity"
+
+
 def test_inferred_capture_date_is_candidate_coverage_not_source_as_of_evidence():
     registry = {
         "source_fields": [

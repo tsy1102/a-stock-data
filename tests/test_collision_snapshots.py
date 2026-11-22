@@ -73,7 +73,10 @@ def test_etf_rows_use_their_own_market_date_and_reject_ineligible_rows():
     assert ("159002", "T:20261117") not in store["etf.etf_sz.date"]["vals"]
     assert ("159002", "T:20261117") not in store["etf.etf_sz.listing_date"]["vals"]
     assert store["etf.etf_sz.date"]["sample_meta"][("159001", "T:20261117")]["phase"] == "closed"
-    assert any("2 条市场记录缺少可解析的来源交易日" in item for item in diagnostics)
+    assert any("1 条市场记录缺少可解析的来源交易日" in item for item in diagnostics)
+    assert any(
+        "1 条 SZ ETF 记录日期值可解析，但缺少已验证的数据日期依据" in item for item in diagnostics
+    )
     assert any("1 条市场记录不在所选交易日窗口内" in item for item in diagnostics)
 
 
@@ -135,6 +138,12 @@ def test_etf_record_date_counts_as_explicit_source_date_in_field_coverage():
     sz_target = next(row for row in result["fields"] if row["code"] == "etf_sz.date")
     assert sz_target["source_as_of_days"] == ["T:20261117"]
     assert sz_target["candidate_days"] == ["T:20261117"]
+    assert result["summary"]["missing_market_record_trade_dates"] == 2
+    assert result["summary"]["market_records_unverified_date_basis"] == 1
+    assert any(
+        "1 条 SZ ETF 记录有可解析日期值，但缺少已验证的数据日期依据" in item
+        for item in result["diagnostics"]
+    )
 
 
 def test_event_dc_top_level_collections_keep_full_field_paths():

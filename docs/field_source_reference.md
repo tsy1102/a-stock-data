@@ -2441,7 +2441,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 信号 | 东财龙虎榜 | datacenter-web | `get_dragon_tiger_board` / `get_recent_dragon_tiger` | ✅ |
 | 信号 | 东财解禁 | datacenter-web | `get_lockup_expiry` | ✅ |
 | 信号 | 东财 clist 板块排名/资金流 | push2.eastmoney.com | `get_industry_comparison` / `get_board_fund_flow` | ✅ |
-| 资金 | 东财两融/大宗/股东/分红 | datacenter-web | `get_margin_trading` / `get_block_trade` / `holder_change` / `get_dividend_history` | ✅ |
+| 资金 | 东财两融/大宗/股东户数（股东数据为回退） | datacenter-web | `get_margin_trading` / `get_block_trade` / `_holder_fetch_em` | ✅ |
+| 公司行为 | TDX 分红除权记录 | TDX XDXR | `get_dividend_history` → `tdx_get_dividend_history` | ✅ |
 | 资金 | 东财资金流 120 日 | push2.eastmoney.com | `get_em_history_fund_flow` | ✅ |
 | 新闻 | 东财个股新闻 | search-api-web | `get_eastmoney_stock_news` | ✅ |
 | 新闻 | 财联社快讯 | cls.cn | `cls_telegraph` | ✅ |
@@ -2514,7 +2515,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | [5] | 超大单净流入 | 元 | super_net | ✅ |
 | [6]-[14] | 外部 SKILL 请求的扩展位置；本项目未请求或解析 | - | - | ❓ 无项目样本，不登记为字段 |
 
-#### 12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅
+#### 12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东户数/解禁回退）✅
 
 > 接口：`https://datacenter-web.eastmoney.com/api/data/v1/get`（统一报表查询）
 > 项目函数：`eastmoney_datacenter` + `_em_filter`（报告名参数化）
@@ -2545,42 +2546,51 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 | 字段 | 含义 | 单位 | 项目映射 | 状态 |
 |:---|:---|:---:|:---|:---:|
-| DATE | 日期 | - | date | ✅ |
-| RZYE | 融资余额 | 元 | rzye | ✅ |
-| RZMRE / RZCHE | 融资买入 / 偿还额 | 元 | rzmre / rzche | ✅ |
-| RQYE | 融券余额 | 元 | rqye | ✅ |
-| RQMCL / RQCHL | 融券卖出 / 偿还量 | 股 | rqmcl / rqchl | ✅ |
-| RZRQYE | 两融余额合计 | 元 | rzrqye | ✅ |
+| DATE | 融资融券明细所属交易日 | YYYY-MM-DD | `margin_trading.date` | ✅ |
+| RZYE | 融资余额 | 元 | `margin_trading.rzye` | ✅ |
+| RZMRE / RZCHE | 融资买入 / 偿还额 | 元 | `margin_trading.rzmre` / `margin_trading.rzche` | ✅ |
+| RQYE | 融券余额 | 元 | `margin_trading.rqye` | ✅ |
+| RQMCL / RQCHL | 融券卖出 / 偿还量 | 股 | `margin_trading.rqmcl` / `margin_trading.rqchl` | ✅ |
+| RZRQYE | 两融余额合计 | 元 | `margin_trading.rzrqye` | ✅ |
+
+> `get_margin_trading()` 先尝试 TDX F10，有有效数据时会直接返回；只有 Eastmoney `RPTA_WEB_RZRQ_GGMX` 回退分支对应本表这些 datacenter 路径。保留期两融公式实证和来源日期资格见[2026-11-22 裁决](field_verification/adjudications/20261122_eastmoney_margin_trading_empirical_semantics.md)。
 
 **RPT_DATA_BLOCKTRADE（大宗交易）**：
 
 | 字段 | 含义 | 单位 | 项目映射 | 状态 |
 |:---|:---|:---:|:---|:---:|
-| TRADE_DATE | 交易日期 | - | date | ✅ |
-| DEAL_PRICE / CLOSE_PRICE | 成交价 / 收盘价 | 元 | price / close | ✅ |
-| DEAL_VOLUME | 成交量 | 股 | vol | ✅ |
-| DEAL_AMT | 成交额 | 元 | amount | ✅ |
-| BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | - | buyer / seller | ✅ |
+| TRADE_DATE | 交易日期 | YYYY-MM-DD | `block_trade.date` | ✅ |
+| DEAL_PRICE / CLOSE_PRICE | 成交价 / 收盘价 | 元/股 | `block_trade.price` / `block_trade.close` | ✅ |
+| DEAL_VOLUME | 成交量 | 股（页面按万股展示） | `block_trade.vol` | ✅ |
+| DEAL_AMT | 成交额 | 元（页面按万元展示） | `block_trade.amount` | ✅ |
+| BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | - | `block_trade.buyer` / `block_trade.seller` | ✅ |
+| `premium_pct` | 成交价相对收盘价折溢率 | % | `round((price/close-1)×100, 2)` | 项目派生 |
 
-**RPT_HOLDERNUMLATEST（股东户数）**：
+**当前股东户数回退：RPT_F10_EH_HOLDERNUM**：
+
+| 响应键 | 含义 | 单位 | helper 输出 | 状态 |
+|:---|:---|:---:|:---|:---:|
+| END_DATE | 股东户数统计截止日 | YYYY-MM-DD | `holder_fetch_em.date` | ✅ |
+| HOLDER_TOTAL_NUM | 股东户数 | 户 | `holder_fetch_em.holder_num` | ✅ |
+| AVG_FREE_SHARES | 户均流通股数 | 股/户 | `holder_fetch_em.avg_shares` | ✅ |
+
+> `_holder_fetch_em()` 是 `holder_change()` 的 Eastmoney 回退 helper；`holder_change()` 可能优先返回 TDX F10。当前变化户数和变化率由 `_compute_holder_changes()` 按相邻报告期计算，不是该接口返回列。
+
+**RPT_HOLDERNUMLATEST（历史接口，不是当前 helper 路由）**：
+
+旧接口的 `HOLDER_NUM`、`HOLDER_NUM_CHANGE`、`HOLDER_NUM_RATIO` 等字段记录保留为历史来源字段；不得拿它们代替当前 `RPT_F10_EH_HOLDERNUM` 的 `HOLDER_TOTAL_NUM` 或项目派生的变化量。
+
+**RPT_SHAREBONUS_DET（历史字段定义；当前分红 getter 不再请求此接口）**：
 
 | 字段 | 含义 | 单位 | 项目映射 | 状态 |
 |:---|:---|:---:|:---|:---:|
-| END_DATE | 截止日期 | - | date | ✅ |
-| HOLDER_NUM | 股东户数 | 户 | holder_num | ✅ |
-| HOLDER_NUM_CHANGE | 户数变化 | 户 | change_num | ✅ |
-| HOLDER_NUM_RATIO | 环比变化率 | % | change_ratio | ✅ |
-| AVG_FREE_SHARES | 户均持股 | 股 | avg_shares | ✅ |
+| EX_DIVIDEND_DATE | 历史 Eastmoney 分红事件日期 | 日期 | 旧扁平别名 `date` 已退役 | 历史字段 |
+| PRETAX_BONUS_RMB | 税前现金派息 | 元 | 旧扁平别名 `bonus_rmb` 已退役 | 历史字段 |
+| TRANSFER_RATIO | 每10股转增数量 | 股/10股 | 旧扁平别名 `transfer_ratio` 已退役 | 历史字段 |
+| BONUS_RATIO | 每10股送股数量 | 股/10股 | 旧扁平别名 `bonus_ratio` 已退役 | 历史字段 |
+| ASSIGN_PROGRESS | 旧接口方案进度 | - | 旧扁平别名 `plan` 已退役 | 历史字段 |
 
-**RPT_SHAREBONUS_DET（分红送转）**：
-
-| 字段 | 含义 | 单位 | 项目映射 | 状态 |
-|:---|:---|:---:|:---|:---:|
-| EX_DIVIDEND_DATE | 除权除息日 | - | date | ✅ |
-| PRETAX_BONUS_RMB | 每股派息 | 元 | bonus_rmb | ✅ |
-| TRANSFER_RATIO | 每10股转增 | 股 | transfer_ratio | ✅ |
-| BONUS_RATIO | 每10股送股 | 股 | bonus_ratio | ✅ |
-| ASSIGN_PROGRESS | 分红进度 | - | plan | ✅ |
+> 当前 `get_dividend_history()` 仅调用 TDX XDXR。其输出 `dividend_history.bonus_ratio` 实际映射到 TDX `peigu`（配股比例），不是送股比例；`dividend_history.transfer_ratio` 映射到 `songzhuangu`（送转股数）。详见[当前路径与键名核验](field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md)及[TDX XDXR 来源契约](field_verification/adjudications/20261110_tdx_xdxr_source_contract.md)。不将旧 Eastmoney 路径与 TDX 输出建立映射。
 
 **RPT_LIFT_STAGE（限售解禁）**：
 
@@ -2592,39 +2602,57 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | ABLE_FREE_SHARES | 实际可流通股数 | 万股 | able_shares | ✅ |
 | FREE_RATIO | 占总股本比 | 小数 | ratio | ✅ |
 
-**2026-08-10 实抓复核（5 reportName，限流间隔 1.5s）**：
+> 此处是 Eastmoney fallback 的原始响应键与输入单位。当前 `get_lockup_expiry()` 优先尝试 TDX F10，采集器把两条路线共同规范化到 `lockup_expiry.*`；`raw_datacenter.json` 的该对象不能视为 Eastmoney 原始响应。完整输出路径和派生字段身份见[路径范围审计](field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md)。
+
+**历史接口实抓复核（2026-08-10；不可代表当前 helper 路由）**：
 
 | reportName | 核实结果 |
 |:---|:---|
-| RPT_HOLDERNUMLATEST（股东户数）| ✅ 茅台 2026-03-31 HOLDER_NUM=**243159** = TDX 0x0010 gudongrenshu=243159 **跨源精确一致**；HOLDER_NUM_CHANGE=-12733/RATIO=-4.98% |
+| RPT_HOLDERNUMLATEST（旧股东户数接口）| ✅ 当时茅台 2026-03-31 HOLDER_NUM=**243159**；仅为旧接口历史观察，不作为当前 Eastmoney helper 契约或当前跨源映射依据 |
 | RPTA_WEB_RZRQ_GGMX（两融）| ✅ 茅台 8/7：RZYE 融资余额=175.44亿/RZMRE=3.33亿/RZCHE=3.16亿/RQYE 融券=1.31亿/RZRQYE 合计=176.75亿；**⚠️ filter 列名用 DATE（非 OPDATE——报 9501 列不存在）** |
 | RPT_SHAREBONUS_DET（分红）| ✅ 结构正确（EX_DIVIDEND_DATE/PRETAX_BONUS_RMB/BONUS_RATIO/TRANSFER_RATIO/ASSIGN_PROGRESS）；**⚠️ 需 sortColumns 倒序取最新（默认返回 2002 年最早）** |
 | RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）| ✅ 字段结构正常（茅台 8/7 未上榜=空属正常）|
 | RPT_LIFT_STAGE（解禁）| ✅ 结构正常（茅台近期无解禁=空属正常）|
 
-#### 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）
+#### 12.8.3.1 DataCenter 完整路径、两融公式与输出边界（2026-11-22）
 
-> `raw_datacenter.json` 真实返回 24 叶：其中 9 个两融核心字段（`date/rzye/rzye...` 即 RZYE/RZCHE/RZMRE/RQYE/RQMCL/RQCHL/RZRQYE/lockup_expiry）已在 §12.8.3 主表登记（raw 用 `margin_trading.` 前缀故审计未对齐）。下列 **15 个**为 §12.8.3 未覆盖的真实字段：
+> `raw_datacenter.json` 是适配器输出，不是单一 DataCenter 响应的原样副本。当前采集容器有三类对象：`margin_trading`、`northbound_hold`、`lockup_expiry`；对象键本身不是业务字段。按完整 `(source, code path)` 管理字段，不再把子路径拍平为短名。
 
-| 原始叶 | 含义(最佳已知) | 状态 |
-| :--- | :--- | :---: |
-| margin_trading.rqjmg | 融券净卖出量（股） | ✅ **纠错**：原注"融券净买入额"误；实测 `rqjmg = rqmcl − rqchl`（600519: 5400−3400=2000 实测 2000，误差 0 股） |
-| margin_trading.rzjme | 融资净买入额（元） | ✅ **纠错**：原注"融资净卖出额"误；实测 `rzjme = rzmre − rzche`（600519: 342176105−177837332=164338773 实测 164338773，误差 0 元） |
-| margin_trading.chg_5d | 标的证券近 5 日区间累计涨跌幅(%) | ✅ **纠错**：原注"两融余额5日变化"误；实测 = 5 日前收盘价区间涨幅（600519 chg_5d=-0.5102% 与 (今收/5日前收−1) 精确吻合） |
-| margin_trading.chg_10d | 标的证券近 10 日区间累计涨跌幅(%) | ✅ **纠错**：同 chg_5d 口径，10 日区间涨跌幅 |
-| margin_trading.rzche_5d | 融资偿还额近 5 日累计（元） | ✅ **东财 datacenter 实证**：5 日求和完全吻合 |
-| margin_trading.rzmre_5d | 融资买入额近 5 日累计（元） | ✅ **东财 datacenter 实证**：5 日求和完全吻合 |
-| margin_trading.rzche_10d | 融资偿还额近 10 日累计（元） | ✅ **东财 datacenter 实证**：10 日求和完全吻合 |
-| margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | ✅ **东财 datacenter 实证**：10 日求和完全吻合 |
-| margin_trading.balance_gr | 融资余额单日环比增长率(%) | ✅ **东财 datacenter 实证**：`(rzye_T − rzye_{T-1}) / rzye_{T-1} × 100%`（600519 计算值与接口值精确匹配至小数12位） |
-| northbound_hold.date | 北向持股快照报告期(YYYY-MM-DD) | ✅ **东财 datacenter 实证**：如 `2026-06-30` |
-| northbound_hold.hold_ratio | 北向持股比例（优先 `FREE_SHARES_RATIO`；回退键命中时分母口径随实际键确定） | ✅ **东财 datacenter 实证**：百分数刻度；如 4.4208% |
-| northbound_hold.market_cap | 北向持股市值（元） | ✅ **东财 datacenter 实证**：与 `HOLD_SHARES × CLOSE_PRICE` 精确相符 |
-| northbound_hold.hold_shares | 北向持股数量（股） | ✅ **东财 datacenter 实证**：600519 于 2026-09-30 为 55,263,682 股 |
-| northbound_hold.change_ratio | 持股记录日对应证券当日涨跌幅（`CHANGE_RATE`，%） | ✅ **东财 datacenter 实证**：不是持股比例的期际增减 |
-| northbound_hold.change_shares | 当前采集器输出占位：直接核验的 600519、601288 两条 2026-09-30 响应未提供 `CHANGE_SHARES`；历史默认 0 不代表持股未变化 | ❌ **证伪为上游字段身份**：项目派生占位，见 2026-11-16 来源核验 |
+**`margin_trading.*` 两融路径：**
 
-> ⚠️ **北向持股（northbound_hold）是 datacenter 独立报表，§12.8.3 原仅覆盖龙虎榜/两融/大宗/股东/分红/解禁，需补录该报表字段契约。**
+| 完整路径 | 含义 / 单位 | 证据 |
+|:---|:---|:---|
+| `margin_trading.date` | 交易日，YYYY-MM-DD | 当前 `RPTA_WEB_RZRQ_GGMX` 回退映射 |
+| `margin_trading.rzye` / `rqye` / `rzrqye` | 融资余额 / 融券余额 / 两融余额合计，元 | 当前 `RPTA_WEB_RZRQ_GGMX` 回退映射 |
+| `margin_trading.rzmre` / `rzche` | 融资买入额 / 融资偿还额，元 | 当前 `RPTA_WEB_RZRQ_GGMX` 回退映射 |
+| `margin_trading.rqmcl` / `rqchl` | 融券卖出量 / 融券偿还量，股 | 当前 `RPTA_WEB_RZRQ_GGMX` 回退映射 |
+| `margin_trading.rzjme` | 融资净买入额；`rzmre-rzche`，元 | 326/326 |
+| `margin_trading.rqjmg` | 融券净卖出量；`rqmcl-rqchl`，股 | 326/326 |
+| `margin_trading.rzche_5d` / `rzmre_5d` | 含当日近 5 个交易日融资偿还额 / 买入额合计，元 | 各 262/262 |
+| `margin_trading.rzche_10d` / `rzmre_10d` | 含当日近 10 个交易日融资偿还额 / 买入额合计，元 | 各 182/182 |
+| `margin_trading.balance_gr` | 融资余额较前一交易日环比增长率，% | 310/310，最大差 0.000000000000499 个百分点 |
+| `margin_trading.chg_5d` / `chg_10d` | 标的证券 5 / 10 个交易间隔累计涨跌幅，% | 197/197；149/149，腾讯收盘独立复算 |
+
+> 9 个衍生字段的 2,196 次保留期公式比较、来源日期、缺口排除与精度依据见[2026-11-22 实证裁决](field_verification/adjudications/20261122_eastmoney_margin_trading_empirical_semantics.md)和[逐行证据](field_verification/research/20261122_eastmoney_margin_trading_formula_audit.csv)。8 个基础完整路径见[当前路径契约批次](field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md)。
+
+**`northbound_hold.*` 北向持股路径：**
+
+| 完整路径 | 含义 / 单位 | 状态 |
+|:---|:---|:---:|
+| `northbound_hold.date` | 北向持股记录日，YYYY-MM-DD | ✅ 来源契约 |
+| `northbound_hold.hold_ratio` | 当前优先键对应的北向持股比例，% | ✅ 来源契约 |
+| `northbound_hold.market_cap` | 北向持股市值，元 | ✅ 来源契约 |
+| `northbound_hold.hold_shares` | 北向持股总数，股 | ✅ 来源契约 |
+| `northbound_hold.change_ratio` | 持股记录日对应证券当日涨跌幅，% | ✅ 来源契约；不是持股比例期际变化 |
+| `northbound_hold.change_shares` | 旧采集器占位输出 | ❌ 项目占位，不是上游原始字段 |
+
+**`lockup_expiry.*` 解禁适配器输出：**
+
+`get_lockup_expiry()` 优先使用 TDX F10，缺少有效记录时回退 Eastmoney `RPT_LIFT_STAGE`；`date/type/shares/ratio/able_shares/free_shares/shares_is_actual` 是混合来源的项目规范化输出。`shares` 会按实际可流通量是否可用选择数量；`free_shares`、`shares_is_actual` 是适配器输出/标记。保留期内仅有一条结构记录且没有逐事件来源日期，故不把其目录日期用于业务语义碰撞。来源路径范围及审计证据见[批量路径裁决](field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md)。
+
+**旧扁平短名和当前路由：**
+
+本批退役 41 个未限定短名、将 3 个根键归类为对象容器，并排除 8 个项目派生输出；`date`、`change_ratio` 的旧短名分别拆分为不同完整路径，不表示同义。当前股东户数 Eastmoney helper 使用 `RPT_F10_EH_HOLDERNUM`；当前分红只走 TDX XDXR；旧 `RPT_HOLDERNUMLATEST`、`RPT_SHAREBONUS_DET` 表只保留历史原始字段。大宗交易 `premium_pct` 是项目按成交价和收盘价计算的字段。逐项清单见[路径范围审计 CSV](field_verification/research/20261122_eastmoney_datacenter_path_scope_audit.csv)及[标准路径样本](field_verification/research/20261122_eastmoney_datacenter_standard_path_samples.csv)。
 
 #### 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅
 
@@ -2761,7 +2789,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | f140 | 领涨股代码 | - | - | ✅ |
 | f136 | 领涨股涨跌幅 | % | leader_change | ✅ |
 
-**板块资金流字段（today: f62,f184,f66,f72,f78,f84；5d: f164,f165,f109,f257；10d: f174,f175,f160）**：
+**板块资金流字段（today: f62,f184,f66,f72,f78,f84；5d: f164,f165,f109；10d: f174,f175,f160）**：
 
 | 字段 | 周期 | 含义 | 单位 | 项目映射 | 状态 |
 |:---|:---|:---|:---:|:---|:---:|
@@ -2771,6 +2799,11 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | f164 / f165 | 5日 | 主力净额 | 元/% | main_net / main_pct | ✅ |
 | f174 / f175 | 10日 | 主力净额 | 元/% | main_net / main_pct | ✅ |
 | f109 / f160 | 5/10日 | 涨跌幅 | % | change_pct | ✅ |
+| f257 | 3日/5日榜单 | 页面脚本映射为关联证券简称（`zdname`）；不推断为涨幅领涨股或资金流领涨股 | 证券简称 | - | ✅ 来源字段映射 |
+| f258 | 3日/5日榜单 | 页面脚本映射为关联证券代码（`zdcode`）；具体关联对象选择逻辑未公开 | 六位证券代码 | - | ✅ 来源字段映射 |
+| f259 | 随行返回 | 未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号 | 未知 | - | ⚠️ 未定 |
+
+官方随页脚本将 `f257 → zdname`、`f258 → zdcode`，并在 3 日/5 日统计字段组中使用二者；`f259` 没有对应的官方字段绑定。该证据只确认名称/代码属性，不揭示榜单选择规则。见[东方财富板块资金流页面脚本](https://data.eastmoney.com/newstatic/js/bkzj/list.js)及[2026-11-22 来源字段裁决](field_verification/adjudications/20261122_remaining_source_contracts.md)。
 
 #### 12.8.7 东财 push2 资金流（分钟级）✅
 
@@ -5109,6 +5142,8 @@ push2delay ulist **不成立**（分页上限+filter 失效），维持 V17.0.7 
 > - 证据链：fuyao 120/120 + 闭式反推 120/120 + TTM 自洽(差0.0000) + 同花顺官方配置 `806289408`=市盈(动)`pe_mrq` + 披露日跳变实验；
 >   死证 `f162==现价÷f160` 0/120、`f163==现价÷(f55×2)` 0/120。
 > - **完整铁证见 §12.8.12e 后【PE 口径铁证】。**
+
+> **2026-11-22 批量复核**：本项目 `kpl_get_stock_list_w8()` 对 KPL `ZhiShuStockList_W8` 的位置 `[60]/[61]/[62]` 分别映射为 `pe_dynamic`/`pe_ttm`/`pe_static`。按 KPL 响应 `Day=2026-11-20` 抽取 23 股，与 Eastmoney `stock/get` 的 `f162/f164/f163` 对照：现价 23/23 精确相等，三项 PE 各 23/23 的差异均不超过 0.01。KPL 公开接口未找到官方键级 schema；固定版本第三方字段位置映射仅用于定位，语义同时依据 Eastmoney 对动态（总市值/全年预估净利润）、TTM（最新价/最近四季度 EPS）、静态（总市值/上年度净利润）的定义及同日值对照。逐股数据见[样本 CSV](field_verification/research/20261122_kpl_pe_eastmoney_anchor_pairs.csv)，完整裁决见[来源裁决](field_verification/adjudications/20261122_kpl_pe_three_fields.md)。本次仅确认 KPL 来源内路径，不将 KPL 与 Eastmoney 视作同一上游，也不建立采集替代关系。
 
 **★独有维度汇总**（push2/fuyao/ZHB/TDX 均无法获取）：
 - [8] 实际换手率%：区别于普通换手率——可能按自由流通股本计算

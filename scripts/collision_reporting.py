@@ -166,7 +166,9 @@ def append_temporal_evidence_report(report_md, l1_relations, l1_contract_relatio
     lines.append(
         "_字段语义关系和来源日期可信度分开记录。`source_dates_confirmed` 表示两侧入选样本"
         "都有来源或记录级日期；`semantic_only_date_unconfirmed` 只支持缓变/静态字段的语义关系，"
-        "不证明数据新鲜度或具体有效日期；`cross_source_dates_inferred` 表示日期通过独立、"
+        "不证明数据新鲜度或具体有效日期；`same_source_dates_inferred` 表示字段通过同一来源、"
+        "同一证券行内已验证日期锚继承日期，不能外推到其他响应或来源；"
+        "`cross_source_dates_inferred` 表示日期通过独立、"
         "已确认日期的来源对同股同日精确值交叉推断，并不代表目标源自身提供了日期。"
         "未分类字段按来源日期严格门控。_"
     )
@@ -176,10 +178,36 @@ def append_temporal_evidence_report(report_md, l1_relations, l1_contract_relatio
         f"{policy_summary.get('classified_fields', 0)}，保守默认未分类字段 "
         f"{policy_summary.get('unclassified_fields', 0)}。L1/L1-C 日期证据："
         f"来源日期已确认 {counts['source_dates_confirmed']} 条，"
+        f"同源行日期见证推断 {counts['same_source_dates_inferred']} 条，"
         f"跨源值见证推断 {counts['cross_source_dates_inferred']} 条，"
         f"仅语义证据且日期未确认 {counts['semantic_only_date_unconfirmed']} 条，"
         f"其他日期未确认 {counts['date_unconfirmed']} 条。"
     )
+    row_witness_rows = []
+    if isinstance(policy_summary, dict):
+        for witness_type in ("row_timestamp_witnesses", "row_date_witnesses"):
+            by_source = policy_summary.get(witness_type, {}).get("by_source", {})
+            if isinstance(by_source, dict):
+                row_witness_rows.extend(
+                    (witness_type, source, data)
+                    for source, data in by_source.items()
+                    if isinstance(data, dict)
+                )
+    if row_witness_rows:
+        lines.extend(
+            [
+                "",
+                "| 同源行日期锚 | 来源 | 行数 | 确认 | 冲突 | 无效锚 | 覆盖字段样本 |",
+                "|:--|:--|--:|--:|--:|--:|--:|",
+            ]
+        )
+        for witness_type, source, data in sorted(row_witness_rows):
+            lines.append(
+                f"| `{witness_type}` | `{source}` | {data.get('witness_rows', 0)} | "
+                f"{data.get('date_confirmed_rows', 0)} | {data.get('date_mismatch_rows', 0)} | "
+                f"{data.get('invalid_timestamp_rows', data.get('invalid_date_rows', 0))} | "
+                f"{data.get('field_samples_updated', 0)} |"
+            )
     witness_rows = (
         policy_summary.get("cross_source_value_witnesses", {}).get("by_witness", {})
         if isinstance(policy_summary, dict)

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_eastmoney_push2_f80_f129.md",
+  "evidence_sha256": "73a7d3d07308f99cf922f5790bc00036e0ac1aae960b03430c753649ee64fa40",
+  "decisions": [
+    {
+      "id": "20261122-eastmoney-push2-f80-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f80"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "stock_trading_session_intervals",
+      "meaning": "该证券当日宽泛交易时段区间列表。源值为 JSON 数组，每项 `b` / `e` 是北京时间 YYYYMMDDHHmm；区间覆盖交易会话，下午区间包含收盘集合竞价，不等同于连续竞价分段。",
+      "unit": "数组；时间戳格式 YYYYMMDDHHmm（北京时间）",
+      "section": "2026-11-22 Eastmoney push2 source semantics: official exchange schedule and F10 topic page",
+      "rationale": "40/40 个原始 f80 都解码为当日 09:30–11:30、13:00–15:00。上交所、深交所和北交所现行规则均将 14:57–15:00 说明为收盘集合竞价，因此不把完整下午区间误写成连续竞价时段。来源路径由项目请求键和 `_quotes.py` JSON 解析调用链确认。",
+      "sample": {
+        "scope": "2026-11-17、2026-11-18 两个收盘来源日，20 只股票，40 条记录；覆盖上交所、深交所、北交所。",
+        "comparison_count": 40,
+        "matched_count": 40,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261122-eastmoney-push2-f129-e3",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f129"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "eastmoney_quote_concept_theme_labels",
+      "meaning": "逗号分隔的个股概念 / 题材标签列表；是 `stock/get` 路径含义，不套用 `ulist239::f129` 的净利率释义。",
+      "unit": "逗号分隔文本（解析后为字符串数组）",
+      "section": "2026-11-22 Eastmoney push2 source semantics: official exchange schedule and F10 topic page",
+      "rationale": "push2 f129 与同一提供方 ulist239 f103 的完整值 40/40 相同；在官方 F10“核心题材/概念题材”页上，600519 样本标签逐项可见。另一接口仅作同提供方重复值参照，不计为独立锚；网页现值只确认标签类别，不推定历史页面时点。",
+      "sample": {
+        "scope": "2026-11-17、2026-11-18 两个收盘来源日，20 只股票，40 条记录；并与同一提供方 `ulist239::f103` 完整逐值对照。另对贵州茅台 600519 的 2026-11-17 八个标签逐项核对东方财富 F10 页面。",
+        "comparison_count": 40,
+        "matched_count": 40,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    }
+  ]
+}

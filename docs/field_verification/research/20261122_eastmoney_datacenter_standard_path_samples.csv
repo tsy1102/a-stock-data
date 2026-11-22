@@ -1,0 +1,17 @@
+source,code_path,upstream_path,stock_code,source_date,observed_value,unit,sample_basis
+东财-datacenter(英文键),margin_trading.date,RPTA_WEB_RZRQ_GGMX.DATE,000568,2026-11-11,2026-11-11,YYYY-MM-DD,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rzye,RPTA_WEB_RZRQ_GGMX.RZYE,000568,2026-11-11,2232788592.0,元,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rzmre,RPTA_WEB_RZRQ_GGMX.RZMRE,000568,2026-11-11,132016714.0,元,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rzche,RPTA_WEB_RZRQ_GGMX.RZCHE,000568,2026-11-11,79932351.0,元,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rqye,RPTA_WEB_RZRQ_GGMX.RQYE,000568,2026-11-11,37809789.0,元,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rqmcl,RPTA_WEB_RZRQ_GGMX.RQMCL,000568,2026-11-11,99700.0,股,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rqchl,RPTA_WEB_RZRQ_GGMX.RQCHL,000568,2026-11-11,34300.0,股,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),margin_trading.rzrqye,RPTA_WEB_RZRQ_GGMX.RZRQYE,000568,2026-11-11,2270598381.0,元,retained raw_datacenter row; source date from DATE; retained floor 2026-10-15
+东财-datacenter(英文键),block_trade.date,RPT_DATA_BLOCKTRADE.TRADE_DATE,920885,2026-11-20,2026-11-20 00:00:00,YYYY-MM-DD,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.price,RPT_DATA_BLOCKTRADE.DEAL_PRICE,920885,2026-11-20,7.8,元/股,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.close,RPT_DATA_BLOCKTRADE.CLOSE_PRICE,920885,2026-11-20,10.39,元/股,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.vol,RPT_DATA_BLOCKTRADE.DEAL_VOLUME,920885,2026-11-20,100000,股,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.amount,RPT_DATA_BLOCKTRADE.DEAL_AMT,920885,2026-11-20,780000,元,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.buyer,RPT_DATA_BLOCKTRADE.BUYER_NAME,920885,2026-11-20,招商证券股份有限公司桂林中山北路证券营业部,-,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.seller,RPT_DATA_BLOCKTRADE.SELLER_NAME,920885,2026-11-20,招商证券股份有限公司桂林中山北路证券营业部,-,one low-frequency live project-adapter query; official page label and raw interface value cross-check; not a daily capture
+东财-datacenter(英文键),block_trade.premium_pct,project formula,920885,2026-11-20,-24.93,%,"project-derived: round((DEAL_PRICE / CLOSE_PRICE - 1) * 100, 2)"

@@ -660,6 +660,7 @@ def select_collision_fields(
         for fid, info in store.items()
         if not info["is_identifier"]
         and not info["is_constant"]
+        and not info.get("is_low_information", False)
         and info["type"] in ("num", "enum", "date")
         and not is_disproved(fid, disproved, lineage)
     ]

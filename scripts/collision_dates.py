@@ -633,6 +633,21 @@ def record_source_as_of_date(source: str, record: Any) -> date | None:
     return parse_date(record.get("date"))
 
 
+def record_source_date_basis_unverified(source: str, record: Any) -> bool:
+    """Identify parseable SZ ETF page dates that lack the verified measurement-date basis."""
+    if (
+        source != "etf"
+        or not isinstance(record, dict)
+        or str(record.get("exchange", "")).upper() != "SZ"
+        or parse_date(record.get("date")) is None
+    ):
+        return False
+    source_meta = record.get("__source_meta__")
+    return not isinstance(source_meta, dict) or source_meta.get("date_basis") != (
+        SZSE_ETF_DATE_BASIS
+    )
+
+
 def _phase(
     meta: dict[str, Any],
     capture_day: date,

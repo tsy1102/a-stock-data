@@ -40,7 +40,7 @@ SOURCE_CONFIRMED_DATE_ORIGINS = {
     "record.timestamp",
 }
 CROSS_SOURCE_INFERRED_DATE_ORIGIN = "cross_source_value_witness"
-DATE_EVIDENCE_ORIGINS = SOURCE_CONFIRMED_DATE_ORIGINS | {CROSS_SOURCE_INFERRED_DATE_ORIGIN}
+SAME_SOURCE_INFERRED_DATE_ORIGIN = "same_source_row_date_witness"
 PERIODIC_EFFECTIVE_DATE_ORIGINS = {
     "record.effective_date",
     "record.report_period",
@@ -114,6 +114,36 @@ def load_policy(path: str | Path = POLICY_PATH) -> dict[str, Any]:
         if identity in witness_seen:
             raise TemporalPolicyError(f"行时间戳见证身份重复: {source}::{code}")
         witness_seen.add(identity)
+    date_witnesses = policy.get("row_date_witnesses", [])
+    if not isinstance(date_witnesses, list):
+        raise TemporalPolicyError("row_date_witnesses 必须为列表")
+    date_witness_seen: set[tuple[str, str]] = set()
+    for witness in date_witnesses:
+        if not isinstance(witness, dict):
+            raise TemporalPolicyError("row_date_witnesses 只能包含对象")
+        source, code = witness.get("source"), witness.get("code")
+        reason = witness.get("reason")
+        if (
+            not isinstance(source, str)
+            or not source.strip()
+            or not isinstance(code, str)
+            or not code.strip()
+            or not isinstance(reason, str)
+            or not reason.strip()
+        ):
+            raise TemporalPolicyError("每条行日期见证必须有 source、完整 code 和 reason")
+        if witness.get("date_format") != "YYYYMMDD":
+            raise TemporalPolicyError("当前只支持 YYYYMMDD 行日期见证")
+        unit = witness.get("unit")
+        meaning_contains = witness.get("meaning_contains")
+        if not isinstance(unit, str) or not unit.strip():
+            raise TemporalPolicyError("行日期见证必须有 unit")
+        if not isinstance(meaning_contains, str) or not meaning_contains.strip():
+            raise TemporalPolicyError("行日期见证必须有 meaning_contains")
+        identity = (source, code)
+        if identity in date_witness_seen:
+            raise TemporalPolicyError(f"行日期见证身份重复: {source}::{code}")
+        date_witness_seen.add(identity)
     value_witnesses = policy.get("cross_source_value_witnesses", [])
     if not isinstance(value_witnesses, list):
         raise TemporalPolicyError("cross_source_value_witnesses 必须为列表")
@@ -330,6 +360,42 @@ def build_runtime_timestamp_witness_index(
     return runtime_index
 
 
+def build_runtime_date_witness_index(
+    policy: dict[str, Any],
+    registry: dict[str, Any],
+    lineage: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Resolve verified date-valued row anchors to exact runtime source aliases."""
+    records = _registry_identity_index(registry)
+    runtime_index: dict[str, dict[str, Any]] = {}
+    for witness in policy.get("row_date_witnesses", []):
+        source, code = witness["source"], witness["code"]
+        record = records.get((source, code))
+        if record is None:
+            raise TemporalPolicyError(f"行日期见证不在逐源注册表中: {source}::{code}")
+        if record.get("status") != "verified":
+            raise TemporalPolicyError(f"行日期见证字段未验证: {source}::{code}")
+        if record.get("unit") != witness["unit"]:
+            raise TemporalPolicyError(f"行日期见证字段单位变化: {source}::{code}")
+        meaning = record.get("meaning")
+        if not isinstance(meaning, str) or witness["meaning_contains"] not in meaning:
+            raise TemporalPolicyError(f"行日期见证语义变化: {source}::{code}")
+        aliases = SLA.runtime_aliases_for_source(source, lineage)
+        if not aliases:
+            raise TemporalPolicyError(f"行日期见证来源没有运行时别名: {source}")
+        for alias in aliases:
+            if alias in runtime_index:
+                raise TemporalPolicyError(f"运行时来源存在多个行日期见证: {alias}")
+            runtime_code = SLA.normalize_runtime_field_code(alias, code)
+            runtime_index[alias] = {
+                "field_id": f"{alias}.{runtime_code}",
+                "source": source,
+                "code": code,
+                "date_format": witness["date_format"],
+            }
+    return runtime_index
+
+
 def parse_timestamp_date(value: Any, timestamp_format: str) -> date | None:
     """Convert a validated Unix-seconds value to its China market date."""
     if timestamp_format != "unix_seconds" or isinstance(value, bool):
@@ -346,6 +412,21 @@ def parse_timestamp_date(value: Any, timestamp_format: str) -> date | None:
         china_timezone = timezone(timedelta(hours=8))
         return datetime.fromtimestamp(seconds, tz=china_timezone).date()
     except (OverflowError, OSError, ValueError):
+        return None
+
+
+def parse_row_date(value: Any, date_format: str) -> date | None:
+    """Parse a configured date field without coercing floats or malformed dates."""
+    if date_format != "YYYYMMDD" or isinstance(value, bool):
+        return None
+    if not isinstance(value, (str, int)):
+        return None
+    text = str(value).strip()
+    if not re.fullmatch(r"\d{8}", text):
+        return None
+    try:
+        return datetime.strptime(text, "%Y%m%d").date()
+    except ValueError:
         return None
 
 
@@ -630,6 +711,7 @@ def _apply_row_timestamp_witnesses(
                 "date_mismatch_rows": 0,
                 "invalid_timestamp_rows": 0,
                 "field_samples_updated": 0,
+                "field_samples_skipped_other_capture_folder": 0,
             }
             continue
 
@@ -641,6 +723,7 @@ def _apply_row_timestamp_witnesses(
             "date_mismatch_rows": 0,
             "invalid_timestamp_rows": 0,
             "field_samples_updated": 0,
+            "field_samples_skipped_other_capture_folder": 0,
         }
         for key, raw_timestamp in witness_values.items():
             if (
@@ -658,6 +741,14 @@ def _apply_row_timestamp_witnesses(
             timestamp_text = timestamp_day.strftime("%Y%m%d")
             indexed_day = key[1][2:]
             row_matches = timestamp_text == indexed_day
+            anchor_metadata = witness_info.get("sample_meta", {}).get(key)
+            if not isinstance(anchor_metadata, dict):
+                counts["invalid_timestamp_rows"] += 1
+                continue
+            anchor_folder = anchor_metadata.get("capture_folder")
+            if not isinstance(anchor_folder, str) or not anchor_folder:
+                counts["invalid_timestamp_rows"] += 1
+                continue
             row_updates = 0
             for field_info in source_fields:
                 values = field_info.get("vals", {})
@@ -665,6 +756,9 @@ def _apply_row_timestamp_witnesses(
                     continue
                 metadata = field_info.get("sample_meta", {}).get(key)
                 if not isinstance(metadata, dict):
+                    continue
+                if metadata.get("capture_folder") != anchor_folder:
+                    counts["field_samples_skipped_other_capture_folder"] += 1
                     continue
                 metadata_day = _compact_day(metadata.get("as_of_date"))
                 if metadata_day is None:
@@ -693,12 +787,123 @@ def _apply_row_timestamp_witnesses(
                 f"{witness['source']} 行时间戳日期见证："
                 f"确认 {counts['date_confirmed_rows']} 行，"
                 f"日期冲突 {counts['date_mismatch_rows']} 行，"
-                f"无效时间戳 {counts['invalid_timestamp_rows']} 行"
+                f"无效时间戳 {counts['invalid_timestamp_rows']} 行，"
+                f"跨采集目录字段跳过 {counts['field_samples_skipped_other_capture_folder']} 条"
             )
     return {
         "configured_source_count": len(witness_index),
         "by_source": by_source,
     }, diagnostics
+
+
+def _apply_row_date_witnesses(
+    store: dict[str, dict[str, Any]],
+    policy: dict[str, Any],
+    registry: dict[str, Any],
+    lineage: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
+    """Infer sibling-field dates from a verified date on the same source row."""
+    witness_index = build_runtime_date_witness_index(policy, registry, lineage)
+    by_source: dict[str, dict[str, int]] = {}
+    diagnostics: list[str] = []
+    for alias, witness in witness_index.items():
+        witness_info = store.get(witness["field_id"])
+        counts = {
+            "witness_rows": 0,
+            "date_confirmed_rows": 0,
+            "date_mismatch_rows": 0,
+            "invalid_date_rows": 0,
+            "field_samples_updated": 0,
+        }
+        if witness_info is None:
+            diagnostics.append(f"{alias}: 已配置行日期见证，但碰撞样本未包含 {witness['field_id']}")
+            by_source[witness["source"]] = counts
+            continue
+
+        for key, raw_date in witness_info.get("vals", {}).items():
+            if (
+                not isinstance(key, tuple)
+                or len(key) != 2
+                or not isinstance(key[0], str)
+                or not isinstance(key[1], str)
+                or not key[1].startswith("T:")
+            ):
+                continue
+            counts["witness_rows"] += 1
+            row_date = parse_row_date(raw_date, witness["date_format"])
+            if row_date is None:
+                counts["invalid_date_rows"] += 1
+                continue
+            date_text = row_date.strftime("%Y%m%d")
+            indexed_day = key[1][2:]
+            row_matches = date_text == indexed_day
+            anchor_metadata = witness_info.get("sample_meta", {}).get(key)
+            if not isinstance(anchor_metadata, dict):
+                counts["invalid_date_rows"] += 1
+                continue
+            anchor_folder = anchor_metadata.get("capture_folder")
+            if not isinstance(anchor_folder, str) or not anchor_folder:
+                counts["invalid_date_rows"] += 1
+                continue
+            row_updates = 0
+            for field_id, field_info in store.items():
+                if field_info.get("src") != alias or key not in field_info.get("vals", {}):
+                    continue
+                metadata = field_info.get("sample_meta", {}).get(key)
+                if not isinstance(metadata, dict):
+                    continue
+                # Values for the same stock/day may be selected from different
+                # duplicate capture folders. A date witness only applies to
+                # fields retained from the exact same capture batch.
+                if metadata.get("capture_folder") != anchor_folder:
+                    continue
+                metadata_day = _compact_day(metadata.get("as_of_date"))
+                timestamp_witness = metadata.get("row_timestamp_witness")
+                timestamp_day = (
+                    _compact_day(timestamp_witness.get("timestamp_date"))
+                    if isinstance(timestamp_witness, dict)
+                    else None
+                )
+                source_date_conflict = (metadata_day is not None and metadata_day != date_text) or (
+                    timestamp_day is not None and timestamp_day != date_text
+                )
+                validated = row_matches and not source_date_conflict
+                metadata["same_source_row_date_witness"] = {
+                    "source": witness["source"],
+                    "code": witness["code"],
+                    "date": date_text,
+                    "security": key[0],
+                    "validated": validated,
+                    "indexed_date": indexed_day,
+                    "metadata_date": metadata_day,
+                    "timestamp_date": timestamp_day,
+                }
+                if not validated:
+                    metadata["as_of_date_origin"] = "same_source_row_date_conflict"
+                    continue
+                if metadata_day is None:
+                    metadata["as_of_date"] = date_text
+                if metadata.get("as_of_date_origin") not in SOURCE_CONFIRMED_DATE_ORIGINS:
+                    metadata["as_of_date_origin"] = (
+                        "record.trade_date"
+                        if field_id == witness["field_id"]
+                        else SAME_SOURCE_INFERRED_DATE_ORIGIN
+                    )
+                row_updates += 1
+            if row_matches and row_updates:
+                counts["date_confirmed_rows"] += 1
+                counts["field_samples_updated"] += row_updates
+            else:
+                counts["date_mismatch_rows"] += 1
+        by_source[witness["source"]] = counts
+        if counts["date_confirmed_rows"] or counts["date_mismatch_rows"]:
+            diagnostics.append(
+                f"{witness['source']} 同源行日期见证："
+                f"确认 {counts['date_confirmed_rows']} 行，"
+                f"日期冲突 {counts['date_mismatch_rows']} 行，"
+                f"无效日期 {counts['invalid_date_rows']} 行"
+            )
+    return {"configured_source_count": len(witness_index), "by_source": by_source}, diagnostics
 
 
 def apply_store_policies(
@@ -732,6 +937,9 @@ def apply_store_policies(
     timestamp_witness_summary, witness_diagnostics = _apply_row_timestamp_witnesses(
         store, policy, registry, lineage
     )
+    row_date_witness_summary, row_date_witness_diagnostics = _apply_row_date_witnesses(
+        store, policy, registry, lineage
+    )
     value_witness_summary, value_witness_diagnostics = _apply_cross_source_value_witnesses(
         store, value_witness_index
     )
@@ -743,8 +951,11 @@ def apply_store_policies(
         "unclassified_fields": counts["unclassified"],
         "class_counts": dict(sorted(counts.items())),
         "row_timestamp_witnesses": timestamp_witness_summary,
+        "row_date_witnesses": row_date_witness_summary,
         "cross_source_value_witnesses": value_witness_summary,
-        "diagnostics": witness_diagnostics + value_witness_diagnostics,
+        "diagnostics": (
+            witness_diagnostics + row_date_witness_diagnostics + value_witness_diagnostics
+        ),
     }
 
 
@@ -759,6 +970,17 @@ def l1_date_eligible(info: dict[str, Any], sample_meta: dict[str, Any]) -> bool:
     if temporal_class == "periodic_or_event":
         return sample_meta.get("value_effective_date_origin") in PERIODIC_EFFECTIVE_DATE_ORIGINS
     if date_origin in SOURCE_CONFIRMED_DATE_ORIGINS:
+        return True
+    same_source_witness = sample_meta.get("same_source_row_date_witness")
+    if (
+        date_origin == SAME_SOURCE_INFERRED_DATE_ORIGIN
+        and isinstance(same_source_witness, dict)
+        and same_source_witness.get("validated") is True
+        and _compact_day(same_source_witness.get("date"))
+        == _compact_day(sample_meta.get("as_of_date"))
+        and isinstance(same_source_witness.get("source"), str)
+        and isinstance(same_source_witness.get("code"), str)
+    ):
         return True
     cross_source_witness = sample_meta.get("cross_source_date_witness")
     return (
@@ -784,14 +1006,25 @@ def relation_date_evidence(
         )
         origins = Counter({key: count for key, count in origins.items() if count})
         source_confirmed = bool(origins) and set(origins).issubset(SOURCE_CONFIRMED_DATE_ORIGINS)
+        same_source_inferred = (
+            bool(origins)
+            and SAME_SOURCE_INFERRED_DATE_ORIGIN in origins
+            and set(origins).issubset(
+                SOURCE_CONFIRMED_DATE_ORIGINS | {SAME_SOURCE_INFERRED_DATE_ORIGIN}
+            )
+        )
         cross_source_inferred = (
             bool(origins)
             and CROSS_SOURCE_INFERRED_DATE_ORIGIN in origins
-            and set(origins).issubset(DATE_EVIDENCE_ORIGINS)
+            and set(origins).issubset(
+                SOURCE_CONFIRMED_DATE_ORIGINS | {CROSS_SOURCE_INFERRED_DATE_ORIGIN}
+            )
         )
         stable = info.get("temporal_class", "unclassified") in STABLE_SEMANTIC_CLASSES
         if source_confirmed:
             status = "source_date_confirmed"
+        elif same_source_inferred:
+            status = "same_source_date_inferred"
         elif cross_source_inferred:
             status = "cross_source_date_inferred"
         elif stable:
@@ -809,10 +1042,20 @@ def relation_date_evidence(
     if all(item["date_status"] == "source_date_confirmed" for item in sides):
         alignment = "source_dates_confirmed"
     elif all(
-        item["date_status"] in {"source_date_confirmed", "cross_source_date_inferred"}
+        item["date_status"]
+        in {
+            "source_date_confirmed",
+            "same_source_date_inferred",
+            "cross_source_date_inferred",
+        }
         for item in sides
     ):
-        alignment = "cross_source_dates_inferred"
+        if any(item["date_status"] == "cross_source_date_inferred" for item in sides):
+            alignment = "cross_source_dates_inferred"
+        elif any(item["date_status"] == "same_source_date_inferred" for item in sides):
+            alignment = "same_source_dates_inferred"
+        else:
+            alignment = "source_dates_confirmed"
     elif all(
         item["date_status"] in {"source_date_confirmed", "semantic_only_date_unconfirmed"}
         for item in sides

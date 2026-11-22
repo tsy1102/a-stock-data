@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 166 个 code；聚合定义不完整 164 个 code；疑似合并文本 665 条逐源记录。
+> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 734 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -627,7 +627,7 @@
 
 ### `amount` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -635,7 +635,7 @@
 | TDX-eltdx(适配层) · `amount` | amount | 实时行情快照截至该时点的累计成交额；收盘样本与同一数据日 K 线成交额一致。 | 元 | `verified` |
 | ZHB-tdxstat2 · `amount` | amount | T日总成交额 | 万元 | `verified` |
 | reports · `amount` | amount | 成交额 | — | `verified` |
-| 东财-datacenter(英文键) · `amount` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `amount` | block_trade.amount | 旧未限定短路径已退役。get_block_trade 的成交金额输出，单位元。 完整路径：block_trade.amount。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 东财-push2ex · `amount` | amount | 成交额 | 元 | `verified` |
 | 市场源(market_sources) · `amount` | amount | 成交额 | — | `verified` |
 | 开盘啦(kpl) · `amount` | amount | 成交额 | 元 | `unverified` |
@@ -767,7 +767,7 @@
 |:--|:--|:--|:--|:--|
 | FTShare REST · `close` | close | 收盘价/最新价 | 元/股 | `verified` |
 | TDX-eltdx(适配层) · `close` | close | 日K收盘价 | 元 | `verified` |
-| 东财-datacenter(英文键) · `close` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `close` | block_trade.close | 旧未限定短路径已退役。get_block_trade 的对应证券收盘价输出。 完整路径：block_trade.close。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 东财-热榜(em_hot) · `close` | close / zhangdie | 收盘价 / 涨跌额 | — | `verified` |
 | 新浪(扩展API) · `close` | — | — | — | `unverified` |
 
@@ -825,7 +825,7 @@
 | TDX(双命名源) · `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | - | `verified` |
 | ZHB-tdxstat · `date` | date | 统计日期 | - | `verified` |
 | ZHB-tdxstat2 · `date` | date | 统计日期 | - | `verified` |
-| 东财-datacenter(英文键) · `date` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `date` | date_legacy_flat_alias | 旧未限定短路径已退役。旧扁平日期短名混合交易日、持仓日、解禁事件日、股东报告截止日和旧分红事件日；不再作为单一字段身份。 完整路径：margin_trading.date; northbound_hold.date; lockup_expiry.date; block_trade.date; holder_fetch_em.date; EX_DIVIDEND_DATE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 同花顺-fuyao · `date` | — | — | — | `unverified` |
 | 央视网(新闻联播) · `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | YYYY-MM-DD | `verified` |
 | 巨潮(cninfo) · `date` | — | — | — | `unverified` |
@@ -1155,13 +1155,13 @@
 | 东财-slist · `f128` | f128 | 板块龙头股名 | — | `verified` |
 | 东财-ulist239(np/get) · `f128` | f128 | — | — | `unverified` |
 
-### `f129` — incomplete
+### `f129` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f129` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f129` | eastmoney_quote_concept_theme_labels | 逗号分隔的个股概念 / 题材标签列表；是 `stock/get` 路径含义，不套用 `ulist239::f129` 的净利率释义。 | 逗号分隔文本（解析后为字符串数组） | `verified` |
 | 东财-ulist239(np/get) · `f129` | f129 | 净利率 | — | `verified` |
 
 ### `f13` — incomplete
@@ -1292,13 +1292,13 @@
 | 东财-ulist239(np/get) · `f140` | — | — | — | `conflict` |
 | 东财-资金流(em_fund_flow) · `f140` | fund_super_today | 东方财富“超大单”类别资金净流入金额（当日；不表示账户身份）。 | 元 | `verified` |
 
-### `f141` — incomplete
+### `f141` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f141` | — | — | — | `unverified` |
+| 东财-clist · `f141` | clist_leader_stock_market_id | 领涨股票的市场编号；与 f140 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。 | 市场编号 | `verified` |
 | 东财-push2(stock/get) · `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
 | 东财-ulist239(np/get) · `f141` | — | — | — | `conflict` |
 | 东财-资金流(em_fund_flow) · `f141` | fund_large_buy | 东方财富“大单”类别资金流入金额（当日，按该页面的资金流分类口径；不代表账户身份）。 | 元 | `verified` |
@@ -1805,24 +1805,42 @@
 | 东财-push2(stock/get) · `f199` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f199` | f199 | — | — | `verified` |
 
-### `f2` — incomplete
+### `f2` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f2` | — | — | — | `unverified` |
+| 东财-clist · `f2` | clist_board_current_index_value | 东方财富板块排行记录的当前板块指数值。 | 点 | `verified` |
 | 东财-push2(stock/get) · `f2` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f2` | f2 | 现价 | 元 | `verified` |
 
-### `f207` — incomplete
+### `f207` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f207` | — | — | — | `unverified` |
+| 东财-clist · `f207` | clist_loser_stock_name | 东方财富板块排行中领跌股票简称。 | — | `verified` |
 | 东财-ulist239(np/get) · `f207` | f207 | — | — | `unverified` |
+
+### `f208` — ambiguous
+
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-clist · `f208` | clist_loser_stock_code | 领跌股票的证券代码；与 f207 名称和 f209 市场编号组成同一领跌股票链接。 | 证券代码 | `verified` |
+| 东财-ulist239(np/get) · `f208` | f208 | — | — | `unverified` |
+
+### `f209` — ambiguous
+
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-clist · `f209` | clist_loser_stock_market_id | 领跌股票的市场编号；与 f208 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。 | 市场编号 | `verified` |
+| 东财-ulist239(np/get) · `f209` | f209 | — | — | `unverified` |
 
 ### `f216` — incomplete
 
@@ -1934,13 +1952,13 @@
 | 东财-push2(stock/get) · `f39` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f39` | liutongguben | 流通股本 | 股 | `verified` |
 
-### `f4` — incomplete
+### `f4` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-clist · `f4` | — | — | — | `unverified` |
+| 东财-clist · `f4` | clist_board_change_amount | 东方财富板块指数相对前收的涨跌额。 | 点 | `verified` |
 | 东财-push2(stock/get) · `f4` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f4` | f4 | 涨跌额 | 元 | `verified` |
 
@@ -2305,13 +2323,13 @@
 | 东财-push2(stock/get) · `f8` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f8` | f8 | — | — | `verified` |
 
-### `f80` — incomplete
+### `f80` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f80` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f80` | stock_trading_session_intervals | 该证券当日宽泛交易时段区间列表。源值为 JSON 数组，每项 `b` / `e` 是北京时间 YYYYMMDDHHmm；区间覆盖交易会话，下午区间包含收盘集合竞价，不等同于连续竞价分段。 | 数组；时间戳格式 YYYYMMDDHHmm（北京时间） | `verified` |
 | 东财-ulist239(np/get) · `f80` | f80 | — | — | `verified` |
 
 ### `f81` — incomplete
@@ -2662,78 +2680,6 @@
 | 开盘啦(kpl) · `main_sell` | main_sell | 主力卖出额 | 元 | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `main_sell` | main_sell | 主力卖出额（负值表示卖出流出） | 元 | `verified` |
 
-### `margin_trading.balance_gr` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.balance_gr` | margin_trading.balance_gr | 融资余额单日环比增长率(%) | — | `conflict` |
-
-### `margin_trading.chg_10d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.chg_10d` | margin_trading.chg_10d | 标的证券近 10 日区间累计涨跌幅(%) | — | `conflict` |
-
-### `margin_trading.chg_5d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.chg_5d` | margin_trading.chg_5d | 标的证券近 5 日区间累计涨跌幅(%) | — | `conflict` |
-
-### `margin_trading.rqjmg` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rqjmg` | margin_trading.rqjmg | 融券净卖出量（股） | — | `conflict` |
-
-### `margin_trading.rzche_10d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rzche_10d` | margin_trading.rzche_10d | 融资偿还额近 10 日累计（元） | — | `conflict` |
-
-### `margin_trading.rzche_5d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rzche_5d` | margin_trading.rzche_5d | 融资偿还额近 5 日累计（元） | — | `conflict` |
-
-### `margin_trading.rzjme` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rzjme` | margin_trading.rzjme | 融资净买入额（元） | — | `conflict` |
-
-### `margin_trading.rzmre_10d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rzmre_10d` | margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | — | `conflict` |
-
-### `margin_trading.rzmre_5d` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 东财-datacenter(英文键) · `margin_trading.rzmre_5d` | margin_trading.rzmre_5d | 融资买入额近 5 日累计（元） | — | `conflict` |
-
 ### `market` — ambiguous
 
 聚合问题：meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
@@ -2750,12 +2696,12 @@
 
 ### `market_cap` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `market_cap` | market_cap | 总市值 | 元 | `verified` |
-| 东财-datacenter(英文键) · `market_cap` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `market_cap` | northbound_hold.market_cap | 旧未限定短路径已退役。完整北向持股市值路径已按来源契约核验。 完整路径：northbound_hold.market_cap。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 开盘红 · `market_cap` | float_market_value | 流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理 | 元 | `verified` |
 
 ### `max_seal` — incomplete
@@ -2849,14 +2795,6 @@
 | 东财-热榜(em_hot) · `pct` | pct | 涨跌幅 | % | `verified` |
 | 财联社(cls) · `pct` | — | — | — | `unverified` |
 
-### `pe_dynamic` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 开盘啦(kpl) · `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | `conflict` |
-
 ### `pe_lyr` — ambiguous
 
 聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
@@ -2868,16 +2806,16 @@
 
 ### `pe_static` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `pe_static` | — | 已删除的重复包装输出键；代码自 2026-09-04 起只保留 pe_lyr，当前 TDX adapter/raw 也没有 pe_static 原始路径。 | — | `disproved` |
-| 开盘啦(kpl) · `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | `conflict` |
+| 开盘啦(kpl) · `pe_static` | pe_static | 静态市盈率（LYR）：总市值 ÷ 上一年度净利润。 | 倍 | `verified` |
 
 ### `pe_ttm` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
@@ -2886,7 +2824,7 @@
 | TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | 滚动市盈率 | 倍 | `verified` |
 | ZHB-tdxstat · `pe_ttm` | pe_ttm | 市盈率（TTM） | 倍 | `verified` |
 | 同花顺-fuyao · `pe_ttm` | valuation.pe_ttm | 旧无分组根路径身份；当前完整采集路径为 valuation.pe_ttm。接口响应把该叶字段放在 data.item[]，项目采集输出则将 item 保存在 stocks.<代码>.valuation。本记录只退役裸叶来源路径。 | 倍 | `disproved` |
-| 开盘啦(kpl) · `pe_ttm` | pe_ttm | PE(TTM) | 倍 | `conflict` |
+| 开盘啦(kpl) · `pe_ttm` | pe_ttm | 滚动市盈率（PE TTM）：最新价 ÷ 最近四个季度每股收益。 | 倍 | `verified` |
 
 ### `performance` — incomplete
 
@@ -2953,13 +2891,13 @@
 
 ### `price` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `price` | price | 现价 | 元 | `verified` |
 | TDX-eltdx(适配层) · `price` | price | 实时行情快照最新价；收盘阶段与该数据日收盘价一致。 | 元 | `verified` |
-| 东财-datacenter(英文键) · `price` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `price` | block_trade.price | 旧未限定短路径已退役。get_block_trade 的大宗交易成交价输出。 完整路径：block_trade.price。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 东财-push2ex · `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | 0.001元 | `verified` |
 | 东财-热榜(em_hot) · `price` | price | 现价 | 元 | `verified` |
 | 市场源(market_sources) · `price` | price | 现价 | — | `verified` |
@@ -3066,14 +3004,14 @@
 | 东财-push2ex · `sector` | sector | 涨停池记录中的所属行业板块标签文本；项目直接映射自同源 Push2EX 字段 hybk。 | - | `verified` |
 | 市场源(market_sources) · `sector` | — | — | — | `unverified` |
 
-### `shares` — incomplete
+### `shares` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `shares` | shares | 总股本 | 股 | `verified` |
-| 东财-datacenter(英文键) · `shares` | — | — | — | `unverified` |
+| 东财-datacenter(英文键) · `shares` | lockup_expiry.shares | 旧未限定短路径已退役。根据实际可流通量是否可用选择实际解禁量或报告总量。 完整路径：lockup_expiry.shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 
 ### `source` — incomplete
 
@@ -3232,6 +3170,16 @@
 | 市场源(market_sources) · `turnover_real` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `turnover_real` | turnover_real | 实际换手率；与 KPH turnover_rate 两日逐值一致 | % | `verified` |
 
+### `type` — ambiguous
+
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-datacenter(英文键) · `type` | lockup_expiry.type | 旧未限定短路径已退役。解禁适配器的规范化类别文本。 完整路径：lockup_expiry.type。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
+| 巨潮(cninfo) · `type` | — | — | — | `unverified` |
+| 新浪(研报列表) · `type` | sina_research_report_category | 新浪研报列表中“报告类型”列的分类文本。 | 分类文本 | `verified` |
+
 ### `updated_date` — ambiguous
 
 聚合问题：meaning_differs；unit_differs；聚合状态：`conflict`。
@@ -3250,6 +3198,15 @@
 | TDX-eltdx(适配层) · `value` | — | — | — | `unverified` |
 | 市场源(market_sources) · `value` | value | 待破解 | — | `unverified` |
 | 开盘啦(kpl) · `value` | — | — | — | `unverified` |
+
+### `vol` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-datacenter(英文键) · `vol` | block_trade.vol | 旧未限定短路径已退役。get_block_trade 的成交股数输出，单位股。 完整路径：block_trade.vol。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
+| 开盘啦(kpl) · `vol` | — | — | — | `unverified` |
 
 ### `vol_ratio` — ambiguous
 
@@ -3352,6 +3309,10 @@
 | TDX(双命名源) | `change_pct_2d` | change_pct_2d | 旧版 tdx_get_quote_full() 返回键；2026-10-15 只见于 quote_full.change_pct_2d，20/20 同股值与 ZHB stat.change_pct_2d 和合并对象 full.change_pct_2d 精确相同；同股 quote_raw 不含该键。当前 TDX 专用采集改用 tdx_get_quote_raw()，本审计仅撤销该历史样本对 TDX 原始字段归属的支持，不裁定业务语义；未来 raw 若出现该键须重新审查。 | `disproved` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares | 流通股本；由 liu_tong_gu_ben_raw_float（万股）乘 10000 得到 | `verified` |
 | TDX(双命名源) | `date` | event_date | TDX XDXR（0x000f）权息/股本变迁事件日期；不是采集日期。现有契约未进一步区分公告日、股权登记日或除权除息日。 | `verified` |
+| TDX(双命名源) | `dividend_history.bonus_ratio` | rights_issue_ratio | 配股股数与原股数之比；旧兼容键名 bonus_ratio 实际映射到 peigu，不是送股比例。 | `verified` |
+| TDX(双命名源) | `dividend_history.bonus_rmb` | cash_dividend_per_share | 现金派息金额；项目适配器已按每股归一。 | `verified` |
+| TDX(双命名源) | `dividend_history.date` | dividend_event_date | TDX XDXR 权息/股本变迁事件日期；现有契约未进一步限定公告日、登记日或除权除息日。 | `verified` |
+| TDX(双命名源) | `dividend_history.transfer_ratio` | stock_bonus_transfer_ratio | 每股对应的送转股数；上游键 songzhuangu，不缩窄为单独转增。 | `verified` |
 | TDX(双命名源) | `entrust_ratio` | tdx_get_quote_full.entrust_ratio | 统一行情包装层的委比值；当前 easy_tdx SecurityQuote 模型不含该字段，值只能来自包装层回退，不是本项目当前 TDX 原始快照字段。 | `disproved` |
 | TDX(双命名源) | `eps` | eps_raw | 每股收益原始值（上游契约及现有可区分样本未确认基本/稀释子口径、报告期选择规则或小数精度/舍入规则） | `verified` |
 | TDX(双命名源) | `float_capital` | reminders.latest_indicators.float_capital | 项目从 TDX F10「最新提示」中的“实际流通A股(万股)”文本解析并组装出的字段；不是 TDX 上游返回键。通达信 Quant 的 ActiveCapital 属于另一接口路径，不据名称相近建立别名。 | `disproved` |
@@ -3439,7 +3400,9 @@
 | TDX-eltdx(适配层) | `last_price` | last_price | 最新价 / 现价 | `verified` |
 | TDX-eltdx(适配层) | `leader_code` | leader_code | Helper 在目标交易日选出的该题材最高连板成分股完整证券代码；同高度时遵循连板天梯的封单金额降序、完整代码升序顺序。 | `verified` |
 | TDX-eltdx(适配层) | `li_run_zong_he_raw_float` | li_run_zong_he_raw_float | 利润总额原始值；样本对应报告期累计值 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.alignment_status` | limit_ladder.alignment_status | 统计资源日期与目标交易日的对齐状态；v3.3.2 文档列举 same_day、previous_trading_day 等枚举值。 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.beta_60d` | limit_ladder.beta_60d | 近 60 日 Beta；相对 TDX 统计资源使用的市场基准，具体基准未公开 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.exchange` | limit_ladder.exchange | 该证券的交易所市场前缀代码；当前留存审计样本见 sh、sz。 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_market_value` | limit_ladder.float_market_value | 普通流通市值；普通流通股本乘当前行情价 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.float_shares` | limit_ladder.float_shares | 普通流通股本；财务快照口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.free_float_market_value` | limit_ladder.free_float_market_value | 自由流通市值；自由流通股本乘当前行情价 | `verified` |
@@ -3448,11 +3411,15 @@
 | TDX-eltdx(适配层) | `limit_ladder.limit_board_text` | limit_ladder.limit_board_text | 统计窗口天数与窗口内涨停次数构成的“几天几板”文本；统计资源日期为上一交易日且目标交易日封板时，展示会计入目标日 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.limit_stat_days` | limit_ladder.limit_stat_days | “几天几板”统计所用的窗口长度；ELTDX 从 tdxstat.cfg 直接读取 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.limit_up_count_in_stat_days` | limit_ladder.limit_up_count_in_stat_days | 涨停统计窗口内记录的涨停次数，是“几天几板”中的板数；ELTDX 从 tdxstat.cfg 直接读取 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.limit_up_streak_days` | limit_ladder.limit_up_streak_days | 统计文件日期记录的连续涨停天数原值；不自动把目标交易日计入。 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.open_prev_seal_ratio` | limit_ladder.open_prev_seal_ratio | 目标交易日 09:25 竞价成交金额 / 上一实际交易日统计资源记录的封单金额 × 100；返回百分比并保留分母符号。 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_turnover_z` | limit_ladder.open_turnover_z | 09:25 竞价成交量占自由流通股本 Z 的比例；Z 为自由流通口径 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.open_volume_ratio` | limit_ladder.open_volume_ratio | 开盘成交量相对最近 5 个完整交易日平均每分钟成交量的倍数；需至少 5 根完整日 K | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.pe_ttm` | limit_ladder.pe_ttm | 滚动市盈率；当前估值相对最近 12 个月利润的倍数 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.prev2_seal_amount` | limit_ladder.prev2_seal_amount | 目标交易日前第二个实际交易日统计资源记录的涨停封单金额；按交易日对齐 tdxstat2.cfg | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.prev_seal_amount` | limit_ladder.prev_seal_amount | 上一实际交易日统计资源记录的封单金额原值；上游文档称为昨日涨停封单金额。原值可带符号；负值方向语义未由文档解释。 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_amount` | limit_ladder.seal_amount | 当前买一金额；封板时解释为封单额 | `verified` |
+| TDX-eltdx(适配层) | `limit_ladder.seal_prev_ratio` | limit_ladder.seal_prev_ratio | 当前买一金额 / 上一实际交易日统计资源记录的封单金额；以倍数返回并保留分母符号，解读为封单强度时须同时确认当前已封板。 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_to_amount_ratio` | limit_ladder.seal_to_amount_ratio | 当前买一金额相对当日成交额的倍数；只有已封板时才按封单成交额比解释 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.seal_to_float_ratio` | limit_ladder.seal_to_float_ratio | 当前买一金额占自由流通市值 Z 的比例；Z 为自由流通口径，只有已封板时才按封流比解释 | `verified` |
 | TDX-eltdx(适配层) | `limit_ladder.year_limit_up_days` | limit_ladder.year_limit_up_days | 截至统计文件日期记录的当年累计涨停天数；统计文件日期落后目标日时不包含目标日新增结果 | `verified` |
@@ -3591,11 +3558,17 @@
 | 东财-clist | `f104` | f104 / f105 | 上涨 / 下跌家数 | `verified` |
 | 东财-clist | `f105` | f104 / f105 | 上涨 / 下跌家数 | `verified` |
 | 东财-clist | `f109` | f109 / f160 | 涨跌幅 | `verified` |
+| 东财-clist | `f141` | clist_leader_stock_market_id | 领涨股票的市场编号；与 f140 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。 | `verified` |
 | 东财-clist | `f160` | f109 / f160 | 涨跌幅 | `verified` |
 | 东财-clist | `f164` | f164 / f165 | 主力净额 | `verified` |
 | 东财-clist | `f165` | f164 / f165 | 主力净额 | `verified` |
 | 东财-clist | `f174` | f174 / f175 | 主力净额 | `verified` |
 | 东财-clist | `f175` | f174 / f175 | 主力净额 | `verified` |
+| 东财-clist | `f208` | clist_loser_stock_code | 领跌股票的证券代码；与 f207 名称和 f209 市场编号组成同一领跌股票链接。 | `verified` |
+| 东财-clist | `f209` | clist_loser_stock_market_id | 领跌股票的市场编号；与 f208 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。 | `verified` |
+| 东财-clist | `f257` | clist.f257 | 板块 3 日/5 日统计行关联证券简称；东方财富页面脚本将 f257 映射为 zdname。脚本未公开关联对象选择规则，不据此称为领涨股。 | `verified` |
+| 东财-clist | `f258` | clist.f258 | 板块 3 日/5 日统计行中与 f257 关联的六位证券代码；东方财富页面脚本将 f258 映射为 zdcode。脚本未公开关联对象选择规则。 | `verified` |
+| 东财-clist | `f259` | f259 | 未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号 | `unverified` |
 | 东财-clist | `f66` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |
 | 东财-clist | `f72` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |
 | 东财-clist | `f78` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |
@@ -3605,6 +3578,7 @@
 | 东财-datacenter(英文键) | `BUYER_NAME` | BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | `verified` |
 | 东财-datacenter(英文键) | `CHANGE_RATE` | CLOSE_PRICE / CHANGE_RATE | 收盘价 / 涨跌幅 | `verified` |
 | 东财-datacenter(英文键) | `DEAL_PRICE` | DEAL_PRICE / CLOSE_PRICE | 成交价 / 收盘价 | `verified` |
+| 东财-datacenter(英文键) | `HOLDER_TOTAL_NUM` | shareholder_account_count | 股东户数；统计截止日由同一响应的 END_DATE 指定。 | `verified` |
 | 东财-datacenter(英文键) | `RQCHL` | RQMCL / RQCHL | 融券卖出 / 偿还量 | `verified` |
 | 东财-datacenter(英文键) | `RQMCL` | RQMCL / RQCHL | 融券卖出 / 偿还量 | `verified` |
 | 东财-datacenter(英文键) | `RZCHE` | RZMRE / RZCHE | 融资买入 / 偿还额 | `verified` |
@@ -3614,19 +3588,51 @@
 | 东财-datacenter(英文键) | `SELL` | BUY / SELL | 买入额 / 卖出额 | `verified` |
 | 东财-datacenter(英文键) | `SELLER_NAME` | BUYER_NAME / SELLER_NAME | 买方 / 卖方营业部 | `verified` |
 | 东财-datacenter(英文键) | `SELL_AMT` | BILLBOARD_BUY_AMT / SELL_AMT | 买入/卖出资 | `verified` |
-| 东财-datacenter(英文键) | `free_shares` | free_shares | 项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。 | `disproved` |
+| 东财-datacenter(英文键) | `able_shares` | lockup_expiry.able_shares | 旧未限定短路径已退役。解禁适配器归一输出；来源可能为 TDX F10 或 Eastmoney 回退。 完整路径：lockup_expiry.able_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `block_trade.amount` | block_trade_amount | 大宗交易成交金额；页面按万元显示，接口适配器输出元。 | `verified` |
+| 东财-datacenter(英文键) | `block_trade.premium_pct` | block_trade_premium_pct | 项目计算折溢率 round((成交价/收盘价-1)*100, 2)；收盘价为 0 时返回 0。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `block_trade.vol` | block_trade_volume | 大宗交易成交股数；页面按万股显示，接口适配器输出股。 | `verified` |
+| 东财-datacenter(英文键) | `bonus_ratio` | BONUS_RATIO | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前分红 getter 已切换 TDX，另见 TDX dividend_history.bonus_ratio，二者不映射。 完整路径：BONUS_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `bonus_rmb` | PRETAX_BONUS_RMB | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前分红 getter 已切换 TDX，另见 TDX dividend_history.bonus_rmb，二者不映射。 完整路径：PRETAX_BONUS_RMB。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `change_num` | HOLDER_NUM_CHANGE | 旧未限定短路径已退役。旧 RPT_HOLDERNUMLATEST 上游列；当前 holder_change 的变化户数由相邻报告期项目计算。 完整路径：HOLDER_NUM_CHANGE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `change_ratio` | change_ratio_legacy_flat_alias | 旧未限定短路径已退役。同名曾混合北向持仓行对应证券涨跌幅与旧股东户数环比字段，语义不同，分别保留。 完整路径：northbound_hold.change_ratio; HOLDER_NUM_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `date` | date_legacy_flat_alias | 旧未限定短路径已退役。旧扁平日期短名混合交易日、持仓日、解禁事件日、股东报告截止日和旧分红事件日；不再作为单一字段身份。 完整路径：margin_trading.date; northbound_hold.date; lockup_expiry.date; block_trade.date; holder_fetch_em.date; EX_DIVIDEND_DATE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `free_shares` | lockup_expiry.free_shares | 旧未限定短路径已退役。完整输出路径；由适配器将来源万股值换算为股，不是 Eastmoney 原始键。 完整路径：lockup_expiry.free_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `holder_fetch_em.date` | holder_report_date | 股东户数统计截止日；是报告期截止日期，不是采集日。 | `verified` |
+| 东财-datacenter(英文键) | `holder_num` | holder_num_legacy_flat_alias | 旧未限定短路径已退役。当前 RPT_F10_EH_HOLDERNUM 使用 HOLDER_TOTAL_NUM；旧 RPT_HOLDERNUMLATEST 原始键为 HOLDER_NUM。 完整路径：holder_fetch_em.holder_num; HOLDER_NUM。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.able_shares` | lockup_actual_tradable_shares | 实际可流通解禁数量，Eastmoney 输入万股转股；来源或数值不可用时为空。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.date` | lockup_event_date | 事件日期由 TDX F10/Eastmoney 字段解析并规范化；不等同采集日。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.free_shares` | lockup_total_shares | 报告解禁总量；统一适配器将来源万股转为股。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.ratio` | lockup_ratio_pct | 解禁比例；0 到 1 的输入按小数转百分数，输出保留两位小数。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.shares` | lockup_shares_selected | 适配器按 able_shares 可用性选择实际可流通解禁量，否则使用报告解禁总量；万股转股。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.shares_is_actual` | lockup_shares_is_actual | 项目标记 shares 是否取实际可流通解禁量；不是上游原始字段。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `lockup_expiry.type` | lockup_event_type | 解禁类型的统一适配器输出，输入可能来自 TDX F10 或 Eastmoney FREE_SHARES_TYPE。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | `disproved` |
+| 东财-datacenter(英文键) | `margin_trading` | margin_trading | collect_datacenter 在 stocks.<code>.margin_trading 写入 list/dict，是对象容器。 这是序列化对象边界，不是业务字段。 | `disproved` |
+| 东财-datacenter(英文键) | `margin_trading.date` | margin_trade_date | 融资融券交易明细所属交易日；取原始 DATE 的前 10 位，不是采集运行日。 | `verified` |
+| 东财-datacenter(英文键) | `northbound_hold` | northbound_hold | collect_datacenter 在 stocks.<code>.northbound_hold 写入 list/dict，是对象容器。 这是序列化对象边界，不是业务字段。 | `disproved` |
 | 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 直接核验的 600519、601288 两条 2026-09-30 响应均未提供 CHANGE_SHARES；旧适配器将缺失填为 0，本路径是项目占位输出，不代表持股未变化。 | `disproved` |
 | 东财-datacenter(英文键) | `northbound_hold.hold_ratio` | northbound_hold.hold_ratio | 北向持股比例（当前接口样本优先键为 FREE_SHARES_RATIO；回退键命中时分母口径随实际上游键确定），数值为百分数刻度。 | `verified` |
-| 东财-datacenter(英文键) | `shares_is_actual` | shares_is_actual | 项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。 | `disproved` |
+| 东财-datacenter(英文键) | `plan` | ASSIGN_PROGRESS | 旧未限定短路径已退役。历史 RPT_SHAREBONUS_DET 字段；当前 getter 不再调用该端点。 完整路径：ASSIGN_PROGRESS。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `premium_pct` | premium_pct | 项目计算折溢率 round((成交价/收盘价-1)*100, 2)；收盘价为 0 时返回 0。 | `disproved` |
+| 东财-datacenter(英文键) | `shares` | lockup_expiry.shares | 旧未限定短路径已退役。根据实际可流通量是否可用选择实际解禁量或报告总量。 完整路径：lockup_expiry.shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `shares_is_actual` | lockup_expiry.shares_is_actual | 旧未限定短路径已退役。完整输出路径；适配器根据路线和 ABLE_FREE_SHARES 可用性生成的布尔标记。 完整路径：lockup_expiry.shares_is_actual。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
+| 东财-datacenter(英文键) | `transfer_ratio` | TRANSFER_RATIO | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前 TDX 的送转值另登记为 TDX::dividend_history.transfer_ratio，不建立映射。 完整路径：TRANSFER_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | `disproved` |
 | 东财-em_kline_f61 | `dktotal` | daily_kline_record_count | Eastmoney 日 K 查询结果中，服务端报告的可用历史日 K 记录总数。结论限于项目当前请求：klt=101（日线）、fqt=0（不复权）、未传 beg、end=20500101、lmt=150；不等于本次返回 klines 数量，也不外推为上市以来全部交易日数或其他请求参数下的总记录数。 | `verified` |
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | `disproved` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].AFTER_ISSUE_PE` | ipo_record_after_issue_pe | 该 IPO 记录的发行市盈率。官方新股页在原始值存在时直接使用该值显示；原始值为空时页面可回退到预测值。此定义只适用于原始字段，不包括页面回退计算值。具体估值时点未由该字段模板说明。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].AMPLITUDE` | ipo_first_day_amplitude_pct | 该 IPO 证券上市首日振幅；以 `(首日最高价 - 首日最低价) / 前收 × 100` 对照首日 K 线，6/6 在 0.005 个百分点内吻合。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].APPLY_DATE` | ipo_record_subscription_date | 该 IPO 记录所列的申购日期，是发行事件日期；不是采集日、来源数据日或上市日期。 | `verified` |
-| 东财-event_dc(IPO发行记录) | `ipo_calendar[].AVERAGE_PRICE` | ipo_total_change_reference_average_price_yuan | 东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].AVERAGE_PRICE` | ipo_yield_price_reference_yuan | IPO_YIELD 使用的价格基准。6 只跨 2023–2026 年、沪深不同板块样本中，均匹配上市后第 5 个交易日成交量加权均价，绝对误差不超过 0.0018 元；它不同于首日 LD_AVERAGE_PRICE、开板日 OPEN_AVERAGE_PRICE，也不是 TOTAL_CHANGE 的基价。当前只把第五交易日口径限定到已核样本，不外推所有历史发行制度。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].BALLOT_PAY_DATE` | ipo_subscription_payment_date | 该 IPO 记录对应发行安排中需缴纳申购/中签认购款的日期；日期随发行制度变化，不能统一假设等于申购日或 T+2。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].CHANGE` | ipo_latest_quote_change_yuan | IPO 列表所列的最新报价涨跌额；5 条同股同日可比样本与官方最新报价变化值一致。 对未核明的来源实际报价日不外推为采集目标数据日。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].CHANGE_RATE` | ipo_latest_quote_change_rate_pct | IPO 列表所列的最新报价涨跌幅；5 条同股同日可比样本与官方最新报价涨幅值一致。 对未核明的来源实际报价日不外推为采集目标数据日。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].CLOSE_PRICE` | ipo_record_first_day_close_price | 该证券上市首日收盘价；不是当前最新价或发行价。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].CONTINUOUS_1WORD_NUM` | ipo_consecutive_one_word_board_count | 该 IPO 记录对应股票连续一字板数；东方财富页面不对注册制 IPO 统计此指标，空值不得解释为零。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].DEC_SUMFINA` | ipo_gross_funds_raised_native_unit | IPO 募集资金总额。两份发行人正式文件与接口值经单位换算后吻合；另有 420/500 条记录与 ISSUE_PRICE × ISSUE_NUM（万股）按市场原生单位折算相符。其余 80 条差异未逐项归因，不视为公式反例。沪深以亿元计，北交所以元计。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].EACHBALLOT_SHARES` | ipo_lottery_lot_shares | 中一签对应的获配股数；与 MZYQ_PAY_FUND / ISSUE_PRICE 的反算在 343 条可比记录中一致。按发行板块/时期保留实际股数，不假设所有历史签号都固定为 500 股。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].INDUSTRY_PE` | ipo_legacy_industry_pe | IPO 记录中的参考行业市盈率；在 20 条历史记录中与已核的 INDUSTRY_PE_NEW 数值 20/20 一致，但本结论限于该历史接口样本，不外推到当前发行制度或其他市场。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].INFO_CODE` | ipo_prospectus_document_code | 东方财富用于构造该 IPO 记录招股说明书/意向书 PDF 链接的文档代码。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].IPO_YIELD` | ipo_yield_pct | IPO 价格基准收益率，按 `(AVERAGE_PRICE / ISSUE_PRICE - 1) × 100`；样本中 AVERAGE_PRICE 是该字段自己的收益价格基准，不与 TOTAL_CHANGE 混用。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_NUM` | ipo_total_issue_shares_wan | 该 IPO 发行记录的发行总股数，官方页面以万股显示；不是网上发行数量或发行后总股本。历史记录可能存在取整、截断或旧数据差异，万科样本与正式股数折算结果相差约 0.31%。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_PRICE` | ipo_issue_price_per_share | 该 IPO 发行记录的每股发行价格，不是上市首日价格或当前价格。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_WAY_EXPLAIN` | ipo_issue_way_explanation | 该 IPO 发行记录中对发行方式的文字说明；它与 ISSUE_WAY（发行方式类型）是不同字段。当前保留样本观察到“历史遗留”“本地发行”“认购证”等说明值。本结论确认字段角色，不表示完整发行流程分类，也不穷尽所有可能取值。 | `verified` |
@@ -3635,15 +3641,25 @@
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_CLOSE_CHANGE` | ipo_first_day_close_change_pct | 该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_HIGH_CHANG` | ipo_first_day_high_change_pct | 该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_OPEN_PREMIUM` | ipo_first_day_open_premium_pct | 该 IPO 记录对应股票上市首日开盘价相对于发行价的溢价率；留存样本符合 (OPEN_PRICE / ISSUE_PRICE - 1) × 100。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].LIMIT_UP_PRICE` | ipo_reference_limit_price_yuan | RPTA_APP_IPOAPPLY 提供的发行价 1.44 倍参考价；在 343 条沪深记录中等于 `ISSUE_PRICE × 1.44`。这不是注册制新股上市前五个交易日的法定涨跌幅上限，不能用于当日涨停价判断。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LISTING_DATE` | ipo_record_listing_date | 该 IPO 记录所列的上市日期，是证券开始上市交易的业务日期；不是申购日期或采集日期。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].MAIN_BUSINESS` | ipo_record_main_business_description | IPO 发行记录附带的发行人主营业务文字描述。与 BUSINESS_SCOPE（经营范围）为不同字段。RPTA_APP_IPOAPPLY 未单独提供该文本的更新时间或有效日期；不能据目录目标数据日或采集自然日推断其为 IPO 时点或当前时点的经营状态，也不推断其历史版本或更新机制。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].MZYQ_PAY_FUND` | ipo_lottery_payment_amount_yuan | IPO 中签后每签应缴金额；等于发行价乘以每签获配股数，343/343 复算吻合。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].NETSUMFINA` | ipo_net_funds_raised_native_unit | IPO 募集资金净额。两份发行人正式招股说明书金额与接口值经单位换算后吻合；单位随市场：沪深亿元、北交所元。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].OD_HIGH_CHANGE` | ipo_first_day_high_change_pct | 同一 IPO 发行记录中的首日最高涨幅历史字段；20 条历史记录中与官方页面已标注的 LD_HIGH_CHANG 20/20 一致。该同路径关系限于现有历史记录，未见现代记录，不外推字段版本。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ONLINE_ISSUE_NUM` | ipo_online_issue_shares | 该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].OPEN_DATE` | ipo_open_board_date | 该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PAR_VALUE` | ipo_record_par_value | 该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].PREDICT_ISSUE_PRICE1` | ipo_issue_price_prediction_candidate_1_yuan | 东方财富 IPO 发行价预测的候选价格 1；第一方详情页脚本将 PREDICT_ISSUE_PRICE1 读作价格1并纳入预测价格候选逻辑，不是实际发行价 ISSUE_PRICE。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PREDICT_RAISE_FUNDS` | ipo_planned_fundraising_target_yi_cny | 东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PROFIT` | ipo_record_per_sign_profit_yuan | 每中一签的获利金额。注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价计算。每签股数不跨板块、年代固定化。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].RECOMMEND_ORG` | ipo_sponsor_recommendation_org | IPO 保荐/推荐机构名称；两份发行人招股书锚点一致，并保留证券机构后续更名的法人连续性说明。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].TCHANGE_RATE` | ipo_issue_price_to_latest_price_change_pct | 接口最新价 TNEW_PRICE 相对发行价 ISSUE_PRICE 的涨幅，按 `(TNEW_PRICE / ISSUE_PRICE - 1) × 100`。接口没有在此字段内明确最新价自身的来源实际日期；未核日期时不得将其作为目标日行情。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].TNEW_PRICE` | ipo_latest_price_yuan | 东方财富 IPO 列表所列的该证券最新价；6 股逐股核验均与截至 2026-11-20 的最新日 K 收盘价一致。响应的更新日期不等于价格来源日期；仍按最新报价字段保留日期资格限制。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].TOTAL_CHANGE` | ipo_record_total_gain_pct | 东方财富新股页定义的 IPO 涨幅：注册制个股按上市首日成交均价相对发行价计算；审批制个股按上市日期以外第一个非一字板交易日的成交均价相对发行价计算。参照交易日依发行制度而异，不等同于统一的首日收盘涨幅。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].TOTAL_RAISE_FUNDS` | ipo_actual_fundraising_total_yi_cny | 东方财富 IPO 发行记录中标注的实际募集资金总额，单位为亿元；这是平台报告值，历史个例可能与发行人原始公告存在精度差异。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].TOTAL_SHARES` | ipo_total_share_capital_after_issue_shares | IPO 后总股本/总股本数量，单位为股；不是本次发行数量。三份发行人招股书锚点均与接口一致，含超额配售前口径。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].UNDERWRITER_ORG` | ipo_underwriter_org_list | IPO 承销机构名称列表；可包含主承销商与联席主承销商，不保证等于单一保荐人。两份发行人招股书锚点一致，保留多机构列表和机构更名沿革。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ACTUAL_ISSUE_SCALE` | convertible_bond_issue_scale | 可转债初始发行规模/债券发行总额（发行面值合计）；不是当前剩余规模，也不表示扣除发行费用后的净募集资金。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].BOND_EXPIRE` | convertible_bond_term_years | 东方财富详情页标注的可转债存续期限（年）。提前终止或赎回后，该值可短于募集说明书原始约定期限；蓝思转债样本为2.1671年，正式募集说明书原始约定为6年。该字段不是剩余期限或到期日期。保留样本显示其与起息日至有效终止期间接近，但统一年化和终止日取值规则未公开。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].BOND_START_DATE` | convertible_bond_lottery_number_publication_date | 东方财富可转债申购列表中以 `BOND_START_DATE` 绑定到“中签号发布日”的日期字段。该页面定义它为中签号码发布日；它不同于申购日期、股权登记日和上市时间。 | `verified` |
@@ -3652,12 +3668,16 @@
 | 东财-event_dc(可转债列表) | `convertible_bonds[].CURRENT_BOND_PRICENEW` | convertible_bond_current_market_price | 可转债当前市场价格；东方财富详情页在该值非空时优先显示，空时回退至 CURRENT_BOND_PRICE。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_PRICE_HS` | convertible_bond_put_execution_price_yuan_per_bond | 东方财富可转债记录中最近一次回售的执行价格，单位为元/张。该字段对应回售事件，不是赎回价格或转股价格。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_PRICE_SH` | convertible_bond_redemption_execution_price_yuan_per_bond | 东方财富可转债记录中最近一次赎回的执行/兑付价格，单位为元/张。该字段对应赎回事件，不是回售价格或转股价格。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_REASON_HS` | convertible_bond_execution_reason_code | 东方财富可转债详情页显示的回售/赎回执行原因码：1 满足回售条款；2 满足赎回条件；3 满足附加回售条款；4 强制赎回；5 到期赎回。接口样本另见代码 6，但当前第一方 switch 未定义 6，故 6 仍未定案。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_REASON_SH` | convertible_bond_execution_reason_code | 东方财富可转债详情页显示的回售/赎回执行原因码：1 满足回售条款；2 满足赎回条件；3 满足附加回售条款；4 强制赎回；5 到期赎回。接口样本另见代码 6，但当前第一方 switch 未定义 6，故 6 仍未定案。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].EXECUTE_START_DATESH` | convertible_bond_redemption_execution_date | 东方财富可转债记录中最近一次赎回执行日/兑付日；不同于赎回公告日、赎回登记日或债券退市日。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].FIRST_PER_PREPLACING` | convertible_bond_priority_placement_amount_yuan_per_share | 东方财富可转债申购列表中原股东优先配售的每股配售额。页面明确说明适用对象为股权登记日持股的原股东，单位为元/股。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].INITIAL_TRANSFER_PRICE` | convertible_bond_initial_conversion_price | 发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].ISSUE_TYPE` | convertible_bond_issue_type_code_set | 发行类型代码组合。基于同记录 ISSUE_TYPE 与 PARAM_NAME 的全部出现组合，唯一反推出：1 网上向社会公众投资者发行；2 网下向机构投资者协议发行；4 网上向原 A 股无限售股东优先配售；5 网下向原 A 股有限售股东优先配售。组合顺序不相同，按位置配对是错误的；未观测代码不外推。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ISSUE_YEAR` | convertible_bond_approval_year | 东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ONLINE_GENERAL_AAU` | convertible_bond_online_subscription_limit_thousand_yuan | 东方财富可转债申购列表中的网上申购上限金额。接口原始单位为千元；页面显示时除以 10 换算为万元。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ONLINE_GENERAL_LWR` | convertible_bond_online_lottery_win_rate_pct | 东方财富可转债申购列表中“中签率”字段，页面以百分比显示至四位小数；接口未提供可确认的来源实际日期。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].PAYDAYNEW` | convertible_bond_payday_signed_day_code | 每年付息日的负日号编码：`PAYDAYNEW = -日(PAY_INTEREST_DAY)`。例如 `04-18` 对应 `-18`；它不是 YYYYMMDD 日期，也不是采集日期。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].PBV_RATIO` | convertible_bond_underlying_stock_pb_ratio | 对应正股的市净率；页面标签为“正股市净率”，未标百分比或其他显示单位。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].RATING` | convertible_bond_credit_rating | 东方财富可转债申购列表在“信用评级”列显示的评级值；页面未为其指定数值单位。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].SECURITY_START_DATE` | convertible_bond_equity_registration_date | 东方财富可转债申购列表中以 `SECURITY_START_DATE` 绑定到“股权登记日”的日期字段；不能替代申购日期、上市时间或来源采集日期。 | `verified` |
@@ -3668,6 +3688,7 @@
 | 东财-push2(stock/get) | `f108` | eps_ttm(f108) | 归母净利润 TTM 按当前总股本折算的每股收益；TTM 归母净利润 = 上年度全年归母净利润 + 本年度最新报告期年初至今归母净利润 - 上年度同期年初至今归母净利润，分母为 Push2 f84 当前总股本。不是扣非 EPS，也不推断法定基本/稀释 EPS 的加权平均股数口径。 | `verified` |
 | 东财-push2(stock/get) | `f110` | f110 | 市场标记（布尔 0/1，北交=0） | `verified` |
 | 东财-push2(stock/get) | `f118` | f118 | 市场/板块状态标记（≡ ulist:f107） | `verified` |
+| 东财-push2(stock/get) | `f129` | eastmoney_quote_concept_theme_labels | 逗号分隔的个股概念 / 题材标签列表；是 `stock/get` 路径含义，不套用 `ulist239::f129` 的净利率释义。 | `verified` |
 | 东财-push2(stock/get) | `f135` | fund_main_buy | 东方财富个股资金流分类口径下，当日主力类别买入金额；留存可比较样本均满足 f135 = 超大单买入 f138 + 大单买入 f141。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
 | 东财-push2(stock/get) | `f136` | fund_main_sell | 东方财富个股资金流分类口径下，当日主力类别卖出金额；留存可比较样本均满足 f136 = 超大单卖出 f139 + 大单卖出 f142。该值描述东方财富分类结果，不代表特定账户或真实机构身份。 | `verified` |
 | 东财-push2(stock/get) | `f137` | fund_main_today | 主力资金净流入金额（当日）；与超大单和大单净流入之和一致，不表示投资者账户身份。 | `verified` |
@@ -3685,6 +3706,7 @@
 | 东财-push2(stock/get) | `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | `verified` |
 | 东财-push2(stock/get) | `f59` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-push2(stock/get) | `f62` | f62 | 最新已发布报告期的季度序号（如 2=中报、3=三季报；不含年份） | `verified` |
+| 东财-push2(stock/get) | `f80` | stock_trading_session_intervals | 该证券当日宽泛交易时段区间列表。源值为 JSON 数组，每项 `b` / `e` 是北京时间 YYYYMMDDHHmm；区间覆盖交易会话，下午区间包含收盘集合竞价，不等同于连续竞价分段。 | `verified` |
 | 东财-push2(stock/get) | `f86` | f86 | 当日收盘/最后行情时间戳 | `verified` |
 | 东财-push2(stock/get) | `f92` | f92 | 每股净资产计算值（最新公告归母股东权益剔除其他权益工具后/最新总股本） | `verified` |
 | 东财-push2ex | `change_pct` | change_pct | 当日涨跌幅（百分比）；接口原始值保留比 KPL col_22 更多的小数位，三个有效日期 271 组对照均在 0.02 个百分点内，按两位小数四舍五入后相等。 | `verified` |
@@ -3882,6 +3904,7 @@
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_15` | limit_up_streak_count | 当前连续涨停板数（当前连板数）；不是 N 天 M 板标签中的窗口涨停次数 M | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_16` | has_intraday_limit_up_break | 涨停个股在当日是否曾发生炸板的二值状态标记（1=东财官方涨停股池“炸板次数”>0，0=炸板次数=0）。2026-11-12、11-16、11-17 三个完整数据日全量逐股对照 106/106 命中；不代表炸板次数或具体时点，也不等同于进入东财“炸板股池”。开盘啦未公开该原始列标签，这是实证释义，不是 KPL 官方接口契约。 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_17` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `raw_columns.col_18` | kpl_limit_up_sequence_label | 开盘啦涨停表现列表的描述性板数标签；保留样本非空值均形如 `N天M板` 或 `N连板`。这只是 KPL 自身的文字标签，不与 KPH 的 limit_tag/limit_count 建立等价。 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_19` | sector_code | 行业/板块分类代码（具体分类体系与层级未确认；不与 KPH industry_id 保证逐值等同） | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_20` | kpl_category_limit_up_stock_count | 同一来源交易日内，按 raw_columns.col_19 分类代码分组后，该代码对应的 KPL DailyLimitPerformance 涨停梯队返回记录数（采集器合并 PidType=1..5 响应）；不确认 col_19 的具体分类体系/层级，也不等同于 KPH 或开盘红的同名计数 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `raw_columns.col_21` | price | 现价（元；数据日收盘后采集时对应当日收盘价） | `verified` |
@@ -3951,10 +3974,13 @@
 | 新浪(扩展API) | `turnover` | turnover | 换手率原始值（万分比；换算为百分数时原值除以100） | `verified` |
 | 新浪(扩展API) | `vega` | delta/gamma/theta/vega/iv | 希腊字母 + 隐含波动率（小数） | `unverified` |
 | 新浪(研报列表) | `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | `verified` |
+| 新浪(研报列表) | `report_id` | sina_research_report_id | 新浪研报详情页 URL `/rptid/{id}/` 中的数字报告标识。 | `verified` |
 | 沪深交易所 | `etf_sh.date` | sse_etf_scale_statistics_date | 上交所 ETF 规模统计记录中对应的统计日期（接口原始字段 STAT_DATE）。它是来源数据日期，不是目录目标数据日或采集运行日。 | `verified` |
+| 沪深交易所 | `etf_sh.etf_type` | sse_etf_subcategory | 上交所 ETF 细分类型，由上交所 `ETF_TYPE` 原值提供；保留官方分类文本，不压缩成单市/跨市/跨境规则。 | `verified` |
 | 沪深交易所 | `etf_sz.date` | szse_etf_current_scale_measurement_date | 深交所 ETF 列表中“当前规模（万份）”数值对应的统计日期，由官方列元数据 metadata.cols.dqgm 标题括号中的日期确定；不是列表页面日期、采集运行日或目录目标数据日。 | `verified` |
 | 沪深交易所 | `etf_sz.listing_date` | szse_etf_listing_date | 深交所基金列表中，该基金在深圳证券交易所开始上市交易的日期；不是基金合同生效日、募集成立日或公告日。 | `verified` |
 | 沪深交易所 | `etf_sz.shares_10k` | szse_etf_current_scale_shares_10k | 深交所 ETF 列表“当前规模（万份）”列所报的 ETF 基金份额数值，由每条记录 dqgm 列的展示数值解析。该列对应日期由同一响应 metadata.cols.dqgm 标题中的括号日期确定；官方说明 T 日晚间更新的 T 日规模仅供参考，以 T+1 日早间更新的 T 日规模为准。此定义仅适用于 etf_sz 分支。 | `verified` |
+| 沪深交易所 | `sse_e_interaction[].answer_time` | sse_e_interaction_answer_time | 上证 e 互动条目中上市公司回答的显示时间；仅在存在回答块时有值，项目解析后输出标准化时间。 | `verified` |
 | 沪深交易所 | `zqdm` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 沪深交易所 | `zqjc` | zqdm / zqjc | 代码 / 简称 | `verified` |
 | 百度(baidu) | `ma10avgprice` | ma5avgprice/ma10avgprice/ma20avgprice | 待破解 | `unverified` |

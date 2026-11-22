@@ -80,8 +80,11 @@ def _quote_records_as_of_date(source: str, data: Any) -> Optional[str]:
         timestamp = fields[field_index]
         if not isinstance(timestamp, str) or not timestamp.strip():
             return None
+        timestamp_text = timestamp.strip()
+        if source.lower() == "tencent" and not re.fullmatch(r"\d{14}", timestamp_text):
+            return None
         try:
-            record_date = datetime.strptime(timestamp.strip(), timestamp_format).date()
+            record_date = datetime.strptime(timestamp_text, timestamp_format).date()
         except ValueError:
             return None
         record_dates.add(record_date)

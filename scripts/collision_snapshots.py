@@ -16,6 +16,7 @@ from scripts.collision_dates import (
     is_trading_session,
     parse_date,
     record_source_as_of_date,
+    record_source_date_basis_unverified,
     sample_date_key,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
@@ -389,6 +390,7 @@ def load_snapshots(
     undated_event_counts = defaultdict(int)
     future_event_counts = defaultdict(int)
     undated_market_counts = defaultdict(int)
+    unverified_market_date_basis_counts = defaultdict(int)
     out_of_window_market_counts = defaultdict(int)
     future_market_counts = defaultdict(int)
     invalid_market_date_counts = defaultdict(int)
@@ -489,7 +491,12 @@ def load_snapshots(
                     elif snapshot.source == "etf":
                         etf_trade_day = record_source_as_of_date(snapshot.source, rec)
                         if etf_trade_day is None:
-                            undated_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            if record_source_date_basis_unverified(snapshot.source, rec):
+                                unverified_market_date_basis_counts[
+                                    (snapshot.folder, snapshot.source)
+                                ] += 1
+                            else:
+                                undated_market_counts[(snapshot.folder, snapshot.source)] += 1
                             continue
                         if etf_trade_day > snapshot.capture_date:
                             future_market_counts[(snapshot.folder, snapshot.source)] += 1
@@ -631,6 +638,10 @@ def load_snapshots(
         diagnostics.append(f"{folder}/{source}: {count} 条事件记录晚于报告日，已跳过")
     for (folder, source), count in sorted(undated_market_counts.items()):
         diagnostics.append(f"{folder}/{source}: {count} 条市场记录缺少可解析的来源交易日，已跳过")
+    for (folder, source), count in sorted(unverified_market_date_basis_counts.items()):
+        diagnostics.append(
+            f"{folder}/{source}: {count} 条 SZ ETF 记录日期值可解析，但缺少已验证的数据日期依据，已跳过"
+        )
     for (folder, source), count in sorted(future_market_counts.items()):
         diagnostics.append(f"{folder}/{source}: {count} 条市场记录的来源日期晚于采集日，已跳过")
     for (folder, source), count in sorted(invalid_market_date_counts.items()):

@@ -1,0 +1,631 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md",
+  "evidence_sha256": "1cd6e3b502a7fd6254acae11f4a9108d8c3964ea587acf433aaae2a22c8fa8b2",
+  "decisions": [
+    {
+      "id": "20261122-eastmoney-margin_trading-date-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_trade_date",
+      "meaning": "融资融券交易明细所属交易日；取原始 DATE 的前 10 位，不是采集运行日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `DATE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.DATE -> margin_trading.date",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `DATE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rzye-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rzye"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_financing_balance",
+      "meaning": "融资余额。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RZYE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RZYE -> margin_trading.rzye",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RZYE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rzmre-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rzmre"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_financing_buy_amount",
+      "meaning": "当日融资买入额。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RZMRE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RZMRE -> margin_trading.rzmre",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RZMRE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rzche-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rzche"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_financing_repayment_amount",
+      "meaning": "当日融资偿还额。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RZCHE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RZCHE -> margin_trading.rzche",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RZCHE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rqye-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rqye"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_short_balance",
+      "meaning": "融券余额。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RQYE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RQYE -> margin_trading.rqye",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RQYE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rqmcl-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rqmcl"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_short_sell_volume",
+      "meaning": "当日融券卖出量。",
+      "unit": "股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RQMCL`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RQMCL -> margin_trading.rqmcl",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RQMCL`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rqchl-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rqchl"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_short_repayment_volume",
+      "meaning": "当日融券偿还量。",
+      "unit": "股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RQCHL`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RQCHL -> margin_trading.rqchl",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RQCHL`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-margin_trading-rzrqye-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "margin_trading.rzrqye"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "margin_total_balance",
+      "meaning": "融资余额与融券余额的合计值。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPTA_WEB_RZRQ_GGMX 响应键 `RZRQYE`；东方财富融资融券交易明细列标题与项目映射一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_margin_trading -> Eastmoney RPTA_WEB_RZRQ_GGMX row.RZRQYE -> margin_trading.rzrqye",
+        "locator": "RPTA_WEB_RZRQ_GGMX 响应键 `RZRQYE`；东方财富融资融券交易明细列标题与项目映射一致。",
+        "url": "https://data.eastmoney.com/rzrq/detail/SH.html"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-date-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_date",
+      "meaning": "大宗交易发生日期。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `TRADE_DATE`；东方财富官方大宗交易表列“交易日期”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.TRADE_DATE -> block_trade.date",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `TRADE_DATE`；东方财富官方大宗交易表列“交易日期”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-price-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_price",
+      "meaning": "大宗交易成交价。",
+      "unit": "元/股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_PRICE`；东方财富官方大宗交易表列“成交价（元）”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.DEAL_PRICE -> block_trade.price",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_PRICE`；东方财富官方大宗交易表列“成交价（元）”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-close-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.close"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_close_price",
+      "meaning": "大宗交易对应证券的收盘价。",
+      "unit": "元/股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `CLOSE_PRICE`；东方财富官方大宗交易表列“收盘价（元）”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.CLOSE_PRICE -> block_trade.close",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `CLOSE_PRICE`；东方财富官方大宗交易表列“收盘价（元）”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-vol-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.vol"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_volume",
+      "meaning": "大宗交易成交股数；页面按万股显示，接口适配器输出股。",
+      "unit": "股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_VOLUME`；东方财富官方大宗交易表列“成交量（万股）；项目接口原值不缩放”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.DEAL_VOLUME -> block_trade.vol",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_VOLUME`；东方财富官方大宗交易表列“成交量（万股）；项目接口原值不缩放”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-amount-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_amount",
+      "meaning": "大宗交易成交金额；页面按万元显示，接口适配器输出元。",
+      "unit": "元",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_AMT`；东方财富官方大宗交易表列“成交额（万元）；项目接口原值不缩放”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.DEAL_AMT -> block_trade.amount",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `DEAL_AMT`；东方财富官方大宗交易表列“成交额（万元）；项目接口原值不缩放”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-buyer-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.buyer"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_buyer_department",
+      "meaning": "大宗交易买方营业部名称。",
+      "unit": "-",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `BUYER_NAME`；东方财富官方大宗交易表列“买方营业部”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.BUYER_NAME -> block_trade.buyer",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `BUYER_NAME`；东方财富官方大宗交易表列“买方营业部”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-block_trade-seller-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "block_trade.seller"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "block_trade_seller_department",
+      "meaning": "大宗交易卖方营业部名称。",
+      "unit": "-",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "RPT_DATA_BLOCKTRADE 响应键 `SELLER_NAME`；东方财富官方大宗交易表列“卖方营业部”。页面展示单位与项目未缩放的接口值换算一致。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_block_trade -> Eastmoney RPT_DATA_BLOCKTRADE row.SELLER_NAME -> block_trade.seller",
+        "locator": "RPT_DATA_BLOCKTRADE 响应键 `SELLER_NAME`；东方财富官方大宗交易表列“卖方营业部”。页面展示单位与项目未缩放的接口值换算一致。",
+        "url": "https://data.eastmoney.com/dzjy/"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-holder_fetch_em-date-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "holder_fetch_em.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "holder_report_date",
+      "meaning": "股东户数统计截止日；是报告期截止日期，不是采集日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "当前代码使用的响应键 `END_DATE`；东方财富股东户数页面列“股东户数统计截止日”。线上返回的早期报告期未作为保留期碰撞样本。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_holders.py::_holder_fetch_em -> Eastmoney RPT_F10_EH_HOLDERNUM row.END_DATE -> holder_fetch_em.date",
+        "locator": "当前代码使用的响应键 `END_DATE`；东方财富股东户数页面列“股东户数统计截止日”。线上返回的早期报告期未作为保留期碰撞样本。",
+        "url": "https://data.eastmoney.com/gdhs"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-holder_fetch_em-holder_num-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "holder_fetch_em.holder_num"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "shareholder_account_count",
+      "meaning": "该统计截止日的股东户数。",
+      "unit": "户",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "当前代码使用的响应键 `HOLDER_TOTAL_NUM`；东方财富股东户数页面列“股东户数”。线上返回的早期报告期未作为保留期碰撞样本。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_holders.py::_holder_fetch_em -> Eastmoney RPT_F10_EH_HOLDERNUM row.HOLDER_TOTAL_NUM -> holder_fetch_em.holder_num",
+        "locator": "当前代码使用的响应键 `HOLDER_TOTAL_NUM`；东方财富股东户数页面列“股东户数”。线上返回的早期报告期未作为保留期碰撞样本。",
+        "url": "https://data.eastmoney.com/gdhs"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-holder_fetch_em-avg_shares-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "holder_fetch_em.avg_shares"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "average_free_shares_per_account",
+      "meaning": "按流通股口径计算的户均持股数量。",
+      "unit": "股/户",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "当前代码使用的响应键 `AVG_FREE_SHARES`；东方财富股东户数页面列“户均持股数量”。线上返回的早期报告期未作为保留期碰撞样本。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_holders.py::_holder_fetch_em -> Eastmoney RPT_F10_EH_HOLDERNUM row.AVG_FREE_SHARES -> holder_fetch_em.avg_shares",
+        "locator": "当前代码使用的响应键 `AVG_FREE_SHARES`；东方财富股东户数页面列“户均持股数量”。线上返回的早期报告期未作为保留期碰撞样本。",
+        "url": "https://data.eastmoney.com/gdhs"
+      }
+    },
+    {
+      "id": "20261122-tdx-dividend_history-date-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "dividend_history.date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "dividend_event_date",
+      "meaning": "TDX XDXR 权息/股本变迁事件日期；现有契约未进一步限定公告日、登记日或除权除息日。",
+      "unit": "YYYY-MM-DD",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；TDX XDXR 权息/股本变迁事件日期；现有契约未进一步限定公告日、登记日或除权除息日。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_dividend_history -> core/tdx_client.py::tdx_get_dividend_history -> ELTDX CapitalChangeRecord.date -> tdx_get_dividend_history.date",
+        "locator": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；TDX XDXR 权息/股本变迁事件日期；现有契约未进一步限定公告日、登记日或除权除息日。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261122-tdx-dividend_history-bonus_rmb-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "dividend_history.bonus_rmb"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash_dividend_per_share",
+      "meaning": "现金派息金额；项目适配器已按每股归一。",
+      "unit": "元/股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；现金派息金额；项目适配器已按每股归一。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_dividend_history -> core/tdx_client.py::tdx_get_dividend_history -> ELTDX category 1 c1_value -> fenhong -> tdx_get_dividend_history.bonus_rmb",
+        "locator": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；现金派息金额；项目适配器已按每股归一。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261122-tdx-dividend_history-bonus_ratio-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "dividend_history.bonus_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "rights_issue_ratio",
+      "meaning": "配股股数与原股数之比；旧兼容键名 bonus_ratio 实际映射到 peigu，不是送股比例。",
+      "unit": "股/股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；配股股数与原股数之比；旧兼容键名 bonus_ratio 实际映射到 peigu，不是送股比例。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_dividend_history -> core/tdx_client.py::tdx_get_dividend_history -> ELTDX category 1 c4_value -> peigu -> tdx_get_dividend_history.bonus_ratio",
+        "locator": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；配股股数与原股数之比；旧兼容键名 bonus_ratio 实际映射到 peigu，不是送股比例。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261122-tdx-dividend_history-transfer_ratio-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "dividend_history.transfer_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "stock_bonus_transfer_ratio",
+      "meaning": "每股对应的送转股数；上游键 songzhuangu，不缩窄为单独转增。",
+      "unit": "股/股",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；每股对应的送转股数；上游键 songzhuangu，不缩窄为单独转增。 Exact response-to-output mapping is present in the path named below. The decision verifies this path only and creates no cross-source mapping.",
+      "source_contract": {
+        "authority": "东方财富数据中心官方页面字段标签与项目当前接口映射；或固定 ELTDX v3.3.2 模型契约与项目适配器映射。",
+        "revision": "官方页面/固定 ELTDX v3.3.2 于 2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_financials.py::get_dividend_history -> core/tdx_client.py::tdx_get_dividend_history -> ELTDX category 1 c3_value -> songzhuangu -> tdx_get_dividend_history.transfer_ratio",
+        "locator": "固定 ELTDX v3.3.2 CapitalChangeRecord/category 1 契约与项目字段映射；每股对应的送转股数；上游键 songzhuangu，不缩窄为单独转增。",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/FIELD_REFERENCE.md"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-HOLDER_TOTAL_NUM-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-datacenter(英文键)",
+        "code": "HOLDER_TOTAL_NUM"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "shareholder_account_count",
+      "meaning": "股东户数；统计截止日由同一响应的 END_DATE 指定。",
+      "unit": "户",
+      "section": "2026-11-22 DataCenter and TDX standardized runtime paths",
+      "rationale": "东方财富股东户数页面显示该列为股东户数，项目 helper 将 RPT_F10_EH_HOLDERNUM 响应键 HOLDER_TOTAL_NUM 映射到 holder_fetch_em.holder_num；这里为原始响应路径单独登记，不建立跨来源映射。",
+      "source_contract": {
+        "authority": "东方财富官方股东户数页面与项目当前 helper 接口映射。",
+        "revision": "2026-11-22 核验；项目代码按当前检出的接口路由。",
+        "path": "stock_common/sc_datasource/_holders.py::_holder_fetch_em -> Eastmoney RPT_F10_EH_HOLDERNUM row.HOLDER_TOTAL_NUM -> holder_fetch_em.holder_num",
+        "locator": "RPT_F10_EH_HOLDERNUM 响应键 HOLDER_TOTAL_NUM；官方股东户数页面列“股东户数”，同一行 END_DATE 指定统计截止日。",
+        "url": "https://data.eastmoney.com/gdhs"
+      }
+    }
+  ]
+}

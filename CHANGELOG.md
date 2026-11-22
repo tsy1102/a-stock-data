@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 明确记录同源批次日期继承规则：腾讯 `qt.gtimg::[30]` 的日期锚在保留期 22 个数据日、440/440 行中与采集目标数据日和交易日历一致，可为同批行情字段确认观测日；采集诊断现在要求该时间戳严格为 14 位数字，缺失、非法或批次日期分歧时不生成来源日期。证据见[批次日期锚审计](docs/field_verification/research/20261122_tencent_batch_date_anchor_audit.md)。
+- 补充新浪 `hq.sinajs` 行情批次日期实证：`fields[30]` 日期及 `[31]` 时间在保留期 22 个数据日、440/440 条记录中均与目标数据日、批次元数据及交易日历一致；同一响应中的行情字段可继承共同观测日，但不延伸至其他端点或业务日期。详见[批次日期锚审计](docs/field_verification/research/20261122_sina_batch_date_anchor_audit.md)。
+- 为来源日期缺口增加同源同证券行的日期字段见证：已验证的 Ulist239 `f297` 仅能传给同一采集目录内择优保留的同一行字段；日期值须与交易日键、已知来源日期和同记录时间戳一致，目标字段缺日期时才补入锚日期。财报期和事件生效日仍须字段自身有效日期证据，报告将同源继承与直接日期、跨源值见证分开统计。
+- 收紧同源行时间戳见证：只有日期锚与目标字段来自同一个 `capture_folder` 才能继承，重复采集目录中分别择优的字段不会互相借用日期；增加批次级日期推断的证据门槛和适用边界，当前不对未审计的聚合端点自动推广。
+- 登记 ELTDX `limit_ladder` 的 6 条上游适配层路径及 Eastmoney clist `f257` / `f258` 页面字段绑定；纠正 `f257` 被误列为 5 日金额的文档，采集请求补齐关联代码 `f258` 并保留 `f259` 供研究。clist 关联证券的选择规则和 `f259` 语义仍未知；不新增跨源映射。
+- 按开盘啦 `ZhiShuStockList_W8` 位置 `[60:63]` 和 Eastmoney 动态/TTM/静态 PE 黄金锚，批量解除 KPL 三个 PE 字段因跨来源聚合状态产生的冲突并补全定义。2026-11-20 同日 23 股现价 23/23 精确相同，三项 PE 均 23/23 在 0.01 舍入误差内命中；保留 KPL/Eastmoney 独立来源身份，不建立跨源映射或采集替代关系。详见[来源裁决](docs/field_verification/adjudications/20261122_kpl_pe_three_fields.md)、[结构化决定](docs/field_verification/adjudications/20261122_kpl_pe_three_fields.json)与[逐股样本](docs/field_verification/research/20261122_kpl_pe_eastmoney_anchor_pairs.csv)。
+- 按保留期 326 条股票×来源日样本，批量复核并定案东财 datacenter 两融 9 个 `margin_trading.*` 状态冲突字段；融资净买入、融券净卖出、5/10 日累计、余额环比和标的 5/10 日涨跌幅共 2,196 次公式比较全部吻合、0 反例。修复逐源状态冲突并补齐“元/股/%”单位；保存全部原始行、公式输入日期和腾讯收盘报价凭据，不建立跨源映射。详见[裁决](docs/field_verification/adjudications/20261122_eastmoney_margin_trading_empirical_semantics.md)、[结构化决定](docs/field_verification/adjudications/20261122_eastmoney_margin_trading_empirical_semantics.json)和[逐行审计](docs/field_verification/research/20261122_eastmoney_margin_trading_formula_audit.csv)。
+- 批量规范 Eastmoney DataCenter 与 TDX 分红的完整字段路径：登记 22 条当前输出契约，归类 3 个采集容器、退役 41 个旧扁平别名并排除 8 个项目派生路径。修正文档中股东数与分红的过时路由，明确 TDX 输出键 `bonus_ratio` 实际承载配股比例；不建立跨源映射。详见[路径裁决](docs/field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.md)、[结构化决定](docs/field_verification/adjudications/20261122_eastmoney_datacenter_standard_paths.json)与[路径审计](docs/field_verification/research/20261122_eastmoney_datacenter_path_scope_audit.csv)。
 - 批量核实 TDX 0x0010 下划线财务别名和 `reserve2`：以固定 Easy-TDX 解析器重放 20 条保留协议样本，生成别名 300/300 相等；14 个具备 ELTDX 对应槽的字段 280/280 相等。将 `zhigonggu` 当前 Easy-TDX 兼容输出单位更正为“股”，并清理 5 条由旧合并清单 token 引起的元数据冲突；`reserve2` 继承 `baoliu2` 的来源内报告月份语义，不新增跨源映射。详见[批量核验](docs/field_verification/adjudications/20261121_tdx_finance_alias_batch.md)、[结构化决定](docs/field_verification/adjudications/20261121_tdx_finance_alias_batch.json)和[逐行样本](docs/field_verification/research/20261121_tdx_finance_alias_batch_samples.csv)。
 - 穷尽复核 29 条 `TDX(双命名源)` 裸未知路径：结合 22 个保留日期目录的 88 份 TDX/ELTDX raw、当前解析调用链、固定 `easy_tdx` 响应模型及官方 TQ 契约，批量区分 TDX 原始字段、项目派生值、混合来源包装值、token 和旧伪路径。将无接口限定的 `Date` 裸路径退役，并登记 8 个含义各自明确的接口级日期路径；没有把日期字段当残留删除，也没有把官方 TQ 字段误作当前 7709/TCP 采集路径或自动别名。详见[逐项复核](docs/field_verification/adjudications/20261122_tdx_remaining_unknowns.md)、[官方字段契约](docs/field_verification/adjudications/20261122_tdx_official_field_contracts.json)、[日期契约](docs/field_verification/adjudications/20261122_tdx_scoped_date_contracts.json)和[路径扫描](docs/field_verification/research/20261122_tdx_remaining_unknown_path_audit.csv)。
 - 将 `东财-event_dc(IPO发行记录)::ipo_calendar[].PREDICT_RAISE_FUNDS` 定案为募资计划预测金额（亿元）：7 个 IPO 事件与发行人正式文件中的拟投入募集资金合计逐项吻合；明确它不同于实际募集总额，不建立跨源映射。详见[来源契约裁决](docs/field_verification/adjudications/20261121_eventdc_ipo_predict_raise_funds.md)和[逐项样本](docs/field_verification/research/20261121_eventdc_ipo_predict_raise_funds_samples.csv)。
@@ -49,6 +57,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 按 `registry_parity.py` 的历史基线与裁决证据重建字段×源矩阵投影，修正 15 个缺项、12 个多余项及 3 处来源标签混杂；未改动逐源 `source_fields`。
+- 将 ETF 日期诊断区分为“日期不可解析”和“日期值可解析但口径未认证”；覆盖摘要单列后者。旧版 SZ ETF 行的 `date` 是页面日期，不能充当当前规模统计日。
+- 修复碰撞目标筛选未排除“全部为空/缺失”字段的问题。此类路径仍列入低信息观察队列，但在样本出现有效变化前不会反复进入普通破解目标。
 - 修复 `clist` 碰撞将项目生成的 `_board_type` 和 `by_type` 分页计数 `n/total` 当成上游业务字段的问题；保留真正的板块行及其中的 `fN` 响应键参与碰撞，不改原始采集数据。
 - 修复 `event_dc` 逐条注入的 `source`、`source_url`、`fetched_at` 溯源信息被碰撞器误当业务字段的问题；这些追踪值不再进入未知字段目标，原始采集与元数据留存不变。以保留样本重跑的 2026-11-21 碰撞报告结构完整，未知目标由 67 项降为 65 项，见[回归报告](docs/field_verification/20261121/event_dc_trace_metadata_fix/20261121_collision_report.md)。
 - 修复 `st_list` 在东财失败并回退到 Baostock 时仍记录为 `em.clist` 的来源血缘错误。后续 raw/meta 会记录沪深与北交所的实际提供方、接口和路由状态；旧快照缺乏路由证据，保持来源未确认且不改写。详见[审计记录](docs/field_verification/research/20261121_st_list_route_provenance_audit.md)。

@@ -745,7 +745,8 @@
     "沪深交易所": {
       "runtime_aliases": [
         "exchange",
-        "etf"
+        "etf",
+        "sse_e_interaction"
       ],
       "provider": "沪深交易所",
       "independence_family": "exchange",

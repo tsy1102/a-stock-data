@@ -581,8 +581,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # contract adjudication in history, while its current metadata state is the
     # separately validated empirical addendum. The latest TDX batch adds 16
     # FinanceInfo alias contracts, ten official TQ field contracts plus the
-    # ErrorId sample-key decision, and eight API-scoped Date contracts.
-    assert len(pairs) == 218
+    # ErrorId sample-key decision, and eight API-scoped Date contracts. The
+    # current count includes subsequent source-contract adjudications.
+    assert len(pairs) == 260
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"
@@ -767,10 +768,13 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
         "limit_ladder.prev2_seal_amount",
     ):
         assert ("TDX-eltdx(适配层)", code) in pairs
-    assert matrix["finance_batch[].gu_dong_ren_shu_raw_float"] == {"TDX-eltdx(适配层)"}
-    assert matrix["finance_batch[].zhu_ying_shou_ru_raw_float"] == {"TDX-eltdx(适配层)"}
-    assert matrix["finance_batch[].ying_ye_li_run_raw_float"] == {"TDX-eltdx(适配层)"}
-    assert matrix["finance_batch[].zong_xian_jin_liu_raw_float"] == {"TDX-eltdx(适配层)"}
+    for path in (
+        "finance_batch[].gu_dong_ren_shu_raw_float",
+        "finance_batch[].zhu_ying_shou_ru_raw_float",
+        "finance_batch[].ying_ye_li_run_raw_float",
+        "finance_batch[].zong_xian_jin_liu_raw_float",
+    ):
+        assert registry["field_matrix"][path] == ["TDX-eltdx"]
     assert matrix["growth.total_assets_growth_ratio"] == {"同花顺-fuyao"}
     assert matrix["profitability.total_assets_net_ratio"] == {"同花顺-fuyao"}
 

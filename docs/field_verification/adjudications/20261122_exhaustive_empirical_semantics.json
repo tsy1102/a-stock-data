@@ -1,0 +1,591 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_exhaustive_empirical_semantics.md",
+  "evidence_sha256": "67371457b1339f918a94ca9b1b98d9d5364d4a9dc2cecf64ec94aa21f28756f8",
+  "decisions": [
+    {
+      "id": "20261122-exhaustive-e3-01",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].AVERAGE_PRICE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_total_change_reference_average_price_yuan",
+        "meaning": "东方财富 IPO 记录中用于计算 TOTAL_CHANGE 涨幅的基准成交均价，单位为元/股；其参考交易日按该记录适用的发行规则选择。本地留存样本不足以将其固定解释为上市首日均价或开板日均价。",
+        "unit": "元/股"
+      },
+      "canonical": "ipo_yield_price_reference_yuan",
+      "meaning": "IPO_YIELD 使用的价格基准。6 只跨 2023–2026 年、沪深不同板块样本中，均匹配上市后第 5 个交易日成交量加权均价，绝对误差不超过 0.0018 元；它不同于首日 LD_AVERAGE_PRICE、开板日 OPEN_AVERAGE_PRICE，也不是 TOTAL_CHANGE 的基价。当前只把第五交易日口径限定到已核样本，不外推所有历史发行制度。",
+      "unit": "元/股",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "新近跨年份/市场的 K 线给出 AVERAGE_PRICE 独立于首日字段的稳定数值对应；旧结论仅有 20 条早期 IPO，且 AVERAGE_PRICE、LD_AVERAGE_PRICE、OPEN_AVERAGE_PRICE 因上市首日开板而重合，不能用于外推。旧的 TOTAL_CHANGE 基准释义因此正式撤回。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2023–2026 的 6 只新股；以交易所交易日序列取上市后第 5 个交易日，并以日 K 的成交额/成交量重算成交量加权均价。",
+        "comparison_count": 6,
+        "matched_count": 6,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 6
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-02",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].IPO_YIELD"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_yield_pct",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 IPO_YIELD，收益基准价格由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_yield_pct",
+      "meaning": "IPO 价格基准收益率，按 `(AVERAGE_PRICE / ISSUE_PRICE - 1) × 100`；样本中 AVERAGE_PRICE 是该字段自己的收益价格基准，不与 TOTAL_CHANGE 混用。",
+      "unit": "%",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "343/343 公式吻合、0 反例。该收益口径使用來源 AVERAGE_PRICE，故與 TOTAL_CHANGE（其參考日依发行制度而异）分别保留。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 IPO 500 行 RPTA_APP_IPOAPPLY 留存审计中具有可比值的 343 条；按字段原生精度复算。",
+        "comparison_count": 343,
+        "matched_count": 343,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 343
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-03",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TCHANGE_RATE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_issue_price_to_latest_price_change_pct",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 TCHANGE_RATE，具体价格基准由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_issue_price_to_latest_price_change_pct",
+      "meaning": "接口最新价 TNEW_PRICE 相对发行价 ISSUE_PRICE 的涨幅，按 `(TNEW_PRICE / ISSUE_PRICE - 1) × 100`。接口没有在此字段内明确最新价自身的来源实际日期；未核日期时不得将其作为目标日行情。",
+      "unit": "%",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "500/500 公式吻合、0 反例。这里只确认价格基准和算式，不以采集目录日冒充最新价 as-of 日期。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 RPTA_APP_IPOAPPLY 500 行；价格和结果按原始行计算，容差 0.005 个百分点。",
+        "comparison_count": 500,
+        "matched_count": 500,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 500
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-04",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TNEW_PRICE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_latest_price_yuan",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 TNEW_PRICE，行情日期边界由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_price_yuan",
+      "meaning": "东方财富 IPO 列表所列的该证券最新价；6 股逐股核验均与截至 2026-11-20 的最新日 K 收盘价一致。响应的更新日期不等于价格来源日期；仍按最新报价字段保留日期资格限制。",
+      "unit": "元/股",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "6/6 精确匹配。此证据确认字段角色和价格值，不推断记录更新日就是行情数据日。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 6 只股票与截至 2026-11-20 的最新可用日 K 报价；六条均有合格对照。",
+        "comparison_count": 6,
+        "matched_count": 6,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 6
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-05",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].CHANGE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_latest_quote_change_yuan",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 CHANGE，具体事件语义由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_quote_change_yuan",
+      "meaning": "IPO 列表所列的最新报价涨跌额；5 条同股同日可比样本与官方最新报价变化值一致。 对未核明的来源实际报价日不外推为采集目标数据日。",
+      "unit": "元/股",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "可比项 5/5 与官方报价相符；变动值的日期资格依源报价日期，不以采集日推断。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 6 只新股报价对照；其中 5 条同股同日数据可比，1 条因无合格报价排除。",
+        "comparison_count": 5,
+        "matched_count": 5,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 1,
+        "stock_count": 5
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-06",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].CHANGE_RATE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_latest_quote_change_rate_pct",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 CHANGE_RATE，具体事件语义由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_quote_change_rate_pct",
+      "meaning": "IPO 列表所列的最新报价涨跌幅；5 条同股同日可比样本与官方最新报价涨幅值一致。 对未核明的来源实际报价日不外推为采集目标数据日。",
+      "unit": "%",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "可比项 5/5 与官方报价相符；变动值的日期资格依源报价日期，不以采集日推断。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 6 只新股报价对照；其中 5 条同股同日数据可比，1 条因无合格报价排除。",
+        "comparison_count": 5,
+        "matched_count": 5,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 1,
+        "stock_count": 5
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-07",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].AMPLITUDE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_first_day_amplitude_pct",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 AMPLITUDE，具体事件语义由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_first_day_amplitude_pct",
+      "meaning": "该 IPO 证券上市首日振幅；以 `(首日最高价 - 首日最低价) / 前收 × 100` 对照首日 K 线，6/6 在 0.005 个百分点内吻合。",
+      "unit": "%",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "6/6 与官方日 K 的 OHLC 振幅公式吻合；首日数据日取 LISTING_DATE，不取抓取日期。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 6 只不同 IPO 的首日 K 线，上市日期按来源 LISTING_DATE 与交易日序列定位。",
+        "comparison_count": 6,
+        "matched_count": 6,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 6
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-08",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].EACHBALLOT_SHARES"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_lottery_lot_shares",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 EACHBALLOT_SHARES，具体中签股数语义由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_lottery_lot_shares",
+      "meaning": "中一签对应的获配股数；与 MZYQ_PAY_FUND / ISSUE_PRICE 的反算在 343 条可比记录中一致。按发行板块/时期保留实际股数，不假设所有历史签号都固定为 500 股。",
+      "unit": "股/签",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "343/343 按获配股数与应缴金额公式一致；不同板块的中签股数依法/按产品不同，不统一固定。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 IPO 500 行响应中 343 条两字段及发行价均可比的记录。",
+        "comparison_count": 343,
+        "matched_count": 343,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 343
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-09",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].MZYQ_PAY_FUND"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_lottery_payment_amount_yuan",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 MZYQ_PAY_FUND，具体缴款口径由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_lottery_payment_amount_yuan",
+      "meaning": "IPO 中签后每签应缴金额；等于发行价乘以每签获配股数，343/343 复算吻合。",
+      "unit": "元/签",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "343/343 按 `ISSUE_PRICE × EACHBALLOT_SHARES` 复算吻合，0 反例；与一签获利 PROFIT 是不同口径。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 IPO 500 行响应中 343 条两字段及发行价均可比的记录。",
+        "comparison_count": 343,
+        "matched_count": 343,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 343
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-10",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].LIMIT_UP_PRICE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_reference_limit_price_yuan",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 LIMIT_UP_PRICE；规则含义及适用边界由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_reference_limit_price_yuan",
+      "meaning": "RPTA_APP_IPOAPPLY 提供的发行价 1.44 倍参考价；在 343 条沪深记录中等于 `ISSUE_PRICE × 1.44`。这不是注册制新股上市前五个交易日的法定涨跌幅上限，不能用于当日涨停价判断。",
+      "unit": "元/股",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "343/343 与 1.44×发行价相符；在注册制首五日无涨跌幅限制的情况下，字段只记为参考价计算，不误标法定上限。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-22 IPO 500 行响应内 343 条沪深 IPO；不含北交所不同原生单位/规则样本。",
+        "comparison_count": 343,
+        "matched_count": 343,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 343
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-11",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].DEC_SUMFINA"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_gross_funds_raised_native_unit",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 DEC_SUMFINA，募集资金口径及市场原生单位由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_gross_funds_raised_native_unit",
+      "meaning": "IPO 募集资金总额。两份发行人正式文件与接口值经单位换算后吻合；另有 420/500 条记录与 ISSUE_PRICE × ISSUE_NUM（万股）按市场原生单位折算相符。其余 80 条差异未逐项归因，不视为公式反例。沪深以亿元计，北交所以元计。",
+      "unit": "亿元（沪深）/元（北交所）",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "2/2 与发行人正式文件相符；发行人文件中一例包含超额配售后金额。另有 420/500 条公式吻合；其余 80 条差异成因未逐项核实，不作未证实归因。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "两只发行人的正式发行文件锚点；500 行历史记录中的 420 条发行价×发行量公式吻合用于补充核验，80 条金额差异未逐项查明。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-12",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].NETSUMFINA"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_net_funds_raised_native_unit",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 NETSUMFINA，募集资金口径及市场原生单位由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_net_funds_raised_native_unit",
+      "meaning": "IPO 募集资金净额。两份发行人正式招股说明书金额与接口值经单位换算后吻合；单位随市场：沪深亿元、北交所元。",
+      "unit": "亿元（沪深）/元（北交所）",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "2/2 与正式招股说明书募集资金净额吻合（粤芯半导体采用超额配售权全额行使后的金额）；同时保留市场原生单位的边界。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "两只发行人正式招股说明书锚点，涵盖沪深接口亿元单位；北交所原生单位由同批 500 行字段值尺度与市场口径核验，不将单位转换回写。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-13",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TOTAL_SHARES"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_total_share_capital_after_issue_shares",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 TOTAL_SHARES，发行后总股本释义由配套发行人文件 E3 裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_total_share_capital_after_issue_shares",
+      "meaning": "IPO 后总股本/总股本数量，单位为股；不是本次发行数量。三份发行人招股书锚点均与接口一致，含超额配售前口径。",
+      "unit": "股",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "3/3 与招股书披露的发行后总股本一致；第三条明确为超额配售行使前口径，未将发行量等同总股本。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "三只发行人的正式招股说明书总股本字段，逐项换算为股与 RPTA_APP_IPOAPPLY TOTAL_SHARES 对比。",
+        "comparison_count": 3,
+        "matched_count": 3,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 3
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-14",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].RECOMMEND_ORG"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_sponsor_recommendation_org",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 RECOMMEND_ORG，保荐/推荐机构身份由配套发行人文件 E3 裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_sponsor_recommendation_org",
+      "meaning": "IPO 保荐/推荐机构名称；两份发行人招股书锚点一致，并保留证券机构后续更名的法人连续性说明。",
+      "unit": "机构名称",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "2/2 与正式发行人文件匹配；安信证券更名为国投证券按上交所公告作名称沿革核验，不把名称差异当作实体差异。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "两只发行人招股说明书中保荐人/保荐机构与接口值逐条核对。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-15",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].UNDERWRITER_ORG"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_underwriter_org_list",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 UNDERWRITER_ORG，承销机构名单释义由配套发行人文件 E3 裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_underwriter_org_list",
+      "meaning": "IPO 承销机构名称列表；可包含主承销商与联席主承销商，不保证等于单一保荐人。两份发行人招股书锚点一致，保留多机构列表和机构更名沿革。",
+      "unit": "机构名称（可多值）",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "2/2 与正式发行人文件匹配；一项包含两家联席主承销商，另一项的名称更名由上交所公告闭环确认。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "两只发行人招股说明书中主承销商/联席主承销商与接口值逐条核对。",
+        "comparison_count": 2,
+        "matched_count": 2,
+        "counterexample_count": 0,
+        "official_report_count": 3,
+        "excluded_count": 0,
+        "stock_count": 2
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-16",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].INDUSTRY_PE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_legacy_industry_pe",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 INDUSTRY_PE；与已验证 INDUSTRY_PE_NEW 的关系由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_legacy_industry_pe",
+      "meaning": "IPO 记录中的参考行业市盈率；在 20 条历史记录中与已核的 INDUSTRY_PE_NEW 数值 20/20 一致，但本结论限于该历史接口样本，不外推到当前发行制度或其他市场。",
+      "unit": "倍",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "20/20 同值且该路径为同一 RPTA_APP_IPOAPPLY 行；只认定当前观察的历史字段释义，不宣称跨时代字段一定保持同义。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-19 目标数据日归档中的 20 条早期 IPO 发行记录，逐行与同记录 INDUSTRY_PE_NEW 比较。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-17",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].OD_HIGH_CHANGE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "ipo_legacy_open_day_high_change_pct",
+        "meaning": "RPTA_APP_IPOAPPLY 原始字段 OD_HIGH_CHANGE；与首日高点涨幅字段的关系由配套 E3 样本裁决核定。",
+        "unit": ""
+      },
+      "canonical": "ipo_first_day_high_change_pct",
+      "meaning": "同一 IPO 发行记录中的首日最高涨幅历史字段；20 条历史记录中与官方页面已标注的 LD_HIGH_CHANG 20/20 一致。该同路径关系限于现有历史记录，未见现代记录，不外推字段版本。",
+      "unit": "%",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "20/20 同值；LD_HIGH_CHANG 在东方财富详情页直接绑定首日最高涨幅。本裁决对 OD_HIGH_CHANGE 作历史记录级语义判断，不把旧短键外推为当前输出字段。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-19 目标数据日归档 20 条 IPO 记录，同记录 OD_HIGH_CHANGE 与 LD_HIGH_CHANG。",
+        "comparison_count": 20,
+        "matched_count": 20,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 20
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-18",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ISSUE_TYPE"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "convertible_bond_issue_type_code_set",
+        "meaning": "RPT_BOND_CB_LIST 原始发行类型编码集合；代码与中文类别的对应由同记录 PARAM_NAME 样本关系在 E3 裁决中核定。",
+        "unit": "逗号分隔编码"
+      },
+      "canonical": "convertible_bond_issue_type_code_set",
+      "meaning": "发行类型代码组合。基于同记录 ISSUE_TYPE 与 PARAM_NAME 的全部出现组合，唯一反推出：1 网上向社会公众投资者发行；2 网下向机构投资者协议发行；4 网上向原 A 股无限售股东优先配售；5 网下向原 A 股有限售股东优先配售。组合顺序不相同，按位置配对是错误的；未观测代码不外推。",
+      "unit": "逗号分隔编码",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "500/500 个不同债券的 ISSUE_TYPE 代码集合与 PARAM_NAME 可读类别集合一致；只对实际观测到的 1/2/4/5 解释，未创造其他编码。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-19 留存 RPT_BOND_CB_LIST 的 500 个不同可转债；三份抓取快照仅用于重复稳定性检查，不当作三个独立来源日期。 按证券代码去重后，将代码集合与 PARAM_NAME 中文类别集合按标签对应的代码集合复核；不假设两串字段逐位置对齐。",
+        "comparison_count": 500,
+        "matched_count": 500,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 500
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-19",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].PAYDAYNEW"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "convertible_bond_payday_signed_day_code",
+        "meaning": "RPT_BOND_CB_LIST 原始年度付息日编码；字段值与 PAY_INTEREST_DAY 的对应关系由配套 E3 样本裁决核定。",
+        "unit": "编码"
+      },
+      "canonical": "convertible_bond_payday_signed_day_code",
+      "meaning": "每年付息日的负日号编码：`PAYDAYNEW = -日(PAY_INTEREST_DAY)`。例如 `04-18` 对应 `-18`；它不是 YYYYMMDD 日期，也不是采集日期。",
+      "unit": "负日号编码",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "500/500 个不同债券符合负日号；三次保留抓取合计 1500/1500 次数值归一后公式吻合。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "2026-11-19 留存 RPT_BOND_CB_LIST 的 500 个不同可转债；三份抓取快照仅用于重复稳定性检查，不当作三个独立来源日期。 按证券代码去重后，使用同记录 PAY_INTEREST_DAY 的日部分复算；另以三份留存抓取复查稳定性，并将零填充日号按整数比较。",
+        "comparison_count": 500,
+        "matched_count": 500,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 500,
+        "observation_count": 1500
+      }
+    },
+    {
+      "id": "20261122-exhaustive-e3-20",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "raw_columns.col_18"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_source_contract",
+      "previous": {
+        "canonical": "kpl_limit_up_sequence_label",
+        "meaning": "DailyLimitPerformance 原始数组第 18 列透传值；文本含义由配套 E3 留存样本裁决核定。",
+        "unit": "文本"
+      },
+      "canonical": "kpl_limit_up_sequence_label",
+      "meaning": "开盘啦涨停表现列表的描述性板数标签；保留样本非空值均形如 `N天M板` 或 `N连板`。这只是 KPL 自身的文字标签，不与 KPH 的 limit_tag/limit_count 建立等价。",
+      "unit": "文本",
+      "section": "2026-11-22 exhaustive cracking batch: official anchors, source formulas, retained samples and issuer filings",
+      "rationale": "115/115 非空文本符合 N天M板/N连板语法；样本覆盖 21 个来源交易日。该批只确认文字类型和格式，不推断完整业务算法或跨来源同义。 逐行字段原值和对应推算值见配套研究 CSV；来源日期资格、适用市场和未覆盖边界在证据文件中逐项注明。",
+      "sample": {
+        "scope": "采集目录目标日 2026-10-15 以后全部已留存 KPL raw_kpl 文件；只统计 raw_columns.col_18 非空行，按样本原始交易日保留。",
+        "comparison_count": 115,
+        "matched_count": 115,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 115
+      }
+    }
+  ]
+}

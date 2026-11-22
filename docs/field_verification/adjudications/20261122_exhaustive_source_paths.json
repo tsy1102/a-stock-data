@@ -1,0 +1,901 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_exhaustive_source_paths.md",
+  "evidence_sha256": "cb7716729828fdce937664dcf4e7ca9f93c1180b04de9992e2e923b008e784d1",
+  "decisions": [
+    {
+      "id": "20261122-exhaustive-clist-f2",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-clist",
+        "code": "f2"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_board_current_index_value",
+      "meaning": "东方财富板块排行记录的当前板块指数值。",
+      "unit": "点",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f2 -> raw_clist.records[].f2",
+        "locator": "板块列表当前值列绑定 row.f2；原始字段不做本地换算。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-clist-f4",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-clist",
+        "code": "f4"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_board_change_amount",
+      "meaning": "东方财富板块指数相对前收的涨跌额。",
+      "unit": "点",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f4 -> raw_clist.records[].f4",
+        "locator": "板块列表涨跌额列绑定 row.f4；原始字段不做本地换算。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-clist-f141",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-clist",
+        "code": "f141"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_leader_stock_market_id",
+      "meaning": "领涨股票的市场编号；与 f140 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。",
+      "unit": "市场编号",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f141 -> raw_clist.records[].f141",
+        "locator": "第一方板块脚本以 f140/f141 构造领涨股票行情链接；样本值 0/1 与代码、行情路由一致。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-clist-f207",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-clist",
+        "code": "f207"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_loser_stock_name",
+      "meaning": "东方财富板块排行中领跌股票简称。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f207 -> raw_clist.records[].f207",
+        "locator": "板块表格第一方字段绑定把 f207 用作领跌股票简称。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-clist-f208",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-clist",
+        "code": "f208"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_loser_stock_code",
+      "meaning": "领跌股票的证券代码；与 f207 名称和 f209 市场编号组成同一领跌股票链接。",
+      "unit": "证券代码",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f208 -> raw_clist.records[].f208",
+        "locator": "第一方板块脚本以 f207/f208/f209 生成领跌股票展示和行情链接。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-clist-f209",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-clist",
+        "code": "f209"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist_loser_stock_market_id",
+      "meaning": "领跌股票的市场编号；与 f208 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。",
+      "unit": "市场编号",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本裁决限定于东财 clist 的完整路径，不把同号 push2/ulist 字段或板块资金流字段并入。",
+      "source_contract": {
+        "authority": "东方财富板块排行榜官方页面和随页加载的第一方 JS 字段绑定；项目原始 clist 响应透传。",
+        "revision": "东方财富板块排行页面与第一方字段脚本于 2026-11-22 核验；留存样本数据日 2026-11-18。",
+        "path": "scripts/capture_http_collectors.py::collect_clist / stock_common/sc_datasource/_industry.py::get_em_industry_l2_data -> Eastmoney /api/qt/clist/get row.f209 -> raw_clist.records[].f209",
+        "locator": "第一方板块脚本以 f208/f209 构造领跌股票行情链接；样本值 0/1 与代码、行情路由一致。",
+        "url": "https://quote.eastmoney.com/center/boardlist.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-etf-sh-etf-type",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "etf_sh.etf_type"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sse_etf_subcategory",
+      "meaning": "上交所 ETF 细分类型，由上交所 `ETF_TYPE` 原值提供；保留官方分类文本，不压缩成单市/跨市/跨境规则。",
+      "unit": "分类文本",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "仅确认上交所 etf_sh 路径，不推广到深交所 ETF 输出，也不做跨市场来源替代判断。",
+      "source_contract": {
+        "authority": "上交所 ETF 产品列表的 ETF 细分类型列、ETF 官方产品分类文件及项目 SSE 适配器字段映射。",
+        "revision": "上交所基金列表与 ETF 分类文件于 2026-11-22 核验；项目路径取当前检出代码。",
+        "path": "stock_common/sc_datasource/_etf.py::_etf_shares_sse -> SSE commonQuery row.ETF_TYPE -> etf_sh.etf_type",
+        "locator": "上交所 ETF 列表列名 `ETF细分类型`；留存值包括 单市/跨市/跨境/其他。",
+        "url": "https://www.sse.com.cn/assortment/fund/list/?type=5"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-type",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "新浪(研报列表)",
+        "code": "type"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sina_research_report_category",
+      "meaning": "新浪研报列表中“报告类型”列的分类文本。",
+      "unit": "分类文本",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "这是研报分类，不是报告题材、行业或报告发布状态。",
+      "source_contract": {
+        "authority": "新浪财经官方研报列表页面 DOM 表格及项目解析代码。",
+        "revision": "新浪官方研报列表页面及项目 HTML parser 于 2026-11-22 核验。",
+        "path": "stock_common/sc_datasource/_research_sina.py::sina_research_reports -> official vReport_List table row -> report output.type",
+        "locator": "表头 `报告类型` 与 parser 的 `kind.strip()` 输出一一对应。",
+        "url": "https://stock.finance.sina.com.cn/stock/go.php/vReport_List/kind/lastest/index.phtml"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-report-id",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "新浪(研报列表)",
+        "code": "report_id"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sina_research_report_id",
+      "meaning": "新浪研报详情页 URL `/rptid/{id}/` 中的数字报告标识。",
+      "unit": "标识符",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "该字段是研报记录身份键，不代表报告日期。",
+      "source_contract": {
+        "authority": "新浪财经官方研报列表页面 DOM 表格及项目解析代码。",
+        "revision": "新浪官方研报列表页面及项目 HTML parser 于 2026-11-22 核验。",
+        "path": "stock_common/sc_datasource/_research_sina.py::sina_research_reports -> official vReport_List table row -> report output.report_id",
+        "locator": "parser 从详情 href 的 `/rptid/(数字)/` 提取并原样输出；不将其当作日期或证券代码。",
+        "url": "https://stock.finance.sina.com.cn/stock/go.php/vReport_List/kind/lastest/index.phtml"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-sse-e-interaction-id",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "sse_e_interaction[].id"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sse_e_interaction_item_id",
+      "meaning": "上证 e 互动 feed 条目的数字 ID，取 HTML `id=\"item-{id}\"`。",
+      "unit": "标识符",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "这是页面条目 ID，不是问答时间或股票代码。",
+      "source_contract": {
+        "authority": "上交所 e 互动官方页面 HTML 记录结构及项目解析代码；上交所使用手册确认平台承载投资者提问和上市公司回复。",
+        "revision": "上交所 e 互动使用手册（2025-08）及页面解析代码于 2026-11-22 核验。",
+        "path": "stock_common/sc_datasource/_sse_e_interaction.py::_sse_parse_feed -> official sns.sseinfo.com feed item -> id",
+        "locator": "`_sse_parse_feed` 从 feed div id 的 item- 前缀后提取数字并用于条目身份。",
+        "url": "https://sns.sseinfo.com/resources/files/help.pdf"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-sse-e-interaction-answer-time",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "沪深交易所",
+        "code": "sse_e_interaction[].answer_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sse_e_interaction_answer_time",
+      "meaning": "上证 e 互动条目中上市公司回答的显示时间；仅在存在回答块时有值，项目解析后输出标准化时间。",
+      "unit": "日期时间（北京时间）",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "只表示回复时间；空值表示当前条目尚无回答，不等于零时或采集失败。",
+      "source_contract": {
+        "authority": "上交所 e 互动官方页面 HTML 记录结构及项目解析代码；上交所使用手册确认平台承载投资者提问和上市公司回复。",
+        "revision": "上交所 e 互动使用手册（2025-08）及页面解析代码于 2026-11-22 核验。",
+        "path": "stock_common/sc_datasource/_sse_e_interaction.py::_sse_parse_feed -> official sns.sseinfo.com feed item -> answer_time",
+        "locator": "`_sse_parse_feed` 仅从 answer block 的 `.m_feed_from` 读取回答时间，和提问时间分开解析。",
+        "url": "https://sns.sseinfo.com/resources/files/help.pdf"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-convertible-bonds-execute-reason-hs",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_REASON_HS"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_execution_reason_code",
+      "meaning": "东方财富可转债详情页显示的回售/赎回执行原因码：1 满足回售条款；2 满足赎回条件；3 满足附加回售条款；4 强制赎回；5 到期赎回。接口样本另见代码 6，但当前第一方 switch 未定义 6，故 6 仍未定案。",
+      "unit": "枚举码",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "不把 SH/HS 两个完整路径合并；只确认两者当前显示的共同枚举标签，代码 6 仍单独保留为未知。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页第一方 detail.js 的显示映射与项目 RPT_BOND_CB_LIST 原始字段透传。",
+        "revision": "东方财富可转债详情页第一方 detail.js（2026-11-22 检出）；原始响应为 RPT_BOND_CB_LIST。",
+        "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds -> RPT_BOND_CB_LIST response.data[*].EXECUTE_REASON_HS -> raw_event_dc.convertible_bonds[].EXECUTE_REASON_HS",
+        "locator": "第一方脚本对 EXECUTE_REASON_HS 和 EXECUTE_REASON_SH 的 switch 分别映射 1–5；未定义的 6 保持未知。",
+        "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-convertible-bonds-execute-reason-sh",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].EXECUTE_REASON_SH"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_execution_reason_code",
+      "meaning": "东方财富可转债详情页显示的回售/赎回执行原因码：1 满足回售条款；2 满足赎回条件；3 满足附加回售条款；4 强制赎回；5 到期赎回。接口样本另见代码 6，但当前第一方 switch 未定义 6，故 6 仍未定案。",
+      "unit": "枚举码",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "不把 SH/HS 两个完整路径合并；只确认两者当前显示的共同枚举标签，代码 6 仍单独保留为未知。",
+      "source_contract": {
+        "authority": "东方财富可转债详情页第一方 detail.js 的显示映射与项目 RPT_BOND_CB_LIST 原始字段透传。",
+        "revision": "东方财富可转债详情页第一方 detail.js（2026-11-22 检出）；原始响应为 RPT_BOND_CB_LIST。",
+        "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds -> RPT_BOND_CB_LIST response.data[*].EXECUTE_REASON_SH -> raw_event_dc.convertible_bonds[].EXECUTE_REASON_SH",
+        "locator": "第一方脚本对 EXECUTE_REASON_HS 和 EXECUTE_REASON_SH 的 switch 分别映射 1–5；未定义的 6 保持未知。",
+        "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-convertible-bonds-issue-type",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].ISSUE_TYPE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_issue_type_code_set",
+      "meaning": "RPT_BOND_CB_LIST 原始发行类型编码集合；代码与中文类别的对应由同记录 PARAM_NAME 样本关系在 E3 裁决中核定。",
+      "unit": "逗号分隔编码",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "字段身份和编码语义分步记录；不把同一接口内 PARAM_NAME 的自然语言标签误认为另一来源。",
+      "source_contract": {
+        "authority": "东方财富 RPT_BOND_CB_LIST 原始响应及项目适配器；当前响应键原样保留。",
+        "revision": "RPT_BOND_CB_LIST 页面与适配器于 2026-11-22 核验；稳定发行条款样本使用 2026-11-19 快照。",
+        "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds -> RPT_BOND_CB_LIST response.data[*].ISSUE_TYPE -> raw_event_dc.convertible_bonds[].ISSUE_TYPE",
+        "locator": "原始 ISSUE_TYPE 与 PARAM_NAME 出现在同一债券行；本步只注册完整字段路径，具体代码标签由配套 E3 样本裁决。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-convertible-bonds-paydaynew",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].PAYDAYNEW"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_payday_signed_day_code",
+      "meaning": "RPT_BOND_CB_LIST 原始年度付息日编码；字段值与 PAY_INTEREST_DAY 的对应关系由配套 E3 样本裁决核定。",
+      "unit": "编码",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "PAYDAYNEW 不是 YYYYMMDD 日期；E3 核定其负日号编码后，仍保留其编码类型。",
+      "source_contract": {
+        "authority": "东方财富 RPT_BOND_CB_LIST 原始响应及项目适配器；当前响应键原样保留。",
+        "revision": "RPT_BOND_CB_LIST 页面与适配器于 2026-11-22 核验；稳定付息条款样本使用 2026-11-19 快照。",
+        "path": "stock_common/sc_datasource/_convertible.py::convertible_bonds -> RPT_BOND_CB_LIST response.data[*].PAYDAYNEW -> raw_event_dc.convertible_bonds[].PAYDAYNEW",
+        "locator": "同一债券响应行同时含 PAYDAYNEW 与 PAY_INTEREST_DAY；本步只注册原始字段路径，日期编码方向由 E3 复算。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=kzz"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-amplitude",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].AMPLITUDE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_first_day_amplitude_pct",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 AMPLITUDE，具体事件语义由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].AMPLITUDE -> raw_event_dc.ipo_calendar[].AMPLITUDE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `AMPLITUDE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-change",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].CHANGE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_quote_change_yuan",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 CHANGE，具体事件语义由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].CHANGE -> raw_event_dc.ipo_calendar[].CHANGE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `CHANGE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-change-rate",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].CHANGE_RATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_quote_change_rate_pct",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 CHANGE_RATE，具体事件语义由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].CHANGE_RATE -> raw_event_dc.ipo_calendar[].CHANGE_RATE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `CHANGE_RATE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-dec-sumfina",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].DEC_SUMFINA"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_gross_funds_raised_native_unit",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 DEC_SUMFINA，募集资金口径及市场原生单位由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].DEC_SUMFINA -> raw_event_dc.ipo_calendar[].DEC_SUMFINA",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `DEC_SUMFINA` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-eachballot-shares",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].EACHBALLOT_SHARES"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_lottery_lot_shares",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 EACHBALLOT_SHARES，具体中签股数语义由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].EACHBALLOT_SHARES -> raw_event_dc.ipo_calendar[].EACHBALLOT_SHARES",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `EACHBALLOT_SHARES` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-industry-pe",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].INDUSTRY_PE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_legacy_industry_pe",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 INDUSTRY_PE；与已验证 INDUSTRY_PE_NEW 的关系由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].INDUSTRY_PE -> raw_event_dc.ipo_calendar[].INDUSTRY_PE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `INDUSTRY_PE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-ipo-yield",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].IPO_YIELD"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_yield_pct",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 IPO_YIELD，收益基准价格由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].IPO_YIELD -> raw_event_dc.ipo_calendar[].IPO_YIELD",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `IPO_YIELD` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-limit-up-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].LIMIT_UP_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_reference_limit_price_yuan",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 LIMIT_UP_PRICE；规则含义及适用边界由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].LIMIT_UP_PRICE -> raw_event_dc.ipo_calendar[].LIMIT_UP_PRICE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `LIMIT_UP_PRICE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-mzyq-pay-fund",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].MZYQ_PAY_FUND"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_lottery_payment_amount_yuan",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 MZYQ_PAY_FUND，具体缴款口径由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].MZYQ_PAY_FUND -> raw_event_dc.ipo_calendar[].MZYQ_PAY_FUND",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `MZYQ_PAY_FUND` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-netsumfina",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].NETSUMFINA"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_net_funds_raised_native_unit",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 NETSUMFINA，募集资金口径及市场原生单位由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].NETSUMFINA -> raw_event_dc.ipo_calendar[].NETSUMFINA",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `NETSUMFINA` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-od-high-change",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].OD_HIGH_CHANGE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_legacy_open_day_high_change_pct",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 OD_HIGH_CHANGE；与首日高点涨幅字段的关系由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].OD_HIGH_CHANGE -> raw_event_dc.ipo_calendar[].OD_HIGH_CHANGE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `OD_HIGH_CHANGE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-recommend-org",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].RECOMMEND_ORG"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_sponsor_recommendation_org",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 RECOMMEND_ORG，保荐/推荐机构身份由配套发行人文件 E3 裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].RECOMMEND_ORG -> raw_event_dc.ipo_calendar[].RECOMMEND_ORG",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `RECOMMEND_ORG` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-tchange-rate",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TCHANGE_RATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_issue_price_to_latest_price_change_pct",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 TCHANGE_RATE，具体价格基准由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].TCHANGE_RATE -> raw_event_dc.ipo_calendar[].TCHANGE_RATE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `TCHANGE_RATE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-tnew-price",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TNEW_PRICE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_latest_price_yuan",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 TNEW_PRICE，行情日期边界由配套 E3 样本裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].TNEW_PRICE -> raw_event_dc.ipo_calendar[].TNEW_PRICE",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `TNEW_PRICE` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-total-shares",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].TOTAL_SHARES"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_total_share_capital_after_issue_shares",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 TOTAL_SHARES，发行后总股本释义由配套发行人文件 E3 裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].TOTAL_SHARES -> raw_event_dc.ipo_calendar[].TOTAL_SHARES",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `TOTAL_SHARES` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-underwriter-org",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].UNDERWRITER_ORG"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_underwriter_org_list",
+      "meaning": "RPTA_APP_IPOAPPLY 原始字段 UNDERWRITER_ORG，承销机构名单释义由配套发行人文件 E3 裁决核定。",
+      "unit": "",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "本步只登记精确 API 字段路径；最终语义、来源日期和市场单位按相应 E3 裁决，不以目录日期替代字段日期。",
+      "source_contract": {
+        "authority": "东方财富新股申购官方页面/前端字段模板与项目 RPTA_APP_IPOAPPLY 原始键透传；字段语义在 E3 证据处进一步裁决。",
+        "revision": "东方财富新股页面与 xglist.js 于 2026-11-22 核验；原始事件样本含 2026-11-20 目标数据日。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].UNDERWRITER_ORG -> raw_event_dc.ipo_calendar[].UNDERWRITER_ORG",
+        "locator": "RPTA_APP_IPOAPPLY 原始响应键 `UNDERWRITER_ORG` 经项目适配器原名透传；语义由同批 E3/正式发行人文件样本分层核定。",
+        "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-event-dc-ipo-ipo-calendar-predict-issue-price1",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].PREDICT_ISSUE_PRICE1"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_issue_price_prediction_candidate_1_yuan",
+      "meaning": "东方财富 IPO 发行价预测的候选价格 1；第一方详情页脚本将 PREDICT_ISSUE_PRICE1 读作价格1并纳入预测价格候选逻辑，不是实际发行价 ISSUE_PRICE。",
+      "unit": "元/股",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "把价格候选路径与最终发行价格分开；未来预测源日期/时点未由字段本身说明。",
+      "source_contract": {
+        "authority": "东方财富新股详情页第一方 xgdetail.js 字段使用及项目 RPTA_APP_IPOAPPLY 原始键透传。",
+        "revision": "官方 xgdetail.js 与详情页于 2026-11-22 核验；未提供版本化字段 schema。",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY response.result.data[*].PREDICT_ISSUE_PRICE1 -> raw_event_dc.ipo_calendar[].PREDICT_ISSUE_PRICE1",
+        "locator": "第一方 xgdetail.js 读取 data.PREDICT_ISSUE_PRICE1 为 `价格1`，仅在预测候选价格逻辑中使用；不等于最终发行价。",
+        "url": "https://data.eastmoney.com/xg/xg/detail/688827.html"
+      }
+    },
+    {
+      "id": "20261122-exhaustive-kpl-limit-up-detail-raw-columns-col-18",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "raw_columns.col_18"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "kpl_limit_up_sequence_label",
+      "meaning": "DailyLimitPerformance 原始数组第 18 列透传值；文本含义由配套 E3 留存样本裁决核定。",
+      "unit": "文本",
+      "section": "2026-11-22 exhaustive cracking batch: source-path identity and official/empirical evidence boundary",
+      "rationale": "只登记 KPL 原始列身份；E3 仅对观察到的板数/天数文本作受限解释，不合并 KPL/KPH。",
+      "source_contract": {
+        "authority": "项目开盘啦 DailyLimitPerformance 解析代码把数组位置原样保存在 raw_columns.col_18；上游 API 未提供公开键级 schema。",
+        "revision": "项目代码与 2026-10-15 以后保留样本于 2026-11-22 核验。",
+        "path": "stock_common/sc_kpl.py::get_kpl_limit_up_detail -> response.data[*][18] -> raw_columns.col_18",
+        "locator": "样本路径由当前 parser 映射直接证明；语义不据 KPH 或其它来源同编号字段推断。",
+        "url": "https://apphis.longhuvip.com/w1/api/index.php"
+      }
+    }
+  ]
+}

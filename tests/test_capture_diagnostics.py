@@ -36,6 +36,7 @@ def test_quote_record_timestamps_supply_consistent_source_date(
     [
         ("sina", {"600519": "2026-11-02", "000001": "2026-11-03"}),
         ("tencent", {"600519": "20261102161455", "000001": "bad-timestamp"}),
+        ("tencent", {"600519": "2026110216145", "000001": "20261102161503"}),
     ],
 )
 def test_quote_record_timestamps_must_be_valid_and_consistent(

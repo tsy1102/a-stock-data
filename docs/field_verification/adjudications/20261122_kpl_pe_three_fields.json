@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_kpl_pe_three_fields.md",
+  "evidence_sha256": "50311ddb966faeec4360d4c879299b6c4d3c6064b56f7ac3c6000378abd525a2",
+  "decisions": [
+    {
+      "id": "20261122-kpl-pe_dynamic-eastmoney-anchor",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "pe_dynamic"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "pe_dynamic",
+        "meaning": "动态PE（最新报告期年化）",
+        "unit": "倍"
+      },
+      "canonical": "pe_dynamic",
+      "meaning": "动态市盈率：总市值 ÷ 全年预估净利润（实际预测可基于最新报告期利润估算全年）。",
+      "unit": "倍",
+      "section": "2026-11-22 KPL W8 PE source paths and Eastmoney golden-anchor comparison",
+      "rationale": "项目当前调用 apphis.longhuvip.com 的 ZhiShuStockList_W8，并将响应数组位置映射到该完整来源路径；固定第三方解析资料记录了该位置的 KPL 应用标签，但不是 KPL 官方键级 schema。东方财富官方页面给出相应动态、TTM、静态定义。2026-11-20 KPL Day 样本中 23 只股票的现价与 Eastmoney push2delay stock/get 精确一致；该字段与 Eastmoney stock/get f162 均在两位小数 0.01 容差内 23/23 匹配。该状态冲突来自路径级参考 verified 与多来源聚合 unverified，逐路径证据优先；不建立跨源映射或采集替代关系。",
+      "source_contract": {
+        "authority": "开盘啦 W8 API 项目实际响应与固定版本第三方字段位置映射；东方财富官方估值定义作为语义锚。第三方资料不是 KPL 官方 schema。",
+        "revision": "KPL response Day=2026-11-20 queried 2026-11-22; Rainynitesky/kaipanla-data-parser commit 7bfae30ab420e10af816584b7aa77e21c25c9e14",
+        "path": "stock_common/sc_datasource/_pools.py::kpl_get_stock_list_w8 -> apphis.longhuvip.com ZhiShuStockList_W8 data.list[*][60] -> 开盘啦(kpl)::pe_dynamic",
+        "locator": "固定 README 4.3 中 W8 列表对应位置中文标签；本地实测响应 Day 2026-11-20；paired sample CSV 23 rows; mapped to Eastmoney stock/get f162.",
+        "url": "https://github.com/Rainynitesky/kaipanla-data-parser/blob/7bfae30ab420e10af816584b7aa77e21c25c9e14/README.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "pe_dynamic",
+          "meaning": "动态PE（最新报告期年化）",
+          "unit": "倍"
+        },
+        "updated": {
+          "canonical": "pe_dynamic",
+          "meaning": "动态市盈率：总市值 ÷ 全年预估净利润（实际预测可基于最新报告期利润估算全年）。",
+          "unit": "倍"
+        },
+        "rationale": "原定义过短，按东方财富可公开核验的动态/滚动/静态 PE 定义补全，不改变单位或源字段 canonical。"
+      }
+    },
+    {
+      "id": "20261122-kpl-pe_ttm-eastmoney-anchor",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "pe_ttm"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "pe_ttm",
+        "meaning": "PE(TTM)",
+        "unit": "倍"
+      },
+      "canonical": "pe_ttm",
+      "meaning": "滚动市盈率（PE TTM）：最新价 ÷ 最近四个季度每股收益。",
+      "unit": "倍",
+      "section": "2026-11-22 KPL W8 PE source paths and Eastmoney golden-anchor comparison",
+      "rationale": "项目当前调用 apphis.longhuvip.com 的 ZhiShuStockList_W8，并将响应数组位置映射到该完整来源路径；固定第三方解析资料记录了该位置的 KPL 应用标签，但不是 KPL 官方键级 schema。东方财富官方页面给出相应动态、TTM、静态定义。2026-11-20 KPL Day 样本中 23 只股票的现价与 Eastmoney push2delay stock/get 精确一致；该字段与 Eastmoney stock/get f164 均在两位小数 0.01 容差内 23/23 匹配。该状态冲突来自路径级参考 verified 与多来源聚合 unverified，逐路径证据优先；不建立跨源映射或采集替代关系。",
+      "source_contract": {
+        "authority": "开盘啦 W8 API 项目实际响应与固定版本第三方字段位置映射；东方财富官方估值定义作为语义锚。第三方资料不是 KPL 官方 schema。",
+        "revision": "KPL response Day=2026-11-20 queried 2026-11-22; Rainynitesky/kaipanla-data-parser commit 7bfae30ab420e10af816584b7aa77e21c25c9e14",
+        "path": "stock_common/sc_datasource/_pools.py::kpl_get_stock_list_w8 -> apphis.longhuvip.com ZhiShuStockList_W8 data.list[*][61] -> 开盘啦(kpl)::pe_ttm",
+        "locator": "固定 README 4.3 中 W8 列表对应位置中文标签；本地实测响应 Day 2026-11-20；paired sample CSV 23 rows; mapped to Eastmoney stock/get f164.",
+        "url": "https://github.com/Rainynitesky/kaipanla-data-parser/blob/7bfae30ab420e10af816584b7aa77e21c25c9e14/README.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "pe_ttm",
+          "meaning": "PE(TTM)",
+          "unit": "倍"
+        },
+        "updated": {
+          "canonical": "pe_ttm",
+          "meaning": "滚动市盈率（PE TTM）：最新价 ÷ 最近四个季度每股收益。",
+          "unit": "倍"
+        },
+        "rationale": "原定义过短，按东方财富可公开核验的动态/滚动/静态 PE 定义补全，不改变单位或源字段 canonical。"
+      }
+    },
+    {
+      "id": "20261122-kpl-pe_static-eastmoney-anchor",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "pe_static"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "pe_static",
+        "meaning": "静态PE（上年度年报 LYR）",
+        "unit": "倍"
+      },
+      "canonical": "pe_static",
+      "meaning": "静态市盈率（LYR）：总市值 ÷ 上一年度净利润。",
+      "unit": "倍",
+      "section": "2026-11-22 KPL W8 PE source paths and Eastmoney golden-anchor comparison",
+      "rationale": "项目当前调用 apphis.longhuvip.com 的 ZhiShuStockList_W8，并将响应数组位置映射到该完整来源路径；固定第三方解析资料记录了该位置的 KPL 应用标签，但不是 KPL 官方键级 schema。东方财富官方页面给出相应动态、TTM、静态定义。2026-11-20 KPL Day 样本中 23 只股票的现价与 Eastmoney push2delay stock/get 精确一致；该字段与 Eastmoney stock/get f163 均在两位小数 0.01 容差内 23/23 匹配。该状态冲突来自路径级参考 verified 与多来源聚合 unverified，逐路径证据优先；不建立跨源映射或采集替代关系。",
+      "source_contract": {
+        "authority": "开盘啦 W8 API 项目实际响应与固定版本第三方字段位置映射；东方财富官方估值定义作为语义锚。第三方资料不是 KPL 官方 schema。",
+        "revision": "KPL response Day=2026-11-20 queried 2026-11-22; Rainynitesky/kaipanla-data-parser commit 7bfae30ab420e10af816584b7aa77e21c25c9e14",
+        "path": "stock_common/sc_datasource/_pools.py::kpl_get_stock_list_w8 -> apphis.longhuvip.com ZhiShuStockList_W8 data.list[*][62] -> 开盘啦(kpl)::pe_static",
+        "locator": "固定 README 4.3 中 W8 列表对应位置中文标签；本地实测响应 Day 2026-11-20；paired sample CSV 23 rows; mapped to Eastmoney stock/get f163.",
+        "url": "https://github.com/Rainynitesky/kaipanla-data-parser/blob/7bfae30ab420e10af816584b7aa77e21c25c9e14/README.md"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "pe_static",
+          "meaning": "静态PE（上年度年报 LYR）",
+          "unit": "倍"
+        },
+        "updated": {
+          "canonical": "pe_static",
+          "meaning": "静态市盈率（LYR）：总市值 ÷ 上一年度净利润。",
+          "unit": "倍"
+        },
+        "rationale": "原定义过短，按东方财富可公开核验的动态/滚动/静态 PE 定义补全，不改变单位或源字段 canonical。"
+      }
+    }
+  ]
+}

@@ -1200,6 +1200,8 @@ def test_clist_failure_reports_both_domains(monkeypatch):
     result = capture_probe.collect_clist([])
 
     assert len(calls) == 2
+    requested_fields = calls[0][1]["params"]["fields"].split(",")
+    assert {"f257", "f258", "f259"}.issubset(requested_fields)
     assert all(kwargs["max_retries"] == 1 for _, kwargs in calls)
     for label in ("industry", "concept", "area"):
         error = result["by_type"][label]["__error__"]

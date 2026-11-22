@@ -16,7 +16,9 @@
 
 3. **核对采集归档。** 检查 `docs/field_verification/<data_date>/meta.json` 中的 `data_date`、运行时间、市场阶段、逐源采集时间、`as_of_date`、ZHB 日期、来源状态、失败/deferred 和 raw 覆盖。目录名与 `meta.data_date` 不一致的行情快照会被碰撞器拒绝。盘前采集上一交易日时，来源日期早于采集自然日仍可能是已收盘样本；以来源级资格和报告诊断为准。
 
-   `etf` 是复合来源：`raw_etf.json` 中 `etf_sh[].date` 是上交所按日归档日期，`etf_sz[].date` 是深交所最新快照日期；两者可不同，碰撞和覆盖按每条记录的 `date` 归日，不用目录名或单个来源级日期替代。
+   `etf` 是复合来源：`raw_etf.json` 中 `etf_sh[].date` 是上交所按日归档日期，当前采集器的 `etf_sz[].date` 是深交所“当前规模”列的统计日期；两者可不同，碰撞和覆盖按每条记录的 `date` 归日，不用目录名或单个来源级日期替代。2026-11-20 日期修正前的 SZ 行取页面 `metadata.subname`，缺少列头日期依据，不能作为 `shares_10k` 的来源日期；只有带 `__source_meta__.date_basis=szse_current_scale_column_header` 的 SZ 行才进入日期碰撞，详情见[裁决](adjudications/20261120_szse_etf_scale_data_date.md)。
+
+   新浪行情批次的来源日期从每条证券记录的 `[30]` 日期推得，腾讯行情批次从 `[30]` 时间戳推得；只有全部记录解析合法且批次日期唯一时才生成来源级 `as_of_date`。规则只覆盖对应行情端点及同批行情字段，不传播到其他端点的独立日期域。批次证据见[新浪日期锚审计](research/20261122_sina_batch_date_anchor_audit.md)和[腾讯日期锚审计](research/20261122_tencent_batch_date_anchor_audit.md)。
 
    同一数据日重跑默认跳过完整来源，只补采缺失或不完整来源并保留既有成功样本。`--only <source>` 会重新请求指定来源，`--overwrite` 会强制刷新所选范围；重采前备份该来源 raw 和 `meta.json`。旧 `meta.json` 缺少逐源时间时，按 `legacy_global_metadata` 处理，不推断精确请求时刻。需要检查历史来源日期对应关系时运行：
 

@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2758；日常来源路径 2614：unverified 772、candidate 1、conflict 17、disproved 138；历史来源路径 144。
+> 注册字段路径 2827；日常来源路径 2683：unverified 724、candidate 1、conflict 5、disproved 192；历史来源路径 144。
 > 另有 142 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,40 +15,28 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 640 |
-| 含义栏有文本（仍未验证） | 132 |
+| 含义栏为空/占位 | 591 |
+| 含义栏有文本（仍未验证） | 133 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 264 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 250 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
-| `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 373 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `reference_status_missing` | 38 | 按注册表原始状态判定代码保留 |
+| `registry_status_only_single_source` | 338 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
-## 一、状态冲突（禁止作为锚点，优先复核）（17）
+## 一、状态冲突（禁止作为锚点，优先复核）（5）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | reports | `encodeUrl` | encodeUrl | — | — | 含义栏为空/占位 | reference_status_conflict | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；12.9.2 其他接口实测发现 |
-| 东财-datacenter(英文键) | `margin_trading.balance_gr` | margin_trading.balance_gr | 融资余额单日环比增长率(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.chg_10d` | margin_trading.chg_10d | 标的证券近 10 日区间累计涨跌幅(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.chg_5d` | margin_trading.chg_5d | 标的证券近 5 日区间累计涨跌幅(%) | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rqjmg` | margin_trading.rqjmg | 融券净卖出量（股） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rzche_10d` | margin_trading.rzche_10d | 融资偿还额近 10 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rzche_5d` | margin_trading.rzche_5d | 融资偿还额近 5 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rzjme` | margin_trading.rzjme | 融资净买入额（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rzmre_10d` | margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `margin_trading.rzmre_5d` | margin_trading.rzmre_5d | 融资买入额近 5 日累计（元） | — | 含义栏有文本（仍未验证） | status_conflict | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f137` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f140` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f141` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
 | 东财-ulist239(np/get) | `f145` | — | — | — | 含义栏为空/占位 | status_conflict | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）；12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记） |
-| 开盘啦(kpl) | `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
-| 开盘啦(kpl) | `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
-| 开盘啦(kpl) | `pe_ttm` | pe_ttm | PE(TTM) | 倍 | 含义栏有文本（仍未验证） | status_conflict | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 
 ## 二、候选字段（1）
 
@@ -56,7 +44,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（772）
+## 三、待破解字段（724）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -170,53 +158,7 @@
 | reports | `topic` | topic | 话题 | — | 含义栏有文本（仍未验证） | matched | 12.9.2 其他接口实测发现 |
 | reports | `white` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-clist | `f13` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-clist | `f141` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-clist | `f2` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-clist | `f207` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-clist | `f257` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-clist | `f4` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `able_shares` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `avg_shares` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `balance_gr` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `bonus_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `bonus_rmb` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `buyer` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `change_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `change_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `change_shares` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `chg_10d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `chg_5d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `close` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `hold_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `hold_shares` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `holder_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `lockup_expiry` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `margin_trading` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `market_cap` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `northbound_hold` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `plan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rqchl` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rqjmg` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rqmcl` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rqye` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzche` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzche_10d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzche_5d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzjme` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzmre` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzmre_10d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzmre_5d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzrqye` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `rzye` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `seller` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `shares` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `transfer_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-datacenter(英文键) | `type` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-datacenter(英文键) | `vol` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| 东财-clist | `f259` | f259 | 未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号 | 未知 | 含义栏有文本（仍未验证） | reference_status_missing | 12.8.6 东财 clist（板块排名/板块资金流）✅ |
 | 东财-push2(stock/get) | `f1` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f10` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f100` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -229,7 +171,6 @@
 | 东财-push2(stock/get) | `f123` | f123 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f124` | f124 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
 | 东财-push2(stock/get) | `f125` | f125 | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池） |
-| 东财-push2(stock/get) | `f129` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f13` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f130` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f131` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -281,7 +222,6 @@
 | 东财-push2(stock/get) | `f76` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f77` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f8` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 东财-push2(stock/get) | `f80` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f81` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f82` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2(stock/get) | `f83` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -833,7 +773,7 @@
 | 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记） |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（138）
+## 四、已证伪（默认不重复破解）（192）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -910,9 +850,63 @@
 | ZHB-tipinfo | `tipinfo.div_amount` | tipinfo.shareholder_change_shares_wan | 股东持股变动数量；正值为增持/转入，负值为减持/转出 | 万股 | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | ZHB-tipinfo | `tipinfo.div_date` | tipinfo.shareholder_change_date | 股东持股变动记录关联日期；可为交易日、区间截止日或权益变动协议签署日 | YYYYMMDD | 已证伪记录（退出默认破解） | manual_semantic_retraction | 2026-11-08 ZHB tipinfo shareholder change adjudication |
 | reports | `actualLastTwoYearEps` | actualLastYearEps | 保留期内全部非空样本与同条 actualLastYearEps 完全重复；不能作为独立的前两年实际 EPS 字段（当前接口响应行为） | 元/股 | 已证伪记录（退出默认破解） | empirical_duplicate_alias | 12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记）；2026-11-13 reports actualLastTwoYearEps 重复输出裁定 |
-| 东财-datacenter(英文键) | `free_shares` | free_shares | 项目规范化的解禁总股数输出：get_lockup_expiry() 优先读取 TDX F10，否则回退 Eastmoney RPT_LIFT_STAGE，并将来源的万股值换算为股后写入；不是 Eastmoney 上游原始响应键。raw_datacenter 是混合适配器输出。 | 股（项目归一化输出） | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
+| 东财-datacenter(英文键) | `HOLDER_NUM` | HOLDER_NUM | 股东户数 | 户 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅ |
+| 东财-datacenter(英文键) | `HOLDER_NUM_CHANGE` | HOLDER_NUM_CHANGE | 户数变化 | 户 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅ |
+| 东财-datacenter(英文键) | `HOLDER_NUM_RATIO` | HOLDER_NUM_RATIO | 环比变化率 | % | 已退役路径身份（不进入默认破解） | retired_legacy_path | 12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅ |
+| 东财-datacenter(英文键) | `able_shares` | lockup_expiry.able_shares | 旧未限定短路径已退役。解禁适配器归一输出；来源可能为 TDX F10 或 Eastmoney 回退。 完整路径：lockup_expiry.able_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `amount` | block_trade.amount | 旧未限定短路径已退役。get_block_trade 的成交金额输出，单位元。 完整路径：block_trade.amount。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `avg_shares` | holder_fetch_em.avg_shares | 旧未限定短路径已退役。当前 Eastmoney fallback helper 的户均流通股数输出。 完整路径：holder_fetch_em.avg_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `balance_gr` | margin_trading.balance_gr | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.balance_gr。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `block_trade.premium_pct` | block_trade_premium_pct | 项目计算折溢率 round((成交价/收盘价-1)*100, 2)；收盘价为 0 时返回 0。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `bonus_ratio` | BONUS_RATIO | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前分红 getter 已切换 TDX，另见 TDX dividend_history.bonus_ratio，二者不映射。 完整路径：BONUS_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `bonus_rmb` | PRETAX_BONUS_RMB | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前分红 getter 已切换 TDX，另见 TDX dividend_history.bonus_rmb，二者不映射。 完整路径：PRETAX_BONUS_RMB。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `buyer` | block_trade.buyer | 旧未限定短路径已退役。get_block_trade 的买方营业部输出。 完整路径：block_trade.buyer。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `change_num` | HOLDER_NUM_CHANGE | 旧未限定短路径已退役。旧 RPT_HOLDERNUMLATEST 上游列；当前 holder_change 的变化户数由相邻报告期项目计算。 完整路径：HOLDER_NUM_CHANGE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `change_ratio` | change_ratio_legacy_flat_alias | 旧未限定短路径已退役。同名曾混合北向持仓行对应证券涨跌幅与旧股东户数环比字段，语义不同，分别保留。 完整路径：northbound_hold.change_ratio; HOLDER_NUM_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `change_shares` | northbound_hold.change_shares | 旧未限定短路径已退役。该完整路径已证伪为项目占位输出，不是 Eastmoney 上游字段。 完整路径：northbound_hold.change_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `chg_10d` | margin_trading.chg_10d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.chg_10d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `chg_5d` | margin_trading.chg_5d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.chg_5d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `close` | block_trade.close | 旧未限定短路径已退役。get_block_trade 的对应证券收盘价输出。 完整路径：block_trade.close。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `date` | date_legacy_flat_alias | 旧未限定短路径已退役。旧扁平日期短名混合交易日、持仓日、解禁事件日、股东报告截止日和旧分红事件日；不再作为单一字段身份。 完整路径：margin_trading.date; northbound_hold.date; lockup_expiry.date; block_trade.date; holder_fetch_em.date; EX_DIVIDEND_DATE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `free_shares` | lockup_expiry.free_shares | 旧未限定短路径已退役。完整输出路径；由适配器将来源万股值换算为股，不是 Eastmoney 原始键。 完整路径：lockup_expiry.free_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | 股（项目归一化输出） | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `hold_ratio` | northbound_hold.hold_ratio | 旧未限定短路径已退役。完整北向持股比例路径已按来源契约核验。 完整路径：northbound_hold.hold_ratio。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `hold_shares` | northbound_hold.hold_shares | 旧未限定短路径已退役。完整北向持股数量路径已按来源契约核验。 完整路径：northbound_hold.hold_shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `holder_num` | holder_num_legacy_flat_alias | 旧未限定短路径已退役。当前 RPT_F10_EH_HOLDERNUM 使用 HOLDER_TOTAL_NUM；旧 RPT_HOLDERNUMLATEST 原始键为 HOLDER_NUM。 完整路径：holder_fetch_em.holder_num; HOLDER_NUM。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry` | lockup_expiry | collect_datacenter 在 stocks.<code>.lockup_expiry 写入统一适配器结果，是对象容器且底层路线可混合。 这是序列化对象边界，不是业务字段。 | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.able_shares` | lockup_actual_tradable_shares | 实际可流通解禁数量，Eastmoney 输入万股转股；来源或数值不可用时为空。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | 股 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.date` | lockup_event_date | 事件日期由 TDX F10/Eastmoney 字段解析并规范化；不等同采集日。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | YYYY-MM-DD | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.free_shares` | lockup_total_shares | 报告解禁总量；统一适配器将来源万股转为股。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | 股 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.ratio` | lockup_ratio_pct | 解禁比例；0 到 1 的输入按小数转百分数，输出保留两位小数。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.shares` | lockup_shares_selected | 适配器按 able_shares 可用性选择实际可流通解禁量，否则使用报告解禁总量；万股转股。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | 股 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.shares_is_actual` | lockup_shares_is_actual | 项目标记 shares 是否取实际可流通解禁量；不是上游原始字段。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | 布尔 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `lockup_expiry.type` | lockup_event_type | 解禁类型的统一适配器输出，输入可能来自 TDX F10 或 Eastmoney FREE_SHARES_TYPE。 这是项目归一化/计算的采集输出，不是提供方原始字段。 | - | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `margin_trading` | margin_trading | collect_datacenter 在 stocks.<code>.margin_trading 写入 list/dict，是对象容器。 这是序列化对象边界，不是业务字段。 | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `market_cap` | northbound_hold.market_cap | 旧未限定短路径已退役。完整北向持股市值路径已按来源契约核验。 完整路径：northbound_hold.market_cap。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `northbound_hold` | northbound_hold | collect_datacenter 在 stocks.<code>.northbound_hold 写入 list/dict，是对象容器。 这是序列化对象边界，不是业务字段。 | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-22 DataCenter path scope and adapter-output audit |
 | 东财-datacenter(英文键) | `northbound_hold.change_shares` | northbound_hold.change_shares | 直接核验的 600519、601288 两条 2026-09-30 响应均未提供 CHANGE_SHARES；旧适配器将缺失填为 0，本路径是项目占位输出，不代表持股未变化。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记） |
-| 东财-datacenter(英文键) | `shares_is_actual` | shares_is_actual | 项目生成的布尔标志：表示 shares 是否采用实际可流通解禁量。TDX F10 分支固定为 false；Eastmoney 回退分支仅在 ABLE_FREE_SHARES 为有限非负数时设为 true。不是 Eastmoney 上游原始响应键。 | 布尔 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
+| 东财-datacenter(英文键) | `plan` | ASSIGN_PROGRESS | 旧未限定短路径已退役。历史 RPT_SHAREBONUS_DET 字段；当前 getter 不再调用该端点。 完整路径：ASSIGN_PROGRESS。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `premium_pct` | premium_pct | 项目计算折溢率 round((成交价/收盘价-1)*100, 2)；收盘价为 0 时返回 0。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | — |
+| 东财-datacenter(英文键) | `price` | block_trade.price | 旧未限定短路径已退役。get_block_trade 的大宗交易成交价输出。 完整路径：block_trade.price。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `ratio` | lockup_expiry.ratio | 旧未限定短路径已退役。解禁适配器将可能的小数比例规范为百分数。 完整路径：lockup_expiry.ratio。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rqchl` | margin_trading.rqchl | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rqchl。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rqjmg` | margin_trading.rqjmg | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rqjmg。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rqmcl` | margin_trading.rqmcl | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rqmcl。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rqye` | margin_trading.rqye | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rqye。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzche` | margin_trading.rzche | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rzche。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzche_10d` | margin_trading.rzche_10d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rzche_10d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzche_5d` | margin_trading.rzche_5d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rzche_5d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzjme` | margin_trading.rzjme | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rzjme。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzmre` | margin_trading.rzmre | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rzmre。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzmre_10d` | margin_trading.rzmre_10d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rzmre_10d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzmre_5d` | margin_trading.rzmre_5d | 旧未限定短路径已退役。完整两融路径已通过 2026-11-22 保留期公式复核。 完整路径：margin_trading.rzmre_5d。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzrqye` | margin_trading.rzrqye | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rzrqye。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `rzye` | margin_trading.rzye | 旧未限定短路径已退役。完整两融基础路径由 RPTA_WEB_RZRQ_GGMX 响应键映射。 完整路径：margin_trading.rzye。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `seller` | block_trade.seller | 旧未限定短路径已退役。get_block_trade 的卖方营业部输出。 完整路径：block_trade.seller。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `shares` | lockup_expiry.shares | 旧未限定短路径已退役。根据实际可流通量是否可用选择实际解禁量或报告总量。 完整路径：lockup_expiry.shares。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `shares_is_actual` | lockup_expiry.shares_is_actual | 旧未限定短路径已退役。完整输出路径；适配器根据路线和 ABLE_FREE_SHARES 可用性生成的布尔标记。 完整路径：lockup_expiry.shares_is_actual。多目标别名只用于说明路径拆分，不表示这些字段同义。 | 布尔 | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `transfer_ratio` | TRANSFER_RATIO | 旧未限定短路径已退役。旧 Eastmoney RPT_SHAREBONUS_DET 原始键；当前 TDX 的送转值另登记为 TDX::dividend_history.transfer_ratio，不建立映射。 完整路径：TRANSFER_RATIO。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `type` | lockup_expiry.type | 旧未限定短路径已退役。解禁适配器的规范化类别文本。 完整路径：lockup_expiry.type。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
+| 东财-datacenter(英文键) | `vol` | block_trade.vol | 旧未限定短路径已退役。get_block_trade 的成交股数输出，单位股。 完整路径：block_trade.vol。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 2026-11-22 DataCenter path scope and adapter-output audit |
 | 东财-em_kline_f61 | `n_klines` | n_klines | 项目派生的 K 线返回条目数：collect_em_kline_f61 对响应 data.klines 计算 len(klines) 后写入；不是 Eastmoney 响应字段。当前请求 lmt=150，完整成功样本均返回 150 条。 | 条 | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 项目采集器派生输出（非上游字段） |
 | 东财-push2ex | `HHMMSS` | — | — | — | 非字段标记或清单（不是字段路径） | not_field_schema_token | 2026-11-15 Push2EX HHMMSS token classification |
 | 东财-push2ex | `limit_broken_pool` | — | — | — | 采集器输出容器（不是字段路径） | collector_output_container | 2026-11-15 Push2EX pool output containers are not field paths |

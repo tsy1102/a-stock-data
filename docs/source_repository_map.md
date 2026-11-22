@@ -34,7 +34,7 @@
 | 新浪(hq.sinajs) | active | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 新浪(研报列表) | active | research_sina | Sina Finance research report listing | sina（confirmed） | 否 | unconfirmed | pending |
-| 沪深交易所 | active | exchange, etf | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
+| 沪深交易所 | active | exchange, etf, sse_e_interaction | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
 | 央视网(新闻联播) | active | news_wscn_cctv | CCTV.com (央视网), CCTV News Broadcast daily archive | cctv（confirmed） | 否 | unconfirmed | pending |
 | 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |

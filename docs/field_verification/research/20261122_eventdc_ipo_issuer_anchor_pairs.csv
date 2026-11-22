@@ -1,0 +1,12 @@
+code,name,field,api_value,issuer_value,normalized_value,document,result
+688827,钶锐锶,TOTAL_SHARES,68514300,6851.4300 万股,68514300 股,招股说明书发行后总股本,exact
+301202,朗威股份,TOTAL_SHARES,136400000,13640 万股,136400000 股,招股说明书发行后总股本,exact
+301660,粤芯半导体,TOTAL_SHARES,2878237397,287823.7397 万股（超额配售行使前）,2878237397 股,招股说明书发行后总股本,exact; option exercise boundary
+688827,钶锐锶,DEC_SUMFINA,7.771246,77712.46 万元,7.771246 亿元,招股说明书募集资金总额,exact to displayed precision
+688827,钶锐锶,NETSUMFINA,6.823618,68236.18 万元,6.823618 亿元,招股说明书募集资金净额,exact to displayed precision
+301660,粤芯半导体,DEC_SUMFINA,70.8039942,708039.94 万元（超额配售权全额行使后）,70.803994 亿元,招股说明书募集资金总额,matches within prospectus display rounding; full option exercised
+301660,粤芯半导体,NETSUMFINA,68.6220386564,686220.39 万元（超额配售权全额行使后）,68.622039 亿元,招股说明书募集资金净额,matches within prospectus display rounding; full option exercised
+301660,粤芯半导体,RECOMMEND_ORG,广发证券股份有限公司,保荐人：广发证券股份有限公司,广发证券股份有限公司,招股说明书发行概况/中介机构,exact
+301660,粤芯半导体,UNDERWRITER_ORG,"广发证券股份有限公司,国泰海通证券股份有限公司",主承销商：广发证券；联席主承销商：国泰海通,广发证券；国泰海通,招股说明书发行概况/中介机构,exact
+301202,朗威股份,RECOMMEND_ORG,安信证券股份有限公司,保荐人、主承销商：安信证券股份有限公司,安信证券股份有限公司,招股说明书发行概况,exact
+301202,朗威股份,UNDERWRITER_ORG,国投证券股份有限公司,保荐人、主承销商：安信证券股份有限公司；2024-01-15 上交所确认其名称变更为国投证券,same legal entity after name change,招股说明书 + 上交所更名公告,resolved by official name-change evidence

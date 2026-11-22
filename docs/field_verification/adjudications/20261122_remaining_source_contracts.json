@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-22",
+  "decisions": [
+    {
+      "id": "20261122-eltdx-limit-ladder-alignment-status",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.alignment_status"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.alignment_status",
+      "meaning": "统计资源日期与目标交易日的对齐状态；v3.3.2 文档列举 same_day、previous_trading_day 等枚举值。",
+      "unit": "枚举",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。上游连板天梯文档在返回模型和日期对齐元数据中列明该字段；审计的 16/16 行与同一 LimitLadderTable 全局 helper 行相同。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].alignment_status -> LimitLadderTable.rows[*].alignment_status -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].alignment_status -> raw_eltdx.json.stocks.<code>.limit_ladder.alignment_status",
+        "locator": "连板天梯文档 §返回结构（字段表）、§行模型的核心字段",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md"
+      }
+    },
+    {
+      "id": "20261122-eltdx-limit-ladder-exchange",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.exchange"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.exchange",
+      "meaning": "该证券的交易所市场前缀代码；当前留存审计样本见 sh、sz。",
+      "unit": "市场代码",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。上游行模型将 exchange 与 full_code/code 并列为证券身份字段；当前 16/16 行为有效 sh/sz 代码并与全局 helper 原始行相同。未据当前样本外推北交所取值集合。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].exchange -> LimitLadderTable.rows[*].exchange -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].exchange -> raw_eltdx.json.stocks.<code>.limit_ladder.exchange",
+        "locator": "连板天梯文档 §行模型的核心字段（full_code / exchange / code）",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E8%BF%9E%E6%9D%BF%E5%A4%A9%E6%A2%AF.md"
+      }
+    },
+    {
+      "id": "20261122-eltdx-limit-ladder-limit-up-streak-days",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.limit_up_streak_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.limit_up_streak_days",
+      "meaning": "统计文件日期记录的连续涨停天数原值；不自动把目标交易日计入。",
+      "unit": "天",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。固定版短线指标文档将该字段列为 tdxstat.cfg 直接统计资源值，并说明其日期为统计文件日期；16 行中含空值，非空值与上游返回一致。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].limit_up_streak_days -> LimitLadderTable.rows[*].limit_up_streak_days -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].limit_up_streak_days -> raw_eltdx.json.stocks.<code>.limit_ladder.limit_up_streak_days",
+        "locator": "短线指标文档 §统计资源直接字段（limit_up_streak_days）",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261122-eltdx-limit-ladder-open-prev-seal-ratio",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.open_prev_seal_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.open_prev_seal_ratio",
+      "meaning": "目标交易日 09:25 竞价成交金额 / 上一实际交易日统计资源记录的封单金额 × 100；返回百分比并保留分母符号。",
+      "unit": "%",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。固定版短线指标文档给出计算字段和百分比单位；本路径 16/16 行与全局 helper 行相同。样本存在负的前日封单金额及负比值，故定义保留原始符号，不将负值解释成正向毛额。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].open_prev_seal_ratio -> LimitLadderTable.rows[*].open_prev_seal_ratio -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].open_prev_seal_ratio -> raw_eltdx.json.stocks.<code>.limit_ladder.open_prev_seal_ratio",
+        "locator": "短线指标文档 §计算字段（open_prev_seal_ratio）",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261122-eltdx-limit-ladder-prev-seal-amount",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.prev_seal_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.prev_seal_amount",
+      "meaning": "上一实际交易日统计资源记录的封单金额原值；上游文档称为昨日涨停封单金额。原值可带符号；负值方向语义未由文档解释。",
+      "unit": "元（保留原符号）",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。固定版文档将其列为按交易日对齐 tdxstat2.cfg 的直接字段、单位元。审计路径一致；其中 2026-11-19 的 sz002242 原值为 -177681300.0，是可复核的负值反例。因此只定案来源字段身份及上游所述口径，保留符号，负号业务方向不作推断。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].prev_seal_amount -> LimitLadderTable.rows[*].prev_seal_amount -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].prev_seal_amount -> raw_eltdx.json.stocks.<code>.limit_ladder.prev_seal_amount",
+        "locator": "短线指标文档 §统计资源直接字段（prev_seal_amount）",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261122-eltdx-limit-ladder-seal-prev-ratio",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "TDX-eltdx(适配层)",
+        "code": "limit_ladder.seal_prev_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_ladder.seal_prev_ratio",
+      "meaning": "当前买一金额 / 上一实际交易日统计资源记录的封单金额；以倍数返回并保留分母符号，解读为封单强度时须同时确认当前已封板。",
+      "unit": "倍（保留原符号）",
+      "rationale": "项目采集器以 client.helpers.limit_ladder(codes=ecodes) 获取 LimitLadderTable，将 rows 原样序列化到 raw_eltdx.json.global_helpers.limit_ladder，并按证券代码折回 stocks.<code>.limit_ladder。保留期路径审计覆盖 12 个来源数据日、16 条有效行；逐行原值与 SHA-256 见 docs/field_verification/research/20261122_eltdx_limit_ladder_six_path_audit.csv。该裁决只确认 ELTDX 适配层路径契约，不建立与其他来源的映射。固定版文档给出公式、倍数单位及 sealed 状态限制；本路径 16/16 行与 global_helpers.limit_ladder 原始行相同。与独立调用的 shortline 输出仅 15/16 相同，故不据此建立两个 Helper 路径的逐值关系；另有负分母产生负比值，保留符号且不解释为正向封单倍数。",
+      "source_contract": {
+        "authority": "固定版 ELTDX Helper 输出契约（项目适配层，不是原生 TDX 线协议字段字典）",
+        "revision": "ELTDX v3.3.2（requirements.txt 固定版本，2026-11-22 核验）",
+        "path": "client.helpers.limit_ladder(codes=ecodes).rows[*].seal_prev_ratio -> LimitLadderTable.rows[*].seal_prev_ratio -> raw_eltdx.json.global_helpers.limit_ladder.rows[*].seal_prev_ratio -> raw_eltdx.json.stocks.<code>.limit_ladder.seal_prev_ratio",
+        "locator": "短线指标文档 §计算字段（seal_prev_ratio）",
+        "url": "https://github.com/electkismet/eltdx/blob/v3.3.2/docs/helpers/%E7%9F%AD%E7%BA%BF%E6%8C%87%E6%A0%87.md"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-clist-f257-associated-name",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "东财-clist",
+        "code": "f257"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist.f257",
+      "meaning": "板块 3 日/5 日统计行关联证券简称；东方财富页面脚本将 f257 映射为 zdname。脚本未公开关联对象选择规则，不据此称为领涨股。",
+      "unit": "证券简称",
+      "rationale": "保留期研究样本覆盖 9 个来源数据日、2079 条板块行、494 个不同 f258 证券代码；逐行 f257 均为名称文本、f258 均为六位代码。该数据检验响应形状，不解释榜单选择规则。东方财富官方板块资金流页面脚本将 f257 映射到 zdname；3 日与 5 日 statvalues 均包含 f257/f258，zdname formatter 与同一响应行 zdcode 配对。",
+      "source_contract": {
+        "authority": "东方财富官方板块资金流页面随页 JavaScript（页面字段绑定；未公开底层选取算法）",
+        "revision": "2026-11-22 核验官方脚本；SHA-256 A380CDC8A93515CAB3B55FA79300C0F3EC1F116384EBB1F5203284F145DD74D7",
+        "path": "clist/get data.diff[*].f257 -> 官方页面 field map f257=zdname -> pageopt.columns.zdname formatter",
+        "locator": "field map f257/zdname；statvalues['3'] 与 statvalues['5']；columns.zdname",
+        "url": "https://data.eastmoney.com/newstatic/js/bkzj/list.js"
+      }
+    },
+    {
+      "id": "20261122-eastmoney-clist-f258-associated-code",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-clist",
+        "code": "f258"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "clist.f258",
+      "meaning": "板块 3 日/5 日统计行中与 f257 关联的六位证券代码；东方财富页面脚本将 f258 映射为 zdcode。脚本未公开关联对象选择规则。",
+      "unit": "六位证券代码",
+      "rationale": "保留期研究样本覆盖 9 个来源数据日、2079 条板块行、494 个不同 f258 证券代码；逐行 f257 均为名称文本、f258 均为六位代码。该数据检验响应形状，不解释榜单选择规则。东方财富官方板块资金流页面脚本将 f258 映射到 zdcode；zdname 页面 formatter 使用同一响应行的 zdcode 构造证券资金流详情链接，因此 f257/f258 是一组名称和证券代码绑定。",
+      "source_contract": {
+        "authority": "东方财富官方板块资金流页面随页 JavaScript（页面字段绑定；未公开底层选取算法）",
+        "revision": "2026-11-22 核验官方脚本；SHA-256 A380CDC8A93515CAB3B55FA79300C0F3EC1F116384EBB1F5203284F145DD74D7",
+        "path": "clist/get data.diff[*].f258 -> 官方页面 field map f258=zdcode -> pageopt.columns.zdname formatter link target",
+        "locator": "field map f258/zdcode；statvalues['3'] 与 statvalues['5']；columns.zdname",
+        "url": "https://data.eastmoney.com/newstatic/js/bkzj/list.js"
+      }
+    }
+  ]
+}

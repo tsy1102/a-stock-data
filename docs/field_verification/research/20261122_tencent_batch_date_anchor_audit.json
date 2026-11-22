@@ -1,0 +1,440 @@
+{
+  "audit_date": "2026-11-22",
+  "source": "腾讯(qt.gtimg)",
+  "code": "[30]",
+  "runtime_path": "tencent.fields[30]",
+  "retention_floor": "2026-10-15",
+  "method": "Strictly parse each raw row's 14-digit YYYYMMDDHHMMSS timestamp; compare its date with the capture directory target data date and the A-share trading calendar. The stored source metadata as_of_date is checked only to validate the extractor because it is derived from the same raw timestamp anchor.",
+  "capture_days": 22,
+  "record_count": 440,
+  "totals": {
+    "valid": 440
+  },
+  "timestamp_min": "2026-10-15 15:35:41",
+  "timestamp_max": "2026-11-19 15:26:48",
+  "all_days_have_one_timestamp_date": true,
+  "all_records_match_folder_meta_and_calendar": true,
+  "raw_payloads": [
+    {
+      "data_date": "20261015",
+      "sha256": "a1d498d7e2af4d72d8081858b0909c0b10b71e34ddf9799d92d8d52b164b28fc"
+    },
+    {
+      "data_date": "20261016",
+      "sha256": "fd858d57ab8d4abdf9cce142070741bc54f40c6a7ff1a5206d4aeb20fcff3d26"
+    },
+    {
+      "data_date": "20261019",
+      "sha256": "2c07e6525213f9773e20a003d6f042ef2052bec05a677cab3a7cfa9f0d4e23d7"
+    },
+    {
+      "data_date": "20261020",
+      "sha256": "b4dccc9dba8c78a0df485c4997a6979cd6ff46778c5454ec0e272fb9d7cfc501"
+    },
+    {
+      "data_date": "20261021",
+      "sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46"
+    },
+    {
+      "data_date": "20261023",
+      "sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de"
+    },
+    {
+      "data_date": "20261026",
+      "sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9"
+    },
+    {
+      "data_date": "20261028",
+      "sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752"
+    },
+    {
+      "data_date": "20261029",
+      "sha256": "06618e9b0f2138c809761891b76f0c842e24f0009723e923b57b96fbdb2ea80e"
+    },
+    {
+      "data_date": "20261030",
+      "sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+    },
+    {
+      "data_date": "20261102",
+      "sha256": "21b882b75f0e6a5cd530878d16548f8e6509c039037ef7e605e23cefebde5ebf"
+    },
+    {
+      "data_date": "20261103",
+      "sha256": "61c9ada0a2ae0c3c36d03900d287159fae9e649bdb9b049cafda5f44873b3406"
+    },
+    {
+      "data_date": "20261104",
+      "sha256": "8878608f96a54f84ab24eef23cfcf1155213d9f1b2ade94ad4f547c4c91cec95"
+    },
+    {
+      "data_date": "20261105",
+      "sha256": "1c99e35c190bb81ce7ef05264677bbe7e6fc18a499c5bbd0b43128c7bfb57d0f"
+    },
+    {
+      "data_date": "20261106",
+      "sha256": "77d493e55cad621a06d499a9253924cfca1bd6e4c1c6f8fa9145e0c2d97fb1a7"
+    },
+    {
+      "data_date": "20261109",
+      "sha256": "d28d34cb716350fa4d8ab1b8566c71554d3505db47da24dadc9ef239658f9d98"
+    },
+    {
+      "data_date": "20261110",
+      "sha256": "25d29cfb61926add4b058592aed32dc24a0bc31478a0d1bd164ec7c2698c0a98"
+    },
+    {
+      "data_date": "20261112",
+      "sha256": "49288efb7582d84cae038c1827e1ff95efd3fda33437ba6be3f64815717d8e78"
+    },
+    {
+      "data_date": "20261116",
+      "sha256": "a3d3e2dd9717460358b7a8160610b3065b405154c0395765b483b9037eeb7323"
+    },
+    {
+      "data_date": "20261117",
+      "sha256": "5e3e70511103f3369f8c1c6e6e048ea68f76eaa90f2c1c082332c866147e270c"
+    },
+    {
+      "data_date": "20261118",
+      "sha256": "5369cc7f50128b55c70b8b8f34097537cd85bc6c6524b555eee0a9e738a3adda"
+    },
+    {
+      "data_date": "20261119",
+      "sha256": "b33740af8f9438080cbbe8a46b54f9f31204caa0c04158045e4a4bfd698c9186"
+    }
+  ],
+  "days": [
+    {
+      "data_date": "20261015",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261015"
+      ],
+      "meta_as_of_date": "20261015",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "a1d498d7e2af4d72d8081858b0909c0b10b71e34ddf9799d92d8d52b164b28fc"
+    },
+    {
+      "data_date": "20261016",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261016"
+      ],
+      "meta_as_of_date": "20261016",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "fd858d57ab8d4abdf9cce142070741bc54f40c6a7ff1a5206d4aeb20fcff3d26"
+    },
+    {
+      "data_date": "20261019",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261019"
+      ],
+      "meta_as_of_date": "20261019",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "2c07e6525213f9773e20a003d6f042ef2052bec05a677cab3a7cfa9f0d4e23d7"
+    },
+    {
+      "data_date": "20261020",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261020"
+      ],
+      "meta_as_of_date": "20261020",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "b4dccc9dba8c78a0df485c4997a6979cd6ff46778c5454ec0e272fb9d7cfc501"
+    },
+    {
+      "data_date": "20261021",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261021"
+      ],
+      "meta_as_of_date": "20261021",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46"
+    },
+    {
+      "data_date": "20261023",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261023"
+      ],
+      "meta_as_of_date": "20261023",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de"
+    },
+    {
+      "data_date": "20261026",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261026"
+      ],
+      "meta_as_of_date": "20261026",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9"
+    },
+    {
+      "data_date": "20261028",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261028"
+      ],
+      "meta_as_of_date": "20261028",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752"
+    },
+    {
+      "data_date": "20261029",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261029"
+      ],
+      "meta_as_of_date": "20261029",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "06618e9b0f2138c809761891b76f0c842e24f0009723e923b57b96fbdb2ea80e"
+    },
+    {
+      "data_date": "20261030",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261030"
+      ],
+      "meta_as_of_date": "20261030",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+    },
+    {
+      "data_date": "20261102",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261102"
+      ],
+      "meta_as_of_date": "20261102",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "21b882b75f0e6a5cd530878d16548f8e6509c039037ef7e605e23cefebde5ebf"
+    },
+    {
+      "data_date": "20261103",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261103"
+      ],
+      "meta_as_of_date": "20261103",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "61c9ada0a2ae0c3c36d03900d287159fae9e649bdb9b049cafda5f44873b3406"
+    },
+    {
+      "data_date": "20261104",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261104"
+      ],
+      "meta_as_of_date": "20261104",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "8878608f96a54f84ab24eef23cfcf1155213d9f1b2ade94ad4f547c4c91cec95"
+    },
+    {
+      "data_date": "20261105",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261105"
+      ],
+      "meta_as_of_date": "20261105",
+      "source_status": "ok",
+      "source_capture_date": null,
+      "source_capture_started_at": null,
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "1c99e35c190bb81ce7ef05264677bbe7e6fc18a499c5bbd0b43128c7bfb57d0f"
+    },
+    {
+      "data_date": "20261106",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261106"
+      ],
+      "meta_as_of_date": "20261106",
+      "source_status": "ok",
+      "source_capture_date": "20261108",
+      "source_capture_started_at": "2026-11-08 10:23:19",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "77d493e55cad621a06d499a9253924cfca1bd6e4c1c6f8fa9145e0c2d97fb1a7"
+    },
+    {
+      "data_date": "20261109",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261109"
+      ],
+      "meta_as_of_date": "20261109",
+      "source_status": "ok",
+      "source_capture_date": "20261109",
+      "source_capture_started_at": "2026-11-09 19:54:23",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "d28d34cb716350fa4d8ab1b8566c71554d3505db47da24dadc9ef239658f9d98"
+    },
+    {
+      "data_date": "20261110",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261110"
+      ],
+      "meta_as_of_date": "20261110",
+      "source_status": "ok",
+      "source_capture_date": "20261110",
+      "source_capture_started_at": "2026-11-10 21:02:26",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "25d29cfb61926add4b058592aed32dc24a0bc31478a0d1bd164ec7c2698c0a98"
+    },
+    {
+      "data_date": "20261112",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261112"
+      ],
+      "meta_as_of_date": "20261112",
+      "source_status": "ok",
+      "source_capture_date": "20261112",
+      "source_capture_started_at": "2026-11-12 23:17:56",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "49288efb7582d84cae038c1827e1ff95efd3fda33437ba6be3f64815717d8e78"
+    },
+    {
+      "data_date": "20261116",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261116"
+      ],
+      "meta_as_of_date": "20261116",
+      "source_status": "ok",
+      "source_capture_date": "20261116",
+      "source_capture_started_at": "2026-11-16 21:25:33",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "a3d3e2dd9717460358b7a8160610b3065b405154c0395765b483b9037eeb7323"
+    },
+    {
+      "data_date": "20261117",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261117"
+      ],
+      "meta_as_of_date": "20261117",
+      "source_status": "ok",
+      "source_capture_date": "20261117",
+      "source_capture_started_at": "2026-11-17 15:36:33",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "5e3e70511103f3369f8c1c6e6e048ea68f76eaa90f2c1c082332c866147e270c"
+    },
+    {
+      "data_date": "20261118",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261118"
+      ],
+      "meta_as_of_date": "20261118",
+      "source_status": "ok",
+      "source_capture_date": "20261118",
+      "source_capture_started_at": "2026-11-18 16:55:28",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "5369cc7f50128b55c70b8b8f34097537cd85bc6c6524b555eee0a9e738a3adda"
+    },
+    {
+      "data_date": "20261119",
+      "row_count": 20,
+      "distinct_timestamp_dates": [
+        "20261119"
+      ],
+      "meta_as_of_date": "20261119",
+      "source_status": "ok",
+      "source_capture_date": "20261119",
+      "source_capture_started_at": "2026-11-19 15:26:50",
+      "date_checks": {
+        "valid": 20
+      },
+      "raw_tencent_sha256": "b33740af8f9438080cbbe8a46b54f9f31204caa0c04158045e4a4bfd698c9186"
+    }
+  ],
+  "csv_sha256": "f268378a564a06f02d80e8990a953826de02a73a17c19ebc0d3cc6bc84c215a8"
+}

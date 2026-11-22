@@ -474,10 +474,11 @@ def collect_clist(pool: list, deps: CaptureHttpDependencies) -> dict:
     from stock_common.sc_network import _em_is_banned
 
     # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
-    # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109/f257)/10日(f174/f175/f160)
+    # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109)/10日(f174/f175/f160)
+    # + 官方页面关联证券名/代码(f257/f258); f259 保留为未释义原始字段供研究。
     FIELDS = (
         "f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207,"
-        "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f174,f175,f160"
+        "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f258,f259,f174,f175,f160"
     )
     TYPES = [("industry", "m:90+t:2"), ("concept", "m:90+t:3"), ("area", "m:90+t:1")]
     out: Dict[str, Any] = {"records": [], "by_type": {}}

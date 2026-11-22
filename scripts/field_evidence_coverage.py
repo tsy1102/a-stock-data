@@ -212,6 +212,7 @@ def build_field_coverage(
     path_diagnostics: dict[tuple[str, str, str], set[str]] = defaultdict(set)
     missing_event_dates = 0
     missing_market_dates = 0
+    unverified_market_date_basis_records = 0
     out_of_window_market_dates = 0
     scheme_mismatches = 0
     snapshots_seen = 0
@@ -300,6 +301,10 @@ def build_field_coverage(
                             etf_trade_day = cdates.record_source_as_of_date(snapshot.source, record)
                             if etf_trade_day is None:
                                 missing_market_dates += 1
+                                if cdates.record_source_date_basis_unverified(
+                                    snapshot.source, record
+                                ):
+                                    unverified_market_date_basis_records += 1
                                 continue
                             if (
                                 etf_trade_day not in trading_window_set
@@ -470,10 +475,15 @@ def build_field_coverage(
         ),
         "missing_event_date_records": missing_event_dates,
         "missing_market_record_trade_dates": missing_market_dates,
+        "market_records_unverified_date_basis": unverified_market_date_basis_records,
         "market_records_outside_trading_window": out_of_window_market_dates,
         "scheme_mismatches": scheme_mismatches,
     }
     diagnostics = list(selection_warnings or [])
+    if unverified_market_date_basis_records:
+        diagnostics.append(
+            f"{unverified_market_date_basis_records} 条 SZ ETF 记录有可解析日期值，但缺少已验证的数据日期依据"
+        )
     diagnostics.extend(
         f"{reason}: runtime={alias} path={path} examples={len(examples)}"
         for (reason, alias, path), examples in sorted(path_diagnostics.items())

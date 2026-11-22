@@ -1601,6 +1601,39 @@ def test_default_field_selection_uses_only_verified_independent_anchors():
     assert right == ["tdx.quote_full.amount_wan"]
 
 
+def test_all_missing_or_blank_fields_do_not_reenter_collision_targets():
+    store = {
+        "tencent[29]": {
+            "is_identifier": False,
+            "is_constant": False,
+            "is_low_information": True,
+            "information_state": "all_missing_or_blank",
+            "type": "enum",
+        },
+        "tencent[55]": {
+            "is_identifier": False,
+            "is_constant": False,
+            "is_low_information": True,
+            "information_state": "all_missing_or_blank",
+            "type": "enum",
+        },
+        "push2.f1": {
+            "is_identifier": False,
+            "is_constant": False,
+            "is_low_information": False,
+            "information_state": "variable",
+            "type": "num",
+        },
+    }
+
+    left, right = collide.select_collision_fields(
+        store, verified=set(), disproved=set(), anchors=set(), exploratory=False
+    )
+
+    assert left == ["push2.f1"]
+    assert right == []
+
+
 def test_exploratory_selection_includes_unknowns_but_does_not_promote_matches():
     store = {
         field_id: {"is_identifier": False, "is_constant": False, "type": "num"}

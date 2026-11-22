@@ -218,6 +218,8 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
     independent paths and derived values there. KPL capture preserves
     selected raw columns alongside named adapter fields, so those paths
     resolve to the same registered field identity.
+    The SSE interaction collector emits feed-item fields at the row root while
+    the registry records them under the collection path ``sse_e_interaction[]``.
     """
     if alias == "zhb" and code.startswith("full."):
         return code[len("full.") :]
@@ -243,6 +245,8 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
             "raw_columns.col_14": "turnover_real",
         }
         return kpl_raw_field_codes.get(code, code)
+    if alias == "sse_e_interaction" and code in {"id", "answer_time"}:
+        return f"sse_e_interaction[].{code}"
     return code
 
 

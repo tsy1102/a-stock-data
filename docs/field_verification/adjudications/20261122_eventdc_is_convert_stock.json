@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex field audit",
+  "reviewed_on": "2026-11-22",
+  "evidence_file": "docs/field_verification/adjudications/20261122_eventdc_is_convert_stock_evidence.md",
+  "evidence_sha256": "9abb1e377f907cd99492648cd9da3805fe5eda9a535b5b4e9f4313679d1d9943",
+  "decisions": [
+    {
+      "id": "20261122-eventdc-is-convert-stock",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-event_dc(可转债列表)",
+        "code": "convertible_bonds[].IS_CONVERT_STOCK"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "convertible_bond_conversion_status",
+      "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+      "unit": "",
+      "section": "2026-11-22 Eastmoney RPT_BOND_CB_LIST empirical source-semantic adjudication",
+      "rationale": "The official Eastmoney convertible-bond detail page and its page script identify the same-record TRANSFER_START_DATE and TRANSFER_END_DATE as the transfer start and end dates, but do not directly document IS_CONVERT_STOCK. Across the retained corpus, 9,978/9,980 valid same-record observations fall within the inclusive transfer-period dates. The two date-only exceptions were observed at 08:01 before trading on the start date and 20:07 after close on the end date; both align with the current status at the capture time. Five observed status transitions occur at the corresponding start/end period edges. The 20 excluded observations all belong to one record without status or transfer dates. This supports current conversion-period status, not a static convertible-clause attribute; exact intraday switch and refresh rules remain unspecified. No cross-source mapping is asserted.",
+      "sample": {
+        "scope": "2026-10-16..2026-11-20 observation timestamps; retained raw_event_dc.json RPT_BOND_CB_LIST records; same-record convertible_bonds[].IS_CONVERT_STOCK compared with TRANSFER_START_DATE and TRANSFER_END_DATE, using request-completed fetched_at for boundary interpretation.",
+        "comparison_count": 9980,
+        "matched_count": 9980,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 20,
+        "observation_count": 10000,
+        "stock_count": 503
+      }
+    }
+  ]
+}

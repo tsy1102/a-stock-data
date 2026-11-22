@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 734 条逐源记录。
+> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 735 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3675,6 +3675,7 @@
 | 东财-event_dc(可转债列表) | `convertible_bonds[].INITIAL_TRANSFER_PRICE` | convertible_bond_initial_conversion_price | 发行时确定的初始转股价格；它与可因后续权益分派或修正而变化的当前转股价是不同字段。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ISSUE_TYPE` | convertible_bond_issue_type_code_set | 发行类型代码组合。基于同记录 ISSUE_TYPE 与 PARAM_NAME 的全部出现组合，唯一反推出：1 网上向社会公众投资者发行；2 网下向机构投资者协议发行；4 网上向原 A 股无限售股东优先配售；5 网下向原 A 股有限售股东优先配售。组合顺序不相同，按位置配对是错误的；未观测代码不外推。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ISSUE_YEAR` | convertible_bond_approval_year | 东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。 | `verified` |
+| 东财-event_dc(可转债列表) | `convertible_bonds[].IS_CONVERT_STOCK` | convertible_bond_conversion_status | 东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ONLINE_GENERAL_AAU` | convertible_bond_online_subscription_limit_thousand_yuan | 东方财富可转债申购列表中的网上申购上限金额。接口原始单位为千元；页面显示时除以 10 换算为万元。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].ONLINE_GENERAL_LWR` | convertible_bond_online_lottery_win_rate_pct | 东方财富可转债申购列表中“中签率”字段，页面以百分比显示至四位小数；接口未提供可确认的来源实际日期。 | `verified` |
 | 东财-event_dc(可转债列表) | `convertible_bonds[].PAYDAYNEW` | convertible_bond_payday_signed_day_code | 每年付息日的负日号编码：`PAYDAYNEW = -日(PAY_INTEREST_DAY)`。例如 `04-18` 对应 `-18`；它不是 YYYYMMDD 日期，也不是采集日期。 | `verified` |

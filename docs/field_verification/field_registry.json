@@ -11,29 +11,29 @@
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
-      "disproved": 188,
+      "disproved": 192,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 738,
+      "matched": 735,
       "mixed_source_capture_passthrough": 19,
       "not_field_schema_token": 21,
       "official_contract": 31,
-      "project_derived_capture_output": 27,
+      "project_derived_capture_output": 28,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
-      "reference_status_missing": 37,
+      "reference_status_missing": 38,
       "registry_status_only_single_source": 419,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 100,
+      "retired_legacy_path": 103,
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 843,
-      "verified": 1788,
-      "verified_by_empirical_addendum": 252,
+      "unverified": 844,
+      "verified": 1786,
+      "verified_by_empirical_addendum": 253,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 625
@@ -12552,6 +12552,24 @@
       "canonical": "convertible_bond_approval_year",
       "meaning": "东方财富可转债详情页将 `ISSUE_YEAR` 绑定到“债券年度”。完整的 500 条保留样本中，5 条字段年度与实际公开发行/申购日期年份不同的记录，均与发行人正式公告中的中国证监会核准批复文号年份一致。因此该字段表示可转债核准年度，不是实际发行、申购或上市年份。",
       "unit": "年",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(可转债列表)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "convertible_bonds[].IS_CONVERT_STOCK",
+      "source": "东财-event_dc(可转债列表)",
+      "sources": [
+        "东财-event_dc(可转债列表)"
+      ],
+      "section": "2026-11-22 Eastmoney RPT_BOND_CB_LIST empirical source-semantic adjudication",
+      "canonical": "convertible_bond_conversion_status",
+      "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+      "unit": "",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -49365,6 +49383,9 @@
     ],
     "weifenlirun": [
       "TDX(双命名源)"
+    ],
+    "convertible_bond_conversion_status": [
+      "东财-event_dc(可转债列表)"
     ]
   },
   "mappings": [
@@ -192816,6 +192837,132 @@
             "path": "data.eastmoney.com/kzz/detail/{SECURITY_CODE}.html -> /newstatic/js/kzz/detail.js loadinfo() RPT_BOND_CB_LIST/columns=ALL response.data[*].ISSUE_YEAR -> stock_common/sc_datasource/_convertible.py::convertible_bonds() -> stock_common/sc_datasource/_datacenter.py::query_datacenter() preserves response row keys -> raw_event_dc.convertible_bonds[].ISSUE_YEAR",
             "locator": "detail.js loadinfo() requests RPT_BOND_CB_LIST with columns=ALL; rendering line `$(\".zqnd\").html(data.ISSUE_YEAR || \"-\"); //债券年度`. Five cross-year records and their issuer notices are detailed in the evidence file.",
             "url": "https://data.eastmoney.com/newstatic/js/kzz/detail.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(可转债列表)",
+      "code": "convertible_bonds[].IS_CONVERT_STOCK",
+      "identity": "东财-event_dc(可转债列表)::convertible_bonds[].IS_CONVERT_STOCK",
+      "path": "convertible_bonds[].IS_CONVERT_STOCK",
+      "canonical": "convertible_bond_conversion_status",
+      "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+      "unit": "",
+      "section": "2026-11-22 Eastmoney RPT_BOND_CB_LIST empirical source-semantic adjudication",
+      "sections": [
+        "2026-11-22 Eastmoney RPT_BOND_CB_LIST empirical source-semantic adjudication"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261122-eventdc-is-convert-stock"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261122_eventdc_is_convert_stock_evidence.md",
+        "evidence_sha256": "9abb1e377f907cd99492648cd9da3805fe5eda9a535b5b4e9f4313679d1d9943",
+        "sample": {
+          "scope": "2026-10-16..2026-11-20 observation timestamps; retained raw_event_dc.json RPT_BOND_CB_LIST records; same-record convertible_bonds[].IS_CONVERT_STOCK compared with TRANSFER_START_DATE and TRANSFER_END_DATE, using request-completed fetched_at for boundary interpretation.",
+          "comparison_count": 9980,
+          "matched_count": 9980,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 20,
+          "observation_count": 10000,
+          "stock_count": 503
+        }
+      },
+      "reference_evidence": [
+        {
+          "section": "2026-11-22 Eastmoney RPT_BOND_CB_LIST empirical source-semantic adjudication",
+          "canonical": "convertible_bond_conversion_status",
+          "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-22",
+          "status": "verified",
+          "adjudication_id": "20261122-eventdc-is-convert-stock",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261122_eventdc_is_convert_stock_evidence.md",
+          "evidence_sha256": "9abb1e377f907cd99492648cd9da3805fe5eda9a535b5b4e9f4313679d1d9943",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_status",
+              "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "2026-10-16..2026-11-20 observation timestamps; retained raw_event_dc.json RPT_BOND_CB_LIST records; same-record convertible_bonds[].IS_CONVERT_STOCK compared with TRANSFER_START_DATE and TRANSFER_END_DATE, using request-completed fetched_at for boundary interpretation.",
+            "comparison_count": 9980,
+            "matched_count": 9980,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 20,
+            "observation_count": 10000,
+            "stock_count": 503
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261122-eventdc-is-convert-stock",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex field audit",
+          "reviewed_on": "2026-11-22",
+          "decision_file": "adjudications/20261122_eventdc_is_convert_stock.json",
+          "evidence_file": "adjudications/20261122_eventdc_is_convert_stock_evidence.md",
+          "evidence_sha256": "9abb1e377f907cd99492648cd9da3805fe5eda9a535b5b4e9f4313679d1d9943",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "runtime_path_unregistered",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "convertible_bond_conversion_status",
+              "meaning": "东方财富可转债记录中的当前转股状态标记，原始值为“是/否”。在保留样本中，该状态与同一响应记录的转股开始日、转股结束日及采集观察时点相符；它表示当前是否处于可转股期间，不是债券是否具有转股条款的静态属性。具体盘中切换时刻和接口刷新规则未公开。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "The official Eastmoney convertible-bond detail page and its page script identify the same-record TRANSFER_START_DATE and TRANSFER_END_DATE as the transfer start and end dates, but do not directly document IS_CONVERT_STOCK. Across the retained corpus, 9,978/9,980 valid same-record observations fall within the inclusive transfer-period dates. The two date-only exceptions were observed at 08:01 before trading on the start date and 20:07 after close on the end date; both align with the current status at the capture time. Five observed status transitions occur at the corresponding start/end period edges. The 20 excluded observations all belong to one record without status or transfer dates. This supports current conversion-period status, not a static convertible-clause attribute; exact intraday switch and refresh rules remain unspecified. No cross-source mapping is asserted.",
+          "sample": {
+            "scope": "2026-10-16..2026-11-20 observation timestamps; retained raw_event_dc.json RPT_BOND_CB_LIST records; same-record convertible_bonds[].IS_CONVERT_STOCK compared with TRANSFER_START_DATE and TRANSFER_END_DATE, using request-completed fetched_at for boundary interpretation.",
+            "comparison_count": 9980,
+            "matched_count": 9980,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 20,
+            "observation_count": 10000,
+            "stock_count": 503
           }
         }
       ]

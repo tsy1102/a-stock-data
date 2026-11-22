@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "2026-11-22-same-source-row-date-witness",
+  "policy_version": "2026-11-23-kpl-event-date-witness",
   "default_class": "unclassified",
   "classes": {
     "intraday_sensitive": "盘中或每日变化的敏感行情字段；L1 必须有明确来源日期且样本阶段已收盘。",
@@ -548,6 +548,15 @@
       "unit": "Unix 秒",
       "meaning_contains": "时间戳",
       "reason": "逐源注册表已验证 f124 为行情更新时间戳；仅当同一证券行时间戳日期与碰撞交易日键及样本来源日期一致时，为同一 ulist.np/get 记录确认日期。"
+    },
+    {
+      "source": "开盘啦(kpl_limit_up_detail)",
+      "code": "zt_time",
+      "timestamp_format": "unix_seconds",
+      "unit": "Unix 秒",
+      "meaning_contains": "涨停时间",
+      "date_origin": "record.event_date",
+      "reason": "zt_time 是已验证的涨停事件时间，不代表接口最后更新时间。保留期内 22 个交易日、1,259/1,259 行的北京时间日期均与目录数据日及响应 trade_date 一致；只为同一 kpl 证券/交易日行、同一 capture_folder 的字段确认 record.event_date，不跨采集目录、来源或接口继承。证据：research/20261123_kpl_row_timestamp_date_anchor_audit.md。"
     }
   ],
   "row_date_witnesses": [

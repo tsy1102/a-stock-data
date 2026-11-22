@@ -110,6 +110,11 @@ def load_policy(path: str | Path = POLICY_PATH) -> dict[str, Any]:
             raise TemporalPolicyError("行时间戳见证必须有 unit")
         if not isinstance(meaning_contains, str) or not meaning_contains.strip():
             raise TemporalPolicyError("行时间戳见证必须有 meaning_contains")
+        date_origin = witness.get("date_origin", "record.timestamp")
+        if date_origin not in {"record.timestamp", "record.event_date"}:
+            raise TemporalPolicyError(
+                "行时间戳见证 date_origin 只允许 record.timestamp 或 record.event_date"
+            )
         identity = (source, code)
         if identity in witness_seen:
             raise TemporalPolicyError(f"行时间戳见证身份重复: {source}::{code}")
@@ -356,6 +361,7 @@ def build_runtime_timestamp_witness_index(
                 "source": source,
                 "code": code,
                 "timestamp_format": witness["timestamp_format"],
+                "date_origin": witness.get("date_origin", "record.timestamp"),
             }
     return runtime_index
 
@@ -771,7 +777,7 @@ def _apply_row_timestamp_witnesses(
                     "indexed_date": indexed_day,
                 }
                 if matches:
-                    metadata["as_of_date_origin"] = "record.timestamp"
+                    metadata["as_of_date_origin"] = witness.get("date_origin", "record.timestamp")
                     row_updates += 1
                 else:
                     metadata["as_of_date_origin"] = "timestamp_mismatch"

@@ -302,6 +302,51 @@ def test_row_timestamp_witness_requires_same_capture_folder(tmp_path):
     )
 
 
+def test_kpl_limit_time_confirms_event_date_only_for_same_capture_row():
+    policy = TP.load_policy()
+    registry = FRA.load_registry()
+    lineage = SLA.load_source_lineage()
+    runtime_index = TP.build_runtime_timestamp_witness_index(policy, registry, lineage)
+    witness = runtime_index["kpl"]
+    assert witness["source"] == "开盘啦(kpl_limit_up_detail)"
+    assert witness["code"] == "zt_time"
+    assert witness["date_origin"] == "record.event_date"
+
+    key = ("002420", "T:20261119")
+    same_folder = {
+        "phase": "closed",
+        "as_of_date": "20261119",
+        "as_of_date_origin": "folder_inferred",
+        "capture_folder": "capture-20261119-a",
+    }
+    store = {
+        "kpl.zt_time": {
+            "src": "kpl",
+            "vals": {key: 1795051500},
+            "sample_meta": {key: dict(same_folder)},
+        },
+        "kpl.raw_columns.col_02": {
+            "src": "kpl",
+            "vals": {key: 0},
+            "sample_meta": {key: dict(same_folder)},
+        },
+        "kpl.other_capture_field": {
+            "src": "kpl",
+            "vals": {key: 1},
+            "sample_meta": {key: {**same_folder, "capture_folder": "capture-20261119-b"}},
+        },
+    }
+
+    TP.apply_store_policies(store, policy_path=TP.POLICY_PATH, registry=registry, lineage=lineage)
+
+    same_meta = store["kpl.raw_columns.col_02"]["sample_meta"][key]
+    other_meta = store["kpl.other_capture_field"]["sample_meta"][key]
+    assert same_meta["as_of_date_origin"] == "record.event_date"
+    assert TP.l1_date_eligible(store["kpl.raw_columns.col_02"], same_meta)
+    assert other_meta["as_of_date_origin"] == "folder_inferred"
+    assert not TP.l1_date_eligible(store["kpl.other_capture_field"], other_meta)
+
+
 def test_parse_row_date_requires_exact_valid_yyyymmdd():
     assert TP.parse_row_date(20261118, "YYYYMMDD").strftime("%Y%m%d") == "20261118"
     assert TP.parse_row_date("20260230", "YYYYMMDD") is None

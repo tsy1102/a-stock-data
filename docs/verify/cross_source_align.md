@@ -13,6 +13,8 @@
 >
 > **2026-11-20 映射撤回**：`event_dc.INITIAL_TRANSFER_PRICE ↔ event_dc.TRANSFER_VALUE` 曾由缺少 `quoteColumns` 的旧请求形状产生 L1 相等，已从活动映射表撤回；旧报告保留作历史记录。正式更正见[可转债行情字段裁决](../field_verification/adjudications/20261120_eventdc_convertible_quote_fields.md)。
 
+> **2026-11-22 映射撤回**：按保留期 400 条 `ipo_calendar[]` 记录复核，`event_dc.PREDICT_ISSUE_PRICE1 ↔ event_dc.CURRENT_ONEWORD_NUM` 与 `event_dc.CURRENT_ONEWORD_NUM ↔ event_dc.IS_RISKWARNING` 各有 23 条直接反例；377 组共同零值不构成等价证据。原关系使用缺少数组上下文的 `event_dc.*` 展平身份，已从活动映射撤回。新路径 `ipo_calendar[].IS_RISKWARNING` 单源定案为风险警示标记，不建立跨源映射；`ipo_calendar[].CURRENT_ONEWORD_NUM` 继续待核。详见[证据与更正记录](../field_verification/adjudications/20261122_eventdc_ipo_risk_warning_flag.md)。
+
 | 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
 |---|---|---|---|---|
 | fuyao.snapshot.price_change | push2.f169 | 异号同义 | 涨跌额 | 20260918 对撞 L1·hit=1.0·5d |
@@ -396,8 +398,6 @@
 | event_dc.INDUSTRY_PE | event_dc.INDUSTRY_PE_NEW | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.LATELY_PRICE | event_dc.TNEW_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
 | event_dc.TOTAL_RAISE_FUNDS | event_dc.DEC_SUMFINA | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
-| event_dc.PREDICT_ISSUE_PRICE1 | event_dc.CURRENT_ONEWORD_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
-| event_dc.CURRENT_ONEWORD_NUM | event_dc.IS_RISKWARNING | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
 
 | em_hot.price | fuyao.snapshot.last_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d |
 | em_hot.price | fuyao.auction_final.last_price | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d |

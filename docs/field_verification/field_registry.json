@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 844,
-      "verified": 1786,
+      "verified": 1787,
       "verified_by_empirical_addendum": 253,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 625
+      "verified_by_source_contract": 626
     },
     "updated_at": "2026-11-19"
   },
@@ -24631,6 +24631,24 @@
       "canonical": "ipo_registration_system_flag",
       "meaning": "东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。",
       "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "ipo_calendar[].IS_RISKWARNING",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义 · RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING#官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2 @ 2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订",
+      "canonical": "ipo_risk_warning_flag",
+      "meaning": "东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。",
+      "unit": "布尔标记（0/1）",
       "status_raw": "",
       "status": "verified",
       "source_statuses": {
@@ -49386,6 +49404,9 @@
     ],
     "convertible_bond_conversion_status": [
       "东财-event_dc(可转债列表)"
+    ],
+    "ipo_risk_warning_flag": [
+      "东财-event_dc(IPO发行记录)"
     ]
   },
   "mappings": [
@@ -54836,30 +54857,6 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1·hit=1.00·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
-        "code": "PREDICT_ISSUE_PRICE1"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "CURRENT_ONEWORD_NUM"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=0.90·3d"
-    },
-    {
-      "from": {
-        "source": "event_dc",
-        "code": "CURRENT_ONEWORD_NUM"
-      },
-      "to": {
-        "source": "event_dc",
-        "code": "IS_RISKWARNING"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1·hit=0.90·3d"
     },
     {
       "from": {
@@ -300511,6 +300508,106 @@
         "unit": "",
         "section": ""
       }
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].IS_RISKWARNING",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].IS_RISKWARNING",
+      "path": "ipo_calendar[].IS_RISKWARNING",
+      "canonical": "ipo_risk_warning_flag",
+      "meaning": "东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。",
+      "unit": "布尔标记（0/1）",
+      "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义 · RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING#官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2 @ 2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订",
+      "sections": [
+        "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义 · RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING#官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2 @ 2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261122-eventdc-ipo-risk-warning-flag"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261122-eventdc-ipo-risk-warning-flag"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义 · RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING#官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2 @ 2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订",
+          "canonical": "ipo_risk_warning_flag",
+          "meaning": "东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。",
+          "unit": "布尔标记（0/1）",
+          "status_raw": "人工核验上游契约 2026-11-22：20261122-eventdc-ipo-risk-warning-flag",
+          "status": "verified",
+          "adjudication_id": "20261122-eventdc-ipo-risk-warning-flag",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义",
+            "revision": "2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订",
+            "path": "RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING",
+            "locator": "官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_risk_warning_flag",
+              "meaning": "东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。",
+              "unit": "布尔标记（0/1）"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261122-eventdc-ipo-risk-warning-flag",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-22",
+          "decision_file": "adjudications/20261122_eventdc_ipo_risk_warning_flag.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_risk_warning_flag",
+              "meaning": "东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。",
+              "unit": "布尔标记（0/1）"
+            }
+          },
+          "rationale": "官方深交所《股票上市规则（2026 年修订）》第 9.1.2 条定义退市风险警示与其他风险警示，并规定股票简称分别使用 *ST 与 ST。项目适配器把东方财富 RPTA_APP_IPOAPPLY 的原始响应键透传到精确路径 ipo_calendar[].IS_RISKWARNING。按保留边界逐一核查 20 个非空响应批次、400 行/21 个证券代码：23 个值为 1 的记录全部为 *ST，377 个 0 无 ST 前缀反例；所有日期目录均与 meta.data_date 相符。详细逐行值、原始文件 SHA-256 和旧映射反例见 docs/field_verification/adjudications/20261122_eventdc_ipo_risk_warning_flag.md 与 docs/field_verification/research/20261122_eventdc_ipo_risk_flag_mapping_audit.csv。此结果只确认该来源字段为风险警示标记；不建立跨来源关系，也不推断纯 ST 记录的覆盖行为。",
+          "source_contract": {
+            "authority": "东方财富数据中心 RPTA_APP_IPOAPPLY；深交所上市规则提供风险警示业务定义",
+            "revision": "2026-11-22 核验；保留响应 2026-10-16 至 2026-11-19；深交所规则 2026 年修订",
+            "path": "RPTA_APP_IPOAPPLY response.result.data[*].IS_RISKWARNING -> raw_event_dc.ipo_calendar[].IS_RISKWARNING",
+            "locator": "官方数据入口新股申购日历的 RPTA_APP_IPOAPPLY 原始键 IS_RISKWARNING；深交所《股票上市规则（2026 年修订）》§9.1.2",
+            "url": "https://data.eastmoney.com/xg/xg/?mkt=zh"
+          }
+        }
+      ]
     }
   ],
   "source_field_addenda": [

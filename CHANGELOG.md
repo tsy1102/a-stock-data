@@ -54,6 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 对齐 TDX 财务股本字段的适配器输出单位与注册表：0x0010 原始万股值统一乘 10,000 输出为股；将 ELTDX 总股本键修正为 `zongguben`，以恢复总股本缓存和消费者读取。保留转换前归档，不把两种单位口径混入同一历史比较。
 - 按 Fuyao 官方契约区分 `auction_final.auction_price`（竞价价格）与 `auction_final.open_price`（开盘价），修正旧路径错义并撤回 5 组将竞价价映射为开盘价的活动关系。竞价来源日期缺失的样本只用于同响应字段区分，不作为跨源碰撞证据；详见[裁决](docs/field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)。
 - 将 Eastmoney IPO `AVERAGE_PRICE` 登记为 `TOTAL_CHANGE` 计算所用的规则选择基准成交均价；撤回三条仅凭同源三日数值相等而建立、与首日/开板日期语义冲突的旧活动映射。详见[字段裁决](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price.md)与[映射撤回清单](docs/field_verification/adjudications/20261121_eventdc_ipo_average_price_mapping_withdrawal.json)。
+- 将 Eastmoney IPO `ipo_calendar[].IS_RISKWARNING` 精确定案为风险警示标记（0/1），并撤回两条基于旧展平 `event_dc.*` 路径的伪等值关系。结论由深交所上市规则和 400 条保留期记录支持；同响应 `MARKET` 标签 400/400 一致。纯 `ST` 样本及字段生效日期仍未覆盖。详见[裁决](docs/field_verification/adjudications/20261122_eventdc_ipo_risk_warning_flag.md)与[逐行审计](docs/field_verification/research/20261122_eventdc_ipo_risk_flag_mapping_audit.csv)。
 
 ### Fixed
 

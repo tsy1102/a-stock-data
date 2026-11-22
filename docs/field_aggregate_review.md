@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 735 条逐源记录。
+> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 736 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3637,6 +3637,7 @@
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_PRICE` | ipo_issue_price_per_share | 该 IPO 发行记录的每股发行价格，不是上市首日价格或当前价格。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ISSUE_WAY_EXPLAIN` | ipo_issue_way_explanation | 该 IPO 发行记录中对发行方式的文字说明；它与 ISSUE_WAY（发行方式类型）是不同字段。当前保留样本观察到“历史遗留”“本地发行”“认购证”等说明值。本结论确认字段角色，不表示完整发行流程分类，也不穷尽所有可能取值。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].IS_REGISTRATION` | ipo_registration_system_flag | 东方财富用于区分注册制与审批制页面展示分支的标记；1 表示注册制，0 表示非注册制分支。未确认其它可能编码。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].IS_RISKWARNING` | ipo_risk_warning_flag | 东方财富 IPO 记录中的风险警示标记（0/1）。保留样本中值 1 均对应 *ST 记录；深交所规则将 *ST 定义为退市风险警示标识、将 ST 定义为其他风险警示标识。样本未含纯 ST 记录，不外推该枚举情形。该字段没有单独来源日期，不以 UP_DATE 或采集目录日作为状态生效日。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LATELY_PRICE` | ipo_record_latest_price | 东方财富新股申购页所列的该证券最新价；响应没有给出此价格自身的来源实际日期，不得自动解释为目录目标数据日的收盘价。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_CLOSE_CHANGE` | ipo_first_day_close_change_pct | 该 IPO 记录对应股票上市首日收盘价相对于发行价的涨幅；留存样本符合 (CLOSE_PRICE / ISSUE_PRICE - 1) × 100，不等同于基于成交均价的 TOTAL_CHANGE。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].LD_HIGH_CHANG` | ipo_first_day_high_change_pct | 该 IPO 记录对应股票上市首日最高涨幅；本次不推断其详细基准价公式。 | `verified` |

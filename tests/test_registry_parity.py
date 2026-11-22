@@ -582,8 +582,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # separately validated empirical addendum. The latest TDX batch adds 16
     # FinanceInfo alias contracts, ten official TQ field contracts plus the
     # ErrorId sample-key decision, and eight API-scoped Date contracts. The
-    # current count includes subsequent source-contract adjudications.
-    assert len(pairs) == 260
+    # current count includes subsequent source-contract adjudications,
+    # including the IPO risk-warning flag added on 2026-11-22.
+    assert len(pairs) == 261
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"

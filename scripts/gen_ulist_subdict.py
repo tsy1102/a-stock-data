@@ -158,6 +158,11 @@ def extract_subdict_ulist(subdict_path: str = OUT) -> set:
     return out
 
 
+def _rewrite_source_links_for_mirror(content: str) -> str:
+    """Adjust docs-rooted field-verification links for docs/verify/ output."""
+    return re.sub(r"(\]\()field_verification/", r"\1../field_verification/", content)
+
+
 def build_mirror(main_path: str = MAIN) -> str:
     """Return the full markdown content of the ulist239 mirror sub-dict."""
     md = open(main_path, encoding="utf-8").read()
@@ -203,7 +208,7 @@ def build_mirror(main_path: str = MAIN) -> str:
         "其镜像分字典 = [`ulist_verify.md`](verify/ulist_verify.md)",
         "其镜像分字典 = 本文件",
     )
-    return content
+    return _rewrite_source_links_for_mirror(content)
 
 
 def main():

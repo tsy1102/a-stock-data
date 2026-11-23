@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修正 Ulist 镜像生成器的相对链接：从 `docs/` 源文档复制到 `docs/verify/` 时，为 `field_verification/` 证据链接补上 `../`，避免生成的字段镜像指向不存在的子目录。
 - 按 `registry_parity.py` 的历史基线与裁决证据重建字段×源矩阵投影，修正 15 个缺项、12 个多余项及 3 处来源标签混杂；未改动逐源 `source_fields`。
 - 将 ETF 日期诊断区分为“日期不可解析”和“日期值可解析但口径未认证”；覆盖摘要单列后者。旧版 SZ ETF 行的 `date` 是页面日期，不能充当当前规模统计日。
 - 修复碰撞目标筛选未排除“全部为空/缺失”字段的问题。此类路径仍列入低信息观察队列，但在样本出现有效变化前不会反复进入普通破解目标。

@@ -1160,6 +1160,10 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
     assert len(captured) == 48
     verified = [row for row in captured if row["status"] == "verified"]
     assert {(row["source"], row["code"]) for row in verified} == {
+        ("市场源(market_sources)", "col_02"),
+        ("市场源(market_sources)", "col_03"),
+        ("市场源(market_sources)", "col_05"),
+        ("市场源(market_sources)", "strength"),
         ("TDX(双命名源)", "ask1_vol"),
         ("开盘啦(kpl_limit_up_detail)", "amplitude"),
         ("开盘啦(kpl_limit_up_detail)", "main_buy"),
@@ -1235,8 +1239,33 @@ def test_capture_evidence_preserves_adjudicated_status_and_traceability():
         }
     ]
 
+    kpl_strength_fields = {
+        row["code"]: row for row in verified if row["source"] == "市场源(market_sources)"
+    }
+    assert set(kpl_strength_fields) == {"strength", "col_02", "col_03", "col_05"}
+    expected_kpl_paths = {
+        "strength": "kpl_plate_strength.[*].strength",
+        "col_02": "kpl_plate_strength.[*].raw_columns.col_02",
+        "col_03": "kpl_plate_strength.[*].raw_columns.col_03",
+        "col_05": "kpl_plate_strength.[*].raw_columns.col_05",
+    }
+    for code, path in expected_kpl_paths.items():
+        row = kpl_strength_fields[code]
+        assert row["status_resolution"] == "verified_by_empirical_addendum"
+        assert row["status_evidence"]["evidence_file"] == (
+            "adjudications/20261124_kpl_plate_strength_empirical_semantics.md"
+        )
+        assert row["status_evidence"]["sample"]["comparison_count"] == 420
+        assert row["status_evidence"]["sample"]["matched_count"] == 420
+        assert row["capture_evidence"] == [
+            {
+                "file": "docs/field_verification/20261016/raw_market_sources.json",
+                "path": path,
+            }
+        ]
+
     unverified = [row for row in captured if row["status"] == "unverified"]
-    assert len(unverified) == 34
+    assert len(unverified) == 30
     for row in unverified:
         assert row["status"] == "unverified"
         assert not row["canonical"]

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 743 条逐源记录。
+> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 747 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3886,6 +3886,9 @@
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |
 | 市场源(market_sources) | `change_type` | change_type | 盘口异动类型请求代码回显。market_sources.stock_changes_8201 采集单元固定回显字符串 8201，项目代码将其标为“火箭发射”；这是查询类别标记，不是上游逐条行情记录独立返回的业务字段。其他 type 代码未由本次证据确认。 | `verified` |
+| 市场源(market_sources) | `col_02` | kpl_sector_strength_value | 开盘啦精选板块强度综合数值；在 kpl_plate_strength 子接口中，原始 row[2] 与解析后的 strength 同值。该指标用于比较板块强度，具体公式与计量单位未公开。 | `verified` |
+| 市场源(market_sources) | `col_03` | change_pct | 板块涨跌幅；在 kpl_plate_strength 子接口中，原始 row[3] 与同记录已登记字段 change_pct 同值。 | `verified` |
+| 市场源(market_sources) | `col_05` | amount | 板块成交额；在 kpl_plate_strength 子接口中，原始 row[5] 与同记录已登记字段 amount 同值。金额单位未由本核验确定。 | `verified` |
 | 市场源(market_sources) | `dt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 市场源(market_sources) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |
 | 市场源(market_sources) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | `unverified` |
@@ -3899,6 +3902,7 @@
 | 市场源(market_sources) | `sjdt` | sjzt / sjdt | 待破解 | `unverified` |
 | 市场源(market_sources) | `sjzt` | sjzt / sjdt | 待破解 | `unverified` |
 | 市场源(market_sources) | `stdt` | stzt / stdt | ST 涨停 / 跌停 | `unverified` |
+| 市场源(market_sources) | `strength` | kpl_sector_strength_value | 开盘啦精选板块强度综合数值；开盘啦官方说明其由板块权重个股、涨停数量、人气、成交额及市场情绪等多维度综合形成，用于比较板块强度。具体公式与计量单位未公开。 | `verified` |
 | 市场源(market_sources) | `stzt` | stzt / stdt | ST 涨停 / 跌停 | `unverified` |
 | 市场源(market_sources) | `szln` | szln / qscln | 待破解 | `unverified` |
 | 市场源(market_sources) | `up_ratio` | up_ratio / up_ratio_num | 封板率 / 封板数量 | `unverified` |

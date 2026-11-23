@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-24",
+  "evidence_file": "docs/field_verification/adjudications/20261124_kpl_plate_strength_empirical_semantics.md",
+  "evidence_sha256": "d68d401be50b5481bcb4b19867c378fc1a4c50f392d8fd63ef40c2ebcbd87c3e",
+  "decisions": [
+    {
+      "id": "20261124-market-sources-strength-kpl-sector-score",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "strength"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "reference_status_missing",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "kpl_sector_strength_value",
+      "meaning": "开盘啦精选板块强度综合数值；开盘啦官方说明其由板块权重个股、涨停数量、人气、成交额及市场情绪等多维度综合形成，用于比较板块强度。具体公式与计量单位未公开。",
+      "unit": "",
+      "section": "2026-11-24 开盘啦精选板块强度字段来源内核验",
+      "rationale": "目标路径精确限定为 kpl_plate_strength.[*].strength。项目解析器将响应 row[2] 写入 strength；21 个保留采集目录、121 个板块代码的 420 条记录中，原始 raw_columns.col_02 与 strength 逐行数值完全一致，缺失与不一致均为 0。开盘啦官方产品页面定义了板块强度的多维指标含义。此裁决只确认该子接口的板块强度语义，不确定算法、单位、market_sources 整体提供方或来源独立性。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后；market_sources.kpl_plate_strength；420 条同响应行、121 个板块代码；原始 col_02 与归一化 strength 对照。采集目录日期只作归档定位。",
+        "comparison_count": 420,
+        "matched_count": 420,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0
+      }
+    },
+    {
+      "id": "20261124-market-sources-col02-kpl-strength-alias",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "col_02"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "reference_status_missing",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "kpl_sector_strength_value",
+      "meaning": "开盘啦精选板块强度综合数值；在 kpl_plate_strength 子接口中，原始 row[2] 与解析后的 strength 同值。该指标用于比较板块强度，具体公式与计量单位未公开。",
+      "unit": "",
+      "section": "2026-11-24 开盘啦精选板块强度字段来源内核验",
+      "rationale": "注册表 capture_evidence 将该短列路径唯一指向 kpl_plate_strength.[*].raw_columns.col_02。解析器保留的原始列由 row[2] 产生；420 条同响应样本均与已由开盘啦官方页面定义的 strength 值精确一致。结论只适用于该精确子接口路径，不适用于开盘啦个股涨停明细中的 kpl.raw_columns.col_02，也不适用于 KPH。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后；market_sources.kpl_plate_strength.[*].raw_columns.col_02；420 条记录、121 个板块代码，与同记录 strength 对照。",
+        "comparison_count": 420,
+        "matched_count": 420,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0
+      }
+    },
+    {
+      "id": "20261124-market-sources-col03-change-pct-alias",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "col_03"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "reference_status_missing",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_pct",
+      "meaning": "板块涨跌幅；在 kpl_plate_strength 子接口中，原始 row[3] 与同记录已登记字段 change_pct 同值。",
+      "unit": "",
+      "section": "2026-11-24 开盘啦精选板块强度字段来源内核验",
+      "rationale": "注册表 capture_evidence 将该原始列指向 kpl_plate_strength.[*].raw_columns.col_03。解析器将 row[3] 同时写入 change_pct；change_pct 已是来源内 verified 字段。420 条同响应行中 raw col_03 与 change_pct 逐行数值完全一致，无缺失或反例，因此将既有释义收敛到精确原始列。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后；market_sources.kpl_plate_strength.[*].raw_columns.col_03；420 条记录、121 个板块代码，与同记录 change_pct 对照。",
+        "comparison_count": 420,
+        "matched_count": 420,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0
+      }
+    },
+    {
+      "id": "20261124-market-sources-col05-amount-alias",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "市场源(market_sources)",
+        "code": "col_05"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "reference_status_missing",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "amount",
+      "meaning": "板块成交额；在 kpl_plate_strength 子接口中，原始 row[5] 与同记录已登记字段 amount 同值。金额单位未由本核验确定。",
+      "unit": "",
+      "section": "2026-11-24 开盘啦精选板块强度字段来源内核验",
+      "rationale": "注册表 capture_evidence 将该原始列指向 kpl_plate_strength.[*].raw_columns.col_05。解析器将 row[5] 同时写入 amount；amount 已是来源内 verified 字段。420 条同响应行中 raw col_05 与 amount 逐行数值完全一致，无缺失或反例，因此将既有释义收敛到精确原始列。未根据数值大小猜测元、万元等单位。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 之后；market_sources.kpl_plate_strength.[*].raw_columns.col_05；420 条记录、121 个板块代码，与同记录 amount 对照。",
+        "comparison_count": 420,
+        "matched_count": 420,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0
+      }
+    }
+  ]
+}

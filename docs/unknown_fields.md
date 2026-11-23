@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2841；日常来源路径 2697：unverified 721、candidate 1、conflict 5、disproved 192；历史来源路径 144。
+> 注册字段路径 2841；日常来源路径 2697：unverified 717、candidate 1、conflict 5、disproved 192；历史来源路径 144。
 > 另有 139 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 590 |
+| 含义栏为空/占位 | 586 |
 | 含义栏有文本（仍未验证） | 131 |
 
 ### 历史状态证据的解析结果
@@ -24,7 +24,7 @@
 |:--|--:|:--|
 | `aggregate_status_scope_unresolved` | 248 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
-| `reference_status_missing` | 37 | 按注册表原始状态判定代码保留 |
+| `reference_status_missing` | 33 | 按注册表原始状态判定代码保留 |
 | `registry_status_only_single_source` | 338 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
@@ -44,7 +44,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（721）
+## 三、待破解字段（717）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -430,10 +430,7 @@
 | 市场源(market_sources) | `broken_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `broken_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `circulation_value` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
-| 市场源(market_sources) | `col_02` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
-| 市场源(market_sources) | `col_03` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `col_04` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
-| 市场源(market_sources) | `col_05` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `col_06` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `col_07` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `col_08` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
@@ -507,7 +504,6 @@
 | 市场源(market_sources) | `status` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `stdt` | stzt / stdt | ST 涨停 / 跌停 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `stock_changes_8201` | — | — | — | 含义栏为空/占位 | status_missing | — |
-| 市场源(market_sources) | `strength` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `strong` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `stzt` | stzt / stdt | ST 涨停 / 跌停 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `suspend_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

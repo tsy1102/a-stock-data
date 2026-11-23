@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-11-23",
+  "decisions": [
+    {
+      "id": "20261123-fuyao-auction-final-last-price-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.last_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.last_price",
+      "meaning": "最新价。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 last_price=最新价。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。380/380 个留存记录有数值。该字段保留“最新价”含义，不改写为收盘价。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].last_price：last_price=最新价；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-pre-close-price-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.pre_close_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.pre_close_price",
+      "meaning": "前收盘价。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 pre_close_price=前收盘价。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。380/380 个留存记录有数值；只确认前收盘价路径，不由此推断竞价价格或开盘价。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].pre_close_price：pre_close_price=前收盘价；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-amount-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_amount",
+      "meaning": "集合竞价成交额。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_amount=竞价成交额。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。373/380 个留存记录有数值，另 7 条未返回该键；单位未由本接口字段表声明，故留空。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_amount：auction_amount=竞价成交额；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-volume-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_volume"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_volume",
+      "meaning": "集合竞价成交量。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_volume=竞价成交量。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。379/380 个留存记录有数值，另 1 条未返回该键；单位未由本接口字段表声明，故留空。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_volume：auction_volume=竞价成交量；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-unmatched-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_unmatched"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_unmatched",
+      "meaning": "竞价未匹配量。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_unmatched=竞价未匹配量。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。372/380 个留存记录有数值，另 8 条未返回该键。样本含负数和小数，官方未说明单位及正负方向口径，因此只确认字段标签，不解释数值尺度或方向。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_unmatched：auction_unmatched=竞价未匹配量；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-turnover-pct-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_turnover_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_turnover_pct",
+      "meaning": "集合竞价换手率，百分数原值。",
+      "unit": "%",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_turnover_pct=竞价换手率，百分数原值。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。379/380 个留存记录有数值，另 1 条未返回该键；单位按官方百分数口径记为 %。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_turnover_pct：auction_turnover_pct=竞价换手率，百分数原值；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-yesterday-ratio-pct-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_yesterday_ratio_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_yesterday_ratio_pct",
+      "meaning": "竞价成交量相对昨日成交量的比例，百分数原值。",
+      "unit": "%",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_yesterday_ratio_pct=竞价成交量相对昨日成交量的比例，百分数原值。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。378/380 个留存记录有数值，另 2 条未返回该键；计算值按官方百分数原值记为 %。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_yesterday_ratio_pct：auction_yesterday_ratio_pct=竞价成交量相对昨日成交量的比例，百分数原值；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-auction-volume-ratio-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.auction_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.auction_volume_ratio",
+      "meaning": "竞价量比（官方未说明分母、计算窗口和公式）。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 auction_volume_ratio=竞价量比。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。380/380 个留存记录有数值；保留官方“竞价量比”定义，不猜测分母、窗口或单位。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].auction_volume_ratio：auction_volume_ratio=竞价量比；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    },
+    {
+      "id": "20261123-fuyao-auction-final-float-market-cap-contract",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_final.float_market_cap"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_final.float_market_cap",
+      "meaning": "流通市值。",
+      "unit": "",
+      "rationale": "同花顺金融数据 API 当前官方文档 float_market_cap=流通市值。项目适配器请求 GET /api/a-share/auction/snapshot 并保留响应信封；采集器从 data.item[] 取记录，仅附加 __source_meta__ 后原样保存到 stocks.<ticker>.auction_final，不改名、不重算。因此实际身份是该完整 auction_final 路径，而不是历史根路径或 snapshot 子接口。保留期内 19 个完整 final 批次共 380 条记录，逐行键覆盖与缺失数见 docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv；规范 LF SHA-256=0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3。本裁决只确认同花顺该来源的官方字段语义，不创建跨源 mappings。380/380 个留存记录有数值；本接口字段表未明示计价单位，故留空。",
+      "source_contract": {
+        "authority": "同花顺金融数据 API 官方文档",
+        "revision": "在线官方文档于 2026-11-23 核验",
+        "path": "GET /api/a-share/auction/snapshot",
+        "locator": "响应字段表 data.item[].float_market_cap：float_market_cap=流通市值；data.timestamp 是接口响应组装时间",
+        "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/"
+      }
+    }
+  ]
+}

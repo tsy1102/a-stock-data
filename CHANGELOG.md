@@ -8,8 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 按同花顺当前官方集合竞价契约和 19 个完整留存批次的逐股样本，登记并验证 `auction_final` 下 9 个完整字段路径。为官方未声明单位、`auction_unmatched` 正负口径及 `auction_volume_ratio` 公式保留未知，不新增跨源映射。详见[裁决](docs/field_verification/adjudications/20261123_fuyao_auction_final_contract_fields.md)和[逐股审计](docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv)。
 - 明确记录同源批次日期继承规则：腾讯 `qt.gtimg::[30]` 的日期锚在保留期 22 个数据日、440/440 行中与采集目标数据日和交易日历一致，可为同批行情字段确认观测日；采集诊断现在要求该时间戳严格为 14 位数字，缺失、非法或批次日期分歧时不生成来源日期。证据见[批次日期锚审计](docs/field_verification/research/20261122_tencent_batch_date_anchor_audit.md)。
 - 补充新浪 `hq.sinajs` 行情批次日期实证：`fields[30]` 日期及 `[31]` 时间在保留期 22 个数据日、440/440 条记录中均与目标数据日、批次元数据及交易日历一致；同一响应中的行情字段可继承共同观测日，但不延伸至其他端点或业务日期。详见[批次日期锚审计](docs/field_verification/research/20261122_sina_batch_date_anchor_audit.md)。
+- 为 Fuyao 终态竞价增加哈希绑定的历史批次日期见证：19 个完整批次、380 条记录的官方 `open_price` 均与新浪已确认日期的开盘价精确匹配，且每批历史日期共识唯一。只开放审计清单中 raw/meta 哈希完全匹配的 `auction_final` 子树；不以响应组装时间戳定日，不自动纳入新批次或其他端点。详见[证据报告](docs/field_verification/research/20261123_fuyao_auction_batch_date_witness.md)。
 - 为来源日期缺口增加同源同证券行的日期字段见证：已验证的 Ulist239 `f297` 仅能传给同一采集目录内择优保留的同一行字段；日期值须与交易日键、已知来源日期和同记录时间戳一致，目标字段缺日期时才补入锚日期。财报期和事件生效日仍须字段自身有效日期证据，报告将同源继承与直接日期、跨源值见证分开统计。
 - 收紧同源行时间戳见证：只有日期锚与目标字段来自同一个 `capture_folder` 才能继承，重复采集目录中分别择优的字段不会互相借用日期；增加批次级日期推断的证据门槛和适用边界，当前不对未审计的聚合端点自动推广。
 - 将 KPL 已验证的 `zt_time` 限定为同一记录的事件日期锚：保留期内 22 个交易日、1,259/1,259 行的北京时间日期均匹配目录数据日和响应 `trade_date`。日期来源记为 `record.event_date`，仅作用于同一 KPL 证券/交易日行及同一 `capture_folder`，不把涨停事件时间解释为接口更新时间。详见[逐行审计](docs/field_verification/research/20261123_kpl_row_timestamp_date_anchor_audit.md)。

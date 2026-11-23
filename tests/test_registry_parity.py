@@ -583,8 +583,27 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # FinanceInfo alias contracts, ten official TQ field contracts plus the
     # ErrorId sample-key decision, and eight API-scoped Date contracts. The
     # current count includes subsequent source-contract adjudications,
-    # including the IPO risk-warning flag added on 2026-11-22.
-    assert len(pairs) == 261
+    # including the IPO risk-warning flag added on 2026-11-22 and nine
+    # exact Fuyao auction_final paths added on 2026-11-23.
+    assert len(pairs) == 270
+    assert {
+        code
+        for source, code in pairs
+        if source == "同花顺-fuyao" and code.startswith("auction_final.")
+    } == {
+        "auction_final.auction_pct",
+        "auction_final.auction_price",
+        "auction_final.open_price",
+        "auction_final.last_price",
+        "auction_final.pre_close_price",
+        "auction_final.auction_amount",
+        "auction_final.auction_volume",
+        "auction_final.auction_unmatched",
+        "auction_final.auction_turnover_pct",
+        "auction_final.auction_yesterday_ratio_pct",
+        "auction_final.auction_volume_ratio",
+        "auction_final.float_market_cap",
+    }
     cls_level = records_by_pair[("财联社(cls)", "level")]
     assert cls_level["status"] == "verified"
     assert cls_level["status_resolution"] == "verified_by_empirical_addendum"

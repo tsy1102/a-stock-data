@@ -8,12 +8,14 @@ before their samples can contribute to L1 evidence.
 
 from __future__ import annotations
 
+import csv
 import json
 import math
 import re
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
@@ -41,6 +43,7 @@ SOURCE_CONFIRMED_DATE_ORIGINS = {
 }
 CROSS_SOURCE_INFERRED_DATE_ORIGIN = "cross_source_value_witness"
 SAME_SOURCE_INFERRED_DATE_ORIGIN = "same_source_row_date_witness"
+BATCH_VALUE_INFERRED_DATE_ORIGIN = "audited_batch_value_date_witness"
 PERIODIC_EFFECTIVE_DATE_ORIGINS = {
     "record.effective_date",
     "record.report_period",
@@ -149,6 +152,64 @@ def load_policy(path: str | Path = POLICY_PATH) -> dict[str, Any]:
         if identity in date_witness_seen:
             raise TemporalPolicyError(f"行日期见证身份重复: {source}::{code}")
         date_witness_seen.add(identity)
+    batch_witnesses = policy.get("audited_batch_value_witnesses", [])
+    if not isinstance(batch_witnesses, list):
+        raise TemporalPolicyError("audited_batch_value_witnesses 必须为列表")
+    batch_witness_sources: set[str] = set()
+    required_batch_witness_keys = {
+        "source",
+        "runtime_source",
+        "target_date_anchor_code",
+        "eligible_subpaths",
+        "witness_source",
+        "witness_runtime_source",
+        "witness_code",
+        "witness_date_code",
+        "evidence_file",
+        "evidence_sha256",
+        "min_batch_records",
+        "target_raw_path_key",
+        "target_raw_sha256_key",
+        "witness_raw_path_key",
+        "witness_raw_sha256_key",
+        "meta_sha256_key",
+        "exact_column",
+        "date_column",
+        "unique_column",
+        "candidate_dates_column",
+        "reason",
+    }
+    for witness in batch_witnesses:
+        if not isinstance(witness, dict):
+            raise TemporalPolicyError("audited_batch_value_witnesses 只能包含对象")
+        missing = required_batch_witness_keys - set(witness)
+        if missing:
+            raise TemporalPolicyError(f"批次值日期见证缺少字段: {', '.join(sorted(missing))}")
+        string_keys = required_batch_witness_keys - {"eligible_subpaths", "min_batch_records"}
+        if any(
+            not isinstance(witness.get(key), str) or not witness[key].strip() for key in string_keys
+        ):
+            raise TemporalPolicyError("批次值日期见证文本配置必须为非空字符串")
+        if not re.fullmatch(r"[0-9a-f]{64}", witness["evidence_sha256"]):
+            raise TemporalPolicyError("批次值日期见证必须有小写 SHA-256")
+        if (
+            isinstance(witness["min_batch_records"], bool)
+            or not isinstance(witness["min_batch_records"], int)
+            or witness["min_batch_records"] <= 0
+        ):
+            raise TemporalPolicyError("批次值日期见证 min_batch_records 必须为正整数")
+        eligible_subpaths = witness["eligible_subpaths"]
+        if (
+            not isinstance(eligible_subpaths, list)
+            or not eligible_subpaths
+            or any(not isinstance(item, str) or not item.strip() for item in eligible_subpaths)
+            or len(set(eligible_subpaths)) != len(eligible_subpaths)
+        ):
+            raise TemporalPolicyError("批次值日期见证 eligible_subpaths 必须是非空唯一列表")
+        runtime_source = witness["runtime_source"]
+        if runtime_source in batch_witness_sources:
+            raise TemporalPolicyError(f"运行时来源批次日期见证重复: {runtime_source}")
+        batch_witness_sources.add(runtime_source)
     value_witnesses = policy.get("cross_source_value_witnesses", [])
     if not isinstance(value_witnesses, list):
         raise TemporalPolicyError("cross_source_value_witnesses 必须为列表")
@@ -252,6 +313,219 @@ def _registry_identity_index(
 ) -> dict[tuple[str, str], dict[str, Any]]:
     records = FRA.source_field_records(registry)
     return {(record["source"], record["code"]): record for record in records}
+
+
+@lru_cache(maxsize=8)
+def _load_audited_batch_date_evidence(
+    evidence_path: str, expected_sha256: str
+) -> tuple[dict[str, Any], tuple[dict[str, str], ...]]:
+    """Load a pinned batch audit and its pinned row-level evidence once per run."""
+    path = Path(evidence_path)
+    if expected_sha256 not in text_file_sha256_candidates(path):
+        raise TemporalPolicyError(f"批次日期见证证据哈希变化: {path}")
+    try:
+        evidence = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise TemporalPolicyError(f"读取批次日期见证证据失败: {path}: {exc}") from exc
+    if not isinstance(evidence, dict) or evidence.get("schema_version") != 1:
+        raise TemporalPolicyError(f"批次日期见证证据 schema 无效: {path}")
+    csv_name, csv_hash = evidence.get("csv_path"), evidence.get("csv_sha256_lf")
+    if not isinstance(csv_name, str) or not isinstance(csv_hash, str):
+        raise TemporalPolicyError(f"批次日期见证证据缺少 CSV 摘要: {path}")
+    project_root = Path(__file__).resolve().parents[1]
+    csv_path = (project_root / csv_name).resolve()
+    if project_root.resolve() not in csv_path.parents:
+        raise TemporalPolicyError("批次日期见证 CSV 路径越出项目目录")
+    if csv_hash not in text_file_sha256_candidates(csv_path):
+        raise TemporalPolicyError(f"批次日期见证 CSV 哈希变化: {csv_path}")
+    try:
+        with csv_path.open(encoding="utf-8-sig", newline="") as stream:
+            rows = tuple(dict(row) for row in csv.DictReader(stream))
+    except (OSError, UnicodeError, csv.Error) as exc:
+        raise TemporalPolicyError(f"读取批次日期见证 CSV 失败: {csv_path}: {exc}") from exc
+    batches = evidence.get("batch_metadata")
+    if not isinstance(batches, list):
+        raise TemporalPolicyError(f"批次日期见证证据缺少 batch_metadata: {path}")
+    return evidence, rows
+
+
+def resolve_audited_batch_value_date_witness(
+    runtime_source: str,
+    capture_folder: str,
+    raw_path: str | Path,
+    folder_meta: dict[str, Any],
+    folder_market_date: date | None,
+    document: dict[str, Any],
+    *,
+    policy_path: str | Path = POLICY_PATH,
+) -> dict[str, Any] | None:
+    """Resolve a date only for an exact capture batch pinned by complete audit evidence."""
+    policy = load_policy(policy_path)
+    witnesses = [
+        item
+        for item in policy.get("audited_batch_value_witnesses", [])
+        if item["runtime_source"] == runtime_source
+    ]
+    if not witnesses:
+        return None
+    if len(witnesses) != 1:
+        raise TemporalPolicyError(f"运行时来源存在多个批次日期见证: {runtime_source}")
+    witness = witnesses[0]
+    registry = FRA.load_registry()
+    lineage = SLA.load_source_lineage(registry=registry)
+    records = _registry_identity_index(registry)
+    target_identity = (witness["source"], witness["target_date_anchor_code"])
+    value_identity = (witness["witness_source"], witness["witness_code"])
+    date_identity = (witness["witness_source"], witness["witness_date_code"])
+    for identity in (target_identity, value_identity, date_identity):
+        record = records.get(identity)
+        if record is None or record.get("status") != "verified":
+            raise TemporalPolicyError(
+                f"批次日期见证锚未按精确路径验证: {identity[0]}::{identity[1]}"
+            )
+    target_aliases = SLA.runtime_aliases_for_source(witness["source"], lineage)
+    value_aliases = SLA.runtime_aliases_for_source(witness["witness_source"], lineage)
+    target_family = SLA.runtime_family(runtime_source, lineage)
+    value_family = SLA.runtime_family(witness["witness_runtime_source"], lineage)
+    if (
+        runtime_source not in target_aliases
+        or witness["witness_runtime_source"] not in value_aliases
+        or not target_family
+        or not value_family
+        or target_family == value_family
+    ):
+        raise TemporalPolicyError("批次日期见证来源别名或独立性不符合配置")
+
+    policy_dir = Path(policy_path).resolve().parent
+    evidence_path = (policy_dir / witness["evidence_file"]).resolve()
+    project_root = Path(__file__).resolve().parents[1]
+    if project_root.resolve() not in evidence_path.parents:
+        raise TemporalPolicyError("批次日期见证 evidence_file 路径越出项目目录")
+    evidence, csv_rows = _load_audited_batch_date_evidence(
+        str(evidence_path), witness["evidence_sha256"]
+    )
+    batch_records = [
+        item
+        for item in evidence["batch_metadata"]
+        if isinstance(item, dict) and item.get("capture_folder") == capture_folder
+    ]
+    if len(batch_records) != 1:
+        return None
+    batch = batch_records[0]
+    if (
+        batch.get("eligible_complete_final_batch") is not True
+        or batch.get("date_context_valid") is not True
+        or batch.get("source_data_date") is not None
+        or batch.get("data_date") != capture_folder
+        or _compact_day(batch.get("latest_completed_session")) != capture_folder
+        or batch.get("item_count") != witness["min_batch_records"]
+        or batch.get("actual_item_count") != witness["min_batch_records"]
+    ):
+        return None
+    if folder_market_date is None or folder_market_date.strftime("%Y%m%d") != capture_folder:
+        return None
+    if folder_meta.get("data_date") != capture_folder:
+        return None
+    if batch.get("run_datetime") != folder_meta.get("run_datetime"):
+        return None
+    source_map = folder_meta.get("sources")
+    source_entry = source_map.get(runtime_source) if isinstance(source_map, dict) else None
+    if (
+        not isinstance(source_entry, dict)
+        or _compact_day(source_entry.get("as_of_date")) != capture_folder
+    ):
+        return None
+
+    target_file = Path(raw_path).resolve()
+    target_path_key = witness["target_raw_path_key"]
+    target_hash_key = witness["target_raw_sha256_key"]
+    value_path_key = witness["witness_raw_path_key"]
+    value_hash_key = witness["witness_raw_sha256_key"]
+    meta_path = (Path(target_file.parent) / "meta.json").resolve()
+    value_path = (
+        Path(target_file.parent) / f"raw_{witness['witness_runtime_source']}.json"
+    ).resolve()
+    expected_paths = {
+        target_path_key: target_file,
+        value_path_key: value_path,
+        "meta_path": meta_path,
+    }
+    expected_hashes = {
+        target_hash_key: batch.get(target_hash_key),
+        value_hash_key: batch.get(value_hash_key),
+        witness["meta_sha256_key"]: batch.get(witness["meta_sha256_key"]),
+    }
+    for key, expected_path in expected_paths.items():
+        stored = batch.get(key)
+        if not isinstance(stored, str) or (project_root / stored).resolve() != expected_path:
+            return None
+    for key, path in (
+        (target_hash_key, target_file),
+        (value_hash_key, value_path),
+        (witness["meta_sha256_key"], meta_path),
+    ):
+        expected_hash = expected_hashes.get(key)
+        if not isinstance(expected_hash, str) or expected_hash not in text_file_sha256_candidates(
+            path
+        ):
+            return None
+
+    auction_meta = document.get("auction_snapshot_meta")
+    if (
+        not isinstance(auction_meta, dict)
+        or auction_meta.get("requested_stage") != "final"
+        or auction_meta.get("data_status") != "final"
+        or auction_meta.get("auction_phase") != "closed"
+        or auction_meta.get("collision_eligible") is not False
+        or auction_meta.get("source_data_date") is not None
+        or auction_meta.get("item_count") != witness["min_batch_records"]
+    ):
+        return None
+    stocks = document.get("stocks")
+    if not isinstance(stocks, dict):
+        return None
+    target_codes = {
+        str(code)
+        for code, stock in stocks.items()
+        if isinstance(stock, dict)
+        and isinstance(stock.get("auction_final"), dict)
+        and "__error__" not in stock["auction_final"]
+    }
+    rows = [row for row in csv_rows if row.get("capture_folder") == capture_folder]
+    if len(rows) != witness["min_batch_records"]:
+        return None
+    row_codes = {row.get("stock_code") for row in rows}
+    if len(row_codes) != witness["min_batch_records"] or row_codes != target_codes:
+        return None
+    data_date = batch["data_date"]
+    if not all(
+        row.get(witness["exact_column"]) == "true"
+        and row.get(witness["date_column"]) == data_date
+        and row.get(witness["unique_column"]) == "true"
+        and row.get(witness["candidate_dates_column"]) == data_date
+        for row in rows
+    ):
+        return None
+
+    return {
+        "validated": True,
+        "date": data_date,
+        "capture_folder": capture_folder,
+        "item_count": witness["min_batch_records"],
+        "eligible_subpaths": list(witness["eligible_subpaths"]),
+        "target_anchor_field_id": (f"{runtime_source}.{witness['target_date_anchor_code']}"),
+        "witness_field_id": _runtime_field_id(
+            witness["witness_runtime_source"], witness["witness_code"]
+        ),
+        "witness_date_field_id": _runtime_field_id(
+            witness["witness_runtime_source"], witness["witness_date_code"]
+        ),
+        "evidence_file": witness["evidence_file"],
+        "evidence_sha256": witness["evidence_sha256"],
+        "raw_target_sha256": batch[target_hash_key],
+        "raw_witness_sha256": batch[value_hash_key],
+        "reason": witness["reason"],
+    }
 
 
 def build_runtime_policy_index(
@@ -989,11 +1263,28 @@ def l1_date_eligible(info: dict[str, Any], sample_meta: dict[str, Any]) -> bool:
     ):
         return True
     cross_source_witness = sample_meta.get("cross_source_date_witness")
-    return (
+    if (
         date_origin == CROSS_SOURCE_INFERRED_DATE_ORIGIN
         and isinstance(cross_source_witness, dict)
         and cross_source_witness.get("validated") is True
         and isinstance(cross_source_witness.get("evidence_sha256"), str)
+    ):
+        return True
+    batch_witness = sample_meta.get("audited_batch_date_witness")
+    return (
+        date_origin == BATCH_VALUE_INFERRED_DATE_ORIGIN
+        and isinstance(batch_witness, dict)
+        and batch_witness.get("validated") is True
+        and _compact_day(batch_witness.get("date")) == _compact_day(sample_meta.get("as_of_date"))
+        and isinstance(batch_witness.get("evidence_file"), str)
+        and bool(batch_witness.get("evidence_file"))
+        and isinstance(batch_witness.get("evidence_sha256"), str)
+        and re.fullmatch(r"[0-9a-f]{64}", batch_witness["evidence_sha256"]) is not None
+        and isinstance(batch_witness.get("target_anchor_field_id"), str)
+        and isinstance(batch_witness.get("witness_field_id"), str)
+        and isinstance(batch_witness.get("witness_date_field_id"), str)
+        and isinstance(batch_witness.get("item_count"), int)
+        and batch_witness["item_count"] > 0
     )
 
 
@@ -1026,6 +1317,13 @@ def relation_date_evidence(
                 SOURCE_CONFIRMED_DATE_ORIGINS | {CROSS_SOURCE_INFERRED_DATE_ORIGIN}
             )
         )
+        batch_inferred = (
+            bool(origins)
+            and BATCH_VALUE_INFERRED_DATE_ORIGIN in origins
+            and set(origins).issubset(
+                SOURCE_CONFIRMED_DATE_ORIGINS | {BATCH_VALUE_INFERRED_DATE_ORIGIN}
+            )
+        )
         stable = info.get("temporal_class", "unclassified") in STABLE_SEMANTIC_CLASSES
         if source_confirmed:
             status = "source_date_confirmed"
@@ -1033,6 +1331,8 @@ def relation_date_evidence(
             status = "same_source_date_inferred"
         elif cross_source_inferred:
             status = "cross_source_date_inferred"
+        elif batch_inferred:
+            status = "audited_batch_date_inferred"
         elif stable:
             status = "semantic_only_date_unconfirmed"
         else:
@@ -1053,10 +1353,13 @@ def relation_date_evidence(
             "source_date_confirmed",
             "same_source_date_inferred",
             "cross_source_date_inferred",
+            "audited_batch_date_inferred",
         }
         for item in sides
     ):
-        if any(item["date_status"] == "cross_source_date_inferred" for item in sides):
+        if any(item["date_status"] == "audited_batch_date_inferred" for item in sides):
+            alignment = "audited_batch_dates_inferred"
+        elif any(item["date_status"] == "cross_source_date_inferred" for item in sides):
             alignment = "cross_source_dates_inferred"
         elif any(item["date_status"] == "same_source_date_inferred" for item in sides):
             alignment = "same_source_dates_inferred"

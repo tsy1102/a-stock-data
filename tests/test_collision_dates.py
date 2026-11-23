@@ -120,6 +120,35 @@ def test_record_count_ignores_fuyao_auction_provenance_metadata():
     assert collision_dates._record_count({"stocks": document["stocks"]}) == 1
 
 
+def test_fuyao_batch_date_witness_is_limited_to_the_pinned_audited_capture():
+    project_root = Path(__file__).resolve().parents[1]
+    data_root = project_root / "docs" / "field_verification"
+    folders, _ = collision_dates.discover_capture_folders(str(data_root))
+    folder = next(item for item in folders if item.name == "20261119")
+    raw_path = Path(folder.path) / "raw_fuyao.json"
+    document = json.loads(raw_path.read_text(encoding="utf-8-sig"))
+
+    snapshot, warnings = collision_dates.build_snapshot(folder, "fuyao", str(raw_path), document)
+
+    assert snapshot is not None
+    assert not warnings
+    assert snapshot.sample_date == date(2026, 11, 19)
+    assert snapshot.date_origin == "source_as_of"
+    assert snapshot.batch_date_witness is not None
+    assert snapshot.batch_date_witness["validated"] is True
+    assert snapshot.batch_date_witness["item_count"] == 20
+    assert snapshot.batch_date_witness["eligible_subpaths"] == ["auction_final"]
+    assert snapshot.batch_date_witness["witness_field_id"] == "sina[1]"
+    assert snapshot.batch_date_witness["witness_date_field_id"] == "sina[30]"
+
+    unpinned_path = Path(folder.path) / "raw_sina.json"
+    unpinned_snapshot, _ = collision_dates.build_snapshot(
+        folder, "fuyao", str(unpinned_path), document
+    )
+    assert unpinned_snapshot is not None
+    assert unpinned_snapshot.batch_date_witness is None
+
+
 def test_legacy_weekend_folder_without_data_date_is_not_inferred_as_market_data(tmp_path):
     target = tmp_path / "20260920"
     target.mkdir()

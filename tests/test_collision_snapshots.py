@@ -80,6 +80,65 @@ def test_etf_rows_use_their_own_market_date_and_reject_ineligible_rows():
     assert any("1 条市场记录不在所选交易日窗口内" in item for item in diagnostics)
 
 
+def test_audited_batch_witness_opens_only_its_exact_ineligible_subtree():
+    witness = {
+        "validated": True,
+        "date": "20261119",
+        "capture_folder": "20261119",
+        "item_count": 20,
+        "eligible_subpaths": ["auction_final"],
+        "target_anchor_field_id": "fuyao.auction_final.open_price",
+        "witness_field_id": "sina[1]",
+        "witness_date_field_id": "sina[30]",
+        "evidence_file": "research/20261123_fuyao_auction_batch_date_witness.json",
+        "evidence_sha256": "a" * 64,
+    }
+    snapshot = Snapshot(
+        source="fuyao",
+        domain=TRADING,
+        sample_date=date(2026, 11, 19),
+        capture_date=date(2026, 11, 20),
+        folder="20261119",
+        path="raw_fuyao.json",
+        document={
+            "auction_snapshot_meta": {"collision_eligible": False},
+            "stocks": {
+                "600000": {
+                    "auction_final": {
+                        "open_price": 10.0,
+                        "auction_amount": 1000,
+                        "__source_meta__": {"collision_eligible": False},
+                    },
+                    "unreviewed_subtree": {
+                        "value": 1000,
+                        "__source_meta__": {"collision_eligible": False},
+                    },
+                }
+            },
+        },
+        meta={},
+        phase="closed",
+        status="ok",
+        record_count=1,
+        captured_at=datetime(2026, 11, 20, 8, 0),
+        date_origin="source_as_of",
+        batch_date_witness=witness,
+    )
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}})
+    diagnostics = []
+
+    load_snapshots([snapshot], store, diagnostics)
+
+    key = ("600000", "T:20261119")
+    assert store["fuyao.auction_final.open_price"]["vals"][key] == 10.0
+    assert store["fuyao.auction_final.auction_amount"]["vals"][key] == 1000
+    assert store["fuyao.unreviewed_subtree.value"]["vals"] == {}
+    metadata = store["fuyao.auction_final.open_price"]["sample_meta"][key]
+    assert metadata["as_of_date_origin"] == "audited_batch_value_date_witness"
+    assert metadata["audited_batch_date_witness"] == witness
+    assert any("按已审计批次日期见证仅开放精确竞价子树" in item for item in diagnostics)
+
+
 def test_etf_record_date_counts_as_explicit_source_date_in_field_coverage():
     result = build_field_coverage(
         [_etf_snapshot()],

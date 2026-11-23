@@ -1,0 +1,531 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-23",
+  "evidence_basis": "official_source_contract_and_retained_raw_path_audit",
+  "official_authority": "同花顺金融数据 API 官方文档",
+  "official_document_url": "https://fuyao.aicubes.cn/docs/api-reference/auction/",
+  "official_endpoint": "GET /api/a-share/auction/snapshot",
+  "official_document_checked_on": "2026-11-23",
+  "runtime_path_mapping": {
+    "client": "stock_common/sc_fuyao.py::get_fuyao_auction_snapshot_envelope",
+    "collector": "scripts/capture_verified_collectors.py::capture_auction",
+    "mapping": "response data.item[] fields are copied without renaming/recalculation into stocks.<ticker>.auction_final"
+  },
+  "retention_floor": "20261015",
+  "capture_batch_count": 19,
+  "record_count": 380,
+  "fields": [
+    "last_price",
+    "pre_close_price",
+    "auction_amount",
+    "auction_volume",
+    "auction_unmatched",
+    "auction_turnover_pct",
+    "auction_yesterday_ratio_pct",
+    "auction_volume_ratio",
+    "float_market_cap"
+  ],
+  "per_field_coverage": {
+    "last_price": {
+      "key_present_count": 380,
+      "missing_key_count": 0,
+      "explicit_null_count": 0,
+      "non_null_count": 380,
+      "numeric_count": 380,
+      "unique_non_null_values": 342,
+      "min_numeric": 2.06,
+      "max_numeric": 1480.0,
+      "sample_values": [
+        "10.2",
+        "11.4",
+        "8.63",
+        "71.94",
+        "10.93"
+      ]
+    },
+    "pre_close_price": {
+      "key_present_count": 380,
+      "missing_key_count": 0,
+      "explicit_null_count": 0,
+      "non_null_count": 380,
+      "numeric_count": 380,
+      "unique_non_null_values": 352,
+      "min_numeric": 2.08,
+      "max_numeric": 1480.0,
+      "sample_values": [
+        "10.01",
+        "10.82",
+        "8.63",
+        "71.37",
+        "9.94"
+      ]
+    },
+    "auction_amount": {
+      "key_present_count": 373,
+      "missing_key_count": 7,
+      "explicit_null_count": 0,
+      "non_null_count": 373,
+      "numeric_count": 373,
+      "unique_non_null_values": 373,
+      "min_numeric": 661.5,
+      "max_numeric": 486705430.0,
+      "sample_values": [
+        "265224.0",
+        "11129328",
+        "345447.0",
+        "12710727",
+        "4507998.0"
+      ]
+    },
+    "auction_volume": {
+      "key_present_count": 379,
+      "missing_key_count": 1,
+      "explicit_null_count": 0,
+      "non_null_count": 379,
+      "numeric_count": 379,
+      "unique_non_null_values": 356,
+      "min_numeric": 0.0,
+      "max_numeric": 404913.0,
+      "sample_values": [
+        "257.0",
+        "10248.0",
+        "393.0",
+        "1791.0",
+        "4499.0"
+      ]
+    },
+    "auction_unmatched": {
+      "key_present_count": 372,
+      "missing_key_count": 8,
+      "explicit_null_count": 0,
+      "non_null_count": 372,
+      "numeric_count": 372,
+      "unique_non_null_values": 324,
+      "min_numeric": -384522.29,
+      "max_numeric": 1164410.86,
+      "sample_values": [
+        "-20.0",
+        "1170.0",
+        "-24.0",
+        "-134.0",
+        "11.0"
+      ]
+    },
+    "auction_turnover_pct": {
+      "key_present_count": 379,
+      "missing_key_count": 1,
+      "explicit_null_count": 0,
+      "non_null_count": 379,
+      "numeric_count": 379,
+      "unique_non_null_values": 261,
+      "min_numeric": 0.0,
+      "max_numeric": 3.8752,
+      "sample_values": [
+        "0.0074",
+        "0.1947",
+        "0.0116",
+        "0.0122",
+        "0.0979"
+      ]
+    },
+    "auction_yesterday_ratio_pct": {
+      "key_present_count": 378,
+      "missing_key_count": 2,
+      "explicit_null_count": 0,
+      "non_null_count": 378,
+      "numeric_count": 378,
+      "unique_non_null_values": 369,
+      "min_numeric": 0.0,
+      "max_numeric": 439.7643,
+      "sample_values": [
+        "0.3315",
+        "1.4597",
+        "0.4736",
+        "0.9835",
+        "1.1246"
+      ]
+    },
+    "auction_volume_ratio": {
+      "key_present_count": 380,
+      "missing_key_count": 0,
+      "explicit_null_count": 0,
+      "non_null_count": 380,
+      "numeric_count": 380,
+      "unique_non_null_values": 373,
+      "min_numeric": 0.0,
+      "max_numeric": 294.7689,
+      "sample_values": [
+        "2.7935",
+        "0.8804",
+        "0.3229",
+        "2.7554",
+        "0.4749"
+      ]
+    },
+    "float_market_cap": {
+      "key_present_count": 380,
+      "missing_key_count": 0,
+      "explicit_null_count": 0,
+      "non_null_count": 380,
+      "numeric_count": 380,
+      "unique_non_null_values": 358,
+      "min_numeric": 361494130.25,
+      "max_numeric": 2442218212444.0503,
+      "sample_values": [
+        "3533770048.8",
+        "6001821190.2",
+        "2924777334.5",
+        "105835325001.78",
+        "5023556941.21"
+      ]
+    }
+  },
+  "per_batch": [
+    {
+      "capture_folder": "20261016",
+      "data_date": "20261016",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261016/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "c2e4e3f55aa43f7a6a429184c6569e9f2c011df900a49f7124f6a6d7a9922431",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 19,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261019",
+      "data_date": "20261019",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261019/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "eeb21634218cd450289a5b6b2cc1ea3938476853f31ea2a207f777aec30e5f47",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261020",
+      "data_date": "20261020",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261020/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "562db06732c2b87265d81156f8ba9f51a95203b3d77a8fc2ef53adf4ec1b9bf2",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261023",
+      "data_date": "20261023",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261023/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "433be63998efcc36e2f9c45bf6e52cc4f00fece44dccfd8a85f30428ae1f5785",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261028",
+      "data_date": "20261028",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261028/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "4a1d3f61206627055f950d3c7d87236ef31e47d33b7aa882c72d8e32161f8f32",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261029",
+      "data_date": "20261029",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261029/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "eedc252e84287bc7b1dd7a1c051373c0e20c6b26b02dbc26f6d0f9bd906a0aa1",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261030",
+      "data_date": "20261030",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261030/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "397ea47a5c20d60893945f1a0af7a40836e7b79bc8f1cd5e57f79694515e07bd",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261102",
+      "data_date": "20261102",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261102/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "470a2cccf41f790e7aaf357c469c15e840978ec6495a02859116bd22317821cc",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261103",
+      "data_date": "20261103",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261103/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "1a1fe798297171f6f43f6524610c1d3de54deb74b5d4d1d1f4ec22a4c59b3c4b",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261104",
+      "data_date": "20261104",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261104/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "12f93f526e7e06f00625b53f6e61a0ec1be01de9d2872d1a413e9a66bd539928",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261105",
+      "data_date": "20261105",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261105/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "9edc52ed3606b11e2476c47c8e77cd927608622b9f958d2574b04498d68e95d7",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261106",
+      "data_date": "20261106",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261106/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "8e50cf3a44771862e7d4e2d43e82fea91958ed1ef883de3ee965456411b6f54e",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261109",
+      "data_date": "20261109",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261109/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "0255568c847de4400584e62d61da174ff76043d75028f2c14177de0306c39ff1",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261110",
+      "data_date": "20261110",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261110/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "125c0bd7a4d37e3077e6876cefdcad5c7b16b3de0b85687bf72dbe69a971a300",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261112",
+      "data_date": "20261112",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261112/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "ac2f4e6e7f9d6147f98462439abd4f276d02bee8b491637d7731b54dca24386c",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261116",
+      "data_date": "20261116",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261116/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "8a274dfe84234e4a85dedeac4a47eda3e4d5e6cec1027907114d8a53c72dcc18",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261117",
+      "data_date": "20261117",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261117/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "f97452a2f7e06b1138521beb944d867d2cff99d1fb2b224ea54b6891cb855c95",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 19,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 19,
+        "auction_yesterday_ratio_pct": 19,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261118",
+      "data_date": "20261118",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261118/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "954c52af309118bd4786d2258cdd185c36e2e63c9891d1a6ad860694541d07f8",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 19,
+        "auction_volume": 20,
+        "auction_unmatched": 19,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    },
+    {
+      "capture_folder": "20261119",
+      "data_date": "20261119",
+      "row_count": 20,
+      "raw_fuyao_path": "docs/field_verification/20261119/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "d7d14f5e10a043dc12e95fd02c100c30f41111f650d857b6c68c19999acbe588",
+      "field_presence_counts": {
+        "last_price": 20,
+        "pre_close_price": 20,
+        "auction_amount": 20,
+        "auction_volume": 20,
+        "auction_unmatched": 20,
+        "auction_turnover_pct": 20,
+        "auction_yesterday_ratio_pct": 20,
+        "auction_volume_ratio": 20,
+        "float_market_cap": 20
+      }
+    }
+  ],
+  "csv_path": "docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv",
+  "csv_sha256_lf": "0e0aa9c5d99b957691cbe803f1bf7959ca3e0569bb7e3f6e6696657d8b43a0f3",
+  "date_witness_manifest": "docs/field_verification/research/20261123_fuyao_auction_batch_date_witness.json",
+  "date_witness_manifest_sha256_lf": "4da97e8cece7ab5bf9e64aec3f9f43d055481354d4825c6586174e4c1a05134c"
+}

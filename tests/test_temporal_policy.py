@@ -38,6 +38,49 @@ def test_daily_and_unclassified_fields_require_source_confirmed_date():
     assert TP.l1_date_eligible(daily, {"phase": "closed", "as_of_date_origin": "source_as_of"})
 
 
+def test_audited_batch_value_witness_confirms_only_its_proven_date():
+    witness = {
+        "validated": True,
+        "date": "20261119",
+        "item_count": 20,
+        "target_anchor_field_id": "fuyao.auction_final.open_price",
+        "witness_field_id": "sina[1]",
+        "witness_date_field_id": "sina[30]",
+        "evidence_file": "research/audit.json",
+        "evidence_sha256": "a" * 64,
+    }
+    info = {
+        "temporal_class": "daily_market",
+        "vals": {("600000", "T:20261119"): 10.0},
+        "sample_meta": {
+            ("600000", "T:20261119"): {
+                "phase": "closed",
+                "as_of_date": "20261119",
+                "as_of_date_origin": "audited_batch_value_date_witness",
+                "audited_batch_date_witness": witness,
+            }
+        },
+    }
+
+    assert TP.l1_date_eligible(info, info["sample_meta"][("600000", "T:20261119")])
+    evidence = TP.relation_date_evidence(info, info, {"T:20261119"})
+    assert evidence["alignment_status"] == "audited_batch_dates_inferred"
+    assert evidence["left"]["date_status"] == "audited_batch_date_inferred"
+
+    wrong_date = {
+        **info["sample_meta"][("600000", "T:20261119")],
+        "as_of_date": "20261120",
+    }
+    assert not TP.l1_date_eligible(info, wrong_date)
+
+    malformed_witness = {**witness, "evidence_sha256": "not-a-hash"}
+    malformed_metadata = {
+        **info["sample_meta"][("600000", "T:20261119")],
+        "audited_batch_date_witness": malformed_witness,
+    }
+    assert not TP.l1_date_eligible(info, malformed_metadata)
+
+
 def test_periodic_fields_need_a_value_level_effective_date():
     info = {"temporal_class": "periodic_or_event"}
     base = {"phase": "closed", "as_of_date_origin": "source_as_of"}

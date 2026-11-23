@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "policy_version": "2026-11-23-kpl-event-date-witness",
+  "policy_version": "2026-11-23-audited-batch-value-date-witness",
   "default_class": "unclassified",
   "classes": {
     "intraday_sensitive": "盘中或每日变化的敏感行情字段；L1 必须有明确来源日期且样本阶段已收盘。",
-    "daily_market": "按交易日变化的行情字段；L1 必须有明确来源日期，或由已验证的同源同记录日期锚确认；不能用目标数据日或目录日期代替。",
+    "daily_market": "按交易日变化的行情字段；L1 必须有明确来源日期，或由已验证的同源行日期锚、已审计的同响应批次值日期见证确认；不能仅用目标数据日或目录日期代替。",
     "periodic_or_event": "按报告期、生效日或事件日期变化；必须存在字段值自身的有效日期证据。",
     "slow_changing": "低频变化字段；可用跨源多日样本确认语义关系，但未确认的来源日期仍保持未知。",
     "static_reference": "稳定参考字段；可用跨源多日样本确认语义关系，但不据此确认样本新鲜度。",
-    "unclassified": "没有逐源分类的保守默认值；L1 必须有明确来源日期，或由已验证的同源同记录日期锚确认。"
+    "unclassified": "没有逐源分类的保守默认值；L1 必须有明确来源日期，或由已验证的同源行日期锚、已审计的同响应批次值日期见证确认。"
   },
   "entries": [
     {
@@ -567,6 +567,33 @@
       "unit": "YYYYMMDD（整数）",
       "meaning_contains": "当前 Ulist239 行情记录对应的交易日期",
       "reason": "逐源注册表已验证 f297 为该证券当前 Ulist239 行情记录的交易日期；仅对同一证券、同一 Ulist 行及同一碰撞交易日键的字段继承日期。必须与样本来源日期及已有 f124 行时间戳一致；冲突或日期不一致时不授予日期资格。"
+    }
+  ],
+  "audited_batch_value_witnesses": [
+    {
+      "source": "同花顺-fuyao",
+      "runtime_source": "fuyao",
+      "target_date_anchor_code": "auction_final.open_price",
+      "eligible_subpaths": [
+        "auction_final"
+      ],
+      "witness_source": "新浪(hq.sinajs)",
+      "witness_runtime_source": "sina",
+      "witness_code": "[1]",
+      "witness_date_code": "[30]",
+      "evidence_file": "research/20261123_fuyao_auction_batch_date_witness.json",
+      "evidence_sha256": "4da97e8cece7ab5bf9e64aec3f9f43d055481354d4825c6586174e4c1a05134c",
+      "min_batch_records": 20,
+      "target_raw_path_key": "raw_fuyao_path",
+      "target_raw_sha256_key": "raw_fuyao_sha256_lf",
+      "witness_raw_path_key": "raw_sina_path",
+      "witness_raw_sha256_key": "raw_sina_sha256_lf",
+      "meta_sha256_key": "meta_sha256_lf",
+      "exact_column": "same_day_open_exact",
+      "date_column": "sina_date_30",
+      "unique_column": "open_batch_unique_data_date",
+      "candidate_dates_column": "open_batch_candidate_dates",
+      "reason": "仅对证据文件列出的原始哈希完全一致的 19 个完整 final 竞价响应批次启用。每批 20/20 个 Fuyao auction_final.open_price 与独立来源新浪 [1] 精确一致，新浪同记录 [30] 日期均为目标交易日；仅 open_price 锚的全批历史日期候选在 19/19 批次唯一。其他字段只继承同一 auction_final 响应批次的观测日；不采用响应组装时间戳，不外推到未审计批次、其他端点或财报/事件业务日期。"
     }
   ],
   "cross_source_value_witnesses": [

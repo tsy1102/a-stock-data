@@ -18,7 +18,7 @@
 
    `etf` 是复合来源：`raw_etf.json` 中 `etf_sh[].date` 是上交所按日归档日期，当前采集器的 `etf_sz[].date` 是深交所“当前规模”列的统计日期；两者可不同，碰撞和覆盖按每条记录的 `date` 归日，不用目录名或单个来源级日期替代。2026-11-20 日期修正前的 SZ 行取页面 `metadata.subname`，缺少列头日期依据，不能作为 `shares_10k` 的来源日期；只有带 `__source_meta__.date_basis=szse_current_scale_column_header` 的 SZ 行才进入日期碰撞，详情见[裁决](adjudications/20261120_szse_etf_scale_data_date.md)。
 
-   新浪行情批次的来源日期从每条证券记录的 `[30]` 日期推得，腾讯行情批次从 `[30]` 时间戳推得；只有全部记录解析合法且批次日期唯一时才生成来源级 `as_of_date`。规则只覆盖对应行情端点及同批行情字段，不传播到其他端点的独立日期域。批次证据见[新浪日期锚审计](research/20261122_sina_batch_date_anchor_audit.md)和[腾讯日期锚审计](research/20261122_tencent_batch_date_anchor_audit.md)。
+   新浪行情批次的来源日期从每条证券记录的 `[30]` 日期推得，腾讯行情批次从 `[30]` 时间戳推得；只有全部记录解析合法且批次日期唯一时才生成来源级 `as_of_date`。Fuyao `auction_final` 另有一项受限历史规则：仅当逐批 `raw_fuyao.json`、`raw_sina.json`、`meta.json` 哈希均与审计清单一致，且完整 20 股开盘价锚及全批唯一日期检查通过时，才为精确的 `auction_final` 子树继承观测日期；其他子接口、未来批次和财报/事件日期不适用。证据见[新浪日期锚审计](research/20261122_sina_batch_date_anchor_audit.md)、[腾讯日期锚审计](research/20261122_tencent_batch_date_anchor_audit.md)和[Fuyao 竞价日期审计](research/20261123_fuyao_auction_batch_date_witness.md)。
 
    同一数据日重跑默认跳过完整来源，只补采缺失或不完整来源并保留既有成功样本。`--only <source>` 会重新请求指定来源，`--overwrite` 会强制刷新所选范围；重采前备份该来源 raw 和 `meta.json`。旧 `meta.json` 缺少逐源时间时，按 `legacy_global_metadata` 处理，不推断精确请求时刻。需要检查历史来源日期对应关系时运行：
 

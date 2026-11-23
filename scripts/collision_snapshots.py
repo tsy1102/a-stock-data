@@ -53,6 +53,7 @@ def _flatten(
     *,
     include_structured_values=False,
     path_prefix=None,
+    eligible_ineligible_subpaths=(),
 ):
     """把单只股票的原始记录扁平化为 (fid, value) 列表，写入 out。"""
     if not isinstance(rec, dict):
@@ -60,6 +61,7 @@ def _flatten(
     if rec.get("__error__") or "__skipped__" in rec:
         return
     field_prefix = f"{source}.{path_prefix}." if path_prefix else f"{source}."
+    eligible_ineligible_subpaths = set(eligible_ineligible_subpaths)
 
     # 形态 A：fN 字典（ulist239 / push2_full / push2）
     data = rec.get("data")
@@ -109,7 +111,12 @@ def _flatten(
             continue
         if isinstance(subv, dict):
             source_meta = subv.get("__source_meta__")
-            if isinstance(source_meta, dict) and source_meta.get("collision_eligible") is False:
+            subpath = f"{path_prefix}.{sub}" if path_prefix else sub
+            if (
+                isinstance(source_meta, dict)
+                and source_meta.get("collision_eligible") is False
+                and subpath not in eligible_ineligible_subpaths
+            ):
                 continue
             for k, v in subv.items():
                 if not isinstance(k, str) or k.startswith("__"):
@@ -437,17 +444,27 @@ def load_snapshots(
         scheme = doc.get("scheme")
         auction_meta = doc.get("auction_snapshot_meta")
         if isinstance(auction_meta, dict) and auction_meta.get("collision_eligible") is False:
-            diagnostic = (
-                f"{snapshot.folder}/{snapshot.source}/stocks.*.auction_final: "
-                f"竞价子树已排除；reason={auction_meta.get('exclusion_reason') or 'unspecified'}，"
-                f"data_status={auction_meta.get('data_status')!r}，"
-                f"source_data_date={auction_meta.get('source_data_date')!r}，"
-                f"source_data_date_basis={auction_meta.get('source_data_date_basis')!r}，"
-                f"response_timestamp={auction_meta.get('response_timestamp')!r}，"
-                f"response_timestamp_date={auction_meta.get('response_timestamp_date')!r}"
-                "（仅响应组装时间，不作为数据日期），"
-                f"记录数={auction_meta.get('item_count', 0)}"
-            )
+            batch_witness = snapshot.batch_date_witness
+            if isinstance(batch_witness, dict) and batch_witness.get("validated") is True:
+                diagnostic = (
+                    f"{snapshot.folder}/{snapshot.source}/stocks.*.auction_final: "
+                    "来源原始 collision_eligible=false；按已审计批次日期见证仅开放精确竞价子树，"
+                    f"date={batch_witness.get('date')}，items={batch_witness.get('item_count')}，"
+                    f"evidence={batch_witness.get('evidence_file')}，"
+                    "响应组装时间戳不作为数据日期"
+                )
+            else:
+                diagnostic = (
+                    f"{snapshot.folder}/{snapshot.source}/stocks.*.auction_final: "
+                    f"竞价子树已排除；reason={auction_meta.get('exclusion_reason') or 'unspecified'}，"
+                    f"data_status={auction_meta.get('data_status')!r}，"
+                    f"source_data_date={auction_meta.get('source_data_date')!r}，"
+                    f"source_data_date_basis={auction_meta.get('source_data_date_basis')!r}，"
+                    f"response_timestamp={auction_meta.get('response_timestamp')!r}，"
+                    f"response_timestamp_date={auction_meta.get('response_timestamp_date')!r}"
+                    "（仅响应组装时间，不作为数据日期），"
+                    f"记录数={auction_meta.get('item_count', 0)}"
+                )
             diagnostics.append(diagnostic)
         for path_prefix, container in _record_containers_with_paths(
             doc, snapshot.source, include_context=include_context
@@ -593,8 +610,23 @@ def load_snapshots(
                         if snapshot.source == "market_sources" and path_prefix == "kph_limit_ladder"
                         else path_prefix
                     ),
+                    eligible_ineligible_subpaths=(
+                        snapshot.batch_date_witness.get("eligible_subpaths", [])
+                        if isinstance(snapshot.batch_date_witness, dict)
+                        and snapshot.batch_date_witness.get("validated") is True
+                        else ()
+                    ),
                 )
                 for fid, value in pairs:
+                    field_sample_date_origin = sample_date_origin
+                    field_batch_witness = None
+                    batch_witness = snapshot.batch_date_witness
+                    if isinstance(batch_witness, dict) and batch_witness.get("validated") is True:
+                        for eligible_subpath in batch_witness.get("eligible_subpaths", []):
+                            if fid.startswith(f"{snapshot.source}.{eligible_subpath}."):
+                                field_sample_date_origin = "audited_batch_value_date_witness"
+                                field_batch_witness = batch_witness
+                                break
                     key = (code, day_key)
                     rank_key = (fid, key)
                     previous_rank = sample_ranks.get(rank_key)
@@ -614,7 +646,12 @@ def load_snapshots(
                         "capture_folder": snapshot.folder,
                         "capture_date": snapshot.capture_date.strftime("%Y%m%d"),
                         "as_of_date": sample_day.strftime("%Y%m%d"),
-                        "as_of_date_origin": sample_date_origin,
+                        "as_of_date_origin": field_sample_date_origin,
+                        **(
+                            {"audited_batch_date_witness": field_batch_witness}
+                            if field_batch_witness is not None
+                            else {}
+                        ),
                         "captured_at": (
                             snapshot.captured_at.isoformat(timespec="seconds")
                             if snapshot.captured_at

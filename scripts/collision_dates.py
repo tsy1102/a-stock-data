@@ -104,6 +104,7 @@ class Snapshot:
     record_count: int
     captured_at: datetime | None
     date_origin: str
+    batch_date_witness: dict[str, Any] | None = None
 
     @property
     def day_key(self) -> str:
@@ -695,6 +696,7 @@ def build_snapshot(
     source_capture_day = _source_capture_date(folder.meta, source, folder.capture_date)
     captured = _capture_datetime(folder.meta, source)
     sample_day: date | None
+    batch_date_witness = None
     if event:
         sample_day = source_capture_day
         source_map = folder.meta.get("sources")
@@ -707,10 +709,29 @@ def build_snapshot(
         domain = CALENDAR
     else:
         raw_day, origin = _source_as_of(folder.meta, document, source)
+        if source == "fuyao":
+            try:
+                from scripts import temporal_policy as TP
+
+                batch_date_witness = TP.resolve_audited_batch_value_date_witness(
+                    source,
+                    folder.name,
+                    path,
+                    folder.meta,
+                    folder.market_date,
+                    document,
+                )
+            except (OSError, TypeError, ValueError) as exc:
+                warnings.append(
+                    f"{folder.name}/{source}: 已审计批次日期见证未能验证，竞价子树保持排除: {exc}"
+                )
+        if batch_date_witness is not None:
+            sample_day = parse_date(batch_date_witness.get("date"))
+        else:
+            sample_day = parse_date(raw_day) if raw_day is not None else folder.market_date
         if source == "zhb" and raw_day is None:
             warnings.append(f"{folder.name}/zhb: 缺少 zhb_date as-of，快照跳过")
             return None, warnings
-        sample_day = parse_date(raw_day) if raw_day is not None else folder.market_date
         if sample_day is None:
             warnings.append(f"{folder.name}/{source}: 缺少可用行情 as_of_date，快照跳过")
             return None, warnings
@@ -785,6 +806,7 @@ def build_snapshot(
         record_count=record_count,
         captured_at=captured_at,
         date_origin=origin,
+        batch_date_witness=batch_date_witness,
     )
     return snapshot, warnings
 

@@ -22365,6 +22365,461 @@
         "schema_version": 1
       }
     },
+    "cc1_5a40db878242eb4c88ef7b2a6339d47ad6336c883392690c4e348a39db2d5af6": {
+      "current": {
+        "candidate_id": "cc1_5a40db878242eb4c88ef7b2a6339d47ad6336c883392690c4e348a39db2d5af6",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "d0cda06b581e3be832b1c57e15fb2d3f5b8a879c4ed50879e5e6f0577050875f",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261123/exploratory/20261123/fuyao_contract_fields/20261123_collision_report.json",
+            "sha256": "0105ea0ca7e0674530a6e43da611e48d8eb7f61ca770a00a03928dac2fcefc9a"
+          },
+          {
+            "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.md",
+            "sha256": "d838f83858b3405973e61f20fe63faa71359b9990000103b1eb022863f68e2ad"
+          },
+          {
+            "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.json",
+            "sha256": "22ef530a3c15db72c7a19e8a5abf7df7290bfbe7b69a2999dc2f34bc0f5f57b9"
+          },
+          {
+            "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.csv",
+            "sha256": "250c8b1cec7003efd10f4b39e167fdae7e216e1797afb77a1bebe7d5e32732a6"
+          },
+          {
+            "path": "https://fuyao.aicubes.cn/docs/api-reference/auction/",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/center/static/build/index.js",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/center/static/libs/miniquotechart2023.js",
+            "sha256": null
+          }
+        ],
+        "rationale": "仅拒绝 ulist239.f63 与 fuyao.auction_final.auction_amount 直接等值或固定单位倍率关系。日期合格样本为9个交易日、20只股票、180行，其中竞价金额有效配对177行；原值精确相等0/177，误差不超过1的仅2/177。中位比率2.79745且范围0.99993–30.92683；最佳固定倍率后的相对误差中位数31.32%、P90 67.34%。高相关仅作诊断。官方Fuyao字段表没有单位，且其响应示例的数量×开盘价与金额相乘关系和部分留存原样本的数量尺度存在冲突，故不据此判定单位。东方财富官方行情中心静态资源中 Ulist helper 使用动态字段列表；出现的f63字面量属于kamt/get、stock/fflow/kline/get和stock/kline/get，不是ulist.np/get的字段定义。该审阅不定义f63整体语义，不建立映射，也不修改注册表或主字典；f63继续保持未知。",
+        "reviewed_at": "2026-11-23T11:48:46+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_5a40db878242eb4c88ef7b2a6339d47ad6336c883392690c4e348a39db2d5af6",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "d0cda06b581e3be832b1c57e15fb2d3f5b8a879c4ed50879e5e6f0577050875f",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261123/exploratory/20261123/fuyao_contract_fields/20261123_collision_report.json",
+              "sha256": "0105ea0ca7e0674530a6e43da611e48d8eb7f61ca770a00a03928dac2fcefc9a"
+            },
+            {
+              "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.md",
+              "sha256": "d838f83858b3405973e61f20fe63faa71359b9990000103b1eb022863f68e2ad"
+            },
+            {
+              "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.json",
+              "sha256": "22ef530a3c15db72c7a19e8a5abf7df7290bfbe7b69a2999dc2f34bc0f5f57b9"
+            },
+            {
+              "path": "research/20261123_ulist239_f63_fuyao_auction_contract_audit.csv",
+              "sha256": "250c8b1cec7003efd10f4b39e167fdae7e216e1797afb77a1bebe7d5e32732a6"
+            },
+            {
+              "path": "https://fuyao.aicubes.cn/docs/api-reference/auction/",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/center/static/build/index.js",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/center/static/libs/miniquotechart2023.js",
+              "sha256": null
+            }
+          ],
+          "rationale": "仅拒绝 ulist239.f63 与 fuyao.auction_final.auction_amount 直接等值或固定单位倍率关系。日期合格样本为9个交易日、20只股票、180行，其中竞价金额有效配对177行；原值精确相等0/177，误差不超过1的仅2/177。中位比率2.79745且范围0.99993–30.92683；最佳固定倍率后的相对误差中位数31.32%、P90 67.34%。高相关仅作诊断。官方Fuyao字段表没有单位，且其响应示例的数量×开盘价与金额相乘关系和部分留存原样本的数量尺度存在冲突，故不据此判定单位。东方财富官方行情中心静态资源中 Ulist helper 使用动态字段列表；出现的f63字面量属于kamt/get、stock/fflow/kline/get和stock/kline/get，不是ulist.np/get的字段定义。该审阅不定义f63整体语义，不建立映射，也不修改注册表或主字典；f63继续保持未知。",
+          "reviewed_at": "2026-11-23T11:48:46+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "ulist239"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9331,
+              "leave_one_out_min": 0.8748,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.895,
+              "spearman": 0.9758
+            },
+            {
+              "median_abs_pearson": 0.8931,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261102",
+                "T:20261103",
+                "T:20261104",
+                "T:20261105",
+                "T:20261106",
+                "T:20261109",
+                "T:20261110",
+                "T:20261117",
+                "T:20261118"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.3384
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9905
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9559
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9517
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6581
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8152
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8924
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6572
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9782
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7429
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8938
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9475
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8237
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9955
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9184
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7145
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9144
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8144
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8977
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117"
+                  ],
+                  "pearson": 0.8662
+                }
+              ],
+              "stocks": 20
+            }
+          ],
+          "right": "fuyao.auction_final.auction_amount",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 177,
+          "sample_dates": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
     "cc1_5babd925b73e413c3f48f0564b57f96cfada6c9cca210a191bea9cdd0b299f25": {
       "current": {
         "candidate_id": "cc1_5babd925b73e413c3f48f0564b57f96cfada6c9cca210a191bea9cdd0b299f25",
@@ -64695,5 +65150,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-22T19:22:40+08:00"
+  "updated_at": "2026-11-23T11:48:46+08:00"
 }

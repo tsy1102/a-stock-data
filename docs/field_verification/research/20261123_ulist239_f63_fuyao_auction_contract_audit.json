@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-23",
+  "purpose": "Review whether Eastmoney Ulist239 f63 is identical or a fixed-unit-scaled form of the official Fuyao auction_amount field; do not infer f63 semantics from correlation.",
+  "capture_retention_floor": "20261015",
+  "date_qualification": {
+    "method": "Use the prior hash-pinned Fuyao audited batch value-date witness; qualify Ulist rows only when verified f297 or verified f124 Beijing date equals the capture data date.",
+    "fuyao_date_witness_path": "docs/field_verification/research/20261123_fuyao_auction_batch_date_witness.json",
+    "fuyao_date_witness_sha256_lf": "4da97e8cece7ab5bf9e64aec3f9f43d055481354d4825c6586174e4c1a05134c",
+    "source_date_fields": [
+      "东财-ulist239(np/get)::f297",
+      "东财-ulist239(np/get)::f124"
+    ],
+    "cross_source_date_inference_for_business_dates": false
+  },
+  "collision_candidate": {
+    "candidate_id": "cc1_5a40db878242eb4c88ef7b2a6339d47ad6336c883392690c4e348a39db2d5af6",
+    "left": "ulist239.f63",
+    "right": "fuyao.auction_final.auction_amount",
+    "collision_report_path": "docs/field_verification/collision_research_20261123/exploratory/20261123/fuyao_contract_fields/20261123_collision_report.json",
+    "collision_report_sha256": "0105ea0ca7e0674530a6e43da611e48d8eb7f61ca770a00a03928dac2fcefc9a",
+    "reported_sample_count": 177,
+    "reported_review_disposition_before_review": "unreviewed"
+  },
+  "official_contract": {
+    "authority": "同花顺金融数据 API 官方文档",
+    "url": "https://fuyao.aicubes.cn/docs/api-reference/auction/",
+    "endpoint": "GET /api/a-share/auction/snapshot",
+    "field_definitions": {
+      "auction_amount": "竞价成交额",
+      "auction_volume": "竞价成交量",
+      "open_price": "开盘价"
+    },
+    "unit_boundary": "字段表未列这些字段的数量/金额单位；官方响应示例的 auction_volume/open_price/auction_amount 数值满足 amount=volume*price。"
+  },
+  "sample_batches": [
+    {
+      "capture_folder": "20261102",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261102/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "d477719a1d50f32f9605f33bb9284a7067d194859774114b0b37e04300b1bcdf",
+      "raw_fuyao_path": "docs/field_verification/20261102/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "470a2cccf41f790e7aaf357c469c15e840978ec6495a02859116bd22317821cc",
+      "meta_path": "docs/field_verification/20261102/meta.json",
+      "meta_sha256_lf": "569955a6f0388bc0be8329d88d56f2d1d7aec366dbc3a12f79cd6619c6cd5b8b"
+    },
+    {
+      "capture_folder": "20261103",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261103/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "30cf03ccb8e49ca48504fd7c2b149e7a4192e1fbe873a2b8541513aea5820b9a",
+      "raw_fuyao_path": "docs/field_verification/20261103/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "1a1fe798297171f6f43f6524610c1d3de54deb74b5d4d1d1f4ec22a4c59b3c4b",
+      "meta_path": "docs/field_verification/20261103/meta.json",
+      "meta_sha256_lf": "b42ccfbd97f52bbc49008808eaeaea25eba2bef98c6dc35a4232d1e621dcb557"
+    },
+    {
+      "capture_folder": "20261104",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261104/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "76715e2752139122d83f42853e0324c292201a834b84a562857d6403f5efc9c2",
+      "raw_fuyao_path": "docs/field_verification/20261104/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "12f93f526e7e06f00625b53f6e61a0ec1be01de9d2872d1a413e9a66bd539928",
+      "meta_path": "docs/field_verification/20261104/meta.json",
+      "meta_sha256_lf": "4b7e1b3a79d51b28b7e8678607e972a869f90be86e1f1805c646823c6d544c06"
+    },
+    {
+      "capture_folder": "20261105",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261105/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "78d7eccbb3065b233e37f5c0932e67784e3867866b2aafa6744dc36c6100f8e9",
+      "raw_fuyao_path": "docs/field_verification/20261105/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "9edc52ed3606b11e2476c47c8e77cd927608622b9f958d2574b04498d68e95d7",
+      "meta_path": "docs/field_verification/20261105/meta.json",
+      "meta_sha256_lf": "61e998cf19586a94619c55f92a35baadf38c563b2b4cdf9db6a354ce9c448651"
+    },
+    {
+      "capture_folder": "20261106",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261106/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "0b0aa8339634f1867f84c212407ab5413e4820155695d97caafd9103d627acde",
+      "raw_fuyao_path": "docs/field_verification/20261106/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "8e50cf3a44771862e7d4e2d43e82fea91958ed1ef883de3ee965456411b6f54e",
+      "meta_path": "docs/field_verification/20261106/meta.json",
+      "meta_sha256_lf": "daf316793e27f74347a7f1747f209cd63feeed832a464d986cfabde3b30a2f0b"
+    },
+    {
+      "capture_folder": "20261109",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261109/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "08bd34e9cfc2a19089e717cd80008d0a70088e60937e57718248e9b31ff8332f",
+      "raw_fuyao_path": "docs/field_verification/20261109/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "0255568c847de4400584e62d61da174ff76043d75028f2c14177de0306c39ff1",
+      "meta_path": "docs/field_verification/20261109/meta.json",
+      "meta_sha256_lf": "a5cc30d7c7475764b3fccdfa6354794f10aa3310e4cc5af1a52afd8f5b20a427"
+    },
+    {
+      "capture_folder": "20261110",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261110/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "25497a4efec1372f5d6fb1af87f25ae792e44b8954339e356a72c4d203db2f23",
+      "raw_fuyao_path": "docs/field_verification/20261110/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "125c0bd7a4d37e3077e6876cefdcad5c7b16b3de0b85687bf72dbe69a971a300",
+      "meta_path": "docs/field_verification/20261110/meta.json",
+      "meta_sha256_lf": "4d124388c5824722cf09a157b1d2a610f06b7d3dad9ddbf8fd9c1a08583eb3b5"
+    },
+    {
+      "capture_folder": "20261117",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261117/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "fb52140dd18d2c010f1ea85299762534c55804e54568ca8b2dc26852bd0ffffd",
+      "raw_fuyao_path": "docs/field_verification/20261117/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "f97452a2f7e06b1138521beb944d867d2cff99d1fb2b224ea54b6891cb855c95",
+      "meta_path": "docs/field_verification/20261117/meta.json",
+      "meta_sha256_lf": "58455f1f66177b053234fc12f42e2a3fb3d077b8afd3ae6e23b80844ace36c1f"
+    },
+    {
+      "capture_folder": "20261118",
+      "matched_stock_records": 20,
+      "raw_ulist239_path": "docs/field_verification/20261118/raw_ulist239.json",
+      "raw_ulist239_sha256_lf": "c8ac75aaf6f3a1cb926089555f490ff5f3ecc09151188e0619993d7e872a611c",
+      "raw_fuyao_path": "docs/field_verification/20261118/raw_fuyao.json",
+      "raw_fuyao_sha256_lf": "954c52af309118bd4786d2258cdd185c36e2e63c9891d1a6ad860694541d07f8",
+      "meta_path": "docs/field_verification/20261118/meta.json",
+      "meta_sha256_lf": "d7ae7ee24ffaff43986d2b4a0461b5b49820076ba3c7ebfc293adf5027af4d7a"
+    }
+  ],
+  "metrics": {
+    "paired_records": 180,
+    "paired_dates": [
+      "20261102",
+      "20261103",
+      "20261104",
+      "20261105",
+      "20261106",
+      "20261109",
+      "20261110",
+      "20261117",
+      "20261118"
+    ],
+    "paired_stock_count": 20,
+    "f63_nonnull_count": 180,
+    "auction_amount_nonnull_count": 177,
+    "auction_amount_missing_count": 3,
+    "f63_auction_amount_exact_count": 0,
+    "f63_auction_amount_within_1_count": 2,
+    "f63_over_auction_amount": {
+      "min": 0.9999332135318703,
+      "p10": 1.3699158223413608,
+      "median": 2.797446967040673,
+      "p90": 8.565591247272481,
+      "max": 30.926829268292682,
+      "median_within_stock_cv": 0.5919195808071371
+    },
+    "best_constant_multiplier_diagnostic": {
+      "f63_approx_multiplier_times_auction_amount": 2.797446967040673,
+      "relative_error_median": 0.3131963957444494,
+      "relative_error_p90": 0.6733787525181966,
+      "relative_error_max": 0.9095462731477384
+    },
+    "correlation_diagnostic_only": {
+      "pearson": 0.8950256591838529,
+      "spearman": 0.9757795052024723
+    },
+    "same_raw_value_checks_against_official_auction_fields": {
+      "fuyao_auction_amount": {
+        "pairs": 177,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 2,
+        "pearson_diagnostic_only": 0.8950256591838529
+      },
+      "fuyao_auction_volume": {
+        "pairs": 179,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.4172855846176803
+      },
+      "fuyao_auction_unmatched": {
+        "pairs": 177,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": -0.3074953327924277
+      },
+      "fuyao_auction_turnover_pct": {
+        "pairs": 179,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.3674875064790717
+      },
+      "fuyao_auction_yesterday_ratio_pct": {
+        "pairs": 179,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.34836224754652545
+      },
+      "fuyao_auction_volume_ratio": {
+        "pairs": 180,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": -0.03836343096890476
+      },
+      "fuyao_auction_price": {
+        "pairs": 177,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.7353099892921865
+      },
+      "fuyao_auction_pct": {
+        "pairs": 177,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": -0.08320178412553514
+      },
+      "fuyao_last_price": {
+        "pairs": 180,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.7382919160005985
+      },
+      "fuyao_pre_close_price": {
+        "pairs": 180,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.7334875375818442
+      },
+      "fuyao_float_market_cap": {
+        "pairs": 180,
+        "exact_numeric_equal_count": 0,
+        "within_1_raw_numeric_count": 0,
+        "pearson_diagnostic_only": 0.5654558151526065
+      }
+    },
+    "fuyao_amount_volume_price_scale_diagnostic": {
+      "pairs": 177,
+      "amount_eq_volume_times_open_price_times_100_exact_cent_count": 155,
+      "within_1_yuan_count": 176,
+      "max_abs_error_yuan": 4.0,
+      "amount_eq_volume_times_open_price_exact_cent_count": 0,
+      "official_docs_example": {
+        "auction_volume": 12600,
+        "open_price": 1421.0,
+        "auction_amount": 17904600,
+        "formula_scale": "amount = volume * price"
+      },
+      "unit_decision": "unresolved_due_to_conflict_between_retained_sample_scaling_and_official_example"
+    }
+  },
+  "limitations": [
+    "The result rejects direct value equivalence and a fixed unit multiplier between Ulist f63 and Fuyao auction_amount; it does not identify what f63 means.",
+    "High correlation is diagnostic only and can arise from stock size or shared activity; no same-number source mapping is created.",
+    "The retained Fuyao sample's auction_volume scaling is inconsistent with the official docs example; its unit remains unresolved and is not used to reinterpret f63."
+  ],
+  "row_csv_path": "docs/field_verification/research/20261123_ulist239_f63_fuyao_auction_contract_audit.csv",
+  "row_csv_sha256_lf": "250c8b1cec7003efd10f4b39e167fdae7e216e1797afb77a1bebe7d5e32732a6"
+}

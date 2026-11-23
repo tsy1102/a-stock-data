@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_5a40db878242eb4c88ef7b2a6339d47ad6336c883392690c4e348a39db2d5af6",
+  "disposition": "rejected",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-11-23T11:48:46+08:00",
+  "rationale": "仅拒绝 ulist239.f63 与 fuyao.auction_final.auction_amount 直接等值或固定单位倍率关系。日期合格样本为9个交易日、20只股票、180行，其中竞价金额有效配对177行；原值精确相等0/177，误差不超过1的仅2/177。中位比率2.79745且范围0.99993–30.92683；最佳固定倍率后的相对误差中位数31.32%、P90 67.34%。高相关仅作诊断。官方Fuyao字段表没有单位，且其响应示例的数量×开盘价与金额相乘关系和部分留存原样本的数量尺度存在冲突，故不据此判定单位。东方财富官方行情中心静态资源中 Ulist helper 使用动态字段列表；出现的f63字面量属于kamt/get、stock/fflow/kline/get和stock/kline/get，不是ulist.np/get的字段定义。该审阅不定义f63整体语义，不建立映射，也不修改注册表或主字典；f63继续保持未知。",
+  "evidence_refs": [
+    "collision_research_20261123/exploratory/20261123/fuyao_contract_fields/20261123_collision_report.json",
+    "research/20261123_ulist239_f63_fuyao_auction_contract_audit.md",
+    "research/20261123_ulist239_f63_fuyao_auction_contract_audit.json",
+    "research/20261123_ulist239_f63_fuyao_auction_contract_audit.csv",
+    "https://fuyao.aicubes.cn/docs/api-reference/auction/",
+    "https://quote.eastmoney.com/center/static/build/index.js",
+    "https://quote.eastmoney.com/center/static/libs/miniquotechart2023.js"
+  ],
+  "duplicate_of": null
+}

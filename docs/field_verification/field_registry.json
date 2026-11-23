@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 288,
+      "aggregate_status_scope_unresolved": 287,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -17,7 +17,7 @@
       "manual_collision_adjudication": 29,
       "manual_public_data_semantic_adjudication": 114,
       "manual_semantic_retraction": 4,
-      "matched": 735,
+      "matched": 732,
       "mixed_source_capture_passthrough": 19,
       "not_field_schema_token": 21,
       "official_contract": 31,
@@ -31,9 +31,9 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 842,
-      "verified": 1801,
-      "verified_by_empirical_addendum": 255,
+      "unverified": 841,
+      "verified": 1802,
+      "verified_by_empirical_addendum": 259,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -17815,18 +17815,20 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f185",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "unit_incomplete"
       ]
     },
     {
@@ -17837,18 +17839,20 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f186",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "unit_incomplete"
       ]
     },
     {
@@ -17859,18 +17863,20 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f187",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "unit_incomplete"
       ]
     },
     {
@@ -19328,15 +19334,17 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "unverified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
+        "canonical_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -49665,6 +49673,16 @@
     ],
     "clist_associated_security_market_id": [
       "东财-clist"
+    ],
+    "H 股上一香港交易日收盘价": [
+      "东财-push2(stock/get)",
+      "东财-ulist239(np/get)"
+    ],
+    "H 股最新价": [
+      "东财-ulist239(np/get)"
+    ],
+    "H 股当日涨跌幅": [
+      "东财-ulist239(np/get)"
     ]
   },
   "mappings": [
@@ -50649,8 +50667,8 @@
         "source": "东财-push2",
         "code": "f250"
       },
-      "relation": "cross_number_diff_meaning",
-      "evidence": "ulist_push2_align.md"
+      "relation": "same_number_same_meaning",
+      "evidence": "20261123_eastmoney_hshare_quote_semantics.md (9/9 dated pairs)"
     },
     {
       "from": {
@@ -59399,798 +59417,6 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "push2_full",
-        "code": "f250"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f185"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f186"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f187"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f188"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f189"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f193"
-      },
-      "to": {
-        "source": "ulist239",
-        "code": "f191"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
     },
     {
       "from": {
@@ -203323,13 +202549,15 @@
       "code": "f250",
       "identity": "东财-push2(stock/get)::f250",
       "path": "f250",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "H 股上一香港交易日收盘价",
+      "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。",
+      "unit": "HKD/股",
+      "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+      "sections": [
+        "2026-11-23 农业银行 H 股关联报价来源内实证"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -203339,10 +202567,61 @@
           "东财-ulist239(np/get)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "eastmoney-push2-f250-hk-prev-close"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+        "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+        "sample": {
+          "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-push2(stock/get)::f250；同证券同日、同记录观测日期核验。",
+          "comparison_count": 15,
+          "matched_count": 15,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+          "canonical": "H 股上一香港交易日收盘价",
+          "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。",
+          "unit": "HKD/股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "eastmoney-push2-f250-hk-prev-close",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股上一香港交易日收盘价",
+              "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。",
+              "unit": "HKD/股"
+            }
+          },
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-push2(stock/get)::f250；同证券同日、同记录观测日期核验。",
+            "comparison_count": 15,
+            "matched_count": 15,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f250",
@@ -203356,7 +202635,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eastmoney-push2-f250-hk-prev-close",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_eastmoney_hshare_quote_empirical_semantics.json",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股上一香港交易日收盘价",
+              "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。",
+              "unit": "HKD/股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。15 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-push2(stock/get)::f250；同证券同日、同记录观测日期核验。",
+            "comparison_count": 15,
+            "matched_count": 15,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",
@@ -225125,15 +224448,16 @@
       "code": "f185",
       "identity": "东财-ulist239(np/get)::f185",
       "path": "f185",
-      "canonical": "f185",
-      "meaning": "",
-      "unit": "",
+      "canonical": "H 股上一香港交易日收盘价",
+      "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。",
+      "unit": "HKD/股",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-23 农业银行 H 股关联报价来源内实证"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -225148,7 +224472,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "eastmoney-ulist-f185-hk-prev-close"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+        "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+        "sample": {
+          "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f185；同证券同日、同记录观测日期核验。",
+          "comparison_count": 9,
+          "matched_count": 9,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1
+        }
       },
       "reference_evidence": [
         {
@@ -225158,6 +224498,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+          "canonical": "H 股上一香港交易日收盘价",
+          "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。",
+          "unit": "HKD/股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "eastmoney-ulist-f185-hk-prev-close",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "metadata_change": {
+            "before": {
+              "canonical": "f185",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股上一香港交易日收盘价",
+              "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。",
+              "unit": "HKD/股"
+            }
+          },
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f185；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -225173,22 +224547,67 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eastmoney-ulist-f185-hk-prev-close",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_eastmoney_hshare_quote_empirical_semantics.json",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f185",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f185",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股上一香港交易日收盘价",
+              "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。",
+              "unit": "HKD/股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f185；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
       "code": "f186",
       "identity": "东财-ulist239(np/get)::f186",
       "path": "f186",
-      "canonical": "f186",
-      "meaning": "",
-      "unit": "",
+      "canonical": "H 股最新价",
+      "meaning": "该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。",
+      "unit": "HKD/股",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-23 农业银行 H 股关联报价来源内实证"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -225203,7 +224622,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "eastmoney-ulist-f186-hk-latest-price"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+        "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+        "sample": {
+          "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f186；同证券同日、同记录观测日期核验。",
+          "comparison_count": 9,
+          "matched_count": 9,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1
+        }
       },
       "reference_evidence": [
         {
@@ -225213,6 +224648,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+          "canonical": "H 股最新价",
+          "meaning": "该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。",
+          "unit": "HKD/股",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "eastmoney-ulist-f186-hk-latest-price",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "metadata_change": {
+            "before": {
+              "canonical": "f186",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股最新价",
+              "meaning": "该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。",
+              "unit": "HKD/股"
+            }
+          },
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f186；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -225228,22 +224697,67 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eastmoney-ulist-f186-hk-latest-price",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_eastmoney_hshare_quote_empirical_semantics.json",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f186",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f186",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股最新价",
+              "meaning": "该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。",
+              "unit": "HKD/股"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f186；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
       "code": "f187",
       "identity": "东财-ulist239(np/get)::f187",
       "path": "f187",
-      "canonical": "f187",
-      "meaning": "",
-      "unit": "",
+      "canonical": "H 股当日涨跌幅",
+      "meaning": "该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "2026-11-23 农业银行 H 股关联报价来源内实证"
       ],
       "status": "verified",
-      "status_resolution": "matched",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -225258,7 +224772,23 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "eastmoney-ulist-f187-hk-change-pct"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+        "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+        "sample": {
+          "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f187；同证券同日、同记录观测日期核验。",
+          "comparison_count": 9,
+          "matched_count": 9,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1
+        }
       },
       "reference_evidence": [
         {
@@ -225268,6 +224798,40 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+          "canonical": "H 股当日涨跌幅",
+          "meaning": "该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。",
+          "unit": "%",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "eastmoney-ulist-f187-hk-change-pct",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "metadata_change": {
+            "before": {
+              "canonical": "f187",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股当日涨跌幅",
+              "meaning": "该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。",
+              "unit": "%"
+            }
+          },
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f187；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -225283,7 +224847,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "eastmoney-ulist-f187-hk-change-pct",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_eastmoney_hshare_quote_empirical_semantics.json",
+          "evidence_file": "adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+          "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "matched",
+          "previous_metadata": {
+            "canonical": "f187",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f187",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "H 股当日涨跌幅",
+              "meaning": "该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。",
+              "unit": "%"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+          "sample": {
+            "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f187；同证券同日、同记录观测日期核验。",
+            "comparison_count": 9,
+            "matched_count": 9,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

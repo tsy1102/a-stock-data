@@ -6,13 +6,13 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1889 个字段 / 2108 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1892 个字段 / 2112 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
-**B.1 多来源字段（177 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
+**B.1 多来源字段（178 个；表示登记了多个来源标签，不等同于独立来源，也不是运行时 fallback 表）**
 
 | 字段 | 登记来源标签数 | 来源标签（按风险参考顺序） |
 |:---|:---:|:---|
@@ -193,8 +193,9 @@
 | [24] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [26] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
 | [28] | 2 | 新浪(hq.sinajs)、腾讯(qt.gtimg) |
+| H 股上一香港交易日收盘价 | 2 | 东财-push2(stock/get)、东财-ulist239(np/get) |
 
-**B.2 单来源关系字段（1712 个；仅登记一个来源标签）**
+**B.2 单来源关系字段（1714 个；仅登记一个来源标签）**
 
 - **ZHB（85）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、shareholder_change_date、shareholder_change_shares_wan、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market、stat2.zt_seal_amount
   - … 其余 25 个见正文
@@ -228,7 +229,7 @@
 - **东财-event_dc(可转债列表)（29）**：bond_coupon_rate_current_interest_year_pct、convertible_bond_approval_year、convertible_bond_conversion_premium_ratio、convertible_bond_conversion_status、convertible_bond_conversion_value、convertible_bond_credit_rating、convertible_bond_current_conversion_price、convertible_bond_current_market_price、convertible_bond_equity_registration_date、convertible_bond_execution_reason_code、convertible_bond_initial_conversion_price、convertible_bond_issue_scale、convertible_bond_issue_type_code_set、convertible_bond_lottery_number_publication_date、convertible_bond_online_lottery_win_rate_pct、convertible_bond_online_subscription_limit_thousand_yuan、convertible_bond_payday_signed_day_code、convertible_bond_priority_placement_amount_yuan_per_share、convertible_bond_profit_per_lot_yuan、convertible_bond_put_application_end_date、convertible_bond_put_application_start_date、convertible_bond_put_execution_price_yuan_per_bond、convertible_bond_redemption_execution_date、convertible_bond_redemption_execution_price_yuan_per_bond、convertible_bond_redemption_trigger_price、convertible_bond_resale_trigger_price、convertible_bond_term_years、convertible_bond_underlying_stock_pb_ratio、convertible_bond_underlying_stock_price
 - **东财-push2(stock/get)（11）**：eastmoney_quote_concept_theme_labels、eastmoney_stock_get_dividend_yield、eastmoney_stock_get_inner_volume、eastmoney_stock_get_outer_volume、eps_ttm(f108)、f163、f176、f190、f55、f92、stock_trading_session_intervals
 - **东财-push2ex（3）**：push2ex.total_market_value、push2ex.tradable_a_market_value、sector
-- **东财-ulist239(np/get)（24）**：3分钟涨速、5分钟涨跌幅、H股关联A股价格缩放位数、change_3d、current_trade_hand_count、dividend_yield_lfy_observed、f88_positive_days_10d、f88_positive_days_5d、f88_positive_streak_days、h_share_code、h_share_market_code、h_share_name、listing_board_type、order_imbalance_ratio、parent_equity_to_total_assets_ratio、registration_system_listing_bitmask、report_period_end_date、security_eligibility_bitmask、ulist239_change_6_intervals_pct、ulist239_parent_net_profit_yoy_growth_pct、ulist239_quote_data_date、ulist239_sales_gross_margin_report_period_pct、ulist239_total_equity_consolidated、行情百分比/比例缩放位数
+- **东财-ulist239(np/get)（26）**：3分钟涨速、5分钟涨跌幅、H 股当日涨跌幅、H 股最新价、H股关联A股价格缩放位数、change_3d、current_trade_hand_count、dividend_yield_lfy_observed、f88_positive_days_10d、f88_positive_days_5d、f88_positive_streak_days、h_share_code、h_share_market_code、h_share_name、listing_board_type、order_imbalance_ratio、parent_equity_to_total_assets_ratio、registration_system_listing_bitmask、report_period_end_date、security_eligibility_bitmask、ulist239_change_6_intervals_pct、ulist239_parent_net_profit_yoy_growth_pct、ulist239_quote_data_date、ulist239_sales_gross_margin_report_period_pct、ulist239_total_equity_consolidated、行情百分比/比例缩放位数
 - **东财-资金流(em_fund_flow)（8）**：fund_large_buy、fund_main_today、fund_small_buy、fund_small_sell、fund_small_today、fund_super_buy、fund_super_sell、fund_super_today
 - **央视网(新闻联播)（1）**：cctv_news_broadcast_edition_date
 - **开盘啦(kpl_limit_up_detail)（5）**：has_intraday_limit_up_break、kpl_category_limit_up_stock_count、kpl_limit_up_sequence_label、main_buy、main_sell

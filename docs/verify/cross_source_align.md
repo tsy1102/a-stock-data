@@ -15,6 +15,8 @@
 
 > **2026-11-22 映射撤回**：按保留期 400 条 `ipo_calendar[]` 记录复核，`event_dc.PREDICT_ISSUE_PRICE1 ↔ event_dc.CURRENT_ONEWORD_NUM` 与 `event_dc.CURRENT_ONEWORD_NUM ↔ event_dc.IS_RISKWARNING` 各有 23 条直接反例；377 组共同零值不构成等价证据。原关系使用缺少数组上下文的 `event_dc.*` 展平身份，已从活动映射撤回。新路径 `ipo_calendar[].IS_RISKWARNING` 单源定案为风险警示标记，不建立跨源映射；`ipo_calendar[].CURRENT_ONEWORD_NUM` 继续待核。详见[证据与更正记录](../field_verification/adjudications/20261122_eventdc_ipo_risk_warning_flag.md)。
 
+> **2026-11-23 H股报价映射复核**：按 2026-10-15 后留存的 601288/01288 同记录样本，撤回 33 条由旧 hub 复议建立的精确 `same_number_same_meaning` 关系：27 条有 9/9 日期合格直接非空反例，另 6 条通过明确保留的 `push2_full.f250 ↔ push2.f250` 精确别名链产生同样反例。另 133 条关系没有非空可比值，本轮保留未决，不视为已证实或已证伪。`push2.f250 ↔ ulist239.f185`、`push2_full.f250 ↔ push2.f250` 及其可复核别名链保留。完整边审计见[CSV](../field_verification/research/20261123_eastmoney_hshare_mapping_edge_audit.csv)，字段证据见[裁决](../field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)，精确撤回清单见[JSON](../field_verification/adjudications/20261123_eastmoney_hshare_mapping_withdrawal.json)。
+
 | 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
 |---|---|---|---|---|
 | fuyao.snapshot.price_change | push2.f169 | 异号同义 | 涨跌额 | 20260918 对撞 L1·hit=1.0·5d |
@@ -765,72 +767,6 @@
 | tencent[70] | zhb.stat.change_30d | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d |
 | ulist239.f195 | ulist239.f196 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d |
 | ulist239.f196 | ulist239.f195 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d |
-| ulist239.f186 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| ulist239.f187 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| ulist239.f188 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| ulist239.f189 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| ulist239.f191 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| ulist239.f193 | push2.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2.f250 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d |
-| push2_full.f250 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| push2_full.f250 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| push2_full.f250 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| push2_full.f250 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| push2_full.f250 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| push2_full.f250 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f185 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f185 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f185 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f185 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f185 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f185 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f186 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f186 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f187 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f187 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f188 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f188 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f189 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f189 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f191 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f191 | ulist239.f193 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | push2_full.f250 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d |
-| ulist239.f193 | ulist239.f185 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | ulist239.f186 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | ulist239.f187 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | ulist239.f188 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | ulist239.f189 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
-| ulist239.f193 | ulist239.f191 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f195 | ulist239.f197 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f195 | ulist239.f199 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |
 | ulist239.f195 | ulist239.f201 | 同义 | 码级同义 | 20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d |

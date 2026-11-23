@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "action": "withdraw_unsupported_active_mappings",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-23",
+  "evidence_file": "docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+  "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+  "rationale": "2026-09-24 的 hub 复议把共享常量/少量数值候选的高命中关系扩展成 clique。保留期内按精确证券、同一采集数据日及已验证记录日期复算后，以下活动边出现非空直接反例，或经明确保留的 push2_full.f250 ↔ push2.f250 同路径历史等价链产生反例。只撤回列出的 same_number_same_meaning 关系，不更改端点语义。双方当前均为空、没有非空可比行的关系不在撤回列表，继续作为未证实活动关系单独留待后续有信息样本复核。",
+  "retained_scope": "2026-10-15 及之后的保留 raw；股票 601288 对应 HK 01288；只使用同一目录数据日和同一记录中已验证日期锚合格的非空值。",
+  "audit_file": "docs/field_verification/research/20261123_eastmoney_hshare_mapping_edge_audit.csv",
+  "registry_mapping_rows_removed": 66,
+  "withdrawn_unique_exact_pairs": 33,
+  "cross_source_table_rows_to_remove": 66,
+  "push2_full_alias_mapping_preserved": true,
+  "unresolved_no_informative_edges_retained": 133,
+  "withdrawn_mappings": [
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f186",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f187",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f188",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+      ],
+      "resolved_from_identity": "东财-push2(stock/get)::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f186",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f187",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f188",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+      ],
+      "resolved_from_identity": "东财-push2_full::f250",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "counterexample_via_exact_alias_mapping",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f186",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f187",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f188",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f185",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f186",
+      "resolved_to_identity": "东财-ulist239(np/get)::f187",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f186",
+      "resolved_to_identity": "东财-ulist239(np/get)::f188",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f186",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f186",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f186",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f187",
+      "resolved_to_identity": "东财-ulist239(np/get)::f188",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f187",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f187",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f187",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f188",
+      "resolved_to_identity": "东财-ulist239(np/get)::f189",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f188",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f188",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f189",
+      "resolved_to_identity": "东财-ulist239(np/get)::f191",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f189",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "original_evidence": [
+        "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+      ],
+      "resolved_from_identity": "东财-ulist239(np/get)::f191",
+      "resolved_to_identity": "东财-ulist239(np/get)::f193",
+      "counterexample_dates": 9,
+      "comparison_scope": "601288 / 01288; retained dates on or after 2026-10-15; same capture date and same security record",
+      "counterexample_basis": "direct_nonmissing_counterexample",
+      "reason": "该精确边至少有一条非空同记录反例，不能继续声明 same_number_same_meaning。此撤回只否定当前等价关系，不给另一端字段新释义。"
+    }
+  ]
+}

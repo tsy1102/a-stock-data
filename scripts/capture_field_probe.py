@@ -677,7 +677,7 @@ def collect_push2(pool: list) -> dict:
 #   stock/get、同 f1-f250、同兜底域), 实测 114 字段值级 114/114 全相等, 属纯冗余负载。
 #   日常采集改走 collect_push2 即可; 如需对撞复核原 push2_full 号段, 用 `--only push2`。
 #   本函数不再保留(避免与 collect_push2 双份维护); 历史说明见 field_source_reference.md §12.9.1
-#   push2_full 条目作运行时 fallback 参考(语义等价, 见「同源同步治理规则」)。
+#   push2_full 条目只保留历史来源身份；跨路径语义必须按精确活动映射核实，不能按 f 编号批量继承。
 
 
 def collect_sina_extended(pool: list) -> dict:

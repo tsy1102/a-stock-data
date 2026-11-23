@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- 基于 HKEX 官方双重上市清单、交易日/休市证据和保留期逐日行情，来源内定案东财 Push2 `f250`、Ulist `f185` 为 H 股上一港股交易日收盘价，Ulist `f186/f187` 为 H 股最新价/当日涨跌幅；修正旧字段表并将同源行日期锚与价格内容日期分开。撤回 33 条有 9 日反例的错误活动映射，保留 133 条无可比非空样本关系待核。详见[裁决](docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)。
 - 按同花顺当前官方集合竞价契约和 19 个完整留存批次的逐股样本，登记并验证 `auction_final` 下 9 个完整字段路径。为官方未声明单位、`auction_unmatched` 正负口径及 `auction_volume_ratio` 公式保留未知，不新增跨源映射。详见[裁决](docs/field_verification/adjudications/20261123_fuyao_auction_final_contract_fields.md)和[逐股审计](docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv)。
 - 明确记录同源批次日期继承规则：腾讯 `qt.gtimg::[30]` 的日期锚在保留期 22 个数据日、440/440 行中与采集目标数据日和交易日历一致，可为同批行情字段确认观测日；采集诊断现在要求该时间戳严格为 14 位数字，缺失、非法或批次日期分歧时不生成来源日期。证据见[批次日期锚审计](docs/field_verification/research/20261122_tencent_batch_date_anchor_audit.md)。
 - 补充新浪 `hq.sinajs` 行情批次日期实证：`fields[30]` 日期及 `[31]` 时间在保留期 22 个数据日、440/440 条记录中均与目标数据日、批次元数据及交易日历一致；同一响应中的行情字段可继承共同观测日，但不延伸至其他端点或业务日期。详见[批次日期锚审计](docs/field_verification/research/20261122_sina_batch_date_anchor_audit.md)。

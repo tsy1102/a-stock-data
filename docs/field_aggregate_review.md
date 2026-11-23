@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 739 条逐源记录。
+> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 743 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1670,32 +1670,32 @@
 | 东财-push2(stock/get) · `f184` | f184 | — | — | `verified` |
 | 东财-ulist239(np/get) · `f184` | f184 | 换手率% | % | `verified` |
 
-### `f185` — incomplete
+### `f185` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f185` | f185 | — | — | `verified` |
-| 东财-ulist239(np/get) · `f185` | f185 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f185` | H 股上一香港交易日收盘价 | 该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。 | HKD/股 | `verified` |
 
-### `f186` — incomplete
+### `f186` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f186` | f186 | — | — | `verified` |
-| 东财-ulist239(np/get) · `f186` | f186 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f186` | H 股最新价 | 该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。 | HKD/股 | `verified` |
 
-### `f187` — incomplete
+### `f187` — ambiguous
 
-聚合问题：meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f187` | f187 | — | — | `verified` |
-| 东财-ulist239(np/get) · `f187` | f187 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f187` | H 股当日涨跌幅 | 该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。 | % | `verified` |
 
 ### `f188` — incomplete
 
@@ -1878,13 +1878,13 @@
 | 东财-push2(stock/get) · `f25` | — | — | — | `unverified` |
 | 东财-ulist239(np/get) · `f25` | f25 | — | — | `verified` |
 
-### `f250` — incomplete
+### `f250` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f250` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f250` | H 股上一香港交易日收盘价 | 该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。 | HKD/股 | `verified` |
 | 东财-ulist239(np/get) · `f250` | f250 | — | — | `unverified` |
 
 ### `f26` — incomplete
@@ -3706,6 +3706,7 @@
 | 东财-push2(stock/get) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 东财-push2(stock/get) | `f163` | f163 | 静态市盈率（总市值/上年度净利润） | `verified` |
 | 东财-push2(stock/get) | `f176` | f176 | 按最新报告期年初至期末累计营收年化的市销率；在已观察到的季度中，按 f116 总市值 ÷ (f183 × 4 / q) 计算，q 为最新报告期季度序号。当前实证覆盖 Q2、Q3，不等同市销率 TTM，也不外推 Q1、Q4。发行人报告样本确认了 f183 对应的报告期累计营收，但本定义不统一各行业财报中的具体行项目名称。 | `verified` |
+| 东财-push2(stock/get) | `f250` | H 股上一香港交易日收盘价 | 该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。 | `verified` |
 | 东财-push2(stock/get) | `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | `verified` |
 | 东财-push2(stock/get) | `f59` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |
 | 东财-push2(stock/get) | `f62` | f62 | 最新已发布报告期的季度序号（如 2=中报、3=三季报；不含年份） | `verified` |
@@ -3740,6 +3741,9 @@
 | 东财-ulist239(np/get) | `f148` | security_eligibility_bitmask | 东方财富 ulist.np/get 返回的证券资格标志位掩码。当前证据确认 bit6（64）表示交易所融资融券标的资格，bit9（512）表示沪股通下一北向交易日可买可卖资格，bit10（1024）表示深股通下一北向交易日可买可卖资格。bit0 与未观察到的其他位含义未定；这些资格标记不代表特定券商或投资者账户的实际可交易性。 | `verified` |
 | 东财-ulist239(np/get) | `f149` | ulist239_change_6_intervals_pct | 相对前第六个交易日收盘价的累计涨跌幅（六个交易间隔）；观测值以百分数表示。 | `verified` |
 | 东财-ulist239(np/get) | `f152` | 行情百分比/比例缩放位数 | 东方财富官方行情中心把 f152 作为多个涨跌幅、涨速和比例字段的十进制缩放/显示精度参数，而非该指标的数值本身。官方 fltt=1 前端格式器按 e / 10^f152 还原并显示 f152 位；项目采集使用 fltt=2，已转换行情数值不得再次缩放。 | `verified` |
+| 东财-ulist239(np/get) | `f185` | H 股上一香港交易日收盘价 | 该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。 | `verified` |
+| 东财-ulist239(np/get) | `f186` | H 股最新价 | 该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。 | `verified` |
+| 东财-ulist239(np/get) | `f187` | H 股当日涨跌幅 | 该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。 | `verified` |
 | 东财-ulist239(np/get) | `f190` | H股关联A股价格缩放位数 | 东方财富行情中心把 f190 用作 f186（H股对应的A股最新价）的十进制缩放/显示精度参数：官方前端在 fltt=1 价格值场景中按 f186 / 10^f190 还原并显示 f190 位小数。项目采集使用 fltt=2，留存的 f186 已为小数形式，不应重复缩放。该字段不是 H 股股数。 | `verified` |
 | 东财-ulist239(np/get) | `f191` | h_share_code | A 股记录所关联 H 股证券的代码。当前经核对样本为 601288 对应 01288；结论仅适用于东财 Ulist239 该完整来源路径。 | `verified` |
 | 东财-ulist239(np/get) | `f192` | h_share_market_code | A 股记录所关联 H 股证券的东方财富 secid 市场编号。当前经核对样本为 116，对应 secid 116.01288 中的港股市场前缀；该字段是市场编号，不是 A+H 布尔标记。结论仅适用于东财 Ulist239 该完整来源路径及已观察到的编号。 | `verified` |

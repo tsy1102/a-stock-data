@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_version": "2026-11-23-audited-batch-value-date-witness",
+  "policy_version": "2026-11-23-hshare-field-temporality",
   "default_class": "unclassified",
   "classes": {
     "intraday_sensitive": "盘中或每日变化的敏感行情字段；L1 必须有明确来源日期且样本阶段已收盘。",
@@ -530,6 +530,34 @@
       "class": "intraday_sensitive",
       "registry_status": "verified",
       "reason": "五档盘口价格是盘中快照值；字段语义稳定，但跨源采样时点不同会产生正常数值差异。"
+    },
+    {
+      "source": "东财-push2(stock/get)",
+      "code": "f250",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "H 股上一香港交易日收盘价；字段内容日期是上一港股交易日。碰撞观测日只由同一 stock/get 证券行已验证 f86 时间戳确认，并须与交易日键及同一 capture_folder 的来源日期一致；不可把前收内容日期误当作当前行观测日。"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f185",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "H 股上一香港交易日收盘价；字段内容日期是上一港股交易日。碰撞观测日由同一 ulist 证券行的已验证 f124 时间戳或 f297 日期锚确认，并须与交易日键及同一 capture_folder 一致。"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f186",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "H 股最新行情价，盘中会变化、收盘后对应当日收盘；观测日由同一 ulist 证券行的 f124/f297 日期锚确认，价格有效日期不等于香港上一交易日 f185 的内容日期。"
+    },
+    {
+      "source": "东财-ulist239(np/get)",
+      "code": "f187",
+      "class": "intraday_sensitive",
+      "registry_status": "verified",
+      "reason": "H 股当日涨跌幅，盘中会变化；收盘后按当日最新价 f186 与前收 f185 计算。观测日由同一 ulist 证券行的 f124/f297 日期锚确认。"
     }
   ],
   "row_timestamp_witnesses": [

@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-23",
+  "evidence_file": "docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md",
+  "evidence_sha256": "384609b14c200fde23023700103a75329a6198f1d1618e275690c0794771859c",
+  "decisions": [
+    {
+      "id": "eastmoney-push2-f250-hk-prev-close",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f250"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "H 股上一香港交易日收盘价",
+      "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。",
+      "unit": "HKD/股",
+      "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+      "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。15 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+      "sample": {
+        "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-push2(stock/get)::f250；同证券同日、同记录观测日期核验。",
+        "comparison_count": 15,
+        "matched_count": 15,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "eastmoney-ulist-f185-hk-prev-close",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f185"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f185",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "H 股上一香港交易日收盘价",
+      "meaning": "该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。它与同日 Push2 f250 对齐；价格内容日期是上一港股交易日，不是同一行观测日。",
+      "unit": "HKD/股",
+      "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+      "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+      "sample": {
+        "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f185；同证券同日、同记录观测日期核验。",
+        "comparison_count": 9,
+        "matched_count": 9,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "eastmoney-ulist-f186-hk-latest-price",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f186"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f186",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "H 股最新价",
+      "meaning": "该 A 股记录关联 H 股证券的最新成交/行情价。盘中为最新行情价；收盘后样本等于当日收盘价。",
+      "unit": "HKD/股",
+      "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+      "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+      "sample": {
+        "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f186；同证券同日、同记录观测日期核验。",
+        "comparison_count": 9,
+        "matched_count": 9,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 1
+      }
+    },
+    {
+      "id": "eastmoney-ulist-f187-hk-change-pct",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f187"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "f187",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "H 股当日涨跌幅",
+      "meaning": "该 A 股记录关联 H 股证券的当日涨跌幅。收盘样本中按 (f186 / f185 - 1) × 100 计算并四舍五入到两位小数。",
+      "unit": "%",
+      "section": "2026-11-23 农业银行 H 股关联报价来源内实证",
+      "rationale": "路径值按东财原始响应保存；同记录已验证日期锚确认观测日，HKEX 上市名单、假期通告和逐日收盘价确定 H 股代码及价格含义。农业银行是本项目该样本池唯一观察到的 A+H 发行人。9 个来源日期合格、非空样本均符合唯一释义，无反例；不据此推广到其他完整来源路径。",
+      "sample": {
+        "scope": "601288/01288；2026-10-15 后留存数据；精确路径 东财-ulist239(np/get)::f187；同证券同日、同记录观测日期核验。",
+        "comparison_count": 9,
+        "matched_count": 9,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "stock_count": 1
+      }
+    }
+  ]
+}

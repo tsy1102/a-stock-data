@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 287,
+      "aggregate_status_scope_unresolved": 286,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -31,9 +31,9 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 837,
-      "verified": 1806,
-      "verified_by_empirical_addendum": 263,
+      "unverified": 836,
+      "verified": 1807,
+      "verified_by_empirical_addendum": 264,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -32853,7 +32853,7 @@
         "东财-push2ex": "verified",
         "东财-热榜(em_hot)": "verified",
         "市场源(market_sources)": "verified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -278759,10 +278759,11 @@
       "unit": "元",
       "section": "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）",
       "sections": [
-        "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）"
+        "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）",
+        "2026-11-24 开盘啦 W8 price 来源内语义核验"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -278779,7 +278780,24 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-w8-price-current-price"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_price_empirical_semantics.md",
+        "evidence_sha256": "7953571d9bcccc48e2ac9c31a64adba818e8030c97a047ef230fd4facc1b1b2a",
+        "sample": {
+          "scope": "保留的 2026-11-20 同日配对研究样本；开盘啦 ZhiShuStockList_W8 data.list[*][5]，23 个不同证券，与东方财富官方 stock/get f43 现价比较；样本原值、日期和差值见 research/20261122_kpl_pe_eastmoney_anchor_pairs.csv，SHA-256 195fd09aa36aca910dc22da7c0b898e3ef62c5b79b5c39a078b886a35768cb8e。",
+          "comparison_count": 23,
+          "matched_count": 23,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 0,
+          "observation_count": 23,
+          "stock_count": 23
+        }
       },
       "reference_evidence": [
         {
@@ -278789,6 +278807,41 @@
           "unit": "元",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "2026-11-24 开盘啦 W8 price 来源内语义核验",
+          "canonical": "price",
+          "meaning": "现价",
+          "unit": "元",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-w8-price-current-price",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_price_empirical_semantics.md",
+          "evidence_sha256": "7953571d9bcccc48e2ac9c31a64adba818e8030c97a047ef230fd4facc1b1b2a",
+          "metadata_change": {
+            "before": {
+              "canonical": "price",
+              "meaning": "现价",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "price",
+              "meaning": "现价",
+              "unit": "元"
+            }
+          },
+          "sample": {
+            "scope": "保留的 2026-11-20 同日配对研究样本；开盘啦 ZhiShuStockList_W8 data.list[*][5]，23 个不同证券，与东方财富官方 stock/get f43 现价比较；样本原值、日期和差值见 research/20261122_kpl_pe_eastmoney_anchor_pairs.csv，SHA-256 195fd09aa36aca910dc22da7c0b898e3ef62c5b79b5c39a078b886a35768cb8e。",
+            "comparison_count": 23,
+            "matched_count": 23,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "observation_count": 23,
+            "stock_count": 23
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -278810,7 +278863,52 @@
         "meaning": "现价",
         "unit": "元",
         "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-w8-price-current-price",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_price_empirical_semantics.json",
+          "evidence_file": "adjudications/20261124_kpl_price_empirical_semantics.md",
+          "evidence_sha256": "7953571d9bcccc48e2ac9c31a64adba818e8030c97a047ef230fd4facc1b1b2a",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "price",
+            "meaning": "现价",
+            "unit": "元"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "price",
+              "meaning": "现价",
+              "unit": "元"
+            },
+            "after": {
+              "canonical": "price",
+              "meaning": "现价",
+              "unit": "元"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目适配器请求开盘啦 ZhiShuStockList_W8；固定版本第三方解析记录只用于定位 data.list[*][5] 为价格。开盘啦官网股票列表显示现价标签。已留存的 2026-11-20 同日配对 CSV 中，23 个不同股票代码的该 KPL 位置与已验证的东方财富 stock/get f43 现价逐一精确相等，0 缺失、0 反例。证据足以确认该来源路径的现价语义和元单位。该结论不声称存在官方 W8 键级 schema，不建立跨源映射或采集替代关系，也不外推盘中/盘后更新边界。",
+          "sample": {
+            "scope": "保留的 2026-11-20 同日配对研究样本；开盘啦 ZhiShuStockList_W8 data.list[*][5]，23 个不同证券，与东方财富官方 stock/get f43 现价比较；样本原值、日期和差值见 research/20261122_kpl_pe_eastmoney_anchor_pairs.csv，SHA-256 195fd09aa36aca910dc22da7c0b898e3ef62c5b79b5c39a078b886a35768cb8e。",
+            "comparison_count": 23,
+            "matched_count": 23,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 0,
+            "observation_count": 23,
+            "stock_count": 23
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",

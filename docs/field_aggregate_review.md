@@ -2901,7 +2901,7 @@
 | 东财-push2ex · `price` | price | 现价；接口原始数值以 0.001 元为单位，除以 1,000 后与同数据日 KPL col_21 的三个有效日期 271 组对照逐值相等。 | 0.001元 | `verified` |
 | 东财-热榜(em_hot) · `price` | price | 现价 | 元 | `verified` |
 | 市场源(market_sources) · `price` | price | 现价 | — | `verified` |
-| 开盘啦(kpl) · `price` | price | 现价 | 元 | `unverified` |
+| 开盘啦(kpl) · `price` | price | 现价 | 元 | `verified` |
 
 ### `q_zrcs` — incomplete
 

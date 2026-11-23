@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-24",
+  "evidence_file": "docs/field_verification/adjudications/20261124_kpl_price_empirical_semantics.md",
+  "evidence_sha256": "7953571d9bcccc48e2ac9c31a64adba818e8030c97a047ef230fd4facc1b1b2a",
+  "decisions": [
+    {
+      "id": "20261124-kpl-w8-price-current-price",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "开盘啦(kpl)",
+        "code": "price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "price",
+        "meaning": "现价",
+        "unit": "元"
+      },
+      "canonical": "price",
+      "meaning": "现价",
+      "unit": "元",
+      "section": "2026-11-24 开盘啦 W8 price 来源内语义核验",
+      "rationale": "项目适配器请求开盘啦 ZhiShuStockList_W8；固定版本第三方解析记录只用于定位 data.list[*][5] 为价格。开盘啦官网股票列表显示现价标签。已留存的 2026-11-20 同日配对 CSV 中，23 个不同股票代码的该 KPL 位置与已验证的东方财富 stock/get f43 现价逐一精确相等，0 缺失、0 反例。证据足以确认该来源路径的现价语义和元单位。该结论不声称存在官方 W8 键级 schema，不建立跨源映射或采集替代关系，也不外推盘中/盘后更新边界。",
+      "sample": {
+        "scope": "保留的 2026-11-20 同日配对研究样本；开盘啦 ZhiShuStockList_W8 data.list[*][5]，23 个不同证券，与东方财富官方 stock/get f43 现价比较；样本原值、日期和差值见 research/20261122_kpl_pe_eastmoney_anchor_pairs.csv，SHA-256 195fd09aa36aca910dc22da7c0b898e3ef62c5b79b5c39a078b886a35768cb8e。",
+        "comparison_count": 23,
+        "matched_count": 23,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 0,
+        "observation_count": 23,
+        "stock_count": 23
+      }
+    }
+  ]
+}

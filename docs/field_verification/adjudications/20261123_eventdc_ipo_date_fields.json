@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-23",
+  "decisions": [
+    {
+      "id": "20261123-eventdc-ipo-market-cap-confirm-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].MARKET_CAP_CONFIRMDATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_market_value_confirm_date_rule",
+      "meaning": "该字段是网上申购市值确认基准日规则文本。这里的 T 是网上申购日，T-2 是它之前两个交易日。深市规则按 T-2 前 20 个交易日（含 T-2）的日均市值计算。本字段不表示某条历史 IPO 记录的绝对日期。它也不表示行情观测日，不能表示接口更新时间。现有样本仅覆盖深市，未据此推广到北交所。",
+      "unit": "规则文本（相对交易日）",
+      "section": "东方财富 IPO 日期类字段来源契约核验",
+      "rationale": "项目将 RPTA_APP_IPOAPPLY 的原始响应键透传至完整路径。保留期内 20 批、400 行均返回同一值 T-2日(T:申购日)，没有缺失或冲突；记录均为深市证券。东方财富同代码 002520 的官方详情页明确列“网上申购市值确认日”，展示 T-2日(T:网上申购日)，同代码官方接口原始键返回 T-2日(T:申购日)。深交所网上发行实施细则第4条将 T 定义为发行公告确定的网上申购日，并按 T-2 前20个交易日（含 T-2）日均市值计算。该值是规则文字，不能解释为历史记录的绝对日期或 as_of_date。完整审计及 SHA-256：docs/field_verification/research/20261123_eventdc_ipo_date_fields_audit.md；未发现版本化字段 schema。",
+      "source_contract": {
+        "authority": "东方财富 IPO 详情页及 Data Center RPTA_APP_IPOAPPLY；深交所网上发行实施细则第4条",
+        "revision": "官方页面、公开接口及规则文本于 2026-11-23 核验；无版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY -> eastmoney_datacenter(columns=\"ALL\") -> response.result.data[*].MARKET_CAP_CONFIRMDATE -> raw_event_dc.ipo_calendar[].MARKET_CAP_CONFIRMDATE",
+        "locator": "SECURITY_CODE=002520 的官方 API 原始字段值为 T-2日(T:申购日)；东方财富详情页该证券列“网上申购市值确认日”并显示 T-2日(T:网上申购日)；深交所《深圳市场首次公开发行股票网上发行实施细则（2018年修订）》第4条定义 T-2 与 20 交易日市值口径。",
+        "url": "https://data.eastmoney.com/xg/xg/detail/002520.html"
+      }
+    },
+    {
+      "id": "20261123-eventdc-ipo-update-date",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "东财-event_dc(IPO发行记录)",
+        "code": "ipo_calendar[].UP_DATE"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ipo_source_update_date",
+      "meaning": "东财 IPO 发行记录接口提供的上游更新日期标记。它不是 IPO 申购日期，也不是上市日期。它不等同于采集运行日。它也不等同于目录目标数据日。它不是行情观测日期。留存样本显示同一接口批次中的多条记录共享此值。目前只确认它是来源更新标记。底层逐行更新时间和整个数据集刷新日期的精确关系仍未证实。",
+      "unit": "日期时间字符串（样本时分秒为 00:00:00）",
+      "section": "东方财富 IPO 日期类字段来源契约核验",
+      "rationale": "项目将 RPTA_APP_IPOAPPLY 响应的原始键透传到完整路径。保留期 20 批、400 行中，每批所有 IPO 行各自共享唯一 UP_DATE，跨批次日期变化；UP_DATE 与目录 data_date、capture_date、来源 source_capture_date 并非恒等，故不得作为行情观测日。2026-11-23 对同一官方接口按 SECURITY_CODE=002520 核对，APPLY_DATE=2010-12-01 而 UP_DATE=2026-11-23，排除申购日/上市日等业务日期解释。确切后端更新粒度未公开，定义限制为上游更新日期标记。逐批样本和原始哈希：docs/field_verification/research/20261123_eventdc_ipo_date_fields_audit.md。",
+      "source_contract": {
+        "authority": "东方财富数据中心 IPO 记录接口 RPTA_APP_IPOAPPLY（官方公开响应）",
+        "revision": "同代码官方接口响应于 2026-11-23 核验；留存批次 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+        "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY -> eastmoney_datacenter(columns=\"ALL\") -> response.result.data[*].UP_DATE -> raw_event_dc.ipo_calendar[].UP_DATE",
+        "locator": "官方响应键 UP_DATE；SECURITY_CODE=002520 的同一响应中 APPLY_DATE=2010-12-01、UP_DATE=2026-11-23；留存 20 批、400 行显示同批统一、跨批变化。该定义不声称更新标记的底层数据库粒度。",
+        "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_APP_IPOAPPLY&columns=ALL&filter=%28SECURITY_CODE%3D%22002520%22%29&pageSize=10&pageNumber=1"
+      }
+    }
+  ]
+}

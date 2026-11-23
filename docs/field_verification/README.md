@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [IPO `CURRENT_ONEWORD_NUM` / `PE_TTM` 批次复核](research/20261124_ipo_unknown_fields_batch01.md)：比对东方财富 IPO 首页官方脚本与 20 个保留批次；确认 `PE_TTM` 不随同批最新价变化且不等同 `AFTER_ISSUE_PE`，`CURRENT_ONEWORD_NUM` 仍无官方展示映射并已排除风险标记旧候选。两项均保持未知；未运行采集、未改主字典。
 - [东方财富 H 股关联报价字段裁决](adjudications/20261123_eastmoney_hshare_quote_semantics.md)、[结构化裁决](adjudications/20261123_eastmoney_hshare_quote_empirical_semantics.json)、[逐日行情样本](research/20261123_eastmoney_hshare_quote_samples.csv)与[映射边审计](research/20261123_eastmoney_hshare_mapping_edge_audit.csv)：按保留期样本及港交所官方双重上市名单、休市日和每日行情核对，来源内定案 Push2 `f250` 与 Ulist `f185` 为 H 股前一港股交易日收盘价，Ulist `f186/f187` 为最新价/当日涨跌幅；分别使用同记录 `f86`、`f124/f297` 确认观测日。撤回 33 条有逐日反例的旧活动映射，保留 133 条无信息边待核；未运行采集。
 - [H 股字段裁决后的全历史回归](collision_research_20261123/exploratory/20261123/20261123_hshare_post/20261123_collision_report.md)：仅用保留期本地归档，25 个有效交易日、1,303 个字段、1,478,981 条样本值；报告完整，未知主攻目标 10，L1/L1-C 为 0、L4 为 2、方法候选 182。`push2.f250` 已退出未知目标；全程未采集。
 - [东方财富 clist `f259` 市场路由编号来源内实证定案](adjudications/20261123_clist_f259_market_id_empirical.md)、[逐行审计](research/20261123_clist_f259_market_id_audit.csv)与[原始文件哈希清单](research/20261123_clist_f259_market_id_manifest.json)：重算 9 个保留数据日的 2,079 行、494 个证券代码；`f259` 与 `f258` 证券的市场路由编号全量一致，309 条同记录已验证市场号配对全部吻合，无反例。官方脚本未直接绑定 `f259`，因此按来源内实证定案；不建立跨源映射。

@@ -1,13 +1,13 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-11-22",
+    "updated": "2026-11-23",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 289,
+      "aggregate_status_scope_unresolved": 288,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -31,9 +31,9 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 844,
-      "verified": 1787,
-      "verified_by_empirical_addendum": 253,
+      "unverified": 843,
+      "verified": 1788,
+      "verified_by_empirical_addendum": 254,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 626
@@ -6396,20 +6396,20 @@
         "腾讯(qt.gtimg)"
       ],
       "section": "",
-      "canonical": "[32]",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
       "status": "conflict",
       "source_statuses": {
         "ZHB-tdxstat": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "meaning_differs",
-        "source_statuses_differ",
         "unit_differs"
       ]
     },
@@ -49407,6 +49407,9 @@
     ],
     "ipo_risk_warning_flag": [
       "东财-event_dc(IPO发行记录)"
+    ],
+    "quote_trading_status_code": [
+      "新浪(hq.sinajs)"
     ]
   },
   "mappings": [
@@ -287897,15 +287900,15 @@
       "code": "[32]",
       "identity": "新浪(hq.sinajs)::[32]",
       "path": "[32]",
-      "canonical": "[32]",
-      "meaning": "状态码",
+      "canonical": "quote_trading_status_code",
+      "meaning": "新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。",
       "unit": "-",
       "section": "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
       "sections": [
         "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -287917,7 +287920,24 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261123-sina-32-trading-status-code"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_sina_32_status_code.md",
+        "evidence_sha256": "58aaccb1a33260e77f6f913e8ad4de1fbe7799aa212e1e2309d9a92f83ce84bf",
+        "sample": {
+          "scope": "保留边界 2026-10-15 至 2026-11-19；raw_sina fields[32]，同一股票/数据日成交量及成交额，并以 independent Tencent fields[40] 做辅助状态对照；20 只样本股票×22 个有归档交易日。",
+          "comparison_count": 440,
+          "matched_count": 440,
+          "counterexample_count": 0,
+          "official_report_count": 2,
+          "excluded_count": 0,
+          "observation_count": 440,
+          "stock_count": 20
+        }
       },
       "reference_evidence": [
         {
@@ -287927,6 +287947,41 @@
           "unit": "-",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
+          "canonical": "quote_trading_status_code",
+          "meaning": "新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。",
+          "unit": "-",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "20261123-sina-32-trading-status-code",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_sina_32_status_code.md",
+          "evidence_sha256": "58aaccb1a33260e77f6f913e8ad4de1fbe7799aa212e1e2309d9a92f83ce84bf",
+          "metadata_change": {
+            "before": {
+              "canonical": "[32]",
+              "meaning": "状态码",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "quote_trading_status_code",
+              "meaning": "新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。",
+              "unit": "-"
+            }
+          },
+          "sample": {
+            "scope": "保留边界 2026-10-15 至 2026-11-19；raw_sina fields[32]，同一股票/数据日成交量及成交额，并以 independent Tencent fields[40] 做辅助状态对照；20 只样本股票×22 个有归档交易日。",
+            "comparison_count": 440,
+            "matched_count": 440,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "observation_count": 440,
+            "stock_count": 20
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -287943,7 +287998,52 @@
         "meaning": "待破解",
         "unit": "%",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261123-sina-32-trading-status-code",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_sina_32_status_code.json",
+          "evidence_file": "adjudications/20261123_sina_32_status_code.md",
+          "evidence_sha256": "58aaccb1a33260e77f6f913e8ad4de1fbe7799aa212e1e2309d9a92f83ce84bf",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "[32]",
+            "meaning": "状态码",
+            "unit": "-"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "[32]",
+              "meaning": "状态码",
+              "unit": "-"
+            },
+            "after": {
+              "canonical": "quote_trading_status_code",
+              "meaning": "新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。",
+              "unit": "-"
+            }
+          },
+          "previous_attribute_conflicts": {},
+          "rationale": "项目采集器 collect_sina 将 hq.sinajs 响应按逗号拆分并按顺序保存为 raw_sina.json 的 fields 数组，精确目标 fields[32]。2026-10-15 至 2026-11-19 的 22 个保留数据日共 440 条记录，目录名、meta.data_date、同记录新浪 fields[30] 日期和腾讯 fields[30] 时间戳日期全部一致。439 条 code=00 均有正成交量，且同日腾讯 fields[40] 为空；唯一 code=03 是 600825 新华传媒 2026-10-15，新浪成交量和成交额为零、逐笔串为空，同日腾讯 fields[40]=S。巨潮资讯 2026-10-13 公告列明停牌起始日为 10-13，2026-10-16 复牌公告追溯列明停牌终止日为 10-15、复牌日为 10-16；原始记录中同一股票 10-15 为 03、10-16 回到 00 且成交量为 16,307,402 股。腾讯仅作为不同来源族的辅助交叉观察，主语义来自原始新浪路径与公司正式停复牌日期闭环；本裁决不声明未观察状态码的含义。逐条数据和原始文件哈希见证据 CSV。",
+          "sample": {
+            "scope": "保留边界 2026-10-15 至 2026-11-19；raw_sina fields[32]，同一股票/数据日成交量及成交额，并以 independent Tencent fields[40] 做辅助状态对照；20 只样本股票×22 个有归档交易日。",
+            "comparison_count": 440,
+            "matched_count": 440,
+            "counterexample_count": 0,
+            "official_report_count": 2,
+            "excluded_count": 0,
+            "observation_count": 440,
+            "stock_count": 20
+          }
+        }
+      ]
     },
     {
       "source": "新浪(hq.sinajs)",

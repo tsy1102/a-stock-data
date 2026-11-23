@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 736 条逐源记录。
+> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 737 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -496,12 +496,12 @@
 
 ### `[32]` — ambiguous
 
-聚合问题：meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `[32]` | [32] | “几天几板”统计中的涨停板数（通达信 LastZTHzNum，官方接口说明为“几板”；精确统计口径未公开） | 板 | `verified` |
-| 新浪(hq.sinajs) · `[32]` | [32] | 状态码 | - | `unverified` |
+| 新浪(hq.sinajs) · `[32]` | quote_trading_status_code | 新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。 | - | `verified` |
 | 腾讯(qt.gtimg) · `[32]` | [32] | 涨跌幅 | % | `verified` |
 
 ### `[33]` — ambiguous
@@ -3955,6 +3955,7 @@
 | 开盘红(Levistock适配) | `turnover` | turnover / turnover_rate | 成交额 / 换手率% | `unverified` |
 | 开盘红(Levistock适配) | `zt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 新浪(hq.sinajs) | `[12]` | [12]-[19] | 买二~买五 量/价 | `verified` |
+| 新浪(hq.sinajs) | `[32]` | quote_trading_status_code | 新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。 | `verified` |
 | 新浪(扩展API) | `ask` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |
 | 新浪(扩展API) | `ask_vol` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |
 | 新浪(扩展API) | `bid` | bid_vol/bid/last/ask/ask_vol | 五档价量 | `unverified` |

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-23",
+  "evidence_file": "docs/field_verification/adjudications/20261123_sina_32_status_code.md",
+  "evidence_sha256": "58aaccb1a33260e77f6f913e8ad4de1fbe7799aa212e1e2309d9a92f83ce84bf",
+  "decisions": [
+    {
+      "id": "20261123-sina-32-trading-status-code",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "新浪(hq.sinajs)",
+        "code": "[32]"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "[32]",
+        "meaning": "状态码",
+        "unit": "-"
+      },
+      "previous_attribute_conflicts": {},
+      "canonical": "quote_trading_status_code",
+      "meaning": "新浪实时行情交易状态码。本次保留样本中 00 表示常规交易状态（439/439 条均有正成交量）；03 表示停牌（唯一样本与发行人停牌公告、独立行情标记一致）。只确认已观察的 00、03，不外推未观察代码。",
+      "unit": "-",
+      "section": "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
+      "rationale": "项目采集器 collect_sina 将 hq.sinajs 响应按逗号拆分并按顺序保存为 raw_sina.json 的 fields 数组，精确目标 fields[32]。2026-10-15 至 2026-11-19 的 22 个保留数据日共 440 条记录，目录名、meta.data_date、同记录新浪 fields[30] 日期和腾讯 fields[30] 时间戳日期全部一致。439 条 code=00 均有正成交量，且同日腾讯 fields[40] 为空；唯一 code=03 是 600825 新华传媒 2026-10-15，新浪成交量和成交额为零、逐笔串为空，同日腾讯 fields[40]=S。巨潮资讯 2026-10-13 公告列明停牌起始日为 10-13，2026-10-16 复牌公告追溯列明停牌终止日为 10-15、复牌日为 10-16；原始记录中同一股票 10-15 为 03、10-16 回到 00 且成交量为 16,307,402 股。腾讯仅作为不同来源族的辅助交叉观察，主语义来自原始新浪路径与公司正式停复牌日期闭环；本裁决不声明未观察状态码的含义。逐条数据和原始文件哈希见证据 CSV。",
+      "sample": {
+        "scope": "保留边界 2026-10-15 至 2026-11-19；raw_sina fields[32]，同一股票/数据日成交量及成交额，并以 independent Tencent fields[40] 做辅助状态对照；20 只样本股票×22 个有归档交易日。",
+        "comparison_count": 440,
+        "matched_count": 440,
+        "counterexample_count": 0,
+        "official_report_count": 2,
+        "excluded_count": 0,
+        "observation_count": 440,
+        "stock_count": 20
+      }
+    }
+  ]
+}

@@ -32,11 +32,11 @@
       "status_missing": 41,
       "unresolved": 7,
       "unverified": 843,
-      "verified": 1799,
+      "verified": 1800,
       "verified_by_empirical_addendum": 254,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 637
+      "verified_by_source_contract": 638
     },
     "updated_at": "2026-11-19"
   },
@@ -25162,6 +25162,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "ipo_calendar[].ORG_TYPE",
+      "source": "东财-event_dc(IPO发行记录)",
+      "sources": [
+        "东财-event_dc(IPO发行记录)"
+      ],
+      "section": "source contract: 东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应 · stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE#东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。 @ 官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+      "canonical": "ipo_record_bank_stock_classification",
+      "meaning": "IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。",
+      "unit": "分类文本（样本值：银行股、非银行股）",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "东财-event_dc(IPO发行记录)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "ipo_calendar[].PAR_VALUE",
       "source": "东财-event_dc(IPO发行记录)",
       "sources": [
@@ -49640,6 +49658,9 @@
       "东财-event_dc(IPO发行记录)"
     ],
     "ipo_source_update_date": [
+      "东财-event_dc(IPO发行记录)"
+    ],
+    "ipo_record_bank_stock_classification": [
       "东财-event_dc(IPO发行记录)"
     ]
   },
@@ -302036,6 +302057,106 @@
             "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY -> eastmoney_datacenter(columns=\"ALL\") -> response.result.data[*].UP_DATE -> raw_event_dc.ipo_calendar[].UP_DATE",
             "locator": "官方响应键 UP_DATE；SECURITY_CODE=002520 的同一响应中 APPLY_DATE=2010-12-01、UP_DATE=2026-11-23；留存 20 批、400 行显示同批统一、跨批变化。该定义不声称更新标记的底层数据库粒度。",
             "url": "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_APP_IPOAPPLY&columns=ALL&filter=%28SECURITY_CODE%3D%22002520%22%29&pageSize=10&pageNumber=1"
+          }
+        }
+      ]
+    },
+    {
+      "source": "东财-event_dc(IPO发行记录)",
+      "code": "ipo_calendar[].ORG_TYPE",
+      "identity": "东财-event_dc(IPO发行记录)::ipo_calendar[].ORG_TYPE",
+      "path": "ipo_calendar[].ORG_TYPE",
+      "canonical": "ipo_record_bank_stock_classification",
+      "meaning": "IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。",
+      "unit": "分类文本（样本值：银行股、非银行股）",
+      "section": "source contract: 东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应 · stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE#东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。 @ 官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+      "sections": [
+        "source contract: 东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应 · stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE#东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。 @ 官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261123-eventdc-ipo-org-type"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261123-eventdc-ipo-org-type"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应 · stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE#东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。 @ 官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+          "canonical": "ipo_record_bank_stock_classification",
+          "meaning": "IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。",
+          "unit": "分类文本（样本值：银行股、非银行股）",
+          "status_raw": "人工核验上游契约 2026-11-23：20261123-eventdc-ipo-org-type",
+          "status": "verified",
+          "adjudication_id": "20261123-eventdc-ipo-org-type",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应",
+            "revision": "官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE",
+            "locator": "东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。",
+            "url": "https://data.eastmoney.com/newstatic/js/xg/index.js"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_bank_stock_classification",
+              "meaning": "IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。",
+              "unit": "分类文本（样本值：银行股、非银行股）"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261123-eventdc-ipo-org-type",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_eventdc_ipo_org_type.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "ipo_record_bank_stock_classification",
+              "meaning": "IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。",
+              "unit": "分类文本（样本值：银行股、非银行股）"
+            }
+          },
+          "rationale": "项目路径可精确追溯至 stock_common/sc_datasource/_events.py::ipo_calendar() 对 RPTA_APP_IPOAPPLY 的 columns=ALL 查询，并由 _datacenter.py 保留上游原始响应键，再由 scripts/capture_context_collectors.py::collect_event_dc() 写入 raw_event_dc.ipo_calendar[]。东方财富官方新股页一方 xg/index.js 的 loadtabledata() 请求列清单包含 ORG_TYPE；同一官方 API 对 SECURITY_CODE=000001 返回 ORG_TYPE=银行股。保留边界 2026-10-15 之后的 20 个非空批次共 400 行、21 个不同证券代码，400/400 有值，观察到的类别只有银行股（20 行、000001）和非银行股（380 行、其余 20 个代码），重复批次内逐证券分类稳定。400 行由 20 个证券记录反复出现构成，不视为 400 个独立证券。东方财富未发布版本化 schema 或分类规则，因此只登记可直接解释的分类文本，不扩大语义边界。逐行证据和 raw 文件哈希见 docs/field_verification/research/20261123_eventdc_ipo_org_type_audit.md、docs/field_verification/research/20261123_eventdc_ipo_org_type_audit.csv 与 JSON manifest。",
+          "source_contract": {
+            "authority": "东方财富新股申购官方页面一方脚本与 Data Center RPTA_APP_IPOAPPLY 官方公开响应",
+            "revision": "官方页面脚本及单条接口响应于 2026-11-23 核验；历史样本为 2026-10-16 至 2026-11-19；未发现版本化字段 schema",
+            "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE",
+            "locator": "东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。",
+            "url": "https://data.eastmoney.com/newstatic/js/xg/index.js"
           }
         }
       ]

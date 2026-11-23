@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 738 条逐源记录。
+> 聚合歧义 176 个 code；聚合定义不完整 158 个 code；疑似合并文本 739 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3650,6 +3650,7 @@
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].OD_HIGH_CHANGE` | ipo_first_day_high_change_pct | 同一 IPO 发行记录中的首日最高涨幅历史字段；20 条历史记录中与官方页面已标注的 LD_HIGH_CHANG 20/20 一致。该同路径关系限于现有历史记录，未见现代记录，不外推字段版本。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].ONLINE_ISSUE_NUM` | ipo_online_issue_shares | 该 IPO 记录对应网上发行的股票数量；原始接口单位为股，东方财富列表按万股显示。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].OPEN_DATE` | ipo_open_board_date | 该 IPO 记录对应股票的开板日期，不等同于上市日期；早期样本相同仅源于上市首日开板。 | `verified` |
+| 东财-event_dc(IPO发行记录) | `ipo_calendar[].ORG_TYPE` | ipo_record_bank_stock_classification | IPO 发行记录返回的银行股/非银行股分类文本。当前保留样本的值分别为“银行股”和“非银行股”。只确认该路径提供这类分类文字；东方财富未公开分类规则，不据此断言公司的法律组织形式、行业分类体系或未观察到的其他枚举。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PAR_VALUE` | ipo_record_par_value | 该 IPO/发行历史记录对应普通股的每股面值；这是发行记录属性，不保证等于当前每股面值。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PREDICT_ISSUE_PRICE1` | ipo_issue_price_prediction_candidate_1_yuan | 东方财富 IPO 发行价预测的候选价格 1；第一方详情页脚本将 PREDICT_ISSUE_PRICE1 读作价格1并纳入预测价格候选逻辑，不是实际发行价 ISSUE_PRICE。 | `verified` |
 | 东财-event_dc(IPO发行记录) | `ipo_calendar[].PREDICT_RAISE_FUNDS` | ipo_planned_fundraising_target_yi_cny | 东方财富 IPO 发行记录中的募资计划预测目标，单位为亿元。七个不同 IPO 事件的值与发行人招股文件所列拟投入募集资金或募资需求总额按万元换算为亿元后精确相等。它不等同于发行价乘发行股数得出的发行募集总额，不等同于扣除发行费用后的实际净额，也不保证代表发行完成后最新调整的募投预算。计划可在发行过程中调整；不以采集自然日或目录目标数据日推断方案版本时间。 | `verified` |

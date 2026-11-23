@@ -584,9 +584,9 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # ErrorId sample-key decision, and eight API-scoped Date contracts. The
     # current count includes subsequent source-contract adjudications,
     # including the IPO risk-warning flag added on 2026-11-22 and nine
-    # exact Fuyao auction_final paths and two Eastmoney IPO date paths added
+    # exact Fuyao auction_final paths and three Eastmoney IPO paths added
     # on 2026-11-23.
-    assert len(pairs) == 272
+    assert len(pairs) == 273
     assert {
         code
         for source, code in pairs

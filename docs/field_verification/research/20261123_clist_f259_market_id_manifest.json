@@ -1,0 +1,151 @@
+{
+  "review_date": "2026-11-23",
+  "purpose": "Recompute the Eastmoney clist f259 market-id hypothesis from retained raw records; no network collection.",
+  "source": "东财-clist",
+  "data_dates": [
+    "20261102",
+    "20261103",
+    "20261104",
+    "20261105",
+    "20261106",
+    "20261109",
+    "20261110",
+    "20261117",
+    "20261118"
+  ],
+  "input_files": [
+    {
+      "path": "docs/field_verification/20261102/raw_clist.json",
+      "sha256": "b7151b67a219b963cbcbe59e7e7e37fdb25cb775b5045f913f1b750a0a0123cd"
+    },
+    {
+      "path": "docs/field_verification/20261102/meta.json",
+      "sha256": "569955a6f0388bc0be8329d88d56f2d1d7aec366dbc3a12f79cd6619c6cd5b8b"
+    },
+    {
+      "path": "docs/field_verification/20261103/raw_clist.json",
+      "sha256": "7579424c7e16e2fe5e7fed15611fb9e9dd04a89bdb0cf084c5e810bebda083a9"
+    },
+    {
+      "path": "docs/field_verification/20261103/meta.json",
+      "sha256": "6dd7808d6d62454c1a78d0298dbd233920733d9ccf6ee04c3b5396a4f903452d"
+    },
+    {
+      "path": "docs/field_verification/20261104/raw_clist.json",
+      "sha256": "34e162d01cae5d4b4488cfa391c334bed9dc75dc24dd624d71566fe7f564d355"
+    },
+    {
+      "path": "docs/field_verification/20261104/meta.json",
+      "sha256": "219e56df06512482208f262d30a6f79b7f5799bfaf8e5a3ab87c978668c50b45"
+    },
+    {
+      "path": "docs/field_verification/20261105/raw_clist.json",
+      "sha256": "4dfcd42f87a8c9788665045eaf77e92e993bf89e56a1641be12e7fd67684ec6e"
+    },
+    {
+      "path": "docs/field_verification/20261105/meta.json",
+      "sha256": "3530efbb830252640474890a991c2b4d63b7fddd4593f75a03914bd155536616"
+    },
+    {
+      "path": "docs/field_verification/20261106/raw_clist.json",
+      "sha256": "917923878a745f10bcd9e0e52b0a2b7d693f5207ba737417264355e9e6f94035"
+    },
+    {
+      "path": "docs/field_verification/20261106/meta.json",
+      "sha256": "30e26e64e400f79338a694530d04031f2f7694e7ad57deb0c46b454c8b6e1c00"
+    },
+    {
+      "path": "docs/field_verification/20261109/raw_clist.json",
+      "sha256": "18a0b4f2eb03cfbd46853f9786305c2f9bfce5f4b4b8c6f85746ec981a7ab0a8"
+    },
+    {
+      "path": "docs/field_verification/20261109/meta.json",
+      "sha256": "53a85f72981f520355ed4713e7e6965bb177fe777163d14cdadc3625d3458945"
+    },
+    {
+      "path": "docs/field_verification/20261110/raw_clist.json",
+      "sha256": "6620dc734f84ea71dc37b0e6e1069a8ba12e7b17f142f38f16dd6f0038666c10"
+    },
+    {
+      "path": "docs/field_verification/20261110/meta.json",
+      "sha256": "904a33f00bb0a672d0f1f316835af8d4597cff23857e0d25e40d8959ea5cfa58"
+    },
+    {
+      "path": "docs/field_verification/20261117/raw_clist.json",
+      "sha256": "e4ada1800c2ae016d55b34a4843e46c90b69bb359297feda621e882d43e9d4be"
+    },
+    {
+      "path": "docs/field_verification/20261117/meta.json",
+      "sha256": "0660a582d15965fe342d562bdd09fe5f8010c023546caafb075d57969ae4e037"
+    },
+    {
+      "path": "docs/field_verification/20261118/raw_clist.json",
+      "sha256": "5644165063490aaf70c9050fefe9b12b9f39a8c5887f987a2d57049c82b3ac2e"
+    },
+    {
+      "path": "docs/field_verification/20261118/meta.json",
+      "sha256": "445a8339654ea7b01d83a28e159663c2656622a24a3305176be657e3c167f9b0"
+    }
+  ],
+  "prior_audit": {
+    "path": "docs/field_verification/research/20261122_clist_f257_f258_f259_audit.csv",
+    "sha256": "eae08321a14585072a0c568df23ca4127eaa298dc723e2bcb3bc2892d32e861c",
+    "rows": 2079
+  },
+  "output_csv": {
+    "path": "docs/field_verification/research/20261123_clist_f259_market_id_audit.csv",
+    "sha256": "d4a06e33b680b6762ddcae0b4b8a0426186a94a0876e97aeb3599bedca45b80d",
+    "rows": 2079
+  },
+  "coverage": {
+    "row_count": 2079,
+    "distinct_security_codes": 494,
+    "distinct_board_codes": 231,
+    "distinct_dates": 9,
+    "candidate_market_id_counts": {
+      "0": 1189,
+      "1": 890
+    },
+    "code_market_id_match_count": 2079,
+    "code_market_id_counterexamples": 0,
+    "same_security_as_f140_rows": 239,
+    "f140_pair_match_count": 239,
+    "same_security_as_f208_rows": 70,
+    "f208_pair_match_count": 70,
+    "direct_pair_comparison_count": 309,
+    "direct_pair_match_count": 309,
+    "direct_pair_counterexamples": 0,
+    "associated_code_prefix_counts": {
+      "000": 193,
+      "001": 39,
+      "002": 516,
+      "003": 57,
+      "200": 9,
+      "300": 298,
+      "301": 64,
+      "600": 364,
+      "601": 197,
+      "603": 104,
+      "605": 22,
+      "688": 201,
+      "900": 2,
+      "920": 13
+    }
+  },
+  "observed_code_to_market_id_rule": {
+    "market_id_1": [
+      "6xx Shanghai A-share",
+      "900xxx Shanghai B-share"
+    ],
+    "market_id_0": [
+      "0xx/2xx/3xx Shenzhen codes",
+      "920xxx Beijing Stock Exchange codes"
+    ],
+    "scope": "Only code classes present in the retained 2,079-row sample; not a general future parser contract."
+  },
+  "limitations": [
+    "The Eastmoney first-party page script maps f257 to zdname and f258 to zdcode, but does not explicitly bind f259.",
+    "The inferred meaning for f259 is based on complete retained raw rows and exact same-security equality with already verified clist f141/f209 market identifiers where f258 equals f140/f208.",
+    "No cross-source mapping or API alias is inferred."
+  ]
+}

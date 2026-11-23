@@ -24,16 +24,16 @@
       "project_derived_capture_output": 28,
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
-      "reference_status_missing": 38,
+      "reference_status_missing": 37,
       "registry_status_only_single_source": 419,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 103,
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 843,
-      "verified": 1800,
-      "verified_by_empirical_addendum": 254,
+      "unverified": 842,
+      "verified": 1801,
+      "verified_by_empirical_addendum": 255,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -19382,13 +19382,13 @@
         "东财-clist"
       ],
       "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
-      "canonical": "f259",
-      "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
-      "unit": "未知",
+      "canonical": "clist_associated_security_market_id",
+      "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+      "unit": "东财行情路由市场编号",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-clist": "unverified"
+        "东财-clist": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -49662,6 +49662,9 @@
     ],
     "ipo_record_bank_stock_classification": [
       "东财-event_dc(IPO发行记录)"
+    ],
+    "clist_associated_security_market_id": [
+      "东财-clist"
     ]
   },
   "mappings": [
@@ -169224,14 +169227,15 @@
       "code": "f259",
       "identity": "东财-clist::f259",
       "path": "f259",
-      "canonical": "f259",
-      "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
-      "unit": "未知",
+      "canonical": "clist_associated_security_market_id",
+      "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+      "unit": "东财行情路由市场编号",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "section": "12.8.6 东财 clist（板块排名/板块资金流）✅",
       "sections": [
-        "12.8.6 东财 clist（板块排名/板块资金流）✅"
+        "12.8.6 东财 clist（板块排名/板块资金流）✅",
+        "2026-11-23 Eastmoney clist f259 market-id empirical adjudication"
       ],
       "evidence": [
         {
@@ -169245,7 +169249,105 @@
       ],
       "reference_statuses": [],
       "status_raw_values": [],
-      "status_resolution": "reference_status_missing"
+      "status_resolution": "verified_by_empirical_addendum",
+      "adjudications": [
+        {
+          "id": "20261123-eastmoney-clist-f259-market-id",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-23",
+          "decision_file": "adjudications/20261123_clist_f259_market_id_empirical.json",
+          "evidence_file": "adjudications/20261123_clist_f259_market_id_empirical.md",
+          "evidence_sha256": "d6f4368504b7f8e84be27d37648ee7be6dcfc587f2ce9f71f6ed49c67152305b",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "reference_status_missing",
+          "previous_metadata": {
+            "canonical": "f259",
+            "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
+            "unit": "未知"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f259",
+              "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
+              "unit": "未知"
+            },
+            "after": {
+              "canonical": "clist_associated_security_market_id",
+              "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+              "unit": "东财行情路由市场编号"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "东方财富第一方页面脚本明确把 f257/f258 绑定为关联证券名称/代码，但未直接映射 f259。对保留期全部 2,079 行重算后，f259 在每行均匹配该 f258 证券代码对应的东财路由市场编号；其中 239 行 f258=f140 且 f259=f141，另 70 行 f258=f208 且 f259=f209，309 个同记录同证券配对全部精确相等。由此来源内定案 f259 为 f258 的路由市场编号，不声称 f259 有官方明文标签，不推断板块内关联证券选择规则，不建立跨源映射。",
+          "sample": {
+            "scope": "保留样本 2026-11-02 至 2026-11-18 的 9 个 clist 数据日；raw_clist.records[].f259 与同记录 f257/f258、f140/f141、f208/f209；样本按 9 个日期、231 个板块代码、494 个 f258 证券代码全量复核。",
+            "comparison_count": 2079,
+            "matched_count": 2079,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 494
+          }
+        }
+      ],
+      "reference_evidence": [
+        {
+          "section": "2026-11-23 Eastmoney clist f259 market-id empirical adjudication",
+          "canonical": "clist_associated_security_market_id",
+          "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+          "unit": "东财行情路由市场编号",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-23",
+          "status": "verified",
+          "adjudication_id": "20261123-eastmoney-clist-f259-market-id",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261123_clist_f259_market_id_empirical.md",
+          "evidence_sha256": "d6f4368504b7f8e84be27d37648ee7be6dcfc587f2ce9f71f6ed49c67152305b",
+          "metadata_change": {
+            "before": {
+              "canonical": "f259",
+              "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
+              "unit": "未知"
+            },
+            "after": {
+              "canonical": "clist_associated_security_market_id",
+              "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+              "unit": "东财行情路由市场编号"
+            }
+          },
+          "sample": {
+            "scope": "保留样本 2026-11-02 至 2026-11-18 的 9 个 clist 数据日；raw_clist.records[].f259 与同记录 f257/f258、f140/f141、f208/f209；样本按 9 个日期、231 个板块代码、494 个 f258 证券代码全量复核。",
+            "comparison_count": 2079,
+            "matched_count": 2079,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 494
+          }
+        }
+      ],
+      "status_evidence": {
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261123-eastmoney-clist-f259-market-id"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261123_clist_f259_market_id_empirical.md",
+        "evidence_sha256": "d6f4368504b7f8e84be27d37648ee7be6dcfc587f2ce9f71f6ed49c67152305b",
+        "sample": {
+          "scope": "保留样本 2026-11-02 至 2026-11-18 的 9 个 clist 数据日；raw_clist.records[].f259 与同记录 f257/f258、f140/f141、f208/f209；样本按 9 个日期、231 个板块代码、494 个 f258 证券代码全量复核。",
+          "comparison_count": 2079,
+          "matched_count": 2079,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 494
+        }
+      }
     },
     {
       "source": "东财-clist",

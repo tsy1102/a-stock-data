@@ -3568,7 +3568,7 @@
 | 东财-clist | `f209` | clist_loser_stock_market_id | 领跌股票的市场编号；与 f208 股票代码组合成东方财富 unify/r/{market}.{code} 行情路由。 | `verified` |
 | 东财-clist | `f257` | clist.f257 | 板块 3 日/5 日统计行关联证券简称；东方财富页面脚本将 f257 映射为 zdname。脚本未公开关联对象选择规则，不据此称为领涨股。 | `verified` |
 | 东财-clist | `f258` | clist.f258 | 板块 3 日/5 日统计行中与 f257 关联的六位证券代码；东方财富页面脚本将 f258 映射为 zdcode。脚本未公开关联对象选择规则。 | `verified` |
-| 东财-clist | `f259` | f259 | 未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号 | `unverified` |
+| 东财-clist | `f259` | clist_associated_security_market_id | 同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。 | `verified` |
 | 东财-clist | `f66` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |
 | 东财-clist | `f72` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |
 | 东财-clist | `f78` | f66 / f72 / f78 / f84 | 超大/大/中/小单净额 | `verified` |

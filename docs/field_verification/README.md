@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [东方财富 clist `f259` 市场路由编号来源内实证定案](adjudications/20261123_clist_f259_market_id_empirical.md)、[逐行审计](research/20261123_clist_f259_market_id_audit.csv)与[原始文件哈希清单](research/20261123_clist_f259_market_id_manifest.json)：重算 9 个保留数据日的 2,079 行、494 个证券代码；`f259` 与 `f258` 证券的市场路由编号全量一致，309 条同记录已验证市场号配对全部吻合，无反例。官方脚本未直接绑定 `f259`，因此按来源内实证定案；不建立跨源映射。
 - [Fuyao `auction_final` 契约定案](adjudications/20261123_fuyao_auction_final_contract_fields.md)、[结构化决定](adjudications/20261123_fuyao_auction_final_contract_fields.json)、[逐股样本审计](research/20261123_fuyao_auction_contract_field_audit.csv)与[审计清单](research/20261123_fuyao_auction_contract_field_audit.json)：依当前同花顺官方接口表头与精确采集路径，补齐 9 个完整字段身份；保留未声明的单位、未匹配量正负方向和竞价量比公式未知。19 个完整留存批次共 380 条记录，字段可用数为 372–380；不新增跨源映射。
 - [东方财富 IPO 日期字段裁决](adjudications/20261123_eventdc_ipo_date_fields.md)、[结构化裁决](adjudications/20261123_eventdc_ipo_date_fields.json)、[400 条历史样本审计](research/20261123_eventdc_ipo_date_fields_audit.csv)与[审计说明](research/20261123_eventdc_ipo_date_fields_audit.md)：定案 `MARKET_CAP_CONFIRMDATE` 为网上申购市值确认日的 T-2 交易日规则文本，`UP_DATE` 为来源更新日期标记；明确两者都不能用作行情 `as_of_date`。20 批样本内无缺失或批内冲突；不修改日期继承配置或建立跨源映射。
 - [东方财富 IPO `ORG_TYPE` 分类文本审计](adjudications/20261123_eventdc_ipo_org_type.md)、[结构化裁决](adjudications/20261123_eventdc_ipo_org_type.json)、[400 行审计 CSV](research/20261123_eventdc_ipo_org_type_audit.csv)与[批次清单](research/20261123_eventdc_ipo_org_type_audit.json)：将完整路径定为“银行股/非银行股”分类文本；20 批、21 个不同证券代码的重复观测无缺失或分类变化。东方财富未公开分类标准，裁决不外推其规则，不建立跨源映射。

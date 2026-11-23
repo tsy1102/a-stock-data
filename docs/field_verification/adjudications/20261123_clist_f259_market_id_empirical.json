@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-23",
+  "evidence_file": "docs/field_verification/adjudications/20261123_clist_f259_market_id_empirical.md",
+  "evidence_sha256": "d6f4368504b7f8e84be27d37648ee7be6dcfc587f2ce9f71f6ed49c67152305b",
+  "decisions": [
+    {
+      "id": "20261123-eastmoney-clist-f259-market-id",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-clist",
+        "code": "f259"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "reference_status_missing",
+      "previous": {
+        "canonical": "f259",
+        "meaning": "未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号",
+        "unit": "未知"
+      },
+      "canonical": "clist_associated_security_market_id",
+      "meaning": "同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0 与 1，未观察值不作外推。",
+      "unit": "东财行情路由市场编号",
+      "section": "2026-11-23 Eastmoney clist f259 market-id empirical adjudication",
+      "rationale": "东方财富第一方页面脚本明确把 f257/f258 绑定为关联证券名称/代码，但未直接映射 f259。对保留期全部 2,079 行重算后，f259 在每行均匹配该 f258 证券代码对应的东财路由市场编号；其中 239 行 f258=f140 且 f259=f141，另 70 行 f258=f208 且 f259=f209，309 个同记录同证券配对全部精确相等。由此来源内定案 f259 为 f258 的路由市场编号，不声称 f259 有官方明文标签，不推断板块内关联证券选择规则，不建立跨源映射。",
+      "sample": {
+        "scope": "保留样本 2026-11-02 至 2026-11-18 的 9 个 clist 数据日；raw_clist.records[].f259 与同记录 f257/f258、f140/f141、f208/f209；样本按 9 个日期、231 个板块代码、494 个 f258 证券代码全量复核。",
+        "comparison_count": 2079,
+        "matched_count": 2079,
+        "counterexample_count": 0,
+        "excluded_count": 0,
+        "stock_count": 494
+      }
+    }
+  ]
+}

@@ -582,11 +582,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # separately validated empirical addendum. The latest TDX batch adds 16
     # FinanceInfo alias contracts, ten official TQ field contracts plus the
     # ErrorId sample-key decision, and eight API-scoped Date contracts. The
-    # current count includes subsequent source-contract adjudications,
-    # including the IPO risk-warning flag added on 2026-11-22 and nine
-    # exact Fuyao auction_final paths and three Eastmoney IPO paths added
-    # on 2026-11-23.
-    assert len(pairs) == 273
+    # This count is the validator's active source-contract projection.
+    # Historical source-contract actions superseded by empirical semantics
+    # remain validated by the separate E3 path, but are not counted here.
+    assert len(pairs) == 271
     assert {
         code
         for source, code in pairs

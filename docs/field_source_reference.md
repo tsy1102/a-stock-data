@@ -2803,9 +2803,9 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | f109 / f160 | 5/10日 | 涨跌幅 | % | change_pct | ✅ |
 | f257 | 3日/5日榜单 | 页面脚本映射为关联证券简称（`zdname`）；不推断为涨幅领涨股或资金流领涨股 | 证券简称 | - | ✅ 来源字段映射 |
 | f258 | 3日/5日榜单 | 页面脚本映射为关联证券代码（`zdcode`）；具体关联对象选择逻辑未公开 | 六位证券代码 | - | ✅ 来源字段映射 |
-| f259 | 随行返回 | 未找到官方页面脚本字段映射；保留原始值待查，不按代码前缀猜市场号 | 未知 | - | ⚠️ 未定 |
+| f259 | 随行返回 | 同一板块统计行中与 f258 证券代码对应的东方财富行情路由市场编号；本批观察到 0/1，不外推未观察值 | 东财行情路由市场编号 | - | ✅ 来源内实证 |
 
-官方随页脚本将 `f257 → zdname`、`f258 → zdcode`，并在 3 日/5 日统计字段组中使用二者；`f259` 没有对应的官方字段绑定。该证据只确认名称/代码属性，不揭示榜单选择规则。见[东方财富板块资金流页面脚本](https://data.eastmoney.com/newstatic/js/bkzj/list.js)及[2026-11-22 来源字段裁决](field_verification/adjudications/20261122_remaining_source_contracts.md)。
+官方随页脚本将 `f257 → zdname`、`f258 → zdcode`，并在 3 日/5 日统计字段组中使用二者；未直接绑定 `f259`。后续对保留期 9 个数据日、2,079 行、494 个证券代码重算，`f259` 与代码对应的路由编号全量一致；其中 309 条与同记录已验证的 `f140/f141` 或 `f208/f209` 同证券配对均精确相同、无反例。来源内实证定案及范围见[2026-11-23 裁决](field_verification/adjudications/20261123_clist_f259_market_id_empirical.md)、[逐行审计](field_verification/research/20261123_clist_f259_market_id_audit.csv)和[清单](field_verification/research/20261123_clist_f259_market_id_manifest.json)。不据此推断板块选择规则或建立跨来源映射。
 
 #### 12.8.7 东财 push2 资金流（分钟级）✅
 

@@ -1,0 +1,3168 @@
+{
+  "version": "f9cb6b233bc5c685486344b5a1af0759",
+  "result": {
+    "pages": 1,
+    "data": [
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 11.41,
+        "PE_TTM": 5.09495218
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 3.6,
+        "PE_TTM": -0.46909139
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 6.72,
+        "PE_TTM": -135.3777124
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 10.01,
+        "PE_TTM": -818.84576941
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 2.3,
+        "PE_TTM": -7.87224483
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 6.62,
+        "PE_TTM": -242.26586825
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 1.38,
+        "PE_TTM": -541.11419634
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 10.82,
+        "PE_TTM": -132.36289063
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 3.51,
+        "PE_TTM": -28.86121406
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 10.54,
+        "PE_TTM": -15.81464881
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 6.82,
+        "PE_TTM": 141.82402999
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 6.74,
+        "PE_TTM": 43.38132774
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 12.35,
+        "PE_TTM": 118.51629074
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 28.12,
+        "PE_TTM": 36.31346618
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 14.65,
+        "PE_TTM": 43.99525277
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 16.22,
+        "PE_TTM": 62.4568068
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 6.17,
+        "PE_TTM": 12.75553226
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 20.06,
+        "PE_TTM": 11.4113563
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 20.7,
+        "PE_TTM": -1800.36165882
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-15 00:00:00",
+        "CLOSE_PRICE": 3.81,
+        "PE_TTM": 11.1693557
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 11.5,
+        "PE_TTM": 5.13514023
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 3.66,
+        "PE_TTM": -0.47690958
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 6.75,
+        "PE_TTM": -135.98207718
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 10.2,
+        "PE_TTM": -834.3882965
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 2.32,
+        "PE_TTM": -7.94069913
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 6.58,
+        "PE_TTM": -240.80202614
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 1.34,
+        "PE_TTM": -525.42972688
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 11.4,
+        "PE_TTM": -139.45812876
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 3.52,
+        "PE_TTM": -28.94343974
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 10.58,
+        "PE_TTM": -15.87466646
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 6.87,
+        "PE_TTM": 142.86379561
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 6.84,
+        "PE_TTM": 44.02496762
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 12.82,
+        "PE_TTM": 123.02662731
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 28.35,
+        "PE_TTM": 36.61048244
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 14.86,
+        "PE_TTM": 44.62590145
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 16.6,
+        "PE_TTM": 63.92003655
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 6.2,
+        "PE_TTM": 12.81755267
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 20.13,
+        "PE_TTM": 11.45117659
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 20.52,
+        "PE_TTM": -1784.70634004
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-16 00:00:00",
+        "CLOSE_PRICE": 3.99,
+        "PE_TTM": 11.6970418
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 11.65,
+        "PE_TTM": 5.20212032
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 3.5,
+        "PE_TTM": -0.45606107
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 6.49,
+        "PE_TTM": -130.74424903
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 9.72,
+        "PE_TTM": -795.1229649
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 2.32,
+        "PE_TTM": -7.94069913
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 6.58,
+        "PE_TTM": -240.80202614
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 1.33,
+        "PE_TTM": -521.50860951
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 11.56,
+        "PE_TTM": -141.41543583
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 3.52,
+        "PE_TTM": -28.94343974
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 10.14,
+        "PE_TTM": -15.21447239
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 6.77,
+        "PE_TTM": 140.78426437
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 6.58,
+        "PE_TTM": 42.35150394
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 12.41,
+        "PE_TTM": 119.09207838
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 28.25,
+        "PE_TTM": 36.48134493
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 14.5,
+        "PE_TTM": 43.54478943
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 16.65,
+        "PE_TTM": 64.11256678
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 6.28,
+        "PE_TTM": 12.98294045
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 20.45,
+        "PE_TTM": 11.63321218
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 20.52,
+        "PE_TTM": -1784.70634004
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-19 00:00:00",
+        "CLOSE_PRICE": 3.96,
+        "PE_TTM": 11.60909411
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 11.44,
+        "PE_TTM": 5.10834819
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 3.45,
+        "PE_TTM": -0.44954591
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 6.7,
+        "PE_TTM": -134.97480254
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 9.69,
+        "PE_TTM": -792.66888167
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 2.31,
+        "PE_TTM": -7.90647198
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 6.57,
+        "PE_TTM": -240.43606562
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 1.32,
+        "PE_TTM": -517.58749215
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 10.84,
+        "PE_TTM": -132.60755401
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 3.51,
+        "PE_TTM": -28.86121406
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 10.08,
+        "PE_TTM": -15.12444592
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 6.66,
+        "PE_TTM": 138.49678002
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 6.64,
+        "PE_TTM": 42.73768787
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 12.02,
+        "PE_TTM": 115.34945868
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 28.7,
+        "PE_TTM": 37.0624637
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 14.37,
+        "PE_TTM": 43.15438787
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 17.06,
+        "PE_TTM": 65.69131467
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 6.2,
+        "PE_TTM": 12.81755267
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 20.13,
+        "PE_TTM": 11.45117659
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 20.2,
+        "PE_TTM": -1756.87466223
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-20 00:00:00",
+        "CLOSE_PRICE": 3.91,
+        "PE_TTM": 11.46251464
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 11.41,
+        "PE_TTM": 5.09495218
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 3.46,
+        "PE_TTM": -0.45084894
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 6.69,
+        "PE_TTM": -134.77334761
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 9.62,
+        "PE_TTM": -786.94268748
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 2.3,
+        "PE_TTM": -7.87224483
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 6.48,
+        "PE_TTM": -237.14242088
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 1.32,
+        "PE_TTM": -517.58749215
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 11.04,
+        "PE_TTM": -135.05418785
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 3.52,
+        "PE_TTM": -28.94343974
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 10.09,
+        "PE_TTM": -15.13945033
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 6.67,
+        "PE_TTM": 138.70473314
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 6.64,
+        "PE_TTM": 42.73768787
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 12.02,
+        "PE_TTM": 115.34945868
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 28.88,
+        "PE_TTM": 37.29491121
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 14.17,
+        "PE_TTM": 42.55377009
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 17.17,
+        "PE_TTM": 66.11488118
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 6.16,
+        "PE_TTM": 12.73485878
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 20.53,
+        "PE_TTM": 11.11016289
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 20.5,
+        "PE_TTM": -1782.96686018
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-21 00:00:00",
+        "CLOSE_PRICE": 3.89,
+        "PE_TTM": 11.40388285
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 11.3,
+        "PE_TTM": 5.04583344
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 3.31,
+        "PE_TTM": -0.43130347
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 6.55,
+        "PE_TTM": -131.9529786
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 9.06,
+        "PE_TTM": -741.13313395
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 2.28,
+        "PE_TTM": -7.80379053
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 6.43,
+        "PE_TTM": -235.31261825
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 1.26,
+        "PE_TTM": -494.06078796
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 9.94,
+        "PE_TTM": -121.59770174
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 3.53,
+        "PE_TTM": -29.02566543
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 9.5,
+        "PE_TTM": -14.25419011
+      },
+      {
+        "SECURITY_CODE": "000016",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 2.46,
+        "PE_TTM": -0.47879215
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 6.23,
+        "PE_TTM": 129.55479572
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 6.31,
+        "PE_TTM": 40.61367627
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 11.17,
+        "PE_TTM": 107.192467
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 28.32,
+        "PE_TTM": 36.57174119
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 13.78,
+        "PE_TTM": 41.38256541
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 16.62,
+        "PE_TTM": 63.99704864
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 6.05,
+        "PE_TTM": 12.50745059
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 20.58,
+        "PE_TTM": 11.13722125
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 19.86,
+        "PE_TTM": -1727.30350455
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-22 00:00:00",
+        "CLOSE_PRICE": 3.88,
+        "PE_TTM": 11.37456696
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 11.2,
+        "PE_TTM": 5.00118005
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 3.37,
+        "PE_TTM": -0.43912166
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 6.62,
+        "PE_TTM": -133.36316311
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 9.18,
+        "PE_TTM": -750.94946685
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 2.31,
+        "PE_TTM": -7.90647198
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 6.57,
+        "PE_TTM": -240.43606562
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 1.27,
+        "PE_TTM": -497.98190532
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 10.25,
+        "PE_TTM": -125.38998419
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 3.54,
+        "PE_TTM": -29.10789111
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 9.63,
+        "PE_TTM": -14.44924745
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 6.3,
+        "PE_TTM": 131.01046759
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 6.3,
+        "PE_TTM": 40.54931228
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 11.1,
+        "PE_TTM": 106.52071475
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 29.19,
+        "PE_TTM": 37.69523747
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 13.93,
+        "PE_TTM": 41.83302875
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 17.46,
+        "PE_TTM": 67.23155652
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 6.05,
+        "PE_TTM": 12.50745059
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 20.64,
+        "PE_TTM": 11.16969129
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 20.3,
+        "PE_TTM": -1765.57206154
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-23 00:00:00",
+        "CLOSE_PRICE": 3.91,
+        "PE_TTM": 11.46251464
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 11.3,
+        "PE_TTM": 5.0433964
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 3.43,
+        "PE_TTM": -0.44693985
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 6.48,
+        "PE_TTM": -130.5427941
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 9.3,
+        "PE_TTM": -760.76579975
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 2.31,
+        "PE_TTM": -7.90647198
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 6.66,
+        "PE_TTM": -243.72971035
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 1.29,
+        "PE_TTM": -505.82414005
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 10.22,
+        "PE_TTM": -125.02298911
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 3.57,
+        "PE_TTM": -29.35456815
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 9.69,
+        "PE_TTM": -14.53927391
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 6.15,
+        "PE_TTM": 127.89117074
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 6.34,
+        "PE_TTM": 40.80676823
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 10.87,
+        "PE_TTM": 120.81025358
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 28.54,
+        "PE_TTM": 36.8558437
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 13.92,
+        "PE_TTM": 41.80299786
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 17.65,
+        "PE_TTM": 67.96317139
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 6.13,
+        "PE_TTM": 12.67283837
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 21.06,
+        "PE_TTM": 11.39698152
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 20.38,
+        "PE_TTM": -407.64718337
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-26 00:00:00",
+        "CLOSE_PRICE": 3.97,
+        "PE_TTM": 11.63841001
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 11.47,
+        "PE_TTM": 5.11927051
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 3.3,
+        "PE_TTM": -0.43000044
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 6.28,
+        "PE_TTM": -126.51369551
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 8.9,
+        "PE_TTM": -728.04469008
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 2.27,
+        "PE_TTM": -7.76956337
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 6.52,
+        "PE_TTM": -238.60626299
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 1.27,
+        "PE_TTM": -497.98190532
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 10.05,
+        "PE_TTM": -122.94335035
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 3.5,
+        "PE_TTM": -28.77898838
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 9.34,
+        "PE_TTM": -14.01411954
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 5.97,
+        "PE_TTM": 124.14801452
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 6.16,
+        "PE_TTM": 43.30420871
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 10.42,
+        "PE_TTM": 115.80890914
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 27.72,
+        "PE_TTM": 35.79691616
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 13.62,
+        "PE_TTM": 40.90207118
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 17.35,
+        "PE_TTM": 66.80799001
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 6.05,
+        "PE_TTM": 12.50745059
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 20.94,
+        "PE_TTM": 11.33204145
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 19.83,
+        "PE_TTM": -396.64591002
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-27 00:00:00",
+        "CLOSE_PRICE": 3.92,
+        "PE_TTM": 11.49183054
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 11.31,
+        "PE_TTM": 5.04785959
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 3.29,
+        "PE_TTM": -0.42869741
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 6.44,
+        "PE_TTM": -129.73697438
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 9.08,
+        "PE_TTM": -742.76918943
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 2.27,
+        "PE_TTM": -7.76956337
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 6.53,
+        "PE_TTM": -238.97222351
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 1.26,
+        "PE_TTM": -494.06078796
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 10.3,
+        "PE_TTM": -126.00164265
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 3.49,
+        "PE_TTM": -28.6967627
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 9.37,
+        "PE_TTM": -14.05913277
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 5.88,
+        "PE_TTM": 122.27643641
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 6.13,
+        "PE_TTM": 43.09331159
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 10.67,
+        "PE_TTM": 118.58743383
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 28.62,
+        "PE_TTM": 36.9591537
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 13.86,
+        "PE_TTM": 42.46449463
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 18.23,
+        "PE_TTM": 70.19652207
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 6,
+        "PE_TTM": 12.40408323
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 20.98,
+        "PE_TTM": 11.35368814
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 19.53,
+        "PE_TTM": -390.64521547
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-28 00:00:00",
+        "CLOSE_PRICE": 3.95,
+        "PE_TTM": 11.57977822
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 11.54,
+        "PE_TTM": 5.15051279
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 3.19,
+        "PE_TTM": -0.41566709
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 6.17,
+        "PE_TTM": -56.51055597
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 9.05,
+        "PE_TTM": -740.31510621
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 2.23,
+        "PE_TTM": -7.63265477
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 6.43,
+        "PE_TTM": -235.31261825
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 1.19,
+        "PE_TTM": -466.61296641
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 9.59,
+        "PE_TTM": -117.31609252
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 3.36,
+        "PE_TTM": -16.66528892
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 8.98,
+        "PE_TTM": -13.47396075
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 5.74,
+        "PE_TTM": 186.38592048
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 6.01,
+        "PE_TTM": 42.24972311
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 10.98,
+        "PE_TTM": 122.03280445
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 27.01,
+        "PE_TTM": 34.88003988
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 13.68,
+        "PE_TTM": 41.91300768
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 17.18,
+        "PE_TTM": 66.15338723
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 6.04,
+        "PE_TTM": 12.23221265
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 20.94,
+        "PE_TTM": 11.33204145
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 17.62,
+        "PE_TTM": -352.44079347
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-29 00:00:00",
+        "CLOSE_PRICE": 3.91,
+        "PE_TTM": 11.46251464
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 11.64,
+        "PE_TTM": 5.19514461
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 3.19,
+        "PE_TTM": -0.45048423
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 5.89,
+        "PE_TTM": -53.94605748
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 8.5,
+        "PE_TTM": -676.92783657
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 2.22,
+        "PE_TTM": -7.59842762
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 6.44,
+        "PE_TTM": -106.77510005
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 1.15,
+        "PE_TTM": -45.77575651
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 9.45,
+        "PE_TTM": -48.81541739
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 3.32,
+        "PE_TTM": -16.46689262
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 8.55,
+        "PE_TTM": -11.80842516
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 5.5,
+        "PE_TTM": 178.59278095
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 5.88,
+        "PE_TTM": 41.33583559
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 11.22,
+        "PE_TTM": 124.70018815
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 25.68,
+        "PE_TTM": 33.15759657
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 13.82,
+        "PE_TTM": 42.34194197
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 16.32,
+        "PE_TTM": 77.12833478
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 6.07,
+        "PE_TTM": 12.29296867
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 21.02,
+        "PE_TTM": 11.37533483
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 18.1,
+        "PE_TTM": -362.04190476
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-10-30 00:00:00",
+        "CLOSE_PRICE": 3.59,
+        "PE_TTM": 15.9226669
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 11.54,
+        "PE_TTM": 5.15051279
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 3.2,
+        "PE_TTM": -0.45189641
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 5.9,
+        "PE_TTM": -54.03764672
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 9.12,
+        "PE_TTM": -726.30374936
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 2.24,
+        "PE_TTM": -7.44377898
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 6.53,
+        "PE_TTM": -108.26729866
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 1.07,
+        "PE_TTM": -42.59135605
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 9.71,
+        "PE_TTM": -50.15848707
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 3.37,
+        "PE_TTM": -16.71488799
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 8.83,
+        "PE_TTM": -12.19513382
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 5.7,
+        "PE_TTM": 185.08706389
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 6.01,
+        "PE_TTM": 42.24972311
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 11.61,
+        "PE_TTM": 129.03468667
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 26.07,
+        "PE_TTM": 33.6611582
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 14.04,
+        "PE_TTM": 43.01598157
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 17.55,
+        "PE_TTM": 82.94131589
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 6.17,
+        "PE_TTM": 12.49548875
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 21.4,
+        "PE_TTM": 11.58097799
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 17.93,
+        "PE_TTM": -358.64151118
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-02 00:00:00",
+        "CLOSE_PRICE": 3.63,
+        "PE_TTM": 16.10007823
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 11.77,
+        "PE_TTM": 5.25316599
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 3.21,
+        "PE_TTM": -0.45330858
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 5.85,
+        "PE_TTM": -53.57970056
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 9.33,
+        "PE_TTM": -743.02784885
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 2.28,
+        "PE_TTM": -7.5767036
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 6.64,
+        "PE_TTM": -110.09109695
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 1.08,
+        "PE_TTM": -42.98940611
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 9.31,
+        "PE_TTM": -48.09222602
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 3.43,
+        "PE_TTM": -17.01248244
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 8.75,
+        "PE_TTM": -12.08464563
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 5.8,
+        "PE_TTM": 188.33420536
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 6.11,
+        "PE_TTM": 42.95271351
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 11.29,
+        "PE_TTM": 125.47817506
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 24.54,
+        "PE_TTM": 31.68564719
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 14.12,
+        "PE_TTM": 43.26108688
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 16.69,
+        "PE_TTM": 78.87695511
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 6.24,
+        "PE_TTM": 12.6372528
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 21.66,
+        "PE_TTM": 11.72168146
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 18.06,
+        "PE_TTM": -361.24181215
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-03 00:00:00",
+        "CLOSE_PRICE": 3.66,
+        "PE_TTM": 16.23313672
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 11.74,
+        "PE_TTM": 5.23977644
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 3.2,
+        "PE_TTM": -0.45189641
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 6,
+        "PE_TTM": -54.95353903
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 9.14,
+        "PE_TTM": -727.89652074
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 2.28,
+        "PE_TTM": -7.5767036
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 6.67,
+        "PE_TTM": -110.58849648
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 1.1,
+        "PE_TTM": -43.78550622
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 9.14,
+        "PE_TTM": -47.21406507
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 3.49,
+        "PE_TTM": -17.31007688
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 8.82,
+        "PE_TTM": -12.1813228
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 6.38,
+        "PE_TTM": 207.1676259
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 6.13,
+        "PE_TTM": 43.09331159
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 11.2,
+        "PE_TTM": 124.47790617
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 26.76,
+        "PE_TTM": 34.55207493
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 14.2,
+        "PE_TTM": 43.50619219
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 18.11,
+        "PE_TTM": 85.5878764
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 6.28,
+        "PE_TTM": 12.71826083
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 21.67,
+        "PE_TTM": 11.72709313
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 18.51,
+        "PE_TTM": -370.24285398
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-04 00:00:00",
+        "CLOSE_PRICE": 3.69,
+        "PE_TTM": 16.36619522
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 11.64,
+        "PE_TTM": 5.19514461
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 3.33,
+        "PE_TTM": -0.4702547
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 6.24,
+        "PE_TTM": -57.15168059
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 9.49,
+        "PE_TTM": -755.77001989
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 2.3,
+        "PE_TTM": -7.64316592
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 6.79,
+        "PE_TTM": -112.57809462
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 1.1,
+        "PE_TTM": -43.78550622
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 9.34,
+        "PE_TTM": -48.2471956
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 3.51,
+        "PE_TTM": -17.40927503
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 9.2,
+        "PE_TTM": -12.70614169
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 7.02,
+        "PE_TTM": 227.94933132
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 6.17,
+        "PE_TTM": 43.37450775
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 11.66,
+        "PE_TTM": 129.59039161
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 27.27,
+        "PE_TTM": 35.2105786
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 14.31,
+        "PE_TTM": 43.84321198
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 18.7,
+        "PE_TTM": 88.37621694
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 6.26,
+        "PE_TTM": 12.67775682
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 21.5,
+        "PE_TTM": 11.63509471
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 20.36,
+        "PE_TTM": -407.24713707
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-05 00:00:00",
+        "CLOSE_PRICE": 3.7,
+        "PE_TTM": 16.41054805
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 11.81,
+        "PE_TTM": 5.27101872
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 3.24,
+        "PE_TTM": -0.45754511
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 6.13,
+        "PE_TTM": -56.14419905
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 9.27,
+        "PE_TTM": -738.24953471
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 2.29,
+        "PE_TTM": -7.60993476
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 6.68,
+        "PE_TTM": -110.75429633
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 1.09,
+        "PE_TTM": -43.38745617
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 8.94,
+        "PE_TTM": -46.18093455
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 3.49,
+        "PE_TTM": -17.31007688
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 8.98,
+        "PE_TTM": -12.40229917
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 6.33,
+        "PE_TTM": 205.54405516
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": 43.44480679
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 11.05,
+        "PE_TTM": 122.81079136
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 25.96,
+        "PE_TTM": 33.519128
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 14,
+        "PE_TTM": 42.89342891
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 18.35,
+        "PE_TTM": 86.72211662
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 6.29,
+        "PE_TTM": 12.73851284
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 21.5,
+        "PE_TTM": 11.63509471
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 19.92,
+        "PE_TTM": -398.44611839
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-06 00:00:00",
+        "CLOSE_PRICE": 3.67,
+        "PE_TTM": 16.27748956
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 11.89,
+        "PE_TTM": 5.30672418
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 3.19,
+        "PE_TTM": -0.45048423
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 6.11,
+        "PE_TTM": -55.96102058
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 9.39,
+        "PE_TTM": -747.80616299
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 2.28,
+        "PE_TTM": -7.5767036
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 6.59,
+        "PE_TTM": -109.26209773
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 1.09,
+        "PE_TTM": -43.38745617
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 9.09,
+        "PE_TTM": -46.95578244
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 3.45,
+        "PE_TTM": -17.11168059
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 8.96,
+        "PE_TTM": -12.37467713
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 6.54,
+        "PE_TTM": 212.36305225
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": 43.44480679
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 11.19,
+        "PE_TTM": 124.36676519
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 26.02,
+        "PE_TTM": 33.59659902
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 14.17,
+        "PE_TTM": 43.41427769
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 20.19,
+        "PE_TTM": 95.41795828
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 6.26,
+        "PE_TTM": 12.67775682
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 21.32,
+        "PE_TTM": 11.53768461
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 19.01,
+        "PE_TTM": -380.24401157
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-09 00:00:00",
+        "CLOSE_PRICE": 3.77,
+        "PE_TTM": 16.72101788
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 11.86,
+        "PE_TTM": 5.29333463
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 3.2,
+        "PE_TTM": -0.45189641
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": -56.6021452
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 9.35,
+        "PE_TTM": -744.62062023
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 2.28,
+        "PE_TTM": -7.5767036
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 6.6,
+        "PE_TTM": -109.42789757
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 1.15,
+        "PE_TTM": -45.77575651
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 9.43,
+        "PE_TTM": -48.71210434
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 3.41,
+        "PE_TTM": -16.91328429
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 9.44,
+        "PE_TTM": -13.03760626
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 6.58,
+        "PE_TTM": 213.66190884
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": 43.44480679
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 11.62,
+        "PE_TTM": 129.14582766
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 26.89,
+        "PE_TTM": 34.71992881
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 14.2,
+        "PE_TTM": 43.50619219
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 21.05,
+        "PE_TTM": 99.48231906
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 6.23,
+        "PE_TTM": 12.61700079
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 21.09,
+        "PE_TTM": 11.41321616
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 19.31,
+        "PE_TTM": -386.24470613
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-10 00:00:00",
+        "CLOSE_PRICE": 3.92,
+        "PE_TTM": 17.38631037
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 11.71,
+        "PE_TTM": 5.22638689
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 3.2,
+        "PE_TTM": -0.45189641
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 6.32,
+        "PE_TTM": -57.88439445
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 9.76,
+        "PE_TTM": -777.27243352
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 2.29,
+        "PE_TTM": -7.60993476
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 6.6,
+        "PE_TTM": -109.42789757
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 1.12,
+        "PE_TTM": -44.58160634
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 9.54,
+        "PE_TTM": -49.28032613
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 3.42,
+        "PE_TTM": -16.96288336
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 9.6,
+        "PE_TTM": -13.25858264
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 6.63,
+        "PE_TTM": 215.28547958
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": 43.44480679
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 11.9,
+        "PE_TTM": 132.25777531
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 27.69,
+        "PE_TTM": 35.75287575
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 14.21,
+        "PE_TTM": 43.53683035
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 23.16,
+        "PE_TTM": 109.45418097
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 6.21,
+        "PE_TTM": 12.57649678
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 20.94,
+        "PE_TTM": 11.33204108
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 19.74,
+        "PE_TTM": -394.84570166
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-11 00:00:00",
+        "CLOSE_PRICE": 3.88,
+        "PE_TTM": 17.20889904
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 11.79,
+        "PE_TTM": 5.26209235
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 3.14,
+        "PE_TTM": -0.44342335
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": -56.6021452
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 9.3,
+        "PE_TTM": -740.63869178
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 2.26,
+        "PE_TTM": -7.51024129
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 6.45,
+        "PE_TTM": -106.9408999
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 1.09,
+        "PE_TTM": -43.38745617
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 9.48,
+        "PE_TTM": -48.97038697
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 3.38,
+        "PE_TTM": -16.76448707
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 9.43,
+        "PE_TTM": -13.02379524
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 6.42,
+        "PE_TTM": 208.46648249
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 6.19,
+        "PE_TTM": 43.51510583
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 12.13,
+        "PE_TTM": 134.81401803
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 27.38,
+        "PE_TTM": 35.35260881
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 13.99,
+        "PE_TTM": 42.86279075
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 24.34,
+        "PE_TTM": 115.03086204
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 6.18,
+        "PE_TTM": 12.51574076
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 20.81,
+        "PE_TTM": 11.26168934
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 19.08,
+        "PE_TTM": -381.64417364
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-12 00:00:00",
+        "CLOSE_PRICE": 3.77,
+        "PE_TTM": 16.72101788
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 12.07,
+        "PE_TTM": 5.38706147
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 3.06,
+        "PE_TTM": -0.43212594
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 5.77,
+        "PE_TTM": -52.8469867
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 8.92,
+        "PE_TTM": -710.37603556
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 2.22,
+        "PE_TTM": -7.37731667
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 6.33,
+        "PE_TTM": -104.95130176
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 1.05,
+        "PE_TTM": -41.79525594
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 8.53,
+        "PE_TTM": -44.06301697
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 3.3,
+        "PE_TTM": -16.36769447
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 9.24,
+        "PE_TTM": -12.76138579
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 6.12,
+        "PE_TTM": 198.72505807
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 6.08,
+        "PE_TTM": 42.74181639
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 11.07,
+        "PE_TTM": 123.03307334
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 26.61,
+        "PE_TTM": 34.35839738
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 13.61,
+        "PE_TTM": 41.69854054
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 24.61,
+        "PE_TTM": 116.30688229
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 6.17,
+        "PE_TTM": 12.49548875
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 20.8,
+        "PE_TTM": 11.25627767
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 18.3,
+        "PE_TTM": -366.0423678
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-13 00:00:00",
+        "CLOSE_PRICE": 3.7,
+        "PE_TTM": 16.41054805
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 12.3,
+        "PE_TTM": 5.48971467
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 3.01,
+        "PE_TTM": -0.42506506
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 5.51,
+        "PE_TTM": -50.46566668
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 8.79,
+        "PE_TTM": -700.02302159
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 2.21,
+        "PE_TTM": -7.34408551
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 6.4,
+        "PE_TTM": -106.11190067
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 0.95,
+        "PE_TTM": -37.81475537
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 7.68,
+        "PE_TTM": -39.67221223
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 3.27,
+        "PE_TTM": -16.21889725
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 9.06,
+        "PE_TTM": -12.51278736
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 5.97,
+        "PE_TTM": 193.85434586
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 6.02,
+        "PE_TTM": 42.32002215
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 10.6,
+        "PE_TTM": 117.80944692
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 25.35,
+        "PE_TTM": 32.73150596
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 13.42,
+        "PE_TTM": 41.11641543
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 22.8,
+        "PE_TTM": 107.75282065
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 6.24,
+        "PE_TTM": 12.6372528
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 21.2,
+        "PE_TTM": 11.47274455
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 17.45,
+        "PE_TTM": -349.04039989
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-16 00:00:00",
+        "CLOSE_PRICE": 3.68,
+        "PE_TTM": 16.32184239
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 12.25,
+        "PE_TTM": 5.46739876
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 2.96,
+        "PE_TTM": -0.41800418
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 5.52,
+        "PE_TTM": -50.55725591
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 8.52,
+        "PE_TTM": -678.52060795
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 2.2,
+        "PE_TTM": -7.31085435
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 6.44,
+        "PE_TTM": -106.77510005
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 0.86,
+        "PE_TTM": -34.23230486
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 6.94,
+        "PE_TTM": -35.84962928
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 3.25,
+        "PE_TTM": -16.1196991
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 8.99,
+        "PE_TTM": -12.4161102
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 5.94,
+        "PE_TTM": 192.88020342
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 5.93,
+        "PE_TTM": 41.68733079
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 10.43,
+        "PE_TTM": 115.92005013
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 26.05,
+        "PE_TTM": 33.63533453
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 13.23,
+        "PE_TTM": 40.53429032
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 21.8,
+        "PE_TTM": 103.02681974
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 6.34,
+        "PE_TTM": 12.83977288
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 21.09,
+        "PE_TTM": 11.41321616
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 17.08,
+        "PE_TTM": -341.63954328
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-17 00:00:00",
+        "CLOSE_PRICE": 3.67,
+        "PE_TTM": 16.27748956
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 12.2,
+        "PE_TTM": 5.44508284
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 2.96,
+        "PE_TTM": -0.41800418
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 5.46,
+        "PE_TTM": -50.00772052
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 8.3,
+        "PE_TTM": -661.00012277
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 2.2,
+        "PE_TTM": -7.31085435
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 6.36,
+        "PE_TTM": -105.4487013
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 0.95,
+        "PE_TTM": -37.81475537
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 6.96,
+        "PE_TTM": -35.95294233
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 3.23,
+        "PE_TTM": -16.02050095
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 8.87,
+        "PE_TTM": -12.25037792
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 5.67,
+        "PE_TTM": 184.11292145
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 5.88,
+        "PE_TTM": 41.33583559
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 10.2,
+        "PE_TTM": 113.36380741
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 26.23,
+        "PE_TTM": 33.86774759
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 13.05,
+        "PE_TTM": 39.98280338
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 21.29,
+        "PE_TTM": 100.61655928
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 6.36,
+        "PE_TTM": 12.8802769
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 21.24,
+        "PE_TTM": 11.49439124
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 16.6,
+        "PE_TTM": -332.03843199
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-18 00:00:00",
+        "CLOSE_PRICE": 3.62,
+        "PE_TTM": 16.05572539
+      },
+      {
+        "SECURITY_CODE": "000001",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 12.04,
+        "PE_TTM": 5.37367192
+      },
+      {
+        "SECURITY_CODE": "000002",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 2.92,
+        "PE_TTM": -0.41235547
+      },
+      {
+        "SECURITY_CODE": "000006",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 5.22,
+        "PE_TTM": -47.80957896
+      },
+      {
+        "SECURITY_CODE": "000007",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 8.02,
+        "PE_TTM": -638.70132345
+      },
+      {
+        "SECURITY_CODE": "000008",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 2.16,
+        "PE_TTM": -7.17792973
+      },
+      {
+        "SECURITY_CODE": "000009",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 6.33,
+        "PE_TTM": -104.95130176
+      },
+      {
+        "SECURITY_CODE": "000010",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 1.03,
+        "PE_TTM": -40.99915583
+      },
+      {
+        "SECURITY_CODE": "000011",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 6.72,
+        "PE_TTM": -34.7131857
+      },
+      {
+        "SECURITY_CODE": "000012",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 3.21,
+        "PE_TTM": -15.92130281
+      },
+      {
+        "SECURITY_CODE": "000014",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 8.45,
+        "PE_TTM": -11.67031492
+      },
+      {
+        "SECURITY_CODE": "000017",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 5.38,
+        "PE_TTM": 174.69621118
+      },
+      {
+        "SECURITY_CODE": "000019",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 5.78,
+        "PE_TTM": 40.63284519
+      },
+      {
+        "SECURITY_CODE": "000020",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 9.75,
+        "PE_TTM": 108.36246296
+      },
+      {
+        "SECURITY_CODE": "000021",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 26.06,
+        "PE_TTM": 33.64824637
+      },
+      {
+        "SECURITY_CODE": "000025",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 12.84,
+        "PE_TTM": 39.33940195
+      },
+      {
+        "SECURITY_CODE": "000026",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 20.05,
+        "PE_TTM": 94.75631816
+      },
+      {
+        "SECURITY_CODE": "000027",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 6.36,
+        "PE_TTM": 12.8802769
+      },
+      {
+        "SECURITY_CODE": "000028",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 20.97,
+        "PE_TTM": 11.34827609
+      },
+      {
+        "SECURITY_CODE": "000029",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 16.12,
+        "PE_TTM": -322.4373207
+      },
+      {
+        "SECURITY_CODE": "000030",
+        "TRADE_DATE": "2026-11-19 00:00:00",
+        "CLOSE_PRICE": 3.57,
+        "PE_TTM": 15.83396123
+      }
+    ],
+    "count": 526
+  },
+  "success": true,
+  "message": "ok",
+  "code": 0
+}

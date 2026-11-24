@@ -1,0 +1,208 @@
+{
+  "title": "Eastmoney IPO LATELY_PRICE batch date anchoring and PE_TTM current-valuation test",
+  "audit_date": "2026-11-24",
+  "text_hash_basis": "Canonical LF SHA-256 via scripts/evidence_hash.py (canonical_text_file_sha256).",
+  "official_source": {
+    "page": "https://data.eastmoney.com/gzfx/detail/000012.html",
+    "endpoint": "https://datacenter-web.eastmoney.com/api/data/v1/get",
+    "reportName": "RPT_VALUEANALYSIS_DET",
+    "filter": "(TRADE_DATE>='2026-10-15')(TRADE_DATE<='2026-11-19')(SECURITY_CODE in (\"000001\",\"000002\",\"000006\",\"000007\",\"000008\",\"000009\",\"000010\",\"000011\",\"000012\",\"000014\",\"000016\",\"000017\",\"000019\",\"000020\",\"000021\",\"000025\",\"000026\",\"000027\",\"000028\",\"000029\",\"000030\"))",
+    "security_codes": [
+      "000001",
+      "000002",
+      "000006",
+      "000007",
+      "000008",
+      "000009",
+      "000010",
+      "000011",
+      "000012",
+      "000014",
+      "000016",
+      "000017",
+      "000019",
+      "000020",
+      "000021",
+      "000025",
+      "000026",
+      "000027",
+      "000028",
+      "000029",
+      "000030"
+    ],
+    "columns": "SECURITY_CODE,TRADE_DATE,CLOSE_PRICE,PE_TTM",
+    "page_number": 1,
+    "page_size": 2000,
+    "source": "WEB",
+    "client": "WEB",
+    "date_range": [
+      "2026-10-15",
+      "2026-11-19"
+    ],
+    "response_count": 526,
+    "response_rows": 526,
+    "unique_trade_dates": 26,
+    "unique_security_codes": 21,
+    "archived_response": "docs/field_verification/research/20261124_eventdc_ipo_valuation_history_20261015_20261119.json",
+    "archived_response_canonical_lf_sha256": "ac2c27c6db37a9194229a646093e3b8edb30511f30a167b6c87f23f7f2f62d7b"
+  },
+  "official_next_day_check": {
+    "endpoint": "https://datacenter-web.eastmoney.com/api/data/v1/get",
+    "reportName": "RPT_VALUEANALYSIS_DET",
+    "filter": "(TRADE_DATE='2026-11-20')(SECURITY_CODE in (\"000001\",\"000002\",\"000006\",\"000007\",\"000008\",\"000009\",\"000010\",\"000011\",\"000012\",\"000014\",\"000017\",\"000019\",\"000020\",\"000021\",\"000025\",\"000026\",\"000027\",\"000028\",\"000029\",\"000030\"))",
+    "security_codes": [
+      "000001",
+      "000002",
+      "000006",
+      "000007",
+      "000008",
+      "000009",
+      "000010",
+      "000011",
+      "000012",
+      "000014",
+      "000017",
+      "000019",
+      "000020",
+      "000021",
+      "000025",
+      "000026",
+      "000027",
+      "000028",
+      "000029",
+      "000030"
+    ],
+    "columns": "ALL",
+    "page_number": 1,
+    "page_size": 100,
+    "source": "WEB",
+    "client": "WEB",
+    "archived_response": "docs/field_verification/research/20261124_eventdc_ipo_valuation_20261120.json",
+    "archive_canonical_lf_sha256": "42abc108356291a52a683c67b02cdc7520f6fd32f6d52ce4c8df4aa2eb74d9dc",
+    "capture_input_canonical_lf_sha256": "ba857795a52dfe5802e2f5eea2e04d8bd792247dffbbd1b0c6c9082ff82ac957",
+    "response_count": 20,
+    "response_rows": 20,
+    "trade_date": "2026-11-20"
+  },
+  "retained_capture_batches": [
+    {
+      "path": "docs/field_verification/20261016/raw_event_dc.json",
+      "data_date": "2026-10-16",
+      "canonical_lf_sha256": "a1242de356dd8d8b1806252d22a6df9371544bd1edc0a4b5cb6dc0bb3c356c0e"
+    },
+    {
+      "path": "docs/field_verification/20261020/raw_event_dc.json",
+      "data_date": "2026-10-20",
+      "canonical_lf_sha256": "ad882ca961edab92e706670bdbd1db5c70da3a0d6a588b972411ee8acffef301"
+    },
+    {
+      "path": "docs/field_verification/20261021/raw_event_dc.json",
+      "data_date": "2026-10-21",
+      "canonical_lf_sha256": "07a4bf45b485b493eedcebc0d2faa68350285e8687222e94953a91f997d502c8"
+    },
+    {
+      "path": "docs/field_verification/20261023/raw_event_dc.json",
+      "data_date": "2026-10-23",
+      "canonical_lf_sha256": "7f31ff890162dd06b8e0633471cdce57b12833b863a59c01a0ce735a67ac8c81"
+    },
+    {
+      "path": "docs/field_verification/20261026/raw_event_dc.json",
+      "data_date": "2026-10-26",
+      "canonical_lf_sha256": "4da77fb4e63682b0aade89299bfbfb8025fdeaba476b4d7356485c4e75c250d8"
+    },
+    {
+      "path": "docs/field_verification/20261028/raw_event_dc.json",
+      "data_date": "2026-10-28",
+      "canonical_lf_sha256": "5723474e852dd53bf49659fcfc52270bea44d654e8c4cd5dee415ace3a4ca833"
+    },
+    {
+      "path": "docs/field_verification/20261029/raw_event_dc.json",
+      "data_date": "2026-10-29",
+      "canonical_lf_sha256": "2f364ccdd127a8c4150df1b3f155df9376d3abfb1aed91fd1cbe4182f8f9ea4d"
+    },
+    {
+      "path": "docs/field_verification/20261030/raw_event_dc.json",
+      "data_date": "2026-10-30",
+      "canonical_lf_sha256": "a8f4c96225b8510909c3af21997034fefbf66c44bc7c9b4a97c9358e5ddd9bda"
+    },
+    {
+      "path": "docs/field_verification/20261102/raw_event_dc.json",
+      "data_date": "2026-11-02",
+      "canonical_lf_sha256": "0f187b30a0c90ba0216865c9dfad8f4cf26366fcee6cdf5dc29d3f63cba9022a"
+    },
+    {
+      "path": "docs/field_verification/20261103/raw_event_dc.json",
+      "data_date": "2026-11-03",
+      "canonical_lf_sha256": "af0fd0b3b9deed09fe6be496bef070cf1c2855460d34eb38c7a484b32d7e32c1"
+    },
+    {
+      "path": "docs/field_verification/20261104/raw_event_dc.json",
+      "data_date": "2026-11-04",
+      "canonical_lf_sha256": "0af77a1c66d6eb2861ff04591b2a3de030c48de317ad8eee7fabe97011d2fb2e"
+    },
+    {
+      "path": "docs/field_verification/20261105/raw_event_dc.json",
+      "data_date": "2026-11-05",
+      "canonical_lf_sha256": "dac4cd71c4d53f0100b9f8ba9c233dc45162cfd64815f2f44f5ddf5ea0105b3b"
+    },
+    {
+      "path": "docs/field_verification/20261106/raw_event_dc.json",
+      "data_date": "2026-11-06",
+      "canonical_lf_sha256": "056249217e615046b1f2256f583853b3f3b8a13b8aadb541bae263e67051f669"
+    },
+    {
+      "path": "docs/field_verification/20261109/raw_event_dc.json",
+      "data_date": "2026-11-09",
+      "canonical_lf_sha256": "004f8affe4e1d4f39f5a692ce6f550aafd8896cbd2fb2dacc56d0ed1898a1b0b"
+    },
+    {
+      "path": "docs/field_verification/20261110/raw_event_dc.json",
+      "data_date": "2026-11-10",
+      "canonical_lf_sha256": "c1791ece80eb306363d9078d7f7b177c1f30bbc47c494e6aaa39bf3cb2e4cbed"
+    },
+    {
+      "path": "docs/field_verification/20261112/raw_event_dc.json",
+      "data_date": "2026-11-12",
+      "canonical_lf_sha256": "0a2d759121aadd4d8cdcd577124e460ae3119b988f08f5e72a543bb68302b7e3"
+    },
+    {
+      "path": "docs/field_verification/20261116/raw_event_dc.json",
+      "data_date": "2026-11-16",
+      "canonical_lf_sha256": "eeafdc96c71e3b3f4ea7c4154ddf35d4fa2b98f71e89efa3ff55687bfa1d8455"
+    },
+    {
+      "path": "docs/field_verification/20261117/raw_event_dc.json",
+      "data_date": "2026-11-17",
+      "canonical_lf_sha256": "7788f3d4e497e183c414795d8a6ced81bb9d0ec67f54a251211d5175c383431c"
+    },
+    {
+      "path": "docs/field_verification/20261118/raw_event_dc.json",
+      "data_date": "2026-11-18",
+      "canonical_lf_sha256": "176e5747d6bc25a076b80df04ffb5e7e94a1f4e122cad95918ddc6a14a2edda6"
+    },
+    {
+      "path": "docs/field_verification/20261119/raw_event_dc.json",
+      "data_date": "2026-11-19",
+      "canonical_lf_sha256": "ba857795a52dfe5802e2f5eea2e04d8bd792247dffbbd1b0c6c9082ff82ac957"
+    }
+  ],
+  "row_audit": "docs/field_verification/research/20261124_eventdc_ipo_pe_ttm_history_date_audit.csv",
+  "row_audit_canonical_lf_sha256": "3e423817b3722c52af2a086c65aeb2cb29a2c45eb52216140c091f8a251fe48b",
+  "batch_audit": "docs/field_verification/research/20261124_eventdc_ipo_pe_ttm_history_batch_summary.csv",
+  "batch_audit_canonical_lf_sha256": "b2775d2c11eb9b1365617a671db08eb2a22e05474c0f6ccddd40c92b332f48cd",
+  "counts": {
+    "retained_batches": 20,
+    "capture_rows": 400,
+    "batches_with_all_nonempty_prices_matching_same_date_close": 20,
+    "nonempty_latest_price_values": 397,
+    "nonempty_latest_price_values_matching_same_date_close": 397,
+    "nonempty_latest_price_values_matching_previous_date_close": 17,
+    "all_nonempty_ipo_pe_ttm_rows": 157,
+    "nonempty_ipo_pe_ttm_matching_same_date_official_pe": 0,
+    "nonempty_ipo_pe_ttm_matching_source_update_date_official_pe": 0,
+    "nonempty_ipo_pe_ttm_comparable_to_source_update_date_pe": 141,
+    "nonempty_ipo_pe_ttm_matching_any_official_pe_in_observed_interval": 0
+  },
+  "date_policy": "LATELY_PRICE can anchor the quote observation date only for this audited response row/batch. It does not assign a business date to IPO, report-period, or event fields. A batch date is accepted here only when every nonempty anchor value matches the official close on that date and the full available price vector yields a unique date candidate.",
+  "pe_ttm_policy": "Compare using absolute tolerance 0.000001; this only tests whether IPO PE_TTM equals the official valuation API PE_TTM on the anchored same date."
+}

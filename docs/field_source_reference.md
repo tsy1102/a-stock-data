@@ -5177,7 +5177,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 |:---|:---|:---|:---:|:---|
 | GetInfo | Index | apphwhq | ✅ | 首页聚合 ErBanList/JJJYList/TKGKList |
 | MarketStockZDNum | HomeDingPan | apphwhq | ✅ | 涨跌家数 |
-| **ChangeStatistics** | HomeDingPan | apphwhq | ✅ | 市场情绪 ztjs=52涨停/df_num=7跌停/strong=55强度/lbgd=5连板高度 |
+| **ChangeStatistics** | HomeDingPan | apphwhq | ✅ | 市场情绪字段释义见[2026-11-24 来源内实证裁决](field_verification/adjudications/20261124_kpl_market_sentiment_fields.md)；已纠正旧表将 df_num 记为跌停数的冲突 |
 | RiseFallAnalysis | HomeDingPan | apphwhq | ✅ | 涨跌分析 |
 | RealRankingInfo | ZhiShuRanking | apphis | ✅ | 板块排行30只/页 |
 | **ZhiShuStockList_W8** | ZhiShuRanking | apphis | ✅ | **63字段个股详情** 无Token可用 |
@@ -5995,7 +5995,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 |:---|:---|:---|:---|
 | RiseFallAnalysis | apphwshhq | info=[涨停/跌停/自然涨停/曾跌停/破板率/炸板/日期] | 市场情绪（历史 st=250）|
 | MoodNumCount | apphwshhq | SZJS/XDJS/ZTJS/DTJS/qscln/q_zrcs/bl/color | 涨跌家数+全市场量能 |
-| ChangeStatistics | apphq | ztjs/df_num/**strong 情绪指标**/lbgd 连板高度 + tip 提示 | 情绪值（历史 st=100）|
+| ChangeStatistics | apphq | ztjs/df_num/strong/lbgd + tip 提示 | 字段语义、样本范围和未决算法见[2026-11-24 来源内实证裁决](field_verification/adjudications/20261124_kpl_market_sentiment_fields.md) |
 | GetPlate_Info_QJ | apphwshhq | PlateID=801900 昨涨停今表现 / 801902 昨连板 / 801903 昨破板——List=[--/家数/成交额/净额/涨跌幅] | 昨日梯队表现 |
 | GetPlateInfo_w38 | apphwshhq | nums(SZJS/XDJS/ZT/DT/ZBL/yestRase) + list(板块/股票/涨停时间/封单/首板/连板/个股属性/实际换手/实际流通/原因) | **涨停复盘** |
 | DailyLimitPerformance | apphwhq | PidType=1-5（一板~更高）info=[代码/名称/涨停时间/**涨停原因**/封单/最大封单/主力净额/主力买/主力卖/成交额/板块/实际流通/实际换手/振幅%/板块代码/涨停数量] | **连板梯队分板**（历史 Day=；`amplitude` row[17] 振幅%已 E3 实证，官方列号契约未公开）|

@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 284,
+      "aggregate_status_scope_unresolved": 278,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -25,15 +25,15 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 33,
-      "registry_status_only_single_source": 419,
+      "registry_status_only_single_source": 417,
       "resolved_by_multiday_independent_cross_source_l1": 8,
       "retired_legacy_path": 103,
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 834,
-      "verified": 1809,
-      "verified_by_empirical_addendum": 266,
+      "unverified": 826,
+      "verified": 1817,
+      "verified_by_empirical_addendum": 274,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -1650,12 +1650,13 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -5523,12 +5524,14 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -13849,7 +13852,7 @@
         "央视网(新闻联播)": "verified",
         "巨潮(cninfo)": "unverified",
         "市场源(market_sources)": "verified",
-        "开盘啦(kpl)": "unverified",
+        "开盘啦(kpl)": "verified",
         "新浪(扩展API)": "unverified",
         "新浪(研报列表)": "verified"
       },
@@ -14049,12 +14052,14 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -26359,12 +26364,14 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -39525,12 +39532,13 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -40166,12 +40174,13 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -43715,12 +43724,14 @@
       "status": "unverified",
       "source_statuses": {
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -49685,6 +49696,27 @@
     ],
     "cls_telegraph_subjects": [
       "财联社(cls)"
+    ],
+    "kpl_market_limit_up_count": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_large_drawdown_stock_count": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_sentiment_score": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_highest_consecutive_limit_up_board_count": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_sentiment_response_date": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_broken_ratio_response_date": [
+      "开盘啦(kpl)"
+    ],
+    "kpl_market_sentiment_guidance_text": [
+      "开盘啦(kpl)"
     ]
   },
   "mappings": [
@@ -271306,13 +271338,15 @@
       "code": "Day",
       "identity": "开盘啦(kpl)::Day",
       "path": "Day",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "kpl_market_sentiment_response_date",
+      "meaning": "ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -271321,10 +271355,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-Day-sentiment-response-date-label"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "21 个成功的 ChangeStatistics 响应；同批比较其 info[0].Day 与 RiseFallAnalysis.info[0][6]。",
+          "comparison_count": 21,
+          "matched_count": 21,
+          "counterexample_count": 0,
+          "excluded_count": 1,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_sentiment_response_date",
+          "meaning": "ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-Day-sentiment-response-date-label",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_response_date",
+              "meaning": "ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 响应；同批比较其 info[0].Day 与 RiseFallAnalysis.info[0][6]。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "Day",
@@ -271337,7 +271420,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-Day-sentiment-response-date-label",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_response_date",
+              "meaning": "ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目将 ChangeStatistics.info[0].Day 解析为 kpl_sentiment.day。21 个成功保留响应中，Day 与同批 RiseFallAnalysis 返回的 date 标签逐一相等。采集目录名仅作归档定位，不用来确认来源日期；本字段未加入时效策略，也不推断其他响应字段日期。",
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 响应；同批比较其 info[0].Day 与 RiseFallAnalysis.info[0][6]。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -272685,13 +272811,15 @@
       "code": "ZTJS",
       "identity": "开盘啦(kpl)::ZTJS",
       "path": "ZTJS",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "kpl_market_limit_up_count",
+      "meaning": "MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。",
+      "unit": "只",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -272700,10 +272828,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-ZTJS-limit-up-count"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-19 的 22 个保留归档批次；MoodNumCount.list.ZTJS 与同批 RiseFallAnalysis.info[0][0] 对照。",
+          "comparison_count": 22,
+          "matched_count": 22,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_limit_up_count",
+          "meaning": "MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。",
+          "unit": "只",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-ZTJS-limit-up-count",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_limit_up_count",
+              "meaning": "MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。",
+              "unit": "只"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-19 的 22 个保留归档批次；MoodNumCount.list.ZTJS 与同批 RiseFallAnalysis.info[0][0] 对照。",
+            "comparison_count": 22,
+            "matched_count": 22,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ZTJS",
@@ -272716,7 +272893,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-ZTJS-limit-up-count",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "registry_status_only_single_source",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_limit_up_count",
+              "meaning": "MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。",
+              "unit": "只"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "stock_common/sc_kpl.py 将 MoodNumCount.list.ZTJS 映射到 kpl_up_down.zt_num。保留期 22 批中，该值与同批 RiseFallAnalysis.info[0][0] 逐批相等；ChangeStatistics 成功的 21 批中亦与 ztjs 相等。结论仅限 KPL 的该路径，不建立来源映射。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-19 的 22 个保留归档批次；MoodNumCount.list.ZTJS 与同批 RiseFallAnalysis.info[0][0] 对照。",
+            "comparison_count": 22,
+            "matched_count": 22,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -274063,13 +274283,15 @@
       "code": "date",
       "identity": "开盘啦(kpl)::date",
       "path": "date",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "kpl_market_broken_ratio_response_date",
+      "meaning": "RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -274088,9 +274310,58 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-date-rise-fall-response-date-label"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "2026-10-15 至 2026-11-19 的 22 个保留批次；RiseFallAnalysis.info[0][6] 日期标签存在性及与同批 ChangeStatistics.Day 的比较。",
+          "comparison_count": 22,
+          "matched_count": 22,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_broken_ratio_response_date",
+          "meaning": "RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-date-rise-fall-response-date-label",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_broken_ratio_response_date",
+              "meaning": "RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-19 的 22 个保留批次；RiseFallAnalysis.info[0][6] 日期标签存在性及与同批 ChangeStatistics.Day 的比较。",
+            "comparison_count": 22,
+            "matched_count": 22,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "date",
@@ -274112,7 +274383,50 @@
         "meaning": "日期",
         "unit": "",
         "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-date-rise-fall-response-date-label",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_broken_ratio_response_date",
+              "meaning": "RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目将 RiseFallAnalysis.info[0][6] 原样解析为 kpl_broken_ratio.date。22 个保留响应均含日期标签，且在 ChangeStatistics 成功的 21 批中与 Day 相同。标签确认的是精确响应中的日期字段，不赋予它来源日期锚资格。",
+          "sample": {
+            "scope": "2026-10-15 至 2026-11-19 的 22 个保留批次；RiseFallAnalysis.info[0][6] 日期标签存在性及与同批 ChangeStatistics.Day 的比较。",
+            "comparison_count": 22,
+            "matched_count": 22,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -274157,13 +274471,15 @@
       "code": "df_num",
       "identity": "开盘啦(kpl)::df_num",
       "path": "df_num",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "kpl_market_large_drawdown_stock_count",
+      "meaning": "开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。",
+      "unit": "只",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -274173,10 +274489,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-df-num-large-drawdown-count"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "21 个成功的 ChangeStatistics 保留响应；df_num 与同批两个 KPL 跌停计数 DTJS、RiseFallAnalysis.info[0][1] 比较；另结合开盘啦官方市场情绪产品说明。",
+          "comparison_count": 21,
+          "matched_count": 21,
+          "counterexample_count": 0,
+          "excluded_count": 1,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_large_drawdown_stock_count",
+          "meaning": "开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。",
+          "unit": "只",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-df-num-large-drawdown-count",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_large_drawdown_stock_count",
+              "meaning": "开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。",
+              "unit": "只"
+            }
+          },
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；df_num 与同批两个 KPL 跌停计数 DTJS、RiseFallAnalysis.info[0][1] 比较；另结合开盘啦官方市场情绪产品说明。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "df_num",
@@ -274190,7 +274555,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-df-num-large-drawdown-count",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_large_drawdown_stock_count",
+              "meaning": "开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。",
+              "unit": "只"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "开盘啦官方市场情绪文章明确说明该功能包含大幅回撤，并说明大幅回撤个股数反映追涨资金亏钱效应；项目适配器精确提取 ChangeStatistics.info[0].df_num。21 个成功保留响应中，该值均为个股计数，且 21/21 均不同于同日 MoodNumCount.list.DTJS 和 RiseFallAnalysis.info[0][1]，排除旧参考资料的“跌停数”释义。官方未公开该私有接口的键级 schema、阈值及入选范围；本裁决定案产品功能语义，不补造这些细节。",
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；df_num 与同批两个 KPL 跌停计数 DTJS、RiseFallAnalysis.info[0][1] 比较；另结合开盘啦官方市场情绪产品说明。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -274750,13 +275158,15 @@
       "code": "lbgd",
       "identity": "开盘啦(kpl)::lbgd",
       "path": "lbgd",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "kpl_market_highest_consecutive_limit_up_board_count",
+      "meaning": "市场最高当前连续涨停板数（连板高度），等于同批 DailyLimitPerformance 返回股票中已验证 raw_columns.col_15 的最大值。",
+      "unit": "板",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -274766,10 +275176,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-lbgd-current-streak-height"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "MIN_CAPTURE_DATE 之后的 22 批；20 批同时具有成功的 ChangeStatistics 响应和每行完整的 KPL DailyLimitPerformance.col_15。逐日比较 lbgd 与同批 col_15 最大值。",
+          "comparison_count": 20,
+          "matched_count": 20,
+          "counterexample_count": 0,
+          "excluded_count": 2,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_highest_consecutive_limit_up_board_count",
+          "meaning": "市场最高当前连续涨停板数（连板高度），等于同批 DailyLimitPerformance 返回股票中已验证 raw_columns.col_15 的最大值。",
+          "unit": "板",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-lbgd-current-streak-height",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_highest_consecutive_limit_up_board_count",
+              "meaning": "市场最高当前连续涨停板数（连板高度），等于同批 DailyLimitPerformance 返回股票中已验证 raw_columns.col_15 的最大值。",
+              "unit": "板"
+            }
+          },
+          "sample": {
+            "scope": "MIN_CAPTURE_DATE 之后的 22 批；20 批同时具有成功的 ChangeStatistics 响应和每行完整的 KPL DailyLimitPerformance.col_15。逐日比较 lbgd 与同批 col_15 最大值。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "excluded_count": 2,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "lbgd",
@@ -274783,7 +275242,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-lbgd-current-streak-height",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_highest_consecutive_limit_up_board_count",
+              "meaning": "市场最高当前连续涨停板数（连板高度），等于同批 DailyLimitPerformance 返回股票中已验证 raw_columns.col_15 的最大值。",
+              "unit": "板"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目适配器精确提取 ChangeStatistics.info[0].lbgd。既有 2026-11-06 来源内裁决已确认 DailyLimitPerformance.raw_columns.col_15 为当前连续涨停板数。20 个 ChangeStatistics 成功且 raw_kpl 每行均有 col_15 的批次中，lbgd 与同批所有返回涨停股 col_15 最大值逐日 20/20 完全相等。2026-10-15 旧格式明细缺少 col_15，2026-10-26 ChangeStatistics 请求失败，均排除。未使用语义不同的 col_18 窗口板数作为锚。",
+          "sample": {
+            "scope": "MIN_CAPTURE_DATE 之后的 22 批；20 批同时具有成功的 ChangeStatistics 响应和每行完整的 KPL DailyLimitPerformance.col_15。逐日比较 lbgd 与同批 col_15 最大值。",
+            "comparison_count": 20,
+            "matched_count": 20,
+            "counterexample_count": 0,
+            "excluded_count": 2,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -277521,13 +278023,15 @@
       "code": "strong",
       "identity": "开盘啦(kpl)::strong",
       "path": "strong",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "kpl_market_sentiment_score",
+      "meaning": "ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -277537,10 +278041,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-strong-sentiment-score"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "21 个成功的 ChangeStatistics 保留响应；检查 strong 数值类型与范围，并核对同响应 tip 文本。",
+          "comparison_count": 21,
+          "matched_count": 21,
+          "counterexample_count": 0,
+          "excluded_count": 1,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_sentiment_score",
+          "meaning": "ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-strong-sentiment-score",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_score",
+              "meaning": "ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；检查 strong 数值类型与范围，并核对同响应 tip 文本。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "strong",
@@ -277554,7 +278107,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-strong-sentiment-score",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_score",
+              "meaning": "ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目精确解析 ChangeStatistics.info[0].strong；21 个成功响应均为整数且处于 0–100 范围。相同响应的 tip 文本按情绪指标 75/25 阈值说明高低区间，且 21/21 返回相同提示。官方产品页将该功能定位为综合市场情绪观察。证据足以确认指标角色，但不支持公式或物理单位，因此 unit 留空。",
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；检查 strong 数值类型与范围，并核对同响应 tip 文本。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -277609,13 +278205,15 @@
       "code": "tip",
       "identity": "开盘啦(kpl)::tip",
       "path": "tip",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "kpl_market_sentiment_guidance_text",
+      "meaning": "ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -277625,10 +278223,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-tip-sentiment-guidance-text"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "21 个成功的 ChangeStatistics 保留响应；检查 top-level tip 是否存在、文本内容及与同响应 strong 的语境。",
+          "comparison_count": 21,
+          "matched_count": 21,
+          "counterexample_count": 0,
+          "excluded_count": 1,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_sentiment_guidance_text",
+          "meaning": "ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-tip-sentiment-guidance-text",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_guidance_text",
+              "meaning": "ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；检查 top-level tip 是否存在、文本内容及与同响应 strong 的语境。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "tip",
@@ -277642,7 +278289,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-tip-sentiment-guidance-text",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_sentiment_guidance_text",
+              "meaning": "ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目从 ChangeStatistics 顶层 tip 原样保留文本。全部 21 个成功保留响应均返回相同的非空说明文字，内容按 75/25 阈值解释情绪指标。该路径的文本角色和与 strong 的解释关系已确定；阈值维护方式不作推断。",
+          "sample": {
+            "scope": "21 个成功的 ChangeStatistics 保留响应；检查 top-level tip 是否存在、文本内容及与同响应 strong 的语境。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl)",
@@ -278314,13 +279004,15 @@
       "code": "ztjs",
       "identity": "开盘啦(kpl)::ztjs",
       "path": "ztjs",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "kpl_market_limit_up_count",
+      "meaning": "ChangeStatistics 返回的市场当日涨停股票家数。成功的 21 个保留响应中，均与同批 MoodNumCount.ZTJS 和 RiseFallAnalysis 的涨停数相等。",
+      "unit": "只",
+      "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+      "sections": [
+        "2026-11-24 开盘啦市场情绪字段来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -278330,10 +279022,59 @@
           "开盘啦(kpl)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kpl-ztjs-limit-up-count"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+        "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+        "sample": {
+          "scope": "保留边界 2026-10-15 之后的 22 批；ChangeStatistics 成功批次与同批 KPL MoodNumCount.ZTJS、RiseFallAnalysis.info[0][0] 对照；2026-10-26 ChangeStatistics 请求错误排除。",
+          "comparison_count": 21,
+          "matched_count": 21,
+          "counterexample_count": 0,
+          "excluded_count": 1,
+          "observation_count": 22
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 开盘啦市场情绪字段来源内实证定案",
+          "canonical": "kpl_market_limit_up_count",
+          "meaning": "ChangeStatistics 返回的市场当日涨停股票家数。成功的 21 个保留响应中，均与同批 MoodNumCount.ZTJS 和 RiseFallAnalysis 的涨停数相等。",
+          "unit": "只",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kpl-ztjs-limit-up-count",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_limit_up_count",
+              "meaning": "ChangeStatistics 返回的市场当日涨停股票家数。成功的 21 个保留响应中，均与同批 MoodNumCount.ZTJS 和 RiseFallAnalysis 的涨停数相等。",
+              "unit": "只"
+            }
+          },
+          "sample": {
+            "scope": "保留边界 2026-10-15 之后的 22 批；ChangeStatistics 成功批次与同批 KPL MoodNumCount.ZTJS、RiseFallAnalysis.info[0][0] 对照；2026-10-26 ChangeStatistics 请求错误排除。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ztjs",
@@ -278347,7 +279088,50 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-kpl-ztjs-limit-up-count",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kpl_market_sentiment_fields.json",
+          "evidence_file": "adjudications/20261124_kpl_market_sentiment_fields.md",
+          "evidence_sha256": "434e5cc64919670ceb31b1b27bf7a6fcb43e5361e27329e4e0a1cf9b46c580bd",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "kpl_market_limit_up_count",
+              "meaning": "ChangeStatistics 返回的市场当日涨停股票家数。成功的 21 个保留响应中，均与同批 MoodNumCount.ZTJS 和 RiseFallAnalysis 的涨停数相等。",
+              "unit": "只"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "stock_common/sc_kpl.py 将 ChangeStatistics.info[0].ztjs 直接归一化为 kpl_sentiment.ztjs。21 个成功响应逐一与同批 MoodNumCount.list.ZTJS 和 RiseFallAnalysis.info[0][0] 相等；MoodNumCount 与 RiseFallAnalysis 在全部 22 批也相等。raw_kpl 明细 21/22 的 row_count 一致，2026-10-15 的旧明细仅 30 行且缺完整列元数据，故该明细批不参与完备性判断。此处只定案开盘啦来源内家数，不建立跨源映射。",
+          "sample": {
+            "scope": "保留边界 2026-10-15 之后的 22 批；ChangeStatistics 成功批次与同批 KPL MoodNumCount.ZTJS、RiseFallAnalysis.info[0][0] 对照；2026-10-26 ChangeStatistics 请求错误排除。",
+            "comparison_count": 21,
+            "matched_count": 21,
+            "counterexample_count": 0,
+            "excluded_count": 1,
+            "observation_count": 22
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",

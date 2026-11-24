@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2841；日常来源路径 2697：unverified 714、candidate 1、conflict 5、disproved 192；历史来源路径 144。
+> 注册字段路径 2841；日常来源路径 2697：unverified 706、candidate 1、conflict 5、disproved 192；历史来源路径 144。
 > 另有 139 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,17 +15,17 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 586 |
+| 含义栏为空/占位 | 578 |
 | 含义栏有文本（仍未验证） | 128 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 245 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 239 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 33 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 338 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 336 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（5）
@@ -44,7 +44,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（714）
+## 三、待破解字段（706）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -544,7 +544,6 @@
 | 开盘啦(kpl) | `DT` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `DTJS` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `Date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 开盘啦(kpl) | `Day` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `DongXiang` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `FAIL` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `GNSM` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -579,7 +578,6 @@
 | 开盘啦(kpl) | `XDJS` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `ZBL` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `ZT` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 开盘啦(kpl) | `ZTJS` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `ZTNum` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `actual_float_mv` | actual_float_mv | 实际流通市值 | 元 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `actualcirculation_value` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -607,9 +605,7 @@
 | 开盘啦(kpl) | `content2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `cur_price` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `data` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 开盘啦(kpl) | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `description` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 开盘啦(kpl) | `df_num` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `down_px` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `dyn_pb_rate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `entrust_rate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -624,7 +620,6 @@
 | 开盘啦(kpl) | `institutionIncrease` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `jtPeRate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `last_px` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 开盘啦(kpl) | `lbgd` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `lead_count` | lead_count | 领涨次数 | 次 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `limit_down_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `limit_pattern_text` | limit_pattern_text | 几天几板(如"3天2板") | 文本 | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
@@ -668,9 +663,7 @@
 | 开盘啦(kpl) | `status_color` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `stock_name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `stockid` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 开盘啦(kpl) | `strong` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 开盘啦(kpl) | `tip` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘啦(kpl) | `total_amount` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `total_mv` | total_mv | 总市值 | 元 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现） |
 | 开盘啦(kpl) | `total_shares` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -687,7 +680,6 @@
 | 开盘啦(kpl) | `weituo` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `yestRase` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `yesterday_limit_up_avg_pcp` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 开盘啦(kpl) | `ztjs` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 开盘红 | `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日） |
 | 开盘红(Levistock适配) | `avg_change` | avg_change | 待破解 | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
 | 开盘红(Levistock适配) | `buy_amount` | buy_amount / sell_amount | 待破解 | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |

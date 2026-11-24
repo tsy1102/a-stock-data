@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 748 条逐源记录。
+> 聚合歧义 180 个 code；聚合定义不完整 161 个 code；疑似合并文本 754 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -106,6 +106,15 @@
 |:--|:--|:--|:--|:--|
 | TDX(双命名源) · `Date` | — | 日期键本身有效，但该旧 registry 身份未限定接口或父对象，无法唯一指向 K 线日、股本记录日、统计数据日或公式结果日。只退役裸路径身份；精确日期含义保存在接口级契约中。 | — | `disproved` |
 | 开盘啦(kpl) · `Date` | — | — | — | `unverified` |
+
+### `Day` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `Day` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `Day` | kpl_market_sentiment_response_date | ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。 | — | `verified` |
 
 ### `EXPLAIN` — incomplete
 
@@ -214,6 +223,15 @@
 |:--|:--|:--|:--|:--|
 | 东财-datacenter(英文键) · `TURNOVERRATE` | TURNOVERRATE | 换手率% | % | `verified` |
 | 市场源(market_sources) · `TURNOVERRATE` | — | — | — | `unverified` |
+
+### `ZTJS` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `ZTJS` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `ZTJS` | kpl_market_limit_up_count | MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。 | 只 | `verified` |
 
 ### `[0]` — ambiguous
 
@@ -830,9 +848,18 @@
 | 央视网(新闻联播) · `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | YYYY-MM-DD | `verified` |
 | 巨潮(cninfo) · `date` | — | — | — | `unverified` |
 | 市场源(market_sources) · `date` | date | 日期 | — | `verified` |
-| 开盘啦(kpl) · `date` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `date` | kpl_market_broken_ratio_response_date | RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。 | — | `verified` |
 | 新浪(扩展API) · `date` | — | — | — | `unverified` |
 | 新浪(研报列表) · `date` | sina_research_report_publication_date | 新浪财经机构研报列表记录中标为“发布日期”的日期。它表示研报发布日期，不等同于财报报告期、报告正文所述事件日或本次列表响应的更新时间。 | 日期 | `verified` |
+
+### `df_num` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `df_num` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `df_num` | kpl_market_large_drawdown_stock_count | 开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。 | 只 | `verified` |
 
 ### `encodeUrl` — incomplete
 
@@ -2528,6 +2555,15 @@
 | TDX-eltdx(适配层) · `last_price` | last_price | 最新价 / 现价 | — | `verified` |
 | 同花顺-fuyao · `last_price` | snapshot.last_price | 旧无分组根路径身份；当前完整采集路径为 snapshot.last_price。官方接口将 last_price 列在 data.item[]，项目采集输出将 item 保存在 stocks.<代码>.snapshot。本记录只退役裸叶来源路径。 | 元 | `disproved` |
 
+### `lbgd` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `lbgd` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `lbgd` | kpl_market_highest_consecutive_limit_up_board_count | 市场最高当前连续涨停板数（连板高度），等于同批 DailyLimitPerformance 返回股票中已验证 raw_columns.col_15 的最大值。 | 板 | `verified` |
+
 ### `level` — ambiguous
 
 聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
@@ -3050,6 +3086,15 @@
 | reports · `stock_list` | stock_list | 待破解 | — | `unverified` |
 | 财联社(cls) · `stock_list` | cls_telegraph_related_stocks | 财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。 | — | `verified` |
 
+### `strong` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `strong` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `strong` | kpl_market_sentiment_score | ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。 | — | `verified` |
+
 ### `subjects` — ambiguous
 
 聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
@@ -3079,6 +3124,15 @@
 | 市场源(market_sources) · `time` | time | 时间 | — | `verified` |
 | 开盘啦(kpl) · `time` | — | — | — | `unverified` |
 | 财联社(cls) · `time` | cls_telegraph_publish_time | 财联社电报页面展示的发布时间。采集器将 CLS roll_data[].ctime（Unix 秒）格式化为 YYYY-MM-DD HH:MM:SS。当前主机按东八区输出。正文事件时间和采集开始时间另行记录。时间文本不代表采集目录目标数据日。 | 东八区本地日期时间文本（YYYY-MM-DD HH:MM:SS） | `verified` |
+
+### `tip` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `tip` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `tip` | kpl_market_sentiment_guidance_text | ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。 | — | `verified` |
 
 ### `title` — ambiguous
 
@@ -3264,6 +3318,15 @@
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `zt_time` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `zt_time` | limit_time | 涨停时间；与 KPH limit_time 两日逐值一致 | Unix 秒 | `verified` |
+
+### `ztjs` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 市场源(market_sources) · `ztjs` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `ztjs` | kpl_market_limit_up_count | ChangeStatistics 返回的市场当日涨停股票家数。成功的 21 个保留响应中，均与同批 MoodNumCount.ZTJS 和 RiseFallAnalysis 的涨停数相等。 | 只 | `verified` |
 
 ## 疑似合并文本（启发式候选）
 
@@ -3908,7 +3971,13 @@
 | 市场源(market_sources) | `up_ratio` | up_ratio / up_ratio_num | 封板率 / 封板数量 | `unverified` |
 | 市场源(market_sources) | `up_ratio_num` | up_ratio / up_ratio_num | 封板率 / 封板数量 | `unverified` |
 | 市场源(market_sources) | `zt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
+| 开盘啦(kpl) | `Day` | kpl_market_sentiment_response_date | ChangeStatistics 响应附带的统计日期标签（YYYY-MM-DD）。它只确认该端点返回的日期文本，不单独证明来源实际数据日或可用作日期继承锚。 | `verified` |
 | 开盘啦(kpl) | `Theme` | Theme/InfoBKR | — | `unverified` |
+| 开盘啦(kpl) | `ZTJS` | kpl_market_limit_up_count | MoodNumCount.list.ZTJS 对应的市场当日涨停股票家数；项目归一化字段为 kpl_up_down.zt_num。 | `verified` |
+| 开盘啦(kpl) | `date` | kpl_market_broken_ratio_response_date | RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。 | `verified` |
+| 开盘啦(kpl) | `df_num` | kpl_market_large_drawdown_stock_count | 开盘啦市场情绪功能中的大幅回撤个股数，用于观察追涨后的亏钱效应。它不是跌停家数；大幅回撤的具体阈值和证券范围未公开。 | `verified` |
+| 开盘啦(kpl) | `strong` | kpl_market_sentiment_score | ChangeStatistics 返回的市场情绪指标分值。21 个成功保留响应均为 0–100 范围内整数；具体公式、归一化方法和刷新规则未公开，不解释为百分比或概率。 | `verified` |
+| 开盘啦(kpl) | `tip` | kpl_market_sentiment_guidance_text | ChangeStatistics 响应返回的市场情绪指标解释提示文本，说明高于 75 与低于 25 时的观察方向；它是说明文字，不是逐日统计值。 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `amplitude` | amplitude | 当日振幅=(当日最高价-最低价)/前一交易日收盘价×100% | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | `verified` |

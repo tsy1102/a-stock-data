@@ -125,7 +125,8 @@ def get_kpl_market_sentiment(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 市场情绪（ChangeStatistics）——情绪指标 strong(0-100)/连板高度/涨停家数。
 
     字典 §12.17：info=[ztjs 涨停家数, Day, df_num 大幅回撤, strong 情绪指标, lbgd 连板高度] + tip 提示
-    交叉验证：8/7 strong=63/连板高度 4/涨停 74（与东财/财联社涨停池一致）
+    来源内语义证据：docs/field_verification/adjudications/20261124_kpl_market_sentiment_fields.md
+    lbgd 已用同批完整涨停名单的已验证 col_15 最大值闭环；day 是响应日期标签，不是 as_of_date。
     """
     p = _base()
     p.update({"a": "ChangeStatistics", "st": 10, "c": "HomeDingPan"})
@@ -151,6 +152,7 @@ def get_kpl_up_down(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 涨跌家数（MoodNumCount）——涨跌家数/涨停跌停/全市场量能。
 
     字典 §12.17：list={SZJS 上涨, XDJS 下跌, ZTJS 涨停, DTJS 跌停, qscln 全市场量能(万), q_zrcs 昨日, bl 破板率, color}
+    ZTJS 的来源内核验见 docs/field_verification/adjudications/20261124_kpl_market_sentiment_fields.md。
     """
     p = _base()
     p.update({"a": "MoodNumCount", "c": "MarketMood"})
@@ -314,7 +316,7 @@ def get_kpl_broken_ratio(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 涨跌停情绪（RiseFallAnalysis）——涨停/跌停/自然涨停/破板率/炸板。
 
     字典 §12.17：info=[[涨停, 跌停, 自然涨停, 曾跌停, 破板率, 炸板, 日期]]
-    交叉验证：8/7 [74, 4, 71, 1, 26, 26] 与东财/财联社涨停 74 一致
+    zt 与 date 的来源内核验见 docs/field_verification/adjudications/20261124_kpl_market_sentiment_fields.md；date 仅为该响应的日期标签。
     """
     p = _base()
     p.update({"a": "RiseFallAnalysis", "c": "HomeDingPan"})

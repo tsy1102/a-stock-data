@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, cast
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import asyncio
 import code
 import hashlib
@@ -50,6 +50,60 @@ from ._datacenter import query_datacenter_async as _query_datacenter_async
 def is_em_batch_quotes_cooling_down() -> bool:
     """Return whether the shared push2delay risk gate is currently closed."""
     return _em_is_banned("push2delay.eastmoney.com")
+
+
+_ULIST_CN_TZ = timezone(timedelta(hours=8))
+
+
+def _ulist_row_date_metadata(item: Dict[str, Any]) -> Dict[str, str]:
+    """Read only the verified Ulist row date anchors; never infer a batch date."""
+    f124_raw = item.get("f124")
+    f297_raw = item.get("f297")
+    f124_date = ""
+    f297_date = ""
+
+    try:
+        timestamp_text = str(f124_raw).strip()
+        if timestamp_text.isdigit() and len(timestamp_text) == 10:
+            timestamp = int(timestamp_text)
+            # Bound the accepted Unix-seconds range to 2000-01-01..2100-01-01.
+            if 946684800 <= timestamp < 4102444800:
+                f124_date = (
+                    datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                    .astimezone(_ULIST_CN_TZ)
+                    .date()
+                    .isoformat()
+                )
+    except (OverflowError, OSError, TypeError, ValueError):
+        f124_date = ""
+
+    try:
+        date_text = str(f297_raw).strip()
+        if len(date_text) == 8 and date_text.isdigit():
+            f297_date = datetime.strptime(date_text, "%Y%m%d").date().isoformat()
+    except (TypeError, ValueError):
+        f297_date = ""
+
+    if f124_date and f297_date:
+        if f124_date == f297_date:
+            return {
+                "date": f297_date,
+                "status": "verified",
+                "source": "f124+f297",
+            }
+        return {"date": "", "status": "conflict", "source": "f124+f297"}
+    if f124_date or f297_date:
+        return {
+            "date": f124_date or f297_date,
+            "status": "partial",
+            "source": "f124" if f124_date else "f297",
+        }
+    has_anchor_value = f124_raw not in (None, "") or f297_raw not in (None, "")
+    return {
+        "date": "",
+        "status": "invalid" if has_anchor_value else "missing",
+        "source": "f124+f297",
+    }
 
 
 def eastmoney_datacenter(
@@ -206,17 +260,18 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         url = "https://push2delay.eastmoney.com/api/qt/ulist.np/get"
         # V15.2 P0 修复: 增加 mcap_yi 字段（f20 总市值=f116/1e8, f21=f117 流通市值）
         # 之前只拉 f2/f3，导致 val 报告 18 步策略 mcap_yi=0
-        # V16.1: 扩展字段包 — f55 EPS/f92 BPS/f126 股息率/f162-167 PE/PB/f174-175 52周高低/f221 报告期
+        # V16.1: 扩展字段包 — f55 EPS/f92 BPS/f126 股息率/f162 动态 PE/f163 静态 PE/f167 PB/f174-175 52周高低/f221 报告期
         # V17.0(2026-08-15): + f62 主力净流入(ulist f62 ↔ push2 f137, 跨接口对撞 96.6%)
         # V17.0.16(2026-08-31): 去掉 f66 —— 旧代码误把 f62 当"特大单净"、f66 当"大单净"再相加，
         #   实证 f62 == f66 + f72 (236/236) 证明 f62 已是主力净(含超大单+大单)，相加属重复计数。
+        # f124/f297 为已验证的同行更新时间戳/行情交易日锚；Ulist 路径 f164 是多日资金流，不是 PE。
         params = {
             "fltt": "2",
             "invt": "2",
             "secids": fs_str,  # V17.0(2026-08-15 冒烟修复): ulist.np/get 参数为 secids(非 fs)——fs 返回 data:null
             "fields": (
                 "f12,f14,f2,f3,f20,f21,"
-                "f55,f92,f126,f162,f163,f167,f174,f175,f221,"
+                "f55,f92,f124,f126,f162,f163,f167,f174,f175,f221,f297,"
                 "f62"  # V17.0.16: 只取 f62(主力净)；f66 已不再使用（见上方注释）
             ),
         }
@@ -257,6 +312,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                     except (TypeError, ValueError, OverflowError):
                         _f62_wan = None
                 if code:
+                    _row_date = _ulist_row_date_metadata(item)
                     result[code] = {
                         "name": name,
                         "price": price,
@@ -269,7 +325,9 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         "dividend_yield": _safe_float(item.get("f126", 0)),
                         "pe_dynamic": _safe_float(item.get("f162", 0)),
                         "pe_lyr": _safe_float(item.get("f163", 0)),
-                        "pe_ttm": _safe_float(item.get("f164", 0)),
+                        # Ulist f164 is a rolling five-trading-day flow field, not PE.
+                        # This quote request does not fetch Ulist f164; retain the schema as unavailable.
+                        "pe_ttm": None,
                         "pb": _safe_float(item.get("f167", 0)),
                         "high_52w": _safe_float(item.get("f174", 0)),
                         "low_52w": _safe_float(item.get("f175", 0)),
@@ -281,6 +339,10 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         # 再加 f66 即重复计一次超大单，虚高约 40%（与 push2 侧同量级）。
                         # 索引对齐仍然成立：ulist f62/f66/f72 ↔ push2 f137/f140/f143（跨接口对撞 96%+）。
                         "main_net_inflow_wan": _f62_wan,
+                        # Private response metadata: core quote consumers ignore underscore-prefixed keys.
+                        "_source_as_of_date": _row_date["date"],
+                        "_source_as_of_date_status": _row_date["status"],
+                        "_source_as_of_date_source": _row_date["source"],
                     }
         except RateLimitBlockedError:
             # M9 修复：EM 连续 403(IP 被封) 必须显性抛出，不能再被宽 except 吞成空数据

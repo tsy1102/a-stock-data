@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- 基于 HKEX 官方双重上市清单、交易日/休市证据和保留期逐日行情，来源内定案东财 Push2 `f250`、Ulist `f185` 为 H 股上一港股交易日收盘价，Ulist `f186/f187` 为 H 股最新价/当日涨跌幅；修正旧字段表并将同源行日期锚与价格内容日期分开。撤回 33 条有 9 日反例的错误活动映射，保留 133 条无可比非空样本关系待核。详见[裁决](docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)。
+- 统一市场快照的东财 fallback 仅向通用调用方返回业务字段，隐藏 Ulist 适配器内部的逐行日期元数据；MAK 专项仍直接读取适配器证据。
+- 基于 HKEX 官方双重上市清单、交易日/休市证据和保留期逐日行情，来源内定案东财 Push2 `f250`、Ulist `f185` 为 H 股上一港股交易日收盘价，Ulist `f186/f187` 为 H 股最新价/当日涨跌幅；修正旧字段表并将同源行日期锚与价格内容日期分开。撤回 33 条有 9 日反例的错误活动映射；133 条无可比非空样本关系先列为未决，后于 11 月 24 日从活动映射停用。详见[字段裁决](docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)和[后续更正](docs/field_verification/adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)。
 - 按同花顺当前官方集合竞价契约和 19 个完整留存批次的逐股样本，登记并验证 `auction_final` 下 9 个完整字段路径。为官方未声明单位、`auction_unmatched` 正负口径及 `auction_volume_ratio` 公式保留未知，不新增跨源映射。详见[裁决](docs/field_verification/adjudications/20261123_fuyao_auction_final_contract_fields.md)和[逐股审计](docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv)。
 - 明确记录同源批次日期继承规则：腾讯 `qt.gtimg::[30]` 的日期锚在保留期 22 个数据日、440/440 行中与采集目标数据日和交易日历一致，可为同批行情字段确认观测日；采集诊断现在要求该时间戳严格为 14 位数字，缺失、非法或批次日期分歧时不生成来源日期。证据见[批次日期锚审计](docs/field_verification/research/20261122_tencent_batch_date_anchor_audit.md)。
 - 补充新浪 `hq.sinajs` 行情批次日期实证：`fields[30]` 日期及 `[31]` 时间在保留期 22 个数据日、440/440 条记录中均与目标数据日、批次元数据及交易日历一致；同一响应中的行情字段可继承共同观测日，但不延伸至其他端点或业务日期。详见[批次日期锚审计](docs/field_verification/research/20261122_sina_batch_date_anchor_audit.md)。
@@ -54,6 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- 修正 VAL 实时行情覆盖被市值缺失分支限制的问题；策略17现只用同一 ZHB 数据日的竞价额/成交额，过期或缺项时跳过且不回退主力净流入。MAK 的 Ulist f62 请求增加已验证的同行日期锚 `f124/f297`，只汇总与交易日历基准日匹配的记录，并在报告标注排除原因；纠正 Ulist 路径 `f164` 被误读为 PE 的适配器映射。MAK 板块轮动对照现显示短线侠接口标签及响应日期，避免与 KPL/KPH 直接混同。
+- 将 H 股报价复核中 133 条无可比非空样本的未决关系（175 条有向记录）从活动映射和对齐表停用，避免碰撞器将其当作已确认关系抑制候选；保留旧证据，不判为不等价或更改两端字段状态。详见[更正记录](docs/field_verification/adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)。
 - IPO 资金压力报告统一按实际募集总额或“发行数量×发行价”估算发行总额，不再把募资计划预测值 `PREDICT_RAISE_FUNDS` 混作发行总额回退。
 - 对齐 TDX 财务股本字段的适配器输出单位与注册表：0x0010 原始万股值统一乘 10,000 输出为股；将 ELTDX 总股本键修正为 `zongguben`，以恢复总股本缓存和消费者读取。保留转换前归档，不把两种单位口径混入同一历史比较。
 - 按 Fuyao 官方契约区分 `auction_final.auction_price`（竞价价格）与 `auction_final.open_price`（开盘价），修正旧路径错义并撤回 5 组将竞价价映射为开盘价的活动关系。竞价来源日期缺失的样本只用于同响应字段区分，不作为跨源碰撞证据；详见[裁决](docs/field_verification/adjudications/20261121_fuyao_auction_price_open_price.md)。

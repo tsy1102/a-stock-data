@@ -243,6 +243,8 @@ $decision = 'docs\field_verification\adjudications\YYYYMMDD_candidate_review.jso
 
 更正记录需保留被撤映射的原始端点、relation、原引用证据、撤回理由、接口/样本边界和复核日期。当前没有自动撤回映射的裁决动作：在证据记录完成后，从 `field_registry.json.mappings` 和 [`docs/verify/cross_source_align.md`](../verify/cross_source_align.md) 的活动表中移除该精确关系，避免 `extract_registry.py` 再次导入；将更正记录保留在表头说明和当前索引中。随后重生成投影视图，并运行 registry parity、同步校验及受影响的碰撞回归。历史报告保留原样；后续报告不得继续把已撤关系当作活动映射。
 
+若复核没有可用的非空可比样本，且当前证据只能说明关系尚未证实或证伪，则必须区分“未决”与“活动映射”：不据此把字段判为不等价或修改两端字段状态，但也不得让仅有旧数值碰撞依据的关系继续以已定案关系参与候选抑制。将精确关系和旧证据保留在日期化未决审计记录中，并从活动 registry 与对齐表移除；若 registry 双向存储，须同时移除两向。后续出现合格新候选时按现行跨源门槛复核，通过后才重新登记。
+
 ## 撤销错误的历史定义
 
 当原始响应或跨日样本证明历史语义定义错误时，先区分“字段路径无效”和“路径真实、旧释义错误”。若精确 `(source, code)` 路径本身是清单残留、已退役别名或非字段输出，按对应的 `disproved` 处置记录替代路径与证据；若原始字段路径仍真实存在、但旧含义被推翻且新含义尚未确认，则将该路径设为 `unverified`、`status_resolution: historical_meaning_withdrawn_unresolved`，清空错误的规范语义和单位，保留旧 `reference_evidence` 并新增日期化纠错记录。该状态继续进入未知破解队列，不能因旧释义被推翻而把真实字段永久排除。若新含义已确认，则使用对应来源契约或来源内实证流程直接更新为 `verified`。三种处置均按完整来源路径进行；只撤销依赖错误旧释义的活动映射，不按短代码批量修改其他接口。更新后重建 `fields` 聚合视图和 `meta.source_field_stats`，生成字典视图并运行 registry parity、同步校验及相关回归。历史报告只保留为历史证据，并在当前索引中链接更正记录，不覆写原始样本或删除旧结论。

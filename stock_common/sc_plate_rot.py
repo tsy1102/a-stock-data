@@ -175,6 +175,7 @@ def get_plate_rotation_top(
                     "rank": p["rank"],
                     "code": c["code"],
                     "name": c["name"],
+                    "date": c["date"],
                     "value": c["value"],
                     "color": c["color"],
                 }

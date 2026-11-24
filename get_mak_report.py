@@ -39,6 +39,7 @@ _MAIN_NET_MAP_GLOBAL: Dict[str, float] = {}
 _MAIN_NET_REQUESTED_COUNT = 0
 _MAIN_NET_RETURNED_COUNT = 0
 _MAIN_NET_SOURCE_STATUS = "not_requested"
+_MAIN_NET_DATA_DATE_NOTE = ""
 
 warnings.filterwarnings("ignore")
 from core.data_provider import get_market_snapshot_async
@@ -164,6 +165,55 @@ def _market_breadth_display(up_count: int, down_count: int) -> tuple[str, str]:
     return f"{ratio:.2f}", sentiment
 
 
+def _select_ulist_main_net_for_date(
+    quotes: Dict[str, Dict[str, Any]], expected_date: str
+) -> tuple[Dict[str, float], str, Dict[str, int]]:
+    """Keep only f62 values whose same-row Ulist date anchors match the market date."""
+    try:
+        expected_date = datetime.strptime(expected_date, "%Y-%m-%d").date().isoformat()
+    except (TypeError, ValueError):
+        stats = {
+            "date_match_rows": 0,
+            "date_mismatch_rows": 0,
+            "unverified_rows": len(quotes),
+            "missing_flow_rows": 0,
+        }
+        return {}, "交易日历基准日期不可用；拒绝汇总未定日的 Ulist f62。", stats
+
+    flows: Dict[str, float] = {}
+    stats = {
+        "date_match_rows": 0,
+        "date_mismatch_rows": 0,
+        "unverified_rows": 0,
+        "missing_flow_rows": 0,
+    }
+    for code, quote in quotes.items():
+        if not isinstance(quote, dict) or quote.get("_source_as_of_date_status") != "verified":
+            stats["unverified_rows"] += 1
+            continue
+        if quote.get("_source_as_of_date") != expected_date:
+            stats["date_mismatch_rows"] += 1
+            continue
+        stats["date_match_rows"] += 1
+        raw_flow = quote.get("main_net_inflow_wan")
+        if raw_flow in (None, ""):
+            stats["missing_flow_rows"] += 1
+            continue
+        flow_wan = _safe_float(raw_flow)
+        if not math.isfinite(flow_wan):
+            stats["missing_flow_rows"] += 1
+            continue
+        flows[str(code)] = flow_wan * 1e4
+
+    note = (
+        f"交易日历基准 {expected_date}；要求同一 Ulist 行 f124/f297 日期锚一致；"
+        f"日期匹配 {stats['date_match_rows']} 条，汇总有效 f62 {len(flows)} 条；"
+        f"排除日期不符 {stats['date_mismatch_rows']} 条、日期锚缺失/冲突/不完整 "
+        f"{stats['unverified_rows']} 条、匹配日期但 f62 缺失 {stats['missing_flow_rows']} 条。"
+    )
+    return flows, note, stats
+
+
 def _verified_main_net_amount(code: str) -> float:
     """Return only the valid ulist f62 value; ZHB's similarly named field is auction amount."""
     value = _MAIN_NET_MAP_GLOBAL.get(str(code), 0.0)
@@ -247,6 +297,7 @@ def _main_flow_summary_lines(
     zhb_auction_amount_wan: float = 0.0,
     zhb_data_date: str = "",
     source_status: str = "not_requested",
+    source_date_note: str = "",
 ) -> List[str]:
     """Render main-flow and auction amount as separate, correctly labeled measures."""
     if flow_values:
@@ -257,6 +308,8 @@ def _main_flow_summary_lines(
             f"  ulist f62 主力净额覆盖：{returned_count}/{requested_count} 条扫描样本；未返回项不代表零净流。",
             f"  💰 本次扫描样本主力净额合计：{total_yi:+.2f}亿元（ulist f62，{status}）",
         ]
+        if source_date_note:
+            lines.insert(1, f"  Ulist 行日期核验：{source_date_note}")
         if complete and total_yi > 50:
             lines.append("    🟢 完整扫描样本主力净额超过 +50 亿元参考阈值")
         elif complete and total_yi < -50:
@@ -277,12 +330,18 @@ def _main_flow_summary_lines(
         f"  ulist f62 主力净额覆盖：{returned_count}/{requested_count} 条扫描样本；未返回项不代表零净流。",
         "  💰 主力净流入：暂缺（ulist f62 未返回有效样本），不作资金方向判断。",
     ]
+    if source_date_note:
+        lines.insert(1, f"  Ulist 行日期核验：{source_date_note}")
     if source_status == "shared_cooldown":
         lines.append("  来源状态：push2delay 共享风控冷却中，本轮跳过请求；未返回不代表零净流。")
     elif source_status == "error":
         lines.append("  来源状态：批量 f62 请求异常；未返回不代表零净流。")
     elif source_status == "no_valid_rows":
         lines.append("  来源状态：请求未返回可用 f62 数值；未返回不代表零净流。")
+    elif source_status == "date_mismatch":
+        lines.append("  来源状态：Ulist 行日期与交易日历基准不符；本轮不混合其他数据日的净额。")
+    elif source_status == "date_unconfirmed":
+        lines.append("  来源状态：Ulist 同行日期锚缺失、冲突或不可解析；本轮不汇总未定日净额。")
     if zhb_auction_amount_wan > 0:
         auction_yi = zhb_auction_amount_wan / 1e4
         as_of = zhb_data_date or "未确认"
@@ -303,11 +362,12 @@ async def get_market_abnormal_data():
           对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
     """
     global _MAIN_NET_MAP_GLOBAL, _MAIN_NET_REQUESTED_COUNT, _MAIN_NET_RETURNED_COUNT
-    global _MAIN_NET_SOURCE_STATUS
+    global _MAIN_NET_SOURCE_STATUS, _MAIN_NET_DATA_DATE_NOTE
     _MAIN_NET_MAP_GLOBAL = {}
     _MAIN_NET_REQUESTED_COUNT = 0
     _MAIN_NET_RETURNED_COUNT = 0
     _MAIN_NET_SOURCE_STATUS = "not_requested"
+    _MAIN_NET_DATA_DATE_NOTE = ""
 
     # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
     # V17.3.11: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
@@ -366,19 +426,33 @@ async def get_market_abnormal_data():
 
                     _MAIN_NET_SOURCE_STATUS = "loading"
                     _bq = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
-                    _MAIN_NET_MAP_GLOBAL = {
-                        str(code): _safe_float(q.get("main_net_inflow_wan")) * 1e4
-                        for code, q in _bq.items()
-                        if isinstance(q, dict)
-                        and q.get("main_net_inflow_wan") not in (None, "")
-                        and math.isfinite(_safe_float(q.get("main_net_inflow_wan")))
-                    }
+                    try:
+                        from stock_common.stock_calendar import latest_market_data_date
+
+                        _ulist_expected_date = latest_market_data_date(datetime.now()).isoformat()
+                    except Exception as _date_error:
+                        _debug_log(f"mak Ulist expected date unavailable: {_date_error}")
+                        _ulist_expected_date = ""
+                    (
+                        _MAIN_NET_MAP_GLOBAL,
+                        _MAIN_NET_DATA_DATE_NOTE,
+                        _ulist_date_stats,
+                    ) = _select_ulist_main_net_for_date(_bq, _ulist_expected_date)
                     _MAIN_NET_RETURNED_COUNT = len(_MAIN_NET_MAP_GLOBAL)
                     _MAIN_NET_SOURCE_STATUS = (
                         "loaded"
                         if _MAIN_NET_RETURNED_COUNT >= _MAIN_NET_REQUESTED_COUNT
                         else "partial" if _MAIN_NET_RETURNED_COUNT else "no_valid_rows"
                     )
+                    if not _MAIN_NET_RETURNED_COUNT:
+                        if _ulist_date_stats["date_match_rows"]:
+                            _MAIN_NET_SOURCE_STATUS = "no_valid_rows"
+                        elif _ulist_date_stats["date_mismatch_rows"]:
+                            _MAIN_NET_SOURCE_STATUS = "date_mismatch"
+                        else:
+                            _MAIN_NET_SOURCE_STATUS = "date_unconfirmed"
+                    elif _MAIN_NET_RETURNED_COUNT < _MAIN_NET_REQUESTED_COUNT:
+                        _MAIN_NET_SOURCE_STATUS = "partial"
                     if _MAIN_NET_RETURNED_COUNT < _MAIN_NET_REQUESTED_COUNT * 0.5:
                         _debug_log(
                             "mak ulist f62 coverage below 50%: "
@@ -1640,6 +1714,7 @@ async def generate_sector_report(output_path):
         zhb_auction_amount_wan=_auction_amount_wan,
         zhb_data_date=get_zhb_data_date() or "",
         source_status=_MAIN_NET_SOURCE_STATUS,
+        source_date_note=_MAIN_NET_DATA_DATE_NOTE,
     ):
         L(_flow_line)
     if _lbp > 80:
@@ -2292,14 +2367,14 @@ async def generate_sector_report(output_path):
 
             _pr_top = get_plate_rotation_top("kaipan", 20, 5)
             if _pr_top:
-                L("\n  🧭 外部轮动对照（开盘啦强度分 top5）:")
-                # V17.0.2f: md 表格
-                L("| 排名 | 板块代码 | 板块名称 | 强度 |")
-                L("|---|---|---|---|")
+                L("\n  🧭 外部轮动对照（短线侠板块轮动接口，kaipan 请求口径；指标值 top5）:")
+                L("| 排名 | 数据日期 | 板块代码 | 板块名称 | 指标值 | 方向 |")
+                L("|---|---|---|---|---:|---|")
                 for _p in _pr_top:
-                    # V17.0.2m: 排名去 #(表格单元格内 #1 被渲染器高亮红色)
                     L(
-                        f"| {_p['rank']} | {_p['code']} | {_p['name']} | {_p['value']} {'↑' if _p['color']=='red' else '↓'} |"
+                        f"| {_p['rank']} | {_p.get('date') or '未确认'} | {_p['code']} | "
+                        f"{_p['name']} | {_p['value']} | "
+                        f"{'↑' if _p['color']=='red' else '↓'} |"
                     )
         except Exception as _e:
             _debug_log(f"mak plate rotation cross-check: {_e}")
@@ -2358,8 +2433,12 @@ async def generate_sector_report(output_path):
             f"  ulist f62 返回 {_MAIN_NET_RETURNED_COUNT}/{_MAIN_NET_REQUESTED_COUNT} 条扫描样本；"
             "行业汇总只累计已返回字段，缺项不代表净流为零或净流出。"
         )
+        if _MAIN_NET_DATA_DATE_NOTE:
+            L(f"  Ulist 行日期核验：{_MAIN_NET_DATA_DATE_NOTE}")
     else:
         L("  ulist f62 无可用样本；本节不判定行业主力资金方向。")
+        if _MAIN_NET_DATA_DATE_NOTE:
+            L(f"  Ulist 行日期核验：{_MAIN_NET_DATA_DATE_NOTE}")
         if _MAIN_NET_SOURCE_STATUS == "shared_cooldown":
             L("  来源状态：push2delay 共享风控冷却中，本轮跳过请求；缺项不作零净流处理。")
         elif _MAIN_NET_SOURCE_STATUS == "error":

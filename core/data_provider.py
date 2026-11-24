@@ -2396,6 +2396,7 @@ def get_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str
       1. 优先 ZHB 全量快照 (ZHB_SUFFICIENT 字段用此路径)
       2. fallback 到东财 push2 批量接口 (REQUIRES_REALTIME_HTTP 字段用此路径)
          - get_em_batch_quotes 内部自动分批 300/请求
+         - 仅返回业务字段，不透传适配器内部元数据
       3. 注：V12.6 后不再有逐字段 HTTP 调用，性能提升显著
     """
     try:
@@ -2412,7 +2413,12 @@ def get_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str
         from stock_common import get_em_batch_quotes
 
         if codes:
-            return get_em_batch_quotes(codes)
+            quote_map = get_em_batch_quotes(codes)
+            return {
+                code: {key: value for key, value in quote.items() if not str(key).startswith("_")}
+                for code, quote in quote_map.items()
+                if isinstance(quote, dict)
+            }
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
         pass

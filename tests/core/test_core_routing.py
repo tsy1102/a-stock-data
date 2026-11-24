@@ -242,6 +242,21 @@ class TestSetsDisjoint(unittest.TestCase):
 class TestCanonicalDataAPI(unittest.TestCase):
     """V15 Unified Canonical Data API Tests."""
 
+    def test_market_snapshot_em_fallback_hides_adapter_metadata(self):
+        quotes = {
+            "600519": {
+                "price": 1500.0,
+                "_source_as_of_date": "2026-11-24",
+                "_source_as_of_date_status": "verified",
+            }
+        }
+        with mock.patch("stock_common.is_zhb_data_fresh", return_value=False):
+            with mock.patch("stock_common.get_em_batch_quotes", return_value=quotes) as fetch:
+                snapshot = dp.get_market_snapshot(["600519"])
+
+        self.assertEqual(snapshot, {"600519": {"price": 1500.0}})
+        fetch.assert_called_once_with(["600519"])
+
     def test_accessor_uses_canonical_realtime_gate(self):
         """拆分后的访问器应调用 canonical 路由，且盘中走 TDX fallback。"""
         from unittest.mock import patch

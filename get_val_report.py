@@ -137,8 +137,7 @@ from stock_common.sc_utils import is_a_stock as _is_a_stock
 from core.data_provider import (
     get_market_snapshot_async,
     get_turnover_pct_async,
-    get_main_net_buy,
-)  # V16.1: 策略18 用同步版; V16.4.1: 删 async 版; V17.0: 内部=f137 主力净(f137=超大单f140+大单f143, V17.0.16 重定案不再+f140)
+)
 from stock_common.sc_network import (
     _fallback_logger,
 )  # V17.2.x: 策略级超时降级纳入统一 fallback 审计
@@ -146,6 +145,42 @@ import asyncio
 import inspect
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _apply_realtime_quote_overlay(
+    stock: Dict[str, Any], quote: Dict[str, Any], snapshot_amount_wan: Any = None
+) -> None:
+    """Overlay dynamic quote fields even when the snapshot already has market cap."""
+    if not isinstance(quote, dict):
+        quote = {}
+    change_pct = quote.get("change_pct")
+    if change_pct is not None:
+        stock["change_pct"] = _safe_float(change_pct)
+
+    amount_wan = _safe_float(quote.get("amount_wan", 0))
+    if amount_wan > 0:
+        stock["amount"] = amount_wan
+        stock["amount_yi"] = amount_wan / 10000.0
+    else:
+        fallback_amount_wan = _safe_float(
+            snapshot_amount_wan if snapshot_amount_wan is not None else stock.get("amount", 0)
+        )
+        if fallback_amount_wan > 0:
+            stock["amount_yi"] = fallback_amount_wan / 10000.0
+
+    pe_ttm = _safe_float(quote.get("pe_ttm", 0))
+    if pe_ttm > 0:
+        stock["pe_ttm"] = pe_ttm
+    turnover_pct = _safe_float(quote.get("turnover_pct", 0))
+    if turnover_pct > 0:
+        stock["turnover_pct"] = turnover_pct
+
+
+def _is_current_zhb_snapshot(data_date: Any) -> bool:
+    """Daily-sensitive strategies require ZHB data for the latest market date."""
+    if not data_date:
+        return False
+    return is_zhb_data_fresh(max_delay_days=0, data_date=data_date)
 
 
 # ═══════════════════════════════════════════════════
@@ -1748,76 +1783,52 @@ def strategy_16_52w_position(stocks):
     return _top10_sorted(result, lambda x: x["score"])
 
 
-# ─── 策略17: 主力资金占比因子（V10.3新增）──
+# ─── 策略17: ZHB 竞价成交额占比 ──
 
 
 def strategy_17_main_fund_ratio(stocks, top_n=1000):
-    """V10.3: 主力资金占比因子策略。
-    利用zhb的主力净流入额（T-1），TDX实时资金流作为fallback。
-
-    逻辑:
-      1) 计算主力净流入额占总成交额的比例
-      2) 筛选主力资金占比>3%的标的（主力控盘度高）
-      3) 评分: 主力资金占比越高越好
-    """
+    """Filter on ZHB auction turnover ratio using one same-date snapshot only."""
     result = []
-    # V15.5.14: 放宽到 3 天（原默认 2 天，ZHB 延迟 3 天 → 1000 只逐股 TDX 卡死）
-    use_zhb = is_zhb_data_fresh(max_delay_days=3)
-    # V15.5.14: 预加载 tdxstat2 全市场资金流（O(1) 读，替代逐股 get_main_net_buy）
-    _zhb_stat2: Dict[str, Dict[str, Any]] = {}
-    if use_zhb:
-        try:
-            from stock_common import get_zhb_market_stat2_snapshot
-
-            _zhb_stat2 = get_zhb_market_stat2_snapshot() or {}
-        except Exception as _e:
-            _debug_log(f"val strategy20 stat2 load: {_e}")
-    for s in stocks:
-        code = s["code"]
-        # V16.3 O21: 资金占比需分子分母同基准——use_zhb 时分母也用 stat2 T-1 amount
-        # （原分母=腾讯 T 日成交额 → 盘中 T-1 资金流 ÷ T 日成交额 时间基准错位）
-        _s2 = _zhb_stat2.get(code, {}) if use_zhb else {}
-        amount_wan = (
-            _safe_float(_s2.get("amount", 0))
-            if use_zhb and _s2.get("amount")
-            else _safe_float(s.get("amount", 0))
+    raw_data_date = str(get_zhb_data_date() or "").strip()
+    if not _is_current_zhb_snapshot(raw_data_date):
+        return result
+    try:
+        data_date = (
+            datetime.strptime(raw_data_date, "%Y%m%d").date().isoformat()
+            if len(raw_data_date) == 8 and raw_data_date.isdigit()
+            else datetime.strptime(raw_data_date, "%Y-%m-%d").date().isoformat()
         )
-        if not amount_wan or amount_wan == 0:
+    except ValueError:
+        return result
+
+    try:
+        from stock_common import get_zhb_market_stat2_snapshot
+
+        _zhb_stat2 = get_zhb_market_stat2_snapshot() or {}
+    except Exception as _e:
+        _debug_log(f"val strategy17 stat2 load: {_e}")
+        return result
+
+    for s in stocks:
+        code = str(s.get("code", ""))
+        _s2 = _zhb_stat2.get(code, {})
+        if not _s2:
             continue
-        main_amount = 0.0
-        data_source = ""
-        if use_zhb:
-            # ⚠️ V17.0 实锤: main_net_buy_amount 实为开盘金额(竞价额)——策略 20/21/22 基于竞价额, 需改用东财 f137(待办)
-            main_amount = _safe_float(_s2.get("main_net_buy_amount", 0))
-            if main_amount:
-                data_source = "ZHB(T-1,同基准)"
-            # V16.3 O39 修复: stat2 缺字段（0）→ 不再单股 get_main_net_buy 兜底
-            # （原 73 只 × 东财 2.38s/只限流 = 173s；stat2 全覆盖，缺字段本就不可得）
-        if not main_amount or main_amount <= 0:
-            # V16.3 O39 修复: 净流出/0/缺字段——use_zhb 时直接跳过（原逻辑对 ~4000 只净流出
-            # + 99 只缺字段股每次 get_main_net_buy → is_zhb_data_fresh 检查 + 东财 2.36s/只限流
-            # → 全市场 618s+ 卡死；且东财 T 日口径破坏 O21 同基准）
-            if use_zhb:
-                continue
-            # 盘中（use_zhb=False）→ data_provider.get_main_net_buy（内部 ZHB→HTTP 优先级）
-            try:
-                mnb = get_main_net_buy(code)
-                if mnb and mnb.get("main_net_buy_amount"):
-                    main_amount = _safe_float(mnb["main_net_buy_amount"])
-                    data_source = "HTTP/统一层"
-            except Exception as _e:
-                _debug_log(f"val strategy20 get_main_net_buy http {code}: {_e}")
-                continue
-        if not main_amount or main_amount <= 0:
+        amount_wan = _safe_float(_s2.get("amount", 0))
+        main_amount_wan = _safe_float(_s2.get("main_net_buy_amount", 0))
+        if (
+            not math.isfinite(amount_wan)
+            or not math.isfinite(main_amount_wan)
+            or amount_wan <= 0
+            or main_amount_wan <= 0
+        ):
             continue
-        fund_ratio = abs(main_amount) / amount_wan * 100
+        fund_ratio = main_amount_wan / amount_wan * 100
         if fund_ratio < 3:
             continue
         reason = (
-            # H5 修复(2026-08-15 二审): 文案口径与 V17.0 实锤一致——ZHB 主路径=竞价额, 非主力净流入
-            f"竞价额占比={fund_ratio:.2f}%（占成交额高，资金关注度强），"
-            f"开盘竞价额{main_amount:+.0f}万元（{data_source}，⚠️竞价额非主力净流入），"
-            f"总成交额{amount_wan:.0f}万元"
+            f"ZHB数据日 {data_date}：竞价成交额/当日成交额={fund_ratio:.2f}%，"
+            f"竞价成交额{main_amount_wan:.0f}万元，成交额{amount_wan:.0f}万元"
         )
         result.append(
             {"code": code, "name": s.get("name", ""), "reason": reason, "score": fund_ratio}
@@ -2630,31 +2641,14 @@ async def run_discovery_async(output_path):
                         _stock["mcap_yi"] = _tq_mcap
                         if not _stock.get("price") and _tq.get("price"):
                             _stock["price"] = _safe_float(_tq["price"])
-                        if not _stock.get("pe_ttm") and _tq.get("pe_ttm"):
-                            _stock["pe_ttm"] = _safe_float(_tq["pe_ttm"])
-                        if not _stock.get("turnover_pct") and _tq.get("turnover_pct"):
-                            _stock["turnover_pct"] = _safe_float(_tq["turnover_pct"])
                     # V15.5.13: 腾讯缺失不再逐股 push2（连接级风控 → 全市场卡死）
                     # mcap=0 由策略的 mcap>=50 过滤自然排除，可接受
-                    # V11.5: 实时字段统一覆盖（混合分层：API动态层覆盖静态层）
-                    _rt = _price_map.get(_code, {})
-                    # V16.3 O21: 平盘（0%）也是今日事实——is not None 判定，0 不回退 ZHB T-1
-                    if _rt.get("change_pct") is not None:
-                        _stock["change_pct"] = _safe_float(_rt.get("change_pct", 0))
-                    _real_amount = _safe_float(_rt.get("amount_wan", 0))
-                    if _real_amount and _real_amount > 0:
-                        _stock["amount"] = _real_amount
-                        _stock["amount_yi"] = _real_amount / 10000.0
-                    _real_pe = _safe_float(_rt.get("pe_ttm", 0))
-                    if _real_pe and _real_pe > 0:
-                        _stock["pe_ttm"] = _real_pe
-                    _real_turnover = _safe_float(_rt.get("turnover_pct", 0))
-                    if _real_turnover and _real_turnover > 0:
-                        _stock["turnover_pct"] = _real_turnover
-                else:
-                    _amount_wan = _safe_float(_stat.get("amount", 0))
-                    if _amount_wan > 0:
-                        _stock["amount_yi"] = _amount_wan / 10000.0
+                # V11.5: 更新的成交额/PE/换手率覆盖不依赖市值是否已存在。
+                _apply_realtime_quote_overlay(
+                    _stock,
+                    _price_map.get(_code, {}),
+                    snapshot_amount_wan=_stat.get("amount"),
+                )
                 all_stocks.append(_stock)
             # 行情有效日必须来自来源响应；报告生成日期或市场时段不能替代 as_of_date。
             _basis_date = _zhb_date or "未确认"
@@ -3020,7 +3014,7 @@ async def run_discovery_async(output_path):
             "策略17【竞价额占比】",
             strategy_17_main_fund_ratio,
             (all_stocks,),
-        ),  # V17.0.x: main_net_buy_amount 实锤=竞价额(非主力净流入), 如实命名
+        ),  # 仅同一 ZHB 日期的竞价额/成交额；无东财主力净流入回退
         (
             "策略18【竞价额加速】",
             strategy_18_volume_acceleration,
@@ -3258,6 +3252,18 @@ async def run_discovery_async(output_path):
                         L("  ⚠️ 未配置 fuyao 估值源，本策略已跳过（无 Key 时恒空，属预期）")
                 except Exception:
                     pass
+            elif _k == "策略17":
+                if not _is_current_zhb_snapshot(_zhb_date):
+                    L(
+                        f"  ⚠️ ZHB快照不是最新有效行情日或不可用（数据日 {_zhb_date or '未确认'}），"
+                        "本策略跳过；不以主力净流入替代竞价额。"
+                    )
+                else:
+                    L(
+                        f"  仅使用 ZHB 同一数据日（{_zhb_date or '未确认'}）的竞价金额与成交额；"
+                        "无候选可能是未达阈值或所需字段缺失，不回退到主力净流入。"
+                    )
+                continue
             elif _k in ("策略14", "策略15", "策略20"):
                 L("  ⚠️ 盘后数据（北向/龙虎榜/业绩预告）当前时段无产出，属预期")
             elif _k in ("策略26", "策略27"):

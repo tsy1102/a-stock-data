@@ -1,7 +1,7 @@
 # 脚本应用接口与字段来源字典(Script Data Dictionary)
 
 > **创建日期**: 2026-07-28
-> **更新日期**: 2026-10-14（V17.4.47：补全 Ulist239 财务字段含义/单位，登记与 TDX/Tencent 的已验证映射；五大报告路由保持不变）
+> **更新日期**: 2026-11-24（同步当前 27 策略 VAL 与 MAK 的 Ulist 行日期核验、竞价字段边界及板块轮动来源标注）
 > **基于**: [field_dict.md](../docs/field_dict.md)(§12 多源字典 + §12.15 源优先级矩阵 O37 修订版 + **V17.0 拼音规律破解/口径实锤**)
 > **目的**: 明确每个脚本的**每个字段**从哪个源/接口获取、走哪个中间层函数、**完整 fallback 链**、**跨脚本获取逻辑差异**——与 field_dict 形成"双字典"对照
 > **使用原则**: 脚本调整前必查; 优先采用字典已确定的中间层函数
@@ -62,7 +62,7 @@
 | 财务 | net_profit/revenue/roe/eps | TDX F10/0x0010 | THS ROE TTM/新浪三表 |
 | 股本 | total_shares/float_shares/mcap | 腾讯实时合并 | **gb_info Zgb/Ltgb/FreeLtgb(V17.0 定位)**/sc_capital_cache |
 | 历史涨跌幅 | change_5d-60d/ytd | ZHB(**全部交易日口径**, V17.0 实锤) | 腾讯 52周 |
-| 情绪/轮动 | market_degree/strong/板块强度 | 财联社/开盘啦 | KPL/duanxianxia |
+| 情绪/轮动 | market_degree/strong/板块强度 | 财联社、KPL（开盘啦） | 短线侠 `duanxianxia.com` 的 `kaipan` 轮动路由为独立接口；不与 KPL/KPH 合并身份 |
 
 ---
 
@@ -136,7 +136,7 @@
 | 新浪 | get_sina_financial_report/get_sina_balance_sheet | val 04/med/lng |
 | KPL | get_kpl_market_sentiment/get_kpl_broken_ratio/get_kpl_plate_strength/get_kpl_limit_up_detail | mak A |
 | THS | get_ths_market_snapshot/get_ths_pb | val 04 PB(仅盘中核对——盘后跳过) |
-| duanxianxia | get_plate_rotation_top/get_plate_rotation_matrix | mak D 对照 |
+| duanxianxia（短线侠） | get_plate_rotation_top/get_plate_rotation_matrix | mak D 外部对照；显示接口返回日期和指标值，`kaipan` 参数不等同于直接调用 KPL |
 | ZHB 快照辅助 | get_zhb_full_market_snapshot/get_zhb_market_stat2_snapshot/zhb_field_safe | mak/val 全市场 |
 
 ---
@@ -161,7 +161,7 @@
 | turnover | — | 腾讯 turnover_pct → ZHB | O21 |
 | mcap_yi | `_calc_mcap_yi` | price×股本(sc_capital_cache) | 股本缓存未命中=0 |
 | ret_3d/5d/10d/20d/60d | `_calc_3d_from_daily` | ZHB Col[28]/[30]/[18]/[20] 等(**交易日口径**) | O28 |
-| main_net_amount | **ulist 批量 f62(主, V17.0.16 重定案: f62 已含超大单+大单, 不再 +f66, asyncio.to_thread 防阻塞)** | get_em_batch_quotes 全市场批量(17 chunk) → ZHB 竞价额(兜底标注语义) | **主力净=f137(=push2 f137, 跨接口对撞 96.6%; 旧 f137+f140 重复计数约 40% 已订正)**; ⚠️ 单位=**元**(main_net_inflow_wan 万×1e4, 下游 /1e8 亿元口径, H1 审查修复) |
+| main_net_amount | **ulist 批量 f62**（已验证为主力净额，含超大单+大单，不再加 f66） | `get_em_batch_quotes` 全市场批量；只汇总同一 Ulist 行 `f124` 与 `f297` 一致且匹配交易日历基准日的记录。日期锚缺失、不完整、冲突或不匹配的行不参与合计。 | f62 与 Push2 `stock/get::f137` 的已登记同义关系保留（历史对撞 96.6%）；单位为元（适配器 `main_net_inflow_wan` 万元值×1e4）；ZHB 竞价额不回填 f62，仅在无可用 f62 样本时单独展示 |
 | **industry_code** | ZHB [13] | `_is_industry_code` 过滤 | **V17.0: 仅认 881 段=行业; 880 段=概念/风格(股权转让/微盘股等)已过滤** |
 | name | snapshot/profile/腾讯 | — | ST/退剔除 |
 | A 股过滤 | `is_a_stock`(sc_utils 统一, V17.0) | 前缀 00/30/60/68/92 | 滤 ETF/LOF/可转债 |
@@ -176,20 +176,15 @@
 | C 板块-异动 | ZHB 旁路优先 `_build_sectors_from_zhb`、TDX 兜底(防 push2 风控) |
 | 异动公告 | **get_abnormal_announcements → get_strategic_announcements(keywords=["异常波动"], V17.0 下沉带缓存+TDX 兜底)** |
 
-### 5.2 get_val_report.py（当前 27 策略全市场；下表保留 V17.0 历史变更项）
-| 变化点 | V17.0 |
-|:---|:---|
-| 策略扫描 | asyncio 并发 3; ZHB 快照 O(1) 读(main_net_buy_amount 等) |
-| **策略22 业绩预增(V17.0 新增, 2026-08-15 审查修复)** | **get_yjyg_all(全市场一次分页 5 页, 当日缓存)** → eastmoney_datacenter RPT_PUBLIC_OP_NEWPREDICT | 预增/扭亏/续盈/略增 且 净利变动>=50%; ⚠️ M4 实测定案: 幅度键=**ADD_AMP_LOWER/UPPER**(INCREASE_RATE 恒 None), IS_LATEST=1 去重; 实测 348 只/138 只候选 |
-| **策略23 盈利预期(V17.0 新增, 2026-08-15 审查修复)** | **get_eps_forecast(code, local_only=True)**(本机 ProfitForecast O(1) 索引缓存, **全市场路径禁网络兜底** H4) + holder_change(股东户数, **键=holder_num** H3) | 2026E vs 2025A EPS 增速>=20% + 户数下降筹码集中 |
-| 主力资金策略 | ZHB tdxstat2 全市场快照(V15.5.14); ⚠️ V17.0 实锤: main_net_buy_amount=竞价额——策略21(资金动量)实为**竞价动量**语义呈现 |
-| **连板追踪(sht)** | **ZHB tdxstat [31] 真连板数(2026-08-15 接入, 双日铁证)** | get_zhb_single_stock_data zt_lianban/zt_type/zt_seal_amount → 3日涨幅估算(兜底, _zt_lb<=0 门控) | [31]=连板天数/[33]=涨停类型(**0=盘中涨停合法档**, H6 修复 is not None 判定)/[4]=封单额 万元; 裸 except 已补日志 H5 |
-| **主力净额(mak)** | **ulist.np/get 批量 f62(V17.0.16 重定案)** | get_em_batch_quotes → ZHB 竞价额(兜底) | f62=主力净(=push2 f137, 跨接口对撞 96.6%; f66=超大单净, f72=大单净, 20/20 实锤) |
-| PB 批量 | THS 盘中核对/盘后跳过 |
-| ths_hot_reason | **委托 get_ths_hot_raw(V17.0)** |
-| 行业判断 | 东财申万二级 L2 → TDX boards → **ZHB 881 段过滤(V17.0)** |
-| 写尾 | **render_md_report(V17.0 2026-08-15 C 方案)**——渲染层 md 转换(标题 ##/分隔线 ---/F10 边框表/空格表数据驱动切分);
-  输出扩展名 .md; 纯文本兼容(txt 查看器仍可读); 原 save_text_report 保留未删 |
+### 5.2 get_val_report.py（当前 27 策略全市场）
+
+- 策略扫描使用 asyncio 并发 3；ZHB 快照 O(1) 读取。动态行情字段由可用的腾讯报价覆盖，不以市值是否缺失决定是否更新。
+- **策略17 竞价额占比**：仅使用与最新有效行情日一致的 ZHB 数据日中的竞价成交额与成交额；ZHB 日期不是最新行情日、日期不可确认或任一分子/分母缺失时跳过；不调用东财主力净流入作回退。结果文案显示 ZHB 数据日和比值，不把竞价额描述成主力资金或资金关注度。
+- **策略18/19 竞价加速与动量**：读取 ZHB `stat2` 竞价额字段，按竞价字段本义展示，不称为主力净流入。
+- **策略20 业绩预增**：`get_yjyg_all` → Eastmoney `RPT_PUBLIC_OP_NEWPREDICT`；按预告类型与 `ADD_AMP_LOWER/UPPER` 评估，并以 `IS_LATEST=1` 去重。
+- **策略21 盈利预期**：本机 `ProfitForecast` 索引（`local_only=True`）及股东户数变化；全市场扫描不触发逐股网络兜底。
+- **策略22/23**：月内动量读取 ZHB 交易日口径涨幅；PS 估值使用 Fuyao 可得字段。
+- PB 批量盘中由 THS 核对，盘后跳过；`ths_hot_reason` 委托 `get_ths_hot_raw`；行业判断采用东财申万二级、TDX boards 与 ZHB 行业段过滤；报告通过 `render_md_report` 输出 Markdown。
 
 ### 5.3 get_sht_report.py(短线, 1718 行)
 | 变化点 | V17.0 |

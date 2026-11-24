@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import core.data_provider as data_provider
 import get_val_report
+import stock_common
 
 
 def test_snapshot_quality_notes_disclose_missing_coverage():
@@ -94,6 +95,78 @@ def test_snapshot_coverage_counts_only_a_shares_and_intersects_verified_quotes()
     assert get_val_report._a_share_snapshot_quality_counts(
         stocks, {"600519", "510300"}
     ) == (2, 1, 1)
+
+
+def test_realtime_quote_overlay_updates_fields_when_market_cap_already_exists():
+    stock = {
+        "mcap_yi": 120.0,
+        "amount": 1000.0,
+        "amount_yi": 0.1,
+        "change_pct": 1.0,
+        "pe_ttm": 9.0,
+        "turnover_pct": 1.1,
+    }
+
+    get_val_report._apply_realtime_quote_overlay(
+        stock,
+        {
+            "amount_wan": 2500.0,
+            "change_pct": 0.0,
+            "pe_ttm": 12.5,
+            "turnover_pct": 2.0,
+        },
+        snapshot_amount_wan=1000.0,
+    )
+
+    assert stock["mcap_yi"] == 120.0
+    assert stock["amount"] == 2500.0
+    assert stock["amount_yi"] == 0.25
+    assert stock["change_pct"] == 0.0
+    assert stock["pe_ttm"] == 12.5
+    assert stock["turnover_pct"] == 2.0
+
+
+def test_strategy_17_skips_stale_zhb_without_requesting_a_flow_fallback(monkeypatch):
+    snapshot_calls = []
+    monkeypatch.setattr(get_val_report, "is_zhb_data_fresh", lambda **_kwargs: False)
+    monkeypatch.setattr(get_val_report, "get_zhb_data_date", lambda: "20261123")
+    monkeypatch.setattr(
+        stock_common,
+        "get_zhb_market_stat2_snapshot",
+        lambda: snapshot_calls.append(True),
+    )
+
+    result = get_val_report.strategy_17_main_fund_ratio(
+        [{"code": "600519", "amount": 100000.0}]
+    )
+
+    assert result == []
+    assert snapshot_calls == []
+
+
+def test_strategy_17_uses_same_zhb_date_auction_and_turnover_amounts(monkeypatch):
+    monkeypatch.setattr(get_val_report, "is_zhb_data_fresh", lambda **_kwargs: True)
+    monkeypatch.setattr(get_val_report, "get_zhb_data_date", lambda: "20261124")
+    monkeypatch.setattr(
+        stock_common,
+        "get_zhb_market_stat2_snapshot",
+        lambda: {
+            "600519": {"amount": 100000.0, "main_net_buy_amount": 4000.0},
+            "600000": {"amount": 0.0, "main_net_buy_amount": 5000.0},
+        },
+    )
+
+    result = get_val_report.strategy_17_main_fund_ratio(
+        [
+            {"code": "600519", "name": "贵州茅台", "amount": 999999.0},
+            {"code": "600000", "name": "浦发银行", "amount": 100000.0},
+        ]
+    )
+
+    assert [item["code"] for item in result] == ["600519"]
+    assert "ZHB数据日 2026-11-24" in result[0]["reason"]
+    assert "竞价成交额/当日成交额=4.00%" in result[0]["reason"]
+    assert "资金关注度强" not in result[0]["reason"]
 
 
 class _ImmediateAwaitable:

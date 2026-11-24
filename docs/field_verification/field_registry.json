@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 286,
+      "aggregate_status_scope_unresolved": 284,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -31,9 +31,9 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 836,
-      "verified": 1807,
-      "verified_by_empirical_addendum": 264,
+      "unverified": 834,
+      "verified": 1809,
+      "verified_by_empirical_addendum": 266,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -39271,18 +39271,20 @@
         "财联社(cls)"
       ],
       "section": "",
-      "canonical": "stock_list",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "❌ 未用",
       "status": "conflict",
       "source_statuses": {
         "reports": "unverified",
-        "财联社(cls)": "unverified"
+        "财联社(cls)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_differs"
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ"
       ]
     },
     {
@@ -39584,12 +39586,13 @@
       "status": "conflict",
       "source_statuses": {
         "reports": "unverified",
-        "财联社(cls)": "unverified"
+        "财联社(cls)": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
-        "meaning_differs"
+        "meaning_differs",
+        "source_statuses_differ"
       ]
     },
     {
@@ -49676,6 +49679,12 @@
     ],
     "kpl_sector_strength_value": [
       "市场源(market_sources)"
+    ],
+    "cls_telegraph_related_stocks": [
+      "财联社(cls)"
+    ],
+    "cls_telegraph_subjects": [
+      "财联社(cls)"
     ]
   },
   "mappings": [
@@ -298587,15 +298596,16 @@
       "code": "stock_list",
       "identity": "财联社(cls)::stock_list",
       "path": "stock_list",
-      "canonical": "stock_list",
-      "meaning": "关联股票代码列表",
+      "canonical": "cls_telegraph_related_stocks",
+      "meaning": "财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。",
       "unit": "",
       "section": "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
       "sections": [
-        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）"
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录；来源内实证定案（2026-11-24）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -298605,8 +298615,24 @@
           "财联社(cls)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-cls-telegraph-stock-list"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+        "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+        "sample": {
+          "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、198 个非空证券项；公开页面逐值核对 2026-11-19 的一条财联社电报及其证券代码/名称。",
+          "comparison_count": 1,
+          "matched_count": 1,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1,
+          "observation_count": 1050
+        }
       },
       "reference_evidence": [
         {
@@ -298616,6 +298642,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "12.8.13.1 财联社快讯 telegraph 原始字段补录；来源内实证定案（2026-11-24）",
+          "canonical": "cls_telegraph_related_stocks",
+          "meaning": "财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-cls-telegraph-stock-list",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+          "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+          "metadata_change": {
+            "before": {
+              "canonical": "stock_list",
+              "meaning": "关联股票代码列表",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_related_stocks",
+              "meaning": "财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、198 个非空证券项；公开页面逐值核对 2026-11-19 的一条财联社电报及其证券代码/名称。",
+            "comparison_count": 1,
+            "matched_count": 1,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1,
+            "observation_count": 1050
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -298631,22 +298691,67 @@
         "meaning": "待破解",
         "unit": "",
         "section": "12.9.2 其他接口实测发现"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-cls-telegraph-stock-list",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cls_related_fields.json",
+          "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+          "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "stock_list",
+            "meaning": "关联股票代码列表",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "stock_list",
+              "meaning": "关联股票代码列表",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_related_stocks",
+              "meaning": "财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目的 cls_telegraph() 将上游 stock_list 列表写入精确路径 raw_cls.json.telegraph[].stock_list[]；保留期内 22 份归档包含 1,050 条记录，150 条有 198 个非空证券项，结构完整率 198/198。2026-11-19 15:24:29 的记录含 sh688826/频准激光，财联社同篇官方文章页显示对应证券关联项；上交所官方上市公告确认 688826=频准激光。该证据定案列表的关联证券角色及 code/name 身份，但官方文章页行情会随时间变化，未据此裁决 pct 的单位或日期/时点口径。",
+          "sample": {
+            "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、198 个非空证券项；公开页面逐值核对 2026-11-19 的一条财联社电报及其证券代码/名称。",
+            "comparison_count": 1,
+            "matched_count": 1,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1,
+            "observation_count": 1050
+          }
+        }
+      ]
     },
     {
       "source": "财联社(cls)",
       "code": "subjects",
       "identity": "财联社(cls)::subjects",
       "path": "subjects",
-      "canonical": "subjects",
-      "meaning": "主题/题材标签列表",
+      "canonical": "cls_telegraph_subjects",
+      "meaning": "财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。",
       "unit": "",
       "section": "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
       "sections": [
-        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）"
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）",
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录；来源内实证定案（2026-11-24）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -298656,8 +298761,24 @@
           "财联社(cls)"
         ],
         "values": [
-          "unverified"
-        ]
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-cls-telegraph-subjects"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+        "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+        "sample": {
+          "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、1,537 个非空标签项；公开页面逐值核对同篇财联社电报的两个主题 ID/名称。",
+          "comparison_count": 2,
+          "matched_count": 2,
+          "counterexample_count": 0,
+          "excluded_count": 0,
+          "stock_count": 1,
+          "observation_count": 1050
+        }
       },
       "reference_evidence": [
         {
@@ -298667,6 +298788,40 @@
           "unit": "",
           "status_raw": "",
           "status": ""
+        },
+        {
+          "section": "12.8.13.1 财联社快讯 telegraph 原始字段补录；来源内实证定案（2026-11-24）",
+          "canonical": "cls_telegraph_subjects",
+          "meaning": "财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-cls-telegraph-subjects",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+          "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+          "metadata_change": {
+            "before": {
+              "canonical": "subjects",
+              "meaning": "主题/题材标签列表",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_subjects",
+              "meaning": "财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、1,537 个非空标签项；公开页面逐值核对同篇财联社电报的两个主题 ID/名称。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1,
+            "observation_count": 1050
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -298682,7 +298837,51 @@
         "meaning": "主题分类",
         "unit": "",
         "section": "12.9.2 其他接口实测发现"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-cls-telegraph-subjects",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cls_related_fields.json",
+          "evidence_file": "adjudications/20261124_cls_related_fields_evidence.md",
+          "evidence_sha256": "c1c1c3913c59905341ed33d03b61148e911ed92b9a5287c7af3cf03819a45ebb",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "subjects",
+            "meaning": "主题/题材标签列表",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "subjects",
+              "meaning": "主题/题材标签列表",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "cls_telegraph_subjects",
+              "meaning": "财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "项目的 cls_telegraph() 将上游 subjects[].subject_id/subject_name 映射为精确路径 raw_cls.json.telegraph[].subjects[].id/name；保留期内 22 份归档包含 1,537 个非空标签项，结构完整率 1,537/1,537。2026-11-19 15:24:29 的电报记录携带 ID 1279/半导体芯片和 ID 2710/激光；同篇财联社官方文章显示两个对应主题链接，财联社官方主题页按相同 ID 展示同一文章。该证据确认标签关联及 ID/名称对应，不推断完整标签分类体系。",
+          "sample": {
+            "scope": "保留期 2026-10-15 至 2026-11-19 的 22 份 raw_cls.json；结构审计 1,050 条记录、1,537 个非空标签项；公开页面逐值核对同篇财联社电报的两个主题 ID/名称。",
+            "comparison_count": 2,
+            "matched_count": 2,
+            "counterexample_count": 0,
+            "excluded_count": 0,
+            "stock_count": 1,
+            "observation_count": 1050
+          }
+        }
+      ]
     },
     {
       "source": "财联社(cls)",

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 747 条逐源记录。
+> 聚合歧义 180 个 code；聚合定义不完整 154 个 code；疑似合并文本 748 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3043,21 +3043,21 @@
 
 ### `stock_list` — ambiguous
 
-聚合问题：meaning_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | reports · `stock_list` | stock_list | 待破解 | — | `unverified` |
-| 财联社(cls) · `stock_list` | stock_list | 关联股票代码列表 | — | `unverified` |
+| 财联社(cls) · `stock_list` | cls_telegraph_related_stocks | 财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。 | — | `verified` |
 
 ### `subjects` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | reports · `subjects` | subjects / subject_name | 主题分类 | — | `unverified` |
-| 财联社(cls) · `subjects` | subjects | 主题/题材标签列表 | — | `unverified` |
+| 财联社(cls) · `subjects` | cls_telegraph_subjects | 财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。 | — | `verified` |
 
 ### `themes` — ambiguous
 
@@ -4015,6 +4015,7 @@
 | 财联社(cls) | `plate_name` | plate_code / plate_name | 板块代码 / 名称（风口板块） | `unverified` |
 | 财联社(cls) | `plates` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | `unverified` |
 | 财联社(cls) | `rank` | rank / cur_heat | 当前热度排名 / 热度值 | `unverified` |
-| 财联社(cls) | `subjects` | subjects | 主题/题材标签列表 | `unverified` |
+| 财联社(cls) | `stock_list` | cls_telegraph_related_stocks | 财联社电报条目附加的关联证券列表；列表项含证券代码与名称。空列表只表示该记录没有返回关联项，不推断正文未提及证券。列表项 pct 的单位、来源实际数据时点和是否固定为文章发布时状态尚未核实。 | `verified` |
+| 财联社(cls) | `subjects` | cls_telegraph_subjects | 财联社电报条目关联的主题/题材标签列表；每项含官方主题 ID 与名称。该裁决不外推完整分类体系或标签互斥规则。 | `verified` |
 | 财联社(cls) | `title` | title / brief | 标题 / 摘要 | `verified` |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | `unverified` |

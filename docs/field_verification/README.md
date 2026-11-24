@@ -15,6 +15,7 @@
 ## 近期裁决与研究记录
 
 - [H 股报价未决映射停用](adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)及[结构化更正清单](adjudications/20261124_eastmoney_hshare_unresolved_mappings.json)：将 11 月 23 日审计中 133 条无非空可比值的关系从活动映射停用，保留精确旧边和证据；未判定字段不等价，也未更改两端字段释义。
+- [财联社电报关联证券与主题字段实证](adjudications/20261124_cls_related_fields_evidence.md)及[结构化裁决](adjudications/20261124_cls_related_fields.json)：保留期 22 个 raw 文件、1,050 条电报记录中，198 个关联证券项和 1,537 个主题项结构完整；以财联社同篇官方文章页、主题链接和上交所证券代码公告逐值核验后，定案 `stock_list` 的关联证券身份及 `subjects` 的主题 ID/名称。`stock_list[].pct` 的单位和数据时点仍未确定；不建立跨源映射。
 - [近两周主字典同义路径审查](research/20261124_dictionary_duplicate_path_review.md)：归类 ELTDX 不同完整响应路径、KPL 原始/规范化表示和 EventDC 共用枚举代码表；保留逐源身份，不把名称相似当作映射。
 
 - [Ulist239 `f63` 保留期全样本公式与官方路径复核](research/20261124_ulist239_f63_full_history_formula_review.md)、[180 条逐行公式审计](research/20261124_ulist239_f63_full_history_formula_audit.csv)与[9 个 raw 文件哈希清单](research/20261124_ulist239_f63_full_history_formula_manifest.csv)：使用同记录 `f124/f297` 日期锚，审查 9 个来源交易日。逐字段、同源加减组合、跨日滞后和短窗累计扫描均无精确或 ±1 命中；官方页面脚本仍未提供 `ulist.np/get::f63` 的字段映射。该字段保持未知，未改 registry 或采集路由。

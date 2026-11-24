@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-24",
+  "decisions": [
+    {
+      "id": "20261124-cninfo-announcement-title",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "巨潮(cninfo)",
+        "code": "title"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "announcement_title",
+      "meaning": "巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。",
+      "unit": "",
+      "rationale": "项目 get_strategic_announcements() 精确将官方公告查询响应 announcements[*].announcementTitle 清理 HTML 后写入 title。2026-11-24 官方响应样本中的宁夏建材公告标题与巨潮官方首页同一公告行逐字一致。",
+      "source_contract": {
+        "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+        "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+        "path": "POST /new/hisAnnouncement/query -> announcements[]",
+        "locator": "announcementTitle；首页字段“公告标题”",
+        "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+      }
+    },
+    {
+      "id": "20261124-cninfo-announcement-date",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "巨潮(cninfo)",
+        "code": "date"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "announcement_publish_date",
+      "meaning": "巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。",
+      "unit": "",
+      "rationale": "项目 get_strategic_announcements() 精确将官方公告查询响应 announcements[*].announcementTime 按本地时区转换后写入 date。2026-11-24 官方响应中的时间戳换算为 2026-11-25，与巨潮官方首页同一公告行日期 11-25 一致。",
+      "source_contract": {
+        "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+        "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+        "path": "POST /new/hisAnnouncement/query -> announcements[]",
+        "locator": "announcementTime（Unix 毫秒）；首页字段“日期”",
+        "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+      }
+    },
+    {
+      "id": "20261124-cninfo-announcement-id",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "巨潮(cninfo)",
+        "code": "announcement_id"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "announcement_id",
+      "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+      "unit": "",
+      "rationale": "当前适配器将官方响应 announcements[*].announcementId 原样写入 announcement_id。2026-11-24 官方响应中的标识符 1225685351 同时出现在同一记录的 adjunctUrl 文件名及巨潮官方公告详情查询参数中。",
+      "source_contract": {
+        "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+        "revision": "官方公告查询响应实测，2026-11-24",
+        "path": "POST /new/hisAnnouncement/query -> announcements[]",
+        "locator": "announcementId；同条记录的 adjunctUrl 与公告详情参数",
+        "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+      }
+    },
+    {
+      "id": "20261124-cninfo-announcement-attachment-path",
+      "action": "register_source_contract_field",
+      "target": {
+        "source": "巨潮(cninfo)",
+        "code": "adjunct_url"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "runtime_path_unregistered",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "announcement_attachment_path",
+      "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+      "unit": "相对 URL 路径",
+      "rationale": "当前适配器将官方响应 announcements[*].adjunctUrl 原样写入 adjunct_url。官方响应中的路径 finalpage/2026-11-25/1225685351.PDF 与同记录 announcementId 对应；项目不把相对路径伪装成绝对 URL。",
+      "source_contract": {
+        "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+        "revision": "官方公告查询响应实测，2026-11-24",
+        "path": "POST /new/hisAnnouncement/query -> announcements[]",
+        "locator": "adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF",
+        "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+      }
+    }
+  ]
+}

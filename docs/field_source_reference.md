@@ -4014,12 +4014,15 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 
 | 字段 | 含义 | 项目映射 | 状态 |
 |:---|:---|:---|:---:|
-| announcementTitle | 公告标题 | title | ✅ |
-| announcementTypeName | 公告类型 | type | ✅ |
-| announcementTime | 时间| date | ✅ |
-| announcementId | 公告 ID| url | ✅ |
+| announcementTitle | 公告标题（移除 HTML 标签后输出） | title | ✅ 来源契约核验 |
+| announcementTypeName | 公告类型名称 | type | ⏸ 当前官方样本 30/30 为空，保持未知 |
+| announcementTime | 公告日期时间戳，转本地日期 `YYYY-MM-DD` | date | ✅ 来源契约核验 |
+| announcementId | 公告记录标识符（ID） | announcement_id | ✅ 来源契约核验 |
+| adjunctUrl | 公告附件相对路径（当前样本为 PDF） | adjunct_url | ✅ 来源契约核验 |
 
 > orgId 不是统一 `gssx0{code}` 格式（601318→9900002221），须先查 `szse_stock.json` 官方映射表（6198 只），否则 601xxx 段股票 totalAnnouncement=0
+>
+> 当前项目输出路径与旧字段别名的逐项核验见 [`20261124_cninfo_announcement_paths.md`](field_verification/adjudications/20261124_cninfo_announcement_paths.md)。`url` 曾被旧参考表误用为公告 ID 的输出键，当前解析器已用 `announcement_id` 区分 ID 与附件路径。
 
 **互动易**（`irm.cninfo.com.cn/newircs/index/queryKeyboardInfo` + `/company/question`）→ `cninfo_irm`：
 

@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 181 个 code；聚合定义不完整 160 个 code；疑似合并文本 755 条逐源记录。
+> 聚合歧义 181 个 code；聚合定义不完整 160 个 code；疑似合并文本 760 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -846,7 +846,7 @@
 | 东财-datacenter(英文键) · `date` | date_legacy_flat_alias | 旧未限定短路径已退役。旧扁平日期短名混合交易日、持仓日、解禁事件日、股东报告截止日和旧分红事件日；不再作为单一字段身份。 完整路径：margin_trading.date; northbound_hold.date; lockup_expiry.date; block_trade.date; holder_fetch_em.date; EX_DIVIDEND_DATE。多目标别名只用于说明路径拆分，不表示这些字段同义。 | — | `disproved` |
 | 同花顺-fuyao · `date` | — | — | — | `unverified` |
 | 央视网(新闻联播) · `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | YYYY-MM-DD | `verified` |
-| 巨潮(cninfo) · `date` | — | — | — | `unverified` |
+| 巨潮(cninfo) · `date` | announcement_publish_date | 巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。 | — | `verified` |
 | 市场源(market_sources) · `date` | date | 日期 | — | `verified` |
 | 开盘啦(kpl) · `date` | kpl_market_broken_ratio_response_date | RiseFallAnalysis 响应附带的统计日期标签（YYYY-MM-DD）；不单独证明该来源的实际数据日契约。 | — | `verified` |
 | 新浪(扩展API) · `date` | — | — | — | `unverified` |
@@ -3142,7 +3142,7 @@
 |:--|:--|:--|:--|:--|
 | TDX-eltdx(适配层) · `title` | — | — | — | `unverified` |
 | reports · `title` | title | 研报标题 | — | `verified` |
-| 巨潮(cninfo) · `title` | — | — | — | `unverified` |
+| 巨潮(cninfo) · `title` | announcement_title | 巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。 | — | `verified` |
 | 财联社(cls) · `title` | title / brief | 标题 / 摘要 | — | `verified` |
 
 ### `total_shares` — incomplete
@@ -3946,9 +3946,14 @@
 | 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | `disproved` |
 | 同花顺-fuyao | `weighted_roe` | profitability.index_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。 | `disproved` |
 | 央视网(新闻联播) | `date` | cctv_news_broadcast_edition_date | 央视网《新闻联播》按日栏目页所对应的节目期次日期。它不表示单条新闻的事件日、单条报道的独立发布时间或本次采集日。 | `verified` |
+| 巨潮(cninfo) | `adjunct_url` | announcement_attachment_path | 巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。 | `verified` |
+| 巨潮(cninfo) | `announcement_id` | announcement_id | 巨潮公告记录的标识符；是 ID，不是 URL。 | `verified` |
 | 巨潮(cninfo) | `answer` | answer | 上市公司对该问题的回复正文；尚无回复时为空 | `verified` |
 | 巨潮(cninfo) | `answerer` | answerer | 回复记录标注的答复主体/作者；尚无回复时为空，不据此推断自然人身份 | `verified` |
 | 巨潮(cninfo) | `ask_time` | ask_time | 互动易问答记录的发布时间戳；由 pubDate Unix 毫秒转换为本机本地时区的分钟字符串 | `verified` |
+| 巨潮(cninfo) | `date` | announcement_publish_date | 巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。 | `verified` |
+| 巨潮(cninfo) | `title` | announcement_title | 巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。 | `verified` |
+| 巨潮(cninfo) | `url` | announcement_id | 旧字段参考将公告 ID 误列为 url 的历史项目别名；当前解析器将同一官方 announcementId 输出到 announcement_id，附件相对路径另输出为 adjunct_url。此精确 url 路径已退出当前输出。 | `disproved` |
 | 市场源(market_sources) | `change_type` | change_type | 盘口异动类型请求代码回显。market_sources.stock_changes_8201 采集单元固定回显字符串 8201，项目代码将其标为“火箭发射”；这是查询类别标记，不是上游逐条行情记录独立返回的业务字段。其他 type 代码未由本次证据确认。 | `verified` |
 | 市场源(market_sources) | `col_02` | kpl_sector_strength_value | 开盘啦精选板块强度综合数值；在 kpl_plate_strength 子接口中，原始 row[2] 与解析后的 strength 同值。该指标用于比较板块强度，具体公式与计量单位未公开。 | `verified` |
 | 市场源(market_sources) | `col_03` | change_pct | 板块涨跌幅；在 kpl_plate_strength 子接口中，原始 row[3] 与同记录已登记字段 change_pct 同值。 | `verified` |

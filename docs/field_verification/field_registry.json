@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 277,
+      "aggregate_status_scope_unresolved": 275,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -31,12 +31,12 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 825,
-      "verified": 1818,
+      "unverified": 823,
+      "verified": 1822,
       "verified_by_empirical_addendum": 275,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
-      "verified_by_source_contract": 638
+      "verified_by_source_contract": 642
     },
     "updated_at": "2026-11-19"
   },
@@ -7922,6 +7922,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "adjunct_url",
+      "source": "巨潮(cninfo)",
+      "sources": [
+        "巨潮(cninfo)"
+      ],
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF @ 官方公告查询响应实测，2026-11-24",
+      "canonical": "announcement_attachment_path",
+      "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+      "unit": "相对 URL 路径",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "巨潮(cninfo)": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "adjust_mode",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -8332,6 +8350,24 @@
       "status": "unverified",
       "source_statuses": {
         "reports": "unverified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "announcement_id",
+      "source": "巨潮(cninfo)",
+      "sources": [
+        "巨潮(cninfo)"
+      ],
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementId；同条记录的 adjunctUrl 与公告详情参数 @ 官方公告查询响应实测，2026-11-24",
+      "canonical": "announcement_id",
+      "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "巨潮(cninfo)": "verified"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -13850,7 +13886,7 @@
         "东财-datacenter(英文键)": "disproved",
         "同花顺-fuyao": "unverified",
         "央视网(新闻联播)": "verified",
-        "巨潮(cninfo)": "unverified",
+        "巨潮(cninfo)": "verified",
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "verified",
         "新浪(扩展API)": "unverified",
@@ -40473,7 +40509,7 @@
         "Levistock历史未归属": "unverified",
         "TDX-eltdx(适配层)": "unverified",
         "reports": "verified",
-        "巨潮(cninfo)": "unverified",
+        "巨潮(cninfo)": "verified",
         "财联社(cls)": "verified"
       },
       "aggregation_status": "ambiguous",
@@ -41959,20 +41995,17 @@
       "sources": [
         "巨潮(cninfo)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "巨潮公告输出路径身份退役（2026-11-24）",
+      "canonical": "announcement_id",
+      "meaning": "旧字段参考将公告 ID 误列为 url 的历史项目别名；当前解析器将同一官方 announcementId 输出到 announcement_id，附件相对路径另输出为 adjunct_url。此精确 url 路径已退出当前输出。",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "巨潮(cninfo)": "unverified"
+        "巨潮(cninfo)": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "ushort",
@@ -49720,6 +49753,18 @@
     ],
     "fund_main_flow_daily_history_5d": [
       "东财-push2(stock/get)"
+    ],
+    "announcement_title": [
+      "巨潮(cninfo)"
+    ],
+    "announcement_publish_date": [
+      "巨潮(cninfo)"
+    ],
+    "announcement_id": [
+      "巨潮(cninfo)"
+    ],
+    "announcement_attachment_path": [
+      "巨潮(cninfo)"
     ]
   },
   "mappings": [
@@ -263570,13 +263615,15 @@
       "code": "date",
       "identity": "巨潮(cninfo)::date",
       "path": "date",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "announcement_publish_date",
+      "meaning": "巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTime（Unix 毫秒）；首页字段“日期” @ 官方首页与官方公告查询响应实测，2026-11-24",
+      "sections": [
+        "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTime（Unix 毫秒）；首页字段“日期” @ 官方首页与官方公告查询响应实测，2026-11-24"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -263595,9 +263642,45 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-cninfo-announcement-date"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261124-cninfo-announcement-date"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTime（Unix 毫秒）；首页字段“日期” @ 官方首页与官方公告查询响应实测，2026-11-24",
+          "canonical": "announcement_publish_date",
+          "meaning": "巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-24：20261124-cninfo-announcement-date",
+          "status": "verified",
+          "adjudication_id": "20261124-cninfo-announcement-date",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementTime（Unix 毫秒）；首页字段“日期”",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_publish_date",
+              "meaning": "巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。",
+              "unit": ""
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "date",
@@ -263619,7 +263702,43 @@
         "meaning": "日期",
         "unit": "",
         "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-cninfo-announcement-date",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cninfo_announcement_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_publish_date",
+              "meaning": "巨潮公告发布日期；项目将官方 announcementTime 毫秒时间戳按本地时区转换为 YYYY-MM-DD。不是采集目录日期。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目 get_strategic_announcements() 精确将官方公告查询响应 announcements[*].announcementTime 按本地时区转换后写入 date。2026-11-24 官方响应中的时间戳换算为 2026-11-25，与巨潮官方首页同一公告行日期 11-25 一致。",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementTime（Unix 毫秒）；首页字段“日期”",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          }
+        }
+      ]
     },
     {
       "source": "巨潮(cninfo)",
@@ -263680,13 +263799,15 @@
       "code": "title",
       "identity": "巨潮(cninfo)::title",
       "path": "title",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "announcement_title",
+      "meaning": "巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTitle；首页字段“公告标题” @ 官方首页与官方公告查询响应实测，2026-11-24",
+      "sections": [
+        "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTitle；首页字段“公告标题” @ 官方首页与官方公告查询响应实测，2026-11-24"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -263700,9 +263821,45 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-cninfo-announcement-title"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261124-cninfo-announcement-title"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementTitle；首页字段“公告标题” @ 官方首页与官方公告查询响应实测，2026-11-24",
+          "canonical": "announcement_title",
+          "meaning": "巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-24：20261124-cninfo-announcement-title",
+          "status": "verified",
+          "adjudication_id": "20261124-cninfo-announcement-title",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementTitle；首页字段“公告标题”",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_title",
+              "meaning": "巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。",
+              "unit": ""
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "title",
@@ -263719,7 +263876,43 @@
         "meaning": "研报标题",
         "unit": "",
         "section": "12.8.4 东财 reportapi（个股/行业研报 + PDF）✅"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-cninfo-announcement-title",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cninfo_announcement_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "aggregate_status_scope_unresolved",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_title",
+              "meaning": "巨潮公告标题文本；项目清理上游标题中的 HTML 标签后输出。",
+              "unit": ""
+            }
+          },
+          "rationale": "项目 get_strategic_announcements() 精确将官方公告查询响应 announcements[*].announcementTitle 清理 HTML 后写入 title。2026-11-24 官方响应样本中的宁夏建材公告标题与巨潮官方首页同一公告行逐字一致。",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方首页与官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementTitle；首页字段“公告标题”",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          }
+        }
+      ]
     },
     {
       "source": "巨潮(cninfo)",
@@ -263766,23 +263959,24 @@
       "code": "url",
       "identity": "巨潮(cninfo)::url",
       "path": "url",
-      "canonical": "",
-      "meaning": "",
+      "canonical": "announcement_id",
+      "meaning": "旧字段参考将公告 ID 误列为 url 的历史项目别名；当前解析器将同一官方 announcementId 输出到 announcement_id，附件相对路径另输出为 adjunct_url。此精确 url 路径已退出当前输出。",
       "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "巨潮公告输出路径身份退役（2026-11-24）",
+      "sections": [
+        "巨潮公告输出路径身份退役（2026-11-24）"
+      ],
+      "status": "disproved",
+      "status_resolution": "retired_legacy_path",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "unverified",
-        "registry_aggregate_sources": [
-          "巨潮(cninfo)"
+        "adjudication_ids": [
+          "20261124-cninfo-url-legacy-path"
         ],
-        "values": [
-          "unverified"
-        ]
+        "evidence_basis": "legacy_source_path_retirement",
+        "evidence_file": "docs/field_verification/adjudications/20261124_cninfo_announcement_paths.md",
+        "current_output_path": "announcement_id",
+        "related_attachment_path": "adjunct_url",
+        "historical_capture_gap": "raw_cninfo.json records cninfo_irm questions, not strategic announcement outputs"
       },
       "reference_evidence": [],
       "attribute_conflicts": {},
@@ -263797,6 +263991,60 @@
         "meaning": "",
         "unit": "",
         "section": ""
+      },
+      "adjudications": [
+        {
+          "id": "20261124-cninfo-url-legacy-path",
+          "action": "retire_legacy_source_alias",
+          "status": "disproved",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-11-24",
+          "decision_note": "docs/field_verification/adjudications/20261124_cninfo_announcement_paths.md",
+          "previous_status_snapshot": {
+            "status": "unverified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "status_evidence": {
+              "reference_statuses": [],
+              "reference_status_raw": [],
+              "registry_aggregate_status": "unverified",
+              "registry_aggregate_sources": [
+                "巨潮(cninfo)"
+              ],
+              "values": [
+                "unverified"
+              ]
+            },
+            "reference_evidence": [],
+            "attribute_conflicts": {}
+          },
+          "reason": "旧字段参考曾把官方响应 announcementId 误列为输出 url。当前 get_strategic_announcements() 输出 announcement_id 与 adjunct_url，不再输出 url；当前输出路径由报告中的真实官方响应及离线回归测试复核。历史 raw_cninfo.json 只保存 cninfo_irm 问答，不覆盖此报告 helper，因此未把问答样本中的 url 缺失当作公告 helper 的阴性证据。"
+        }
+      ],
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "巨潮(cninfo)"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "adjudication_evidence": {
+        "decision": "disproved",
+        "decision_note": "docs/field_verification/adjudications/20261124_cninfo_announcement_paths.md",
+        "reason": "旧字段参考曾把官方响应 announcementId 误列为输出 url。当前 get_strategic_announcements() 输出 announcement_id 与 adjunct_url，不再输出 url；当前输出路径由报告中的真实官方响应及离线回归测试复核。历史 raw_cninfo.json 只保存 cninfo_irm 问答，不覆盖此报告 helper，因此未把问答样本中的 url 缺失当作公告 helper 的阴性证据。",
+        "evidence_files": [
+          "docs/field_verification/adjudications/20261124_cninfo_announcement_paths.md",
+          "docs/field_verification/adjudications/public_web/20261124_cninfo_announcement_response_sample.json",
+          "docs/field_source_reference.md",
+          "stock_common/sc_datasource/_holders.py",
+          "tests/data/test_cninfo_strategic_announcement_paths.py"
+        ]
       }
     },
     {
@@ -301325,6 +301573,206 @@
             "path": "stock_common/sc_datasource/_events.py::ipo_calendar -> RPTA_APP_IPOAPPLY columns=ALL -> response.result.data[*].ORG_TYPE -> scripts/capture_context_collectors.py::collect_event_dc -> raw_event_dc.ipo_calendar[].ORG_TYPE",
             "locator": "东方财富 newstatic/js/xg/index.js 的 loadtabledata() 列清单包含 ORG_TYPE；官方响应 SECURITY_CODE=000001 的 ORG_TYPE 值为“银行股”；保留样本所见分类文本为“银行股”与“非银行股”。",
             "url": "https://data.eastmoney.com/newstatic/js/xg/index.js"
+          }
+        }
+      ]
+    },
+    {
+      "source": "巨潮(cninfo)",
+      "code": "announcement_id",
+      "identity": "巨潮(cninfo)::announcement_id",
+      "path": "announcement_id",
+      "canonical": "announcement_id",
+      "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+      "unit": "",
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementId；同条记录的 adjunctUrl 与公告详情参数 @ 官方公告查询响应实测，2026-11-24",
+      "sections": [
+        "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementId；同条记录的 adjunctUrl 与公告详情参数 @ 官方公告查询响应实测，2026-11-24"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261124-cninfo-announcement-id"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261124-cninfo-announcement-id"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#announcementId；同条记录的 adjunctUrl 与公告详情参数 @ 官方公告查询响应实测，2026-11-24",
+          "canonical": "announcement_id",
+          "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+          "unit": "",
+          "status_raw": "人工核验上游契约 2026-11-24：20261124-cninfo-announcement-id",
+          "status": "verified",
+          "adjudication_id": "20261124-cninfo-announcement-id",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementId；同条记录的 adjunctUrl 与公告详情参数",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_id",
+              "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+              "unit": ""
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261124-cninfo-announcement-id",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cninfo_announcement_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_id",
+              "meaning": "巨潮公告记录的标识符；是 ID，不是 URL。",
+              "unit": ""
+            }
+          },
+          "rationale": "当前适配器将官方响应 announcements[*].announcementId 原样写入 announcement_id。2026-11-24 官方响应中的标识符 1225685351 同时出现在同一记录的 adjunctUrl 文件名及巨潮官方公告详情查询参数中。",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "announcementId；同条记录的 adjunctUrl 与公告详情参数",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          }
+        }
+      ]
+    },
+    {
+      "source": "巨潮(cninfo)",
+      "code": "adjunct_url",
+      "identity": "巨潮(cninfo)::adjunct_url",
+      "path": "adjunct_url",
+      "canonical": "announcement_attachment_path",
+      "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+      "unit": "相对 URL 路径",
+      "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF @ 官方公告查询响应实测，2026-11-24",
+      "sections": [
+        "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF @ 官方公告查询响应实测，2026-11-24"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": null,
+        "registry_aggregate_sources": [],
+        "values": [
+          "runtime_path_unregistered"
+        ],
+        "adjudication_ids": [
+          "20261124-cninfo-announcement-attachment-path"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261124-cninfo-announcement-attachment-path"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "source contract: 巨潮资讯网公告查询（深圳证券信息有限公司运营） · POST /new/hisAnnouncement/query -> announcements[]#adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF @ 官方公告查询响应实测，2026-11-24",
+          "canonical": "announcement_attachment_path",
+          "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+          "unit": "相对 URL 路径",
+          "status_raw": "人工核验上游契约 2026-11-24：20261124-cninfo-announcement-attachment-path",
+          "status": "verified",
+          "adjudication_id": "20261124-cninfo-announcement-attachment-path",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_attachment_path",
+              "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+              "unit": "相对 URL 路径"
+            }
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "attribute_ambiguities": {},
+      "registry_aggregate": null,
+      "adjudications": [
+        {
+          "id": "20261124-cninfo-announcement-attachment-path",
+          "action": "register_source_contract_field",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_cninfo_announcement_source_contract.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "runtime_path_unregistered",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "announcement_attachment_path",
+              "meaning": "巨潮公告附件的相对 URL 路径；当前核验样本指向 PDF 文件。",
+              "unit": "相对 URL 路径"
+            }
+          },
+          "rationale": "当前适配器将官方响应 announcements[*].adjunctUrl 原样写入 adjunct_url。官方响应中的路径 finalpage/2026-11-25/1225685351.PDF 与同记录 announcementId 对应；项目不把相对路径伪装成绝对 URL。",
+          "source_contract": {
+            "authority": "巨潮资讯网公告查询（深圳证券信息有限公司运营）",
+            "revision": "官方公告查询响应实测，2026-11-24",
+            "path": "POST /new/hisAnnouncement/query -> announcements[]",
+            "locator": "adjunctUrl；相对路径 finalpage/2026-11-25/1225685351.PDF",
+            "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query"
           }
         }
       ]

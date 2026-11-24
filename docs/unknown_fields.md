@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2841；日常来源路径 2697：unverified 705、candidate 1、conflict 5、disproved 192；历史来源路径 144。
+> 注册字段路径 2843；日常来源路径 2699：unverified 702、candidate 1、conflict 5、disproved 193；历史来源路径 144。
 > 另有 139 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,17 +15,17 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 577 |
+| 含义栏为空/占位 | 574 |
 | 含义栏有文本（仍未验证） | 128 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 238 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 236 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `matched` | 57 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 33 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 336 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 335 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 41 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（5）
@@ -44,7 +44,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) | `f152` | f152 | — | — | 含义栏为空/占位 | status_missing | 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）；2026-11-14 Eastmoney 报价精度关系撤回 |
 
-## 三、待破解字段（705）
+## 三、待破解字段（702）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -375,10 +375,7 @@
 | 同花顺-fuyao | `valuations` | a-share/valuations/snapshot | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `zt_seal_amount_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `zt_seal_amount_2d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `title` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 巨潮(cninfo) | `type` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| 巨潮(cninfo) | `url` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `ACCUM_AMOUNT` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `BILLBOARD_BUY_AMT` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `BILLBOARD_DEAL_AMT` | — | — | — | 含义栏为空/占位 | status_missing | — |
@@ -754,7 +751,7 @@
 | 财联社(cls) | `rank_change` | rank_change | 排名变化（正=上升，负=下降） | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（192）
+## 四、已证伪（默认不重复破解）（193）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -949,6 +946,7 @@
 | 同花顺-fuyao | `turnover` | snapshot.turnover | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.turnover。本条只处置路径身份，不否定目标字段的语义或单位。 | 元 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `volume` | snapshot.volume | 已退役的旧无分组来源路径；当前完整采集路径为 snapshot.volume。本条只处置路径身份，不否定目标字段的语义或单位。 | 股 | 已退役路径身份（不进入默认破解） | retired_legacy_path | Fuyao 行情、估值与竞价裸路径复核（2026-11-15） |
 | 同花顺-fuyao | `weighted_roe` | profitability.index_weighted_avg_roe | 项目生成的 H1 摘要别名：将 profitability.index_weighted_avg_roe 原值复制到 market.h1_indicators.<code>.weighted_roe；不是 Fuyao 上游键。完整源字段释义为加权平均净资产收益率，单位 %。 | % | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | Fuyao H1 摘要路径来源审计（2026-11-20） |
+| 巨潮(cninfo) | `url` | announcement_id | 旧字段参考将公告 ID 误列为 url 的历史项目别名；当前解析器将同一官方 announcementId 输出到 announcement_id，附件相对路径另输出为 adjunct_url。此精确 url 路径已退出当前输出。 | — | 已退役路径身份（不进入默认破解） | retired_legacy_path | 巨潮公告输出路径身份退役（2026-11-24） |
 | 新浪(扩展API) | `report_type` | report_type | 项目采集器回显的请求类别，不是新浪原始报表字段：适配器把请求参数 report_type 写入返回包装对象，提供方报表数据位于 report_list。fzb 表示资产负债表请求，lrb 表示利润表请求，llb 表示现金流量表请求。 | — | 项目派生采集值（不是上游原始字段） | project_derived_capture_output | 12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️ |
 
 ## 已退出来源字段（仅历史证据，不进入默认破解）

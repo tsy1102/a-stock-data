@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-24T16:14:53+08:00",
+  "provider": "CNINFO official website",
+  "endpoint": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "method": "POST",
+  "query": {
+    "stock": "600449,gssh0600449",
+    "tabName": "fulltext",
+    "pageSize": 30,
+    "pageNum": 1,
+    "seDate": "",
+    "isHLtitle": "true"
+  },
+  "record_count": 30,
+  "announcement_type_name_nonempty_count": 0,
+  "rows": [
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于召开2026年第四次临时股东会的通知",
+      "announcementTime": 1795536000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011901",
+      "announcementId": "1225685351",
+      "adjunctUrl": "finalpage/2026-11-25/1225685351.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材第八届董事会第四十一次会议决议公告",
+      "announcementTime": 1795536000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||01239901",
+      "announcementId": "1225685344",
+      "adjunctUrl": "finalpage/2026-11-25/1225685344.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于续聘会计师事务所的公告",
+      "announcementTime": 1795536000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012301",
+      "announcementId": "1225685343",
+      "adjunctUrl": "finalpage/2026-11-25/1225685343.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于2027年度日常关联交易预计的公告",
+      "announcementTime": 1795536000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011719",
+      "announcementId": "1225685339",
+      "adjunctUrl": "finalpage/2026-11-25/1225685339.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于股份回购进展公告",
+      "announcementTime": 1795190400000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225680798",
+      "adjunctUrl": "finalpage/2026-11-21/1225680798.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于股份回购进展公告",
+      "announcementTime": 1793548800000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225650954",
+      "adjunctUrl": "finalpage/2026-11-02/1225650954.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于以集中竞价交易方式回购股份比例累计达到总股本2%暨回购进展公告",
+      "announcementTime": 1793203200000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225636781",
+      "adjunctUrl": "finalpage/2026-10-29/1225636781.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年第三季度报告",
+      "announcementTime": 1792684800000,
+      "announcementTypeName": null,
+      "announcementType": "01010501||01010503||010113||010307",
+      "announcementId": "1225615864",
+      "adjunctUrl": "finalpage/2026-10-23/1225615864.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材第八届董事会第四十次会议决议公告",
+      "announcementTime": 1792684800000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||01239901",
+      "announcementId": "1225615856",
+      "adjunctUrl": "finalpage/2026-10-23/1225615856.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于以集中竞价交易方式回购股份比例累计达到总股本1%暨回购进展公告",
+      "announcementTime": 1792512000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225611653",
+      "adjunctUrl": "finalpage/2026-10-21/1225611653.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于召开2026年第三季度业绩说明会的公告",
+      "announcementTime": 1792080000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012399",
+      "announcementId": "1225606581",
+      "adjunctUrl": "finalpage/2026-10-16/1225606581.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于股份回购进展公告",
+      "announcementTime": 1791561600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225599628",
+      "adjunctUrl": "finalpage/2026-10-10/1225599628.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于以集中竞价方式首次回购股份的公告",
+      "announcementTime": 1789747200000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225573019",
+      "adjunctUrl": "finalpage/2026-09-19/1225573019.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于股份回购进展公告",
+      "announcementTime": 1788364800000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225543912",
+      "adjunctUrl": "finalpage/2026-09-03/1225543912.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于以集中竞价交易方式回购股份的回购报告书",
+      "announcementTime": 1788192000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513",
+      "announcementId": "1225538307",
+      "adjunctUrl": "finalpage/2026-09-01/1225538307.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材在中国建材集团财务有限公司开展金融业务的风险持续评估报告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012399",
+      "announcementId": "1225507395",
+      "adjunctUrl": "finalpage/2026-08-26/1225507395.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年半年度报告摘要",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||010303",
+      "announcementId": "1225507394",
+      "adjunctUrl": "finalpage/2026-08-26/1225507394.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年第三次临时股东会的法律意见",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010901||010113||011999",
+      "announcementId": "1225507393",
+      "adjunctUrl": "finalpage/2026-08-26/1225507393.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年半年度报告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||010303",
+      "announcementId": "1225507343",
+      "adjunctUrl": "finalpage/2026-08-26/1225507343.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材第八届董事会第三十九次会议决议公告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||01239901",
+      "announcementId": "1225507342",
+      "adjunctUrl": "finalpage/2026-08-26/1225507342.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于召开2026年半年度业绩说明会的公告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012399",
+      "announcementId": "1225507341",
+      "adjunctUrl": "finalpage/2026-08-26/1225507341.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材集团股份有限公司关于会计政策变更的公告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012305",
+      "announcementId": "1225507340",
+      "adjunctUrl": "finalpage/2026-08-26/1225507340.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年第三次临时股东会决议公告",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011905",
+      "announcementId": "1225507339",
+      "adjunctUrl": "finalpage/2026-08-26/1225507339.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材董事、高级管理人员离职管理制度",
+      "announcementTime": 1787673600000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||013105||013199",
+      "announcementId": "1225507338",
+      "adjunctUrl": "finalpage/2026-08-26/1225507338.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材第八届董事会第八次临时会议决议公告",
+      "announcementTime": 1787328000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||01239901",
+      "announcementId": "1225490707",
+      "adjunctUrl": "finalpage/2026-08-22/1225490707.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于签署股权转让意向协议暨关联交易的公告",
+      "announcementTime": 1787328000000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011507||011719",
+      "announcementId": "1225490696",
+      "adjunctUrl": "finalpage/2026-08-22/1225490696.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于回购股份事项前十大股东和前十大无限售条件股东持股情况的公告",
+      "announcementTime": 1787155200000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513||012399",
+      "announcementId": "1225482923",
+      "adjunctUrl": "finalpage/2026-08-20/1225482923.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材2026年第三次临时股东会会议材料",
+      "announcementTime": 1786982400000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011906",
+      "announcementId": "1225477429",
+      "adjunctUrl": "finalpage/2026-08-18/1225477429.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于2026年第三次临时股东会补充公告",
+      "announcementTime": 1786723200000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||012703",
+      "announcementId": "1225475031",
+      "adjunctUrl": "finalpage/2026-08-15/1225475031.PDF"
+    },
+    {
+      "secCode": "600449",
+      "secName": "宁夏建材",
+      "announcementTitle": "宁夏建材关于回购股份事项前十大股东和前十大无限售条件股东持股情况的公告",
+      "announcementTime": 1786636800000,
+      "announcementTypeName": null,
+      "announcementType": "01010503||010113||011513||012399",
+      "announcementId": "1225471873",
+      "adjunctUrl": "finalpage/2026-08-14/1225471873.PDF"
+    }
+  ]
+}

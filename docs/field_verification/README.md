@@ -14,6 +14,7 @@
 
 ## 近期裁决与研究记录
 
+- [巨潮公告日期、标题及旧 URL 路径核验](adjudications/20261124_cninfo_announcement_paths.md)与[来源契约裁决](adjudications/20261124_cninfo_announcement_source_contract.json)：按项目实际 `get_strategic_announcements()` 路径及巨潮官方公告响应定案 `date/title`，补登 `announcement_id/adjunct_url` 当前输出；将旧参考表误用的 `url` 标为退役路径。`type` 对应的 `announcementTypeName` 在 30 条官方响应中均为空，继续保持未知。报告采集没有保存该 helper 的历史原始输出，未把互动易问答归档当作该公告接口的缺值证据。
 - [东方财富 Push2 `f178` 近5日主力净流入数组来源内实证](adjudications/20261124_push2_f178_daily_main_flow_evidence.md)、[结构化裁决](adjudications/20261124_push2_f178_daily_main_flow.json)、[1,146 条逐项审计](research/20261124_push2_f178_daily_array_audit.csv)与[输入哈希清单](research/20261124_push2_f178_daily_array_manifest.json)：13 个 `ok/partial` 归档批次含 234 个五项日期数组；排除 24 个保留边界前项目后，576 条可与同证券同日 Push2 `f137` 比较的记录全部精确相等（214 个去重证券-日期对），570 条缺少同日 `f137` 记录而不计作命中。依据同记录 `f86` 核验数组日期，未把响应日当元素数据日；仅定案 Push2 `stock/get::f178`，不外推到 Ulist239 同编号字段或建立跨源映射。
 - [H 股报价未决映射停用](adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)及[结构化更正清单](adjudications/20261124_eastmoney_hshare_unresolved_mappings.json)：将 11 月 23 日审计中 133 条无非空可比值的关系从活动映射停用，保留精确旧边和证据；未判定字段不等价，也未更改两端字段释义。
 - [财联社电报关联证券与主题字段实证](adjudications/20261124_cls_related_fields_evidence.md)及[结构化裁决](adjudications/20261124_cls_related_fields.json)：保留期 22 个 raw 文件、1,050 条电报记录中，198 个关联证券项和 1,537 个主题项结构完整；以财联社同篇官方文章页、主题链接和上交所证券代码公告逐值核验后，定案 `stock_list` 的关联证券身份及 `subjects` 的主题 ID/名称。`stock_list[].pct` 的单位和数据时点仍未确定；不建立跨源映射。

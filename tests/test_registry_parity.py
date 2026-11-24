@@ -581,11 +581,12 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # contract adjudication in history, while its current metadata state is the
     # separately validated empirical addendum. The latest TDX batch adds 16
     # FinanceInfo alias contracts, ten official TQ field contracts plus the
-    # ErrorId sample-key decision, and eight API-scoped Date contracts. The
-    # This count is the validator's active source-contract projection.
+    # ErrorId sample-key decision, and eight API-scoped Date contracts. This
+    # count is the validator's active source-contract projection. The
+    # CNINFO announcement date/title plus ID/attachment paths add four entries.
     # Historical source-contract actions superseded by empirical semantics
     # remain validated by the separate E3 path, but are not counted here.
-    assert len(pairs) == 271
+    assert len(pairs) == 275
     assert {
         code
         for source, code in pairs

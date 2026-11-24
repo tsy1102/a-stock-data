@@ -11,7 +11,7 @@
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
-      "disproved": 192,
+      "disproved": 193,
       "empirical_duplicate_alias": 3,
       "identity_reclassified_pending": 9,
       "manual_collision_adjudication": 29,
@@ -25,13 +25,13 @@
       "reference_scope_reconciled": 3,
       "reference_status_conflict": 1,
       "reference_status_missing": 33,
-      "registry_status_only_single_source": 417,
+      "registry_status_only_single_source": 416,
       "resolved_by_multiday_independent_cross_source_l1": 8,
-      "retired_legacy_path": 103,
+      "retired_legacy_path": 104,
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 823,
+      "unverified": 822,
       "verified": 1822,
       "verified_by_empirical_addendum": 275,
       "verified_by_manual_public_data_semantic_adjudication": 6,
@@ -282510,13 +282510,14 @@
       "unit": "板",
       "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
       "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+        "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
         "sample_trade_dates": [
           "2026-10-16",
           "2026-10-19",
@@ -282536,10 +282537,106 @@
           44,
           50,
           41
-        ]
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kph-his-daban-limit_count-followup"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+        "sample": {
+          "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+          "comparison_count": 723,
+          "matched_count": 723,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 162,
+          "stock_count": 551
+        }
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）",
+          "canonical": "limit_count",
+          "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+          "unit": "板",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kph-his-daban-limit_count-followup",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+          "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_count",
+              "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+              "unit": "板"
+            },
+            "after": {
+              "canonical": "limit_count",
+              "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+              "unit": "板"
+            }
+          },
+          "sample": {
+            "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+            "comparison_count": 723,
+            "matched_count": 723,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 162,
+            "stock_count": 551
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261124-kph-his-daban-limit_count-followup",
+          "action": "append_empirical_source_evidence",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kph_his_daban_list_followup.json",
+          "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+          "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "verified_by_empirical_addendum",
+          "previous_metadata": {
+            "canonical": "limit_count",
+            "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+            "unit": "板"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_count",
+              "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+              "unit": "板"
+            },
+            "after": {
+              "canonical": "limit_count",
+              "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+              "unit": "板"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "仅补充项目当前 HisHomeDingPan/HisDaBanList 适配路径的 KPH 来源内样本：21 个非空保留批次中 723 个唯一来源数据日-证券样本，标签计数关系全部吻合且无反例。目标字段原已验证；本决定保留其既有规范名、含义和单位，不使用 KPL 样本，不把结论转移至 Levistock 的 HisLimitResumption/GetPlateInfo_w38，也不建立跨源映射。",
+          "sample": {
+            "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+            "comparison_count": 723,
+            "matched_count": 723,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 162,
+            "stock_count": 551
+          }
+        }
+      ]
     },
     {
       "source": "开盘红",
@@ -282551,13 +282648,14 @@
       "unit": "",
       "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
       "sections": [
-        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+        "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）"
       ],
       "status": "verified",
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
         "sample_trade_dates": [
           "2026-10-16",
           "2026-10-19",
@@ -282577,10 +282675,106 @@
           44,
           50,
           41
-        ]
+        ],
+        "values": [
+          "verified"
+        ],
+        "adjudication_ids": [
+          "20261124-kph-his-daban-limit_tag-followup"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+        "sample": {
+          "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+          "comparison_count": 723,
+          "matched_count": 723,
+          "counterexample_count": 0,
+          "official_report_count": 0,
+          "excluded_count": 162,
+          "stock_count": 551
+        }
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）",
+          "canonical": "limit_tag",
+          "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+          "unit": "",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-kph-his-daban-limit_tag-followup",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+          "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_tag",
+              "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_tag",
+              "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+              "unit": ""
+            }
+          },
+          "sample": {
+            "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+            "comparison_count": 723,
+            "matched_count": 723,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 162,
+            "stock_count": 551
+          }
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261124-kph-his-daban-limit_tag-followup",
+          "action": "append_empirical_source_evidence",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_kph_his_daban_list_followup.json",
+          "evidence_file": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+          "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "verified",
+          "previous_status_resolution": "verified_by_empirical_addendum",
+          "previous_metadata": {
+            "canonical": "limit_tag",
+            "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "limit_tag",
+              "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "limit_tag",
+              "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+              "unit": ""
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "仅补充项目当前 HisHomeDingPan/HisDaBanList 适配路径的 KPH 来源内样本：21 个非空保留批次中 723 个唯一来源数据日-证券样本，标签计数关系全部吻合且无反例。目标字段原已验证；本决定保留其既有规范名、含义和单位，不使用 KPL 样本，不把结论转移至 Levistock 的 HisLimitResumption/GetPlateInfo_w38，也不建立跨源映射。",
+          "sample": {
+            "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+            "comparison_count": 723,
+            "matched_count": 723,
+            "counterexample_count": 0,
+            "official_report_count": 0,
+            "excluded_count": 162,
+            "stock_count": 551
+          }
+        }
+      ]
     },
     {
       "source": "开盘红",

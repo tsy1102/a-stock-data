@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-24",
+  "evidence_file": "docs/field_verification/research/20261124_kph_his_daban_list_tag_count_audit.md",
+  "evidence_sha256": "c3566377090ca1625c0a717008ed7709444aac8da42a22a1e2d6a9d21b9efa4e",
+  "decisions": [
+    {
+      "id": "20261124-kph-his-daban-limit_tag-followup",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "开盘红",
+        "code": "limit_tag"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "limit_tag",
+        "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+        "unit": ""
+      },
+      "canonical": "limit_tag",
+      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+      "unit": "",
+      "section": "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）",
+      "rationale": "仅补充项目当前 HisHomeDingPan/HisDaBanList 适配路径的 KPH 来源内样本：21 个非空保留批次中 723 个唯一来源数据日-证券样本，标签计数关系全部吻合且无反例。目标字段原已验证；本决定保留其既有规范名、含义和单位，不使用 KPL 样本，不把结论转移至 Levistock 的 HisLimitResumption/GetPlateInfo_w38，也不建立跨源映射。",
+      "sample": {
+        "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+        "comparison_count": 723,
+        "matched_count": 723,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 162,
+        "stock_count": 551
+      }
+    },
+    {
+      "id": "20261124-kph-his-daban-limit_count-followup",
+      "action": "append_empirical_source_evidence",
+      "target": {
+        "source": "开盘红",
+        "code": "limit_count"
+      },
+      "previous_status": "verified",
+      "previous_status_resolution": "verified_by_empirical_addendum",
+      "previous": {
+        "canonical": "limit_count",
+        "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+        "unit": "板"
+      },
+      "canonical": "limit_count",
+      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+      "unit": "板",
+      "section": "KPH HisDaBanList limit_tag / limit_count 同源样本补充（2026-11-24）",
+      "rationale": "仅补充项目当前 HisHomeDingPan/HisDaBanList 适配路径的 KPH 来源内样本：21 个非空保留批次中 723 个唯一来源数据日-证券样本，标签计数关系全部吻合且无反例。目标字段原已验证；本决定保留其既有规范名、含义和单位，不使用 KPL 样本，不把结论转移至 Levistock 的 HisLimitResumption/GetPlateInfo_w38，也不建立跨源映射。",
+      "sample": {
+        "scope": "项目开盘红 KPH HisHomeDingPan/HisDaBanList 路径；保留样本 21 个非空请求批次、885 条观测，按来源 trade_date 与逐行 __identity__.trade_date 确认日期，去重后比较 723 个唯一来源日-证券记录。",
+        "comparison_count": 723,
+        "matched_count": 723,
+        "counterexample_count": 0,
+        "official_report_count": 0,
+        "excluded_count": 162,
+        "stock_count": 551
+      }
+    }
+  ]
+}

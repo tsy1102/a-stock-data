@@ -1067,6 +1067,189 @@
         "schema_version": 1
       }
     },
+    "cc1_045b66ccda7516235d98196010b76bb69dfd4f23e934d6b14ce59a295f0f802f": {
+      "current": {
+        "candidate_id": "cc1_045b66ccda7516235d98196010b76bb69dfd4f23e934d6b14ce59a295f0f802f",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "fdca9d87ab8920c361f22a47d925e46d70a0eabbe4f72e960b8d6d2b37170289",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          }
+        ],
+        "rationale": "1186对/21日的精确重叠率为43.42%，0日达到碰撞阈值。整体弱重叠不足以确认 KPL col_02 与 Push2EX limit_count 的字段关系；不因相关/相同值子集建立映射，保持字段未决。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_045b66ccda7516235d98196010b76bb69dfd4f23e934d6b14ce59a295f0f802f",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "fdca9d87ab8920c361f22a47d925e46d70a0eabbe4f72e960b8d6d2b37170289",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            }
+          ],
+          "rationale": "1186对/21日的精确重叠率为43.42%，0日达到碰撞阈值。整体弱重叠不足以确认 KPL col_02 与 Push2EX limit_count 的字段关系；不因相关/相同值子集建立映射，保持字段未决。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 28,
+            "T:20261019": 20,
+            "T:20261020": 21,
+            "T:20261021": 20,
+            "T:20261023": 41,
+            "T:20261026": 15,
+            "T:20261028": 35,
+            "T:20261029": 17,
+            "T:20261030": 23,
+            "T:20261102": 50,
+            "T:20261103": 15,
+            "T:20261104": 59,
+            "T:20261105": 39,
+            "T:20261106": 4,
+            "T:20261109": 23,
+            "T:20261110": 33,
+            "T:20261112": 10,
+            "T:20261116": 12,
+            "T:20261117": 17,
+            "T:20261118": 24,
+            "T:20261119": 9
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 61,
+            "T:20261019": 46,
+            "T:20261020": 54,
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47,
+            "T:20261102": 100,
+            "T:20261103": 48,
+            "T:20261104": 100,
+            "T:20261105": 84,
+            "T:20261106": 32,
+            "T:20261109": 54,
+            "T:20261110": 93,
+            "T:20261112": 37,
+            "T:20261116": 32,
+            "T:20261117": 37,
+            "T:20261118": 41,
+            "T:20261119": 23
+          },
+          "daily_sample_counts": {
+            "T:20261016": 61,
+            "T:20261019": 46,
+            "T:20261020": 54,
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47,
+            "T:20261102": 100,
+            "T:20261103": 48,
+            "T:20261104": 100,
+            "T:20261105": 84,
+            "T:20261106": 32,
+            "T:20261109": 54,
+            "T:20261110": 93,
+            "T:20261112": 37,
+            "T:20261116": 32,
+            "T:20261117": 37,
+            "T:20261118": 41,
+            "T:20261119": 23
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261112",
+            "T:20261116",
+            "T:20261117",
+            "T:20261118",
+            "T:20261119"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "eastmoney",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 1186,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kpl.raw_columns.col_02",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 21,
+          "n_informative_pairs": 1186,
+          "n_pairs": 1186,
+          "official_contract_anchor": false,
+          "overall_hit": 0.4342,
+          "ratio": null,
+          "right": "push2ex.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "date_unconfirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.event_date": 1229
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "meta_data_date": 1804
+              },
+              "date_status": "date_unconfirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
     "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979": {
       "current": {
         "candidate_id": "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979",
@@ -12434,6 +12617,431 @@
         "schema_version": 1
       }
     },
+    "cc1_28a7d008fac23d5a4705e5435486c77293d32369083fc40b2d2c5b9f429cd617": {
+      "current": {
+        "candidate_id": "cc1_28a7d008fac23d5a4705e5435486c77293d32369083fc40b2d2c5b9f429cd617",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "b744eb56ab5b80044575cee6bad31049ad203805bc8d53fcac69e804b8cb9cad",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          },
+          {
+            "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+            "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+          }
+        ],
+        "rationale": "本报告记录179对同日候选样本，Pearson=0.3484、Spearman=0.7214，每股时序中位绝对Pearson=0.7989。对照字段是官方契约中的竞价昨量比；相关性没有建立字段身份、稳定公式或单位换算。该候选不足以建立 ulist239.f63 与竞价昨量比的映射；不据此判断 f63 的真实语义。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_28a7d008fac23d5a4705e5435486c77293d32369083fc40b2d2c5b9f429cd617",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "b744eb56ab5b80044575cee6bad31049ad203805bc8d53fcac69e804b8cb9cad",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+              "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+            }
+          ],
+          "rationale": "本报告记录179对同日候选样本，Pearson=0.3484、Spearman=0.7214，每股时序中位绝对Pearson=0.7989。对照字段是官方契约中的竞价昨量比；相关性没有建立字段身份、稳定公式或单位换算。该候选不足以建立 ulist239.f63 与竞价昨量比的映射；不据此判断 f63 的真实语义。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "ulist239"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.3901,
+              "leave_one_out_min": 0.2205,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.3484,
+              "spearman": 0.7214
+            },
+            {
+              "median_abs_pearson": 0.7989,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261102",
+                "T:20261103",
+                "T:20261104",
+                "T:20261105",
+                "T:20261106",
+                "T:20261109",
+                "T:20261110",
+                "T:20261117",
+                "T:20261118"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.2595
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.986
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7838
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6721
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.5563
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7894
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8935
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6361
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9926
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.5709
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.5243
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8317
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8177
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9878
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8084
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.784
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9392
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7558
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8981
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8421
+                }
+              ],
+              "stocks": 20
+            }
+          ],
+          "right": "fuyao.auction_final.auction_yesterday_ratio_pct",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 179,
+          "sample_dates": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
     "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec": {
       "current": {
         "candidate_id": "cc1_293ab69338919f64b9816ab8b74d02e1aa50d6a10192e79decd3b09a6697eaec",
@@ -14855,6 +15463,258 @@
         },
         "kind": "method_pair",
         "method_version": "collision-candidate-v8",
+        "schema_version": 1
+      }
+    },
+    "cc1_33f75276639d9eecd4e29f0b96bd4e9c9b65b037b9b5a0594788054c966e922f": {
+      "current": {
+        "candidate_id": "cc1_33f75276639d9eecd4e29f0b96bd4e9c9b65b037b9b5a0594788054c966e922f",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "b3244337ff6383187b3732f5277c80151a44cfd87e1412923e2bd795066e06f8",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          },
+          {
+            "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+            "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+          },
+          {
+            "path": "research/20261124_kpl_limit_col02_margin_flag_review.md",
+            "sha256": "f91977a1e55a0934e05fd309066eb9bfba2754081d176c86bf2c6f63c175193e"
+          }
+        ],
+        "rationale": "13对样本的 Pearson=0.6169、Spearman=0.6831，样本少且 KPL col_02 为二值字段。与竞价成交量的相关不足以确定其含义或建立变换关系；字段保持未知。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_33f75276639d9eecd4e29f0b96bd4e9c9b65b037b9b5a0594788054c966e922f",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "b3244337ff6383187b3732f5277c80151a44cfd87e1412923e2bd795066e06f8",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+              "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+            },
+            {
+              "path": "research/20261124_kpl_limit_col02_margin_flag_review.md",
+              "sha256": "f91977a1e55a0934e05fd309066eb9bfba2754081d176c86bf2c6f63c175193e"
+            }
+          ],
+          "rationale": "13对样本的 Pearson=0.6169、Spearman=0.6831，样本少且 KPL col_02 为二值字段。与竞价成交量的相关不足以确定其含义或建立变换关系；字段保持未知。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "kpl"
+          ],
+          "left": "kpl.raw_columns.col_02",
+          "methods": [
+            {
+              "leave_one_out_max": 0.7286,
+              "leave_one_out_min": 0.5311,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.6169,
+              "spearman": 0.6831
+            }
+          ],
+          "right": "fuyao.auction_final.auction_volume",
+          "sample_codes": [
+            "000037",
+            "000568",
+            "000678",
+            "002242",
+            "300788",
+            "600825"
+          ],
+          "sample_count": 13,
+          "sample_dates": [
+            "T:20261016",
+            "T:20261020",
+            "T:20261023",
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261104",
+            "T:20261110",
+            "T:20261117",
+            "T:20261119"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
+    "cc1_3432944166dae0d2fc6bb970a6d3092f7e83ed1501bcf9ad4cb0513b28d13754": {
+      "current": {
+        "candidate_id": "cc1_3432944166dae0d2fc6bb970a6d3092f7e83ed1501bcf9ad4cb0513b28d13754",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "f23540a6c9116fe9e29eddfa3259508723007c189da6543643b559cedfc6cd66",
+        "evidence_refs": [
+          {
+            "path": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+            "sha256": "cc10a542064270a5a8cdd69b61889062d0d09a87dbe3b601d9a819e08f9341b1"
+          },
+          {
+            "path": "adjudications/20261117_kph_pagination_audit.md",
+            "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+          },
+          {
+            "path": "adjudications/20261119_kph_kpl_source_identity.md",
+            "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+          },
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "0ecaf75b56b54a963128bedd6df5ac4a3a2343fc150ee640d036fab4ad982970"
+          }
+        ],
+        "rationale": "追加核实端点身份：报告中的 kph.limit_count 是短别名，不能定位到完整 (source, code path)。项目当前 raw_kph 样本来自 HisHomeDingPan/HisDaBanList；历史归档中的同名叶字段因此不能自动继承给开盘红(Levistock适配)::limit_count。该注册身份对应 Levistock get_his_limit_resumption 的 HisLimitResumption/GetPlateInfo_w38 路径，端点与当前采样路径不同，且本轮没有它的合格逐路径样本。原 103 对、3 日、44.66% 弱重叠仍不足以证明字段等价或否定任一来源各自语义；保持 insufficient_evidence，不建跨源映射，不将 KPH 与 KPL 合并。",
+        "reviewed_at": "2026-11-24T19:12:00+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_3432944166dae0d2fc6bb970a6d3092f7e83ed1501bcf9ad4cb0513b28d13754",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "e04b6d2c002f89b2d9670ed8ba656a86665b24e50af759efb94bd307072720a7",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261119_kph_industry_limit_up_count_followup.md",
+              "sha256": "f6e4b3061ed172bebd8365f76ee13a5ed043fdaf55c0aeb7e001155c0833a3d6"
+            }
+          ],
+          "rationale": "103对/3日的精确重叠率为44.66%，0日达到碰撞阈值。用户已明确 KPL 与 KPH 是不同提供方；不同来源仍可能有语义等价，但本组弱重叠不能证明等价，也不能反证各自字段语义。保持未决，不建立跨源映射。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        },
+        {
+          "candidate_id": "cc1_3432944166dae0d2fc6bb970a6d3092f7e83ed1501bcf9ad4cb0513b28d13754",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "f23540a6c9116fe9e29eddfa3259508723007c189da6543643b559cedfc6cd66",
+          "evidence_refs": [
+            {
+              "path": "research/20261124_kph_his_daban_list_tag_count_audit.md",
+              "sha256": "cc10a542064270a5a8cdd69b61889062d0d09a87dbe3b601d9a819e08f9341b1"
+            },
+            {
+              "path": "adjudications/20261117_kph_pagination_audit.md",
+              "sha256": "aabf68df2cc7777845ec224fe9761afa23d63ba75589b0b248ab36d5909052b7"
+            },
+            {
+              "path": "adjudications/20261119_kph_kpl_source_identity.md",
+              "sha256": "4eca9e43033aa383fe2d5a452ef35676c73b20a5bf3770fe173e388f8db67c59"
+            },
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "0ecaf75b56b54a963128bedd6df5ac4a3a2343fc150ee640d036fab4ad982970"
+            }
+          ],
+          "rationale": "追加核实端点身份：报告中的 kph.limit_count 是短别名，不能定位到完整 (source, code path)。项目当前 raw_kph 样本来自 HisHomeDingPan/HisDaBanList；历史归档中的同名叶字段因此不能自动继承给开盘红(Levistock适配)::limit_count。该注册身份对应 Levistock get_his_limit_resumption 的 HisLimitResumption/GetPlateInfo_w38 路径，端点与当前采样路径不同，且本轮没有它的合格逐路径样本。原 103 对、3 日、44.66% 弱重叠仍不足以证明字段等价或否定任一来源各自语义；保持 insufficient_evidence，不建跨源映射，不将 KPH 与 KPL 合并。",
+          "reviewed_at": "2026-11-24T19:12:00+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_progress": "diagnostic_only",
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261116": 11,
+            "T:20261117": 13,
+            "T:20261118": 22
+          },
+          "daily_informative_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "daily_sample_counts": {
+            "T:20261116": 31,
+            "T:20261117": 34,
+            "T:20261118": 38
+          },
+          "date_value_pair": false,
+          "days_ge_threshold": 0,
+          "distinct_days": [
+            "T:20261116",
+            "T:20261117",
+            "T:20261118"
+          ],
+          "evidence_basis": "independent_cross_source_value_comparison",
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unconfirmed_date_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "kpl.raw_columns.col_02",
+          "level": "L4",
+          "match_class": "weak_exact_overlap",
+          "n_days": 3,
+          "n_informative_pairs": 103,
+          "n_pairs": 103,
+          "official_contract_anchor": false,
+          "overall_hit": 0.4466,
+          "ratio": null,
+          "right": "kph.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L4",
+          "temporal_evidence": {
+            "alignment_status": "source_dates_confirmed",
+            "left": {
+              "date_origin_counts": {
+                "record.event_date": 110
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            },
+            "right": {
+              "date_origin_counts": {
+                "source_as_of": 103
+              },
+              "date_status": "source_date_confirmed",
+              "temporal_class": "unclassified"
+            }
+          }
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v9",
         "schema_version": 1
       }
     },
@@ -54062,6 +54922,848 @@
         "schema_version": 1
       }
     },
+    "cc1_d05fa4bf7b2e1154525b5d071a55a1eeb269d9abe9a96dd89206ab55c0e5fd5f": {
+      "current": {
+        "candidate_id": "cc1_d05fa4bf7b2e1154525b5d071a55a1eeb269d9abe9a96dd89206ab55c0e5fd5f",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "c8cc18d9dd453d63ecc7ff13afa202ecf27bcad42ca00266b83f89ec02e9eeef",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          },
+          {
+            "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+            "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+          }
+        ],
+        "rationale": "本报告记录179对同日候选样本，Pearson=0.4173、Spearman=0.8218，每股时序中位绝对Pearson=0.8887。竞价成交量与 f63 的原始数值量纲不同，相关性不能证明相等或换算关系；当前没有能区分业务含义的官方 f63 映射或稳定公式。保持关系未决，不建立字段映射。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_d05fa4bf7b2e1154525b5d071a55a1eeb269d9abe9a96dd89206ab55c0e5fd5f",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "c8cc18d9dd453d63ecc7ff13afa202ecf27bcad42ca00266b83f89ec02e9eeef",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+              "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+            }
+          ],
+          "rationale": "本报告记录179对同日候选样本，Pearson=0.4173、Spearman=0.8218，每股时序中位绝对Pearson=0.8887。竞价成交量与 f63 的原始数值量纲不同，相关性不能证明相等或换算关系；当前没有能区分业务含义的官方 f63 映射或稳定公式。保持关系未决，不建立字段映射。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "ulist239"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "leave_one_out_max": 0.4746,
+              "leave_one_out_min": 0.2686,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.4173,
+              "spearman": 0.8218
+            },
+            {
+              "median_abs_pearson": 0.8887,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261102",
+                "T:20261103",
+                "T:20261104",
+                "T:20261105",
+                "T:20261106",
+                "T:20261109",
+                "T:20261110",
+                "T:20261117",
+                "T:20261118"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.337
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9897
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9593
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9517
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.5927
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8186
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8807
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6374
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9766
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7174
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8967
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9446
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8235
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9943
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9065
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7107
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9221
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8138
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8983
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8023
+                }
+              ],
+              "stocks": 20
+            }
+          ],
+          "right": "fuyao.auction_final.auction_volume",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 179,
+          "sample_dates": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
+    "cc1_d0ea1c5a50962d114c6c5a14a19469a32396e9be20a32cea314fc1b60de69ae2": {
+      "current": {
+        "candidate_id": "cc1_d0ea1c5a50962d114c6c5a14a19469a32396e9be20a32cea314fc1b60de69ae2",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "6534cc5aed4ff96439a7ca0207a37e5552db20779a0ac51bd20aec11ebc272fa",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          },
+          {
+            "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+            "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+          }
+        ],
+        "rationale": "本报告记录20只股票的竞价换手率时序与 f63 同向相关，但未提供字段身份、精确匹配或稳定公式证据。竞价换手率的官方含义不能据此外推为 f63 的含义；保持关系未决，不建立字段映射。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_d0ea1c5a50962d114c6c5a14a19469a32396e9be20a32cea314fc1b60de69ae2",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "6534cc5aed4ff96439a7ca0207a37e5552db20779a0ac51bd20aec11ebc272fa",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+              "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+            }
+          ],
+          "rationale": "本报告记录20只股票的竞价换手率时序与 f63 同向相关，但未提供字段身份、精确匹配或稳定公式证据。竞价换手率的官方含义不能据此外推为 f63 的含义；保持关系未决，不建立字段映射。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "ulist239"
+          ],
+          "left": "ulist239.f63",
+          "methods": [
+            {
+              "median_abs_pearson": 0.889,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261102",
+                "T:20261103",
+                "T:20261104",
+                "T:20261105",
+                "T:20261106",
+                "T:20261109",
+                "T:20261110",
+                "T:20261117",
+                "T:20261118"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.3364
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9896
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9593
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9518
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.5927
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8191
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8807
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.6372
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9766
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7173
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8974
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9446
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8234
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9943
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9035
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.7113
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.9227
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8135
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.8984
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104",
+                    "T:20261105",
+                    "T:20261106",
+                    "T:20261109",
+                    "T:20261110",
+                    "T:20261117",
+                    "T:20261118"
+                  ],
+                  "pearson": 0.802
+                }
+              ],
+              "stocks": 20
+            }
+          ],
+          "right": "fuyao.auction_final.auction_turnover_pct",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 179,
+          "sample_dates": [
+            "T:20261102",
+            "T:20261103",
+            "T:20261104",
+            "T:20261105",
+            "T:20261106",
+            "T:20261109",
+            "T:20261110",
+            "T:20261117",
+            "T:20261118"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
     "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a": {
       "current": {
         "candidate_id": "cc1_d20f56c5e878033ec958a4a0ca4110e32d095fa6e56323de78ec42b2296fe74a",
@@ -64471,6 +66173,108 @@
         "schema_version": 1
       }
     },
+    "cc1_fc0568426ea4e7fdd44b584fdafab5ab6ab53ed19271e4ade1412020791ece64": {
+      "current": {
+        "candidate_id": "cc1_fc0568426ea4e7fdd44b584fdafab5ab6ab53ed19271e4ade1412020791ece64",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "04b6c266e2c8792ffdb8fe7d9afadce0150efb6547a9d39d47deb49bc3141d02",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+            "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+          },
+          {
+            "path": "research/20261124_unknown_field_rotation_round01.md",
+            "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+          },
+          {
+            "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+            "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+          },
+          {
+            "path": "research/20261124_kpl_limit_col02_margin_flag_review.md",
+            "sha256": "f91977a1e55a0934e05fd309066eb9bfba2754081d176c86bf2c6f63c175193e"
+          }
+        ],
+        "rationale": "13对样本的 Pearson=0.5816、Spearman=0.7319，样本少且 KPL col_02 为二值字段。与竞价金额的相关不足以确定其含义或建立变换关系；字段保持未知。",
+        "reviewed_at": "2026-11-24T17:23:44+08:00",
+        "reviewer": "Codex evidence review"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_fc0568426ea4e7fdd44b584fdafab5ab6ab53ed19271e4ade1412020791ece64",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "04b6c266e2c8792ffdb8fe7d9afadce0150efb6547a9d39d47deb49bc3141d02",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261124/exploratory/20261124/exhaustive_goal_round01/20261124_collision_report.json",
+              "sha256": "f79164934fb6d99b9901b81429c6287d19cac787dd5280381b92f0ce4b187614"
+            },
+            {
+              "path": "research/20261124_unknown_field_rotation_round01.md",
+              "sha256": "edad4e035c0ddc898414fbbd17556cde3e59e028e0ef305fc9e5ec2e65e1c730"
+            },
+            {
+              "path": "research/20261123_fuyao_auction_batch_date_witness.md",
+              "sha256": "c6541dfd4500af6436efc09a947042a1b7012617f042b7aa7fdf2b0704cb695c"
+            },
+            {
+              "path": "research/20261124_kpl_limit_col02_margin_flag_review.md",
+              "sha256": "f91977a1e55a0934e05fd309066eb9bfba2754081d176c86bf2c6f63c175193e"
+            }
+          ],
+          "rationale": "13对样本的 Pearson=0.5816、Spearman=0.7319，样本少且 KPL col_02 为二值字段。与竞价金额的相关不足以确定其含义或建立变换关系；字段保持未知。",
+          "reviewed_at": "2026-11-24T17:23:44+08:00",
+          "reviewer": "Codex evidence review"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "kpl"
+          ],
+          "left": "kpl.raw_columns.col_02",
+          "methods": [
+            {
+              "leave_one_out_max": 0.6485,
+              "leave_one_out_min": 0.5096,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.5816,
+              "spearman": 0.7319
+            }
+          ],
+          "right": "fuyao.auction_final.auction_amount",
+          "sample_codes": [
+            "000037",
+            "000568",
+            "000678",
+            "002242",
+            "300788",
+            "600825"
+          ],
+          "sample_count": 13,
+          "sample_dates": [
+            "T:20261016",
+            "T:20261020",
+            "T:20261023",
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261104",
+            "T:20261110",
+            "T:20261117",
+            "T:20261119"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v9",
+        "schema_version": 1
+      }
+    },
     "cc1_fcd13fc25fae8595de7336919e4172b6201744773e74a66066dee56ca786c731": {
       "current": {
         "candidate_id": "cc1_fcd13fc25fae8595de7336919e4172b6201744773e74a66066dee56ca786c731",
@@ -65150,5 +66954,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-23T11:48:46+08:00"
+  "updated_at": "2026-11-24T19:12:00+08:00"
 }

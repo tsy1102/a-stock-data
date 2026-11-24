@@ -719,20 +719,20 @@ _本窗口没有达到日期值形状筛查门槛的未知字段。_
 ## 候选身份与人工审阅状态
 
 - 候选身份：生成 184 条，唯一候选 184 个，重复身份 0，无效身份 0。
-- 审阅台账：可用；当前状态 `pending`；已审 177，待处理 7，覆盖率 96.2%。
+- 审阅台账：可用；当前状态 `complete`；已审 184，待处理 0，覆盖率 100.0%。
 - 重复归并组：0；每个成员均保留到代表候选的反向追溯。
-- 处置计数：`accepted_for_adjudication` 0；`duplicate_grouped` 0；`insufficient_evidence` 146；`needs_external_evidence` 30；`rejected` 1；`unreviewed` 7。
+- 处置计数：`accepted_for_adjudication` 0；`duplicate_grouped` 0；`insufficient_evidence` 153；`needs_external_evidence` 30；`rejected` 1；`unreviewed` 0。
 - `accepted_for_adjudication` 只表示可进入现有证据裁决流程；审阅台账不会修改主字典或字段注册表。
 
 ## 报告完整性与审阅范围
 
 - 机器可读完整性：`complete`；方法候选生成 182 条，完整明细保存 182 条，缺失 0 条，多余 0 条，重复 0 条，身份无效 0 条。
 - 全量方法候选位于同名 JSON 的 `method_candidate_inventory`；Markdown 的 Top-N 表格是导航摘要，不能代替全量 JSON 审阅。
-- 候选审阅数据对账：`complete`；唯一候选 184 个，审阅 177 个，待处理 7 个；人工审阅进度与机器清单完整性分别统计。
+- 候选审阅数据对账：`complete`；唯一候选 184 个，审阅 184 个，待处理 0 个；人工审阅进度与机器清单完整性分别统计。
 - Markdown 未逐行展示、但 JSON 保留的部分：
   - `method_candidates`：展示 100 / 182，摘要省略 82 条。
   - `method_candidate_inventory`：展示 0 / 182，摘要省略 182 条。
   - `candidate_triage.low_information_fields`：展示 50 / 122，摘要省略 72 条。
   - `diagnostics`：展示 100 / 416，摘要省略 316 条。
-  - `candidate_review.human_review.reviewed_candidates`：展示 0 / 177，摘要省略 177 条。
+  - `candidate_review.human_review.reviewed_candidates`：展示 0 / 184，摘要省略 184 条。
 - 完整性对账通过；逐目标复核仍须覆盖 JSON 的全部明细，并为每项记录已检查、重复归并、证据不足或需外部核验的处置。

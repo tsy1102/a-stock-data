@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "empirical_source_field_semantics",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-11-24",
+  "evidence_file": "docs/field_verification/adjudications/20261124_push2_f178_daily_main_flow_evidence.md",
+  "evidence_sha256": "a59a8ae01002a97a8b4684eaf7336297c78e6bb974b18274e096dc9b20fad41b",
+  "decisions": [
+    {
+      "id": "20261124-eastmoney-push2-f178-daily-main-flow-history",
+      "action": "verify_empirical_source_semantics",
+      "target": {
+        "source": "东财-push2(stock/get)",
+        "code": "f178"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fund_main_flow_daily_history_5d",
+      "meaning": "Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。",
+      "unit": "数组（mainNetAmt：元；date：YYYY-MM-DD）",
+      "section": "2026-11-24 Push2 stock/get::f178 来源内实证定案",
+      "rationale": "stock_common/sc_datasource/_quotes.py 从精确 Push2 stock/get 响应路径 data.f178 解析包含 date 和 mainNetAmt 的 JSON 数组。保留期内 13 个 Push2 状态为 ok/partial 的 raw/meta 批次中，234 个数组均经同记录 f86（Unix 秒，北京时间）核验与采集目录目标数据日一致；数组每批均为 5 条日期唯一、降序记录。剔除 24 条日期早于 MIN_CAPTURE_DATE 的数组元素后，1,146 条样本中 576 条找到同证券、同 array_date 的 Push2 f137 并逐值精确一致，涵盖 214 个去重证券-日期对、0 个反例；570 条没有同日 f137 记录，不计为命中。7 个 failed 批次（含保留快照失败目录）未作为字段样本。已定案的 f137 含义与单位为当日主力资金净流入、元，故可确认 f178.mainNetAmt 为逐日主力净流入金额、单位元。东方财富官网 5 日资金流页面仅作为产品概念佐证，未公开此键级接口 schema。本裁决限于东财-push2(stock/get)::f178，不推及相同数字的 Ulist239 f178，不建立跨源映射。",
+      "sample": {
+        "scope": "2026-10-15 保留边界之后；13 个 Push2 ok/partial 归档批次、20 只证券、234 个有效响应数组。每条记录的 f86 北京时间日期须与目录日期一致。剔除 24 条边界前数组元素；1,146 条边界内元素中，与同证券同 array_date 的保留期 Push2 f137 比较，570 条缺少同日 f137 记录而不计入比较。",
+        "comparison_count": 576,
+        "matched_count": 576,
+        "counterexample_count": 0,
+        "excluded_count": 594,
+        "stock_count": 20,
+        "observation_count": 1170
+      }
+    }
+  ]
+}

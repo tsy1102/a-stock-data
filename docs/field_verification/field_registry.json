@@ -7,7 +7,7 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 278,
+      "aggregate_status_scope_unresolved": 277,
       "candidate": 1,
       "collector_output_container": 14,
       "conflict": 5,
@@ -31,9 +31,9 @@
       "status_conflict": 4,
       "status_missing": 41,
       "unresolved": 7,
-      "unverified": 826,
-      "verified": 1817,
-      "verified_by_empirical_addendum": 274,
+      "unverified": 825,
+      "verified": 1818,
+      "verified_by_empirical_addendum": 275,
       "verified_by_manual_public_data_semantic_adjudication": 6,
       "verified_by_public_web_observation": 24,
       "verified_by_source_contract": 638
@@ -17628,16 +17628,16 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "东财-push2(stock/get)": "unverified",
+        "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "canonical_incomplete",
+        "canonical_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "unit_incomplete"
       ]
     },
     {
@@ -49717,6 +49717,9 @@
     ],
     "kpl_market_sentiment_guidance_text": [
       "开盘啦(kpl)"
+    ],
+    "fund_main_flow_daily_history_5d": [
+      "东财-push2(stock/get)"
     ]
   },
   "mappings": [
@@ -198785,13 +198788,15 @@
       "code": "f178",
       "identity": "东财-push2(stock/get)::f178",
       "path": "f178",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "fund_main_flow_daily_history_5d",
+      "meaning": "Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。",
+      "unit": "数组（mainNetAmt：元；date：YYYY-MM-DD）",
+      "section": "2026-11-24 Push2 stock/get::f178 来源内实证定案",
+      "sections": [
+        "2026-11-24 Push2 stock/get::f178 来源内实证定案"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -198802,9 +198807,60 @@
         ],
         "values": [
           "verified"
-        ]
+        ],
+        "adjudication_ids": [
+          "20261124-eastmoney-push2-f178-daily-main-flow-history"
+        ],
+        "evidence_basis": "empirical_source_field_semantics",
+        "evidence_level": "E3",
+        "evidence_file": "adjudications/20261124_push2_f178_daily_main_flow_evidence.md",
+        "evidence_sha256": "a59a8ae01002a97a8b4684eaf7336297c78e6bb974b18274e096dc9b20fad41b",
+        "sample": {
+          "scope": "2026-10-15 保留边界之后；13 个 Push2 ok/partial 归档批次、20 只证券、234 个有效响应数组。每条记录的 f86 北京时间日期须与目录日期一致。剔除 24 条边界前数组元素；1,146 条边界内元素中，与同证券同 array_date 的保留期 Push2 f137 比较，570 条缺少同日 f137 记录而不计入比较。",
+          "comparison_count": 576,
+          "matched_count": 576,
+          "counterexample_count": 0,
+          "excluded_count": 594,
+          "stock_count": 20,
+          "observation_count": 1170
+        }
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "2026-11-24 Push2 stock/get::f178 来源内实证定案",
+          "canonical": "fund_main_flow_daily_history_5d",
+          "meaning": "Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。",
+          "unit": "数组（mainNetAmt：元；date：YYYY-MM-DD）",
+          "status_raw": "E3 empirical source-field semantic adjudication 2026-11-24",
+          "status": "verified",
+          "adjudication_id": "20261124-eastmoney-push2-f178-daily-main-flow-history",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "evidence_file": "adjudications/20261124_push2_f178_daily_main_flow_evidence.md",
+          "evidence_sha256": "a59a8ae01002a97a8b4684eaf7336297c78e6bb974b18274e096dc9b20fad41b",
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "fund_main_flow_daily_history_5d",
+              "meaning": "Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。",
+              "unit": "数组（mainNetAmt：元；date：YYYY-MM-DD）"
+            }
+          },
+          "sample": {
+            "scope": "2026-10-15 保留边界之后；13 个 Push2 ok/partial 归档批次、20 只证券、234 个有效响应数组。每条记录的 f86 北京时间日期须与目录日期一致。剔除 24 条边界前数组元素；1,146 条边界内元素中，与同证券同 array_date 的保留期 Push2 f137 比较，570 条缺少同日 f137 记录而不计入比较。",
+            "comparison_count": 576,
+            "matched_count": 576,
+            "counterexample_count": 0,
+            "excluded_count": 594,
+            "stock_count": 20,
+            "observation_count": 1170
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "f178",
@@ -198818,7 +198874,51 @@
         "meaning": "",
         "unit": "",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261124-eastmoney-push2-f178-daily-main-flow-history",
+          "action": "verify_empirical_source_semantics",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-11-24",
+          "decision_file": "adjudications/20261124_push2_f178_daily_main_flow.json",
+          "evidence_file": "adjudications/20261124_push2_f178_daily_main_flow_evidence.md",
+          "evidence_sha256": "a59a8ae01002a97a8b4684eaf7336297c78e6bb974b18274e096dc9b20fad41b",
+          "evidence_basis": "empirical_source_field_semantics",
+          "evidence_level": "E3",
+          "previous_status": "unverified",
+          "previous_status_resolution": "aggregate_status_scope_unresolved",
+          "previous_metadata": {
+            "canonical": "",
+            "meaning": "",
+            "unit": ""
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "fund_main_flow_daily_history_5d",
+              "meaning": "Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。",
+              "unit": "数组（mainNetAmt：元；date：YYYY-MM-DD）"
+            }
+          },
+          "previous_attribute_conflicts": null,
+          "rationale": "stock_common/sc_datasource/_quotes.py 从精确 Push2 stock/get 响应路径 data.f178 解析包含 date 和 mainNetAmt 的 JSON 数组。保留期内 13 个 Push2 状态为 ok/partial 的 raw/meta 批次中，234 个数组均经同记录 f86（Unix 秒，北京时间）核验与采集目录目标数据日一致；数组每批均为 5 条日期唯一、降序记录。剔除 24 条日期早于 MIN_CAPTURE_DATE 的数组元素后，1,146 条样本中 576 条找到同证券、同 array_date 的 Push2 f137 并逐值精确一致，涵盖 214 个去重证券-日期对、0 个反例；570 条没有同日 f137 记录，不计为命中。7 个 failed 批次（含保留快照失败目录）未作为字段样本。已定案的 f137 含义与单位为当日主力资金净流入、元，故可确认 f178.mainNetAmt 为逐日主力净流入金额、单位元。东方财富官网 5 日资金流页面仅作为产品概念佐证，未公开此键级接口 schema。本裁决限于东财-push2(stock/get)::f178，不推及相同数字的 Ulist239 f178，不建立跨源映射。",
+          "sample": {
+            "scope": "2026-10-15 保留边界之后；13 个 Push2 ok/partial 归档批次、20 只证券、234 个有效响应数组。每条记录的 f86 北京时间日期须与目录日期一致。剔除 24 条边界前数组元素；1,146 条边界内元素中，与同证券同 array_date 的保留期 Push2 f137 比较，570 条缺少同日 f137 记录而不计入比较。",
+            "comparison_count": 576,
+            "matched_count": 576,
+            "counterexample_count": 0,
+            "excluded_count": 594,
+            "stock_count": 20,
+            "observation_count": 1170
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2(stock/get)",

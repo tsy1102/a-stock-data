@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 180 个 code；聚合定义不完整 161 个 code；疑似合并文本 754 条逐源记录。
+> 聚合歧义 181 个 code；聚合定义不完整 160 个 code；疑似合并文本 755 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1624,13 +1624,13 @@
 | 东财-push2(stock/get) · `f177` | f177 | — | — | `verified` |
 | 东财-ulist239(np/get) · `f177` | f177 | — | — | `verified` |
 
-### `f178` — incomplete
+### `f178` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_incomplete；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 东财-push2(stock/get) · `f178` | — | — | — | `unverified` |
+| 东财-push2(stock/get) · `f178` | fund_main_flow_daily_history_5d | Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。 | 数组（mainNetAmt：元；date：YYYY-MM-DD） | `verified` |
 | 东财-ulist239(np/get) · `f178` | f178 | — | — | `verified` |
 
 ### `f179` — incomplete
@@ -3769,6 +3769,7 @@
 | 东财-push2(stock/get) | `f146` | fund_mid_today | 东方财富个股资金流分类口径下，当日中单净流入金额，等于中单流入减中单流出；此分类不表示投资者账户身份。 | `verified` |
 | 东财-push2(stock/get) | `f163` | f163 | 静态市盈率（总市值/上年度净利润） | `verified` |
 | 东财-push2(stock/get) | `f176` | f176 | 按最新报告期年初至期末累计营收年化的市销率；在已观察到的季度中，按 f116 总市值 ÷ (f183 × 4 / q) 计算，q 为最新报告期季度序号。当前实证覆盖 Q2、Q3，不等同市销率 TTM，也不外推 Q1、Q4。发行人报告样本确认了 f183 对应的报告期累计营收，但本定义不统一各行业财报中的具体行项目名称。 | `verified` |
+| 东财-push2(stock/get) | `f178` | fund_main_flow_daily_history_5d | Push2 stock/get 返回的 5 条带日期主力资金净流入日记录数组；每项 date（YYYY-MM-DD）为该项数据日期，mainNetAmt 为对应日期的主力资金净流入金额（元）。数组日期按新到旧排列。保留样本中最新日期均早于同记录 f86 响应日期；576 条可与同证券同日期 Push2 f137 对照的记录全部精确相等（214 个去重证券-日期对，0 反例）。 | `verified` |
 | 东财-push2(stock/get) | `f250` | H 股上一香港交易日收盘价 | 该 A 股记录关联 H 股证券的上一香港交易日正式收盘价。此字段所指价格日期早于同一记录行的行情观测日期；同一行的已验证 Push2 f86 只确认观测日期。 | `verified` |
 | 东财-push2(stock/get) | `f55` | f55 | 基本每股收益计算值（最新报告期归母净利润/最新总股本） | `verified` |
 | 东财-push2(stock/get) | `f59` | quote_price_precision_digits | 该证券实时行情报价的显示小数位数；在 fltt=1 响应中用于将价格整数还原为 fltt=2 报价。 | `verified` |

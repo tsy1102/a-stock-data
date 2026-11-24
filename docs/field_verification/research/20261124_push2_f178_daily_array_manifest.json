@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "title": "Eastmoney Push2 stock/get f178 daily main flow array audit",
+  "generated_on": "2026-11-24",
+  "retention_min_capture_date": "20261015",
+  "source_path": "东财-push2(stock/get)::f178",
+  "comparison_path": "东财-push2(stock/get)::f137",
+  "scope": {
+    "capture_statuses_included": [
+      "ok",
+      "partial"
+    ],
+    "capture_files_included": 13,
+    "capture_status_inventory": [
+      {
+        "capture_date": "20261015",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261015/raw_push2.json"
+      },
+      {
+        "capture_date": "20261020",
+        "status": "partial",
+        "raw_path": "docs/field_verification/20261020/raw_push2.json"
+      },
+      {
+        "capture_date": "20261021",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261021/raw_push2.json"
+      },
+      {
+        "capture_date": "20261023",
+        "status": "partial",
+        "raw_path": "docs/field_verification/20261023/raw_push2.json"
+      },
+      {
+        "capture_date": "20261026",
+        "status": "partial",
+        "raw_path": "docs/field_verification/20261026/raw_push2.json"
+      },
+      {
+        "capture_date": "20261028",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261028/raw_push2.json"
+      },
+      {
+        "capture_date": "20261029",
+        "status": "partial",
+        "raw_path": "docs/field_verification/20261029/raw_push2.json"
+      },
+      {
+        "capture_date": "20261030",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261030/raw_push2.json"
+      },
+      {
+        "capture_date": "20261102",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261102/raw_push2.json"
+      },
+      {
+        "capture_date": "20261103",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261103/raw_push2.json"
+      },
+      {
+        "capture_date": "20261104",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261104/raw_push2.json"
+      },
+      {
+        "capture_date": "20261105",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261105/raw_push2.json"
+      },
+      {
+        "capture_date": "20261106",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261106/raw_push2.json"
+      },
+      {
+        "capture_date": "20261109",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261109/raw_push2.json"
+      },
+      {
+        "capture_date": "20261110",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261110/raw_push2.json"
+      },
+      {
+        "capture_date": "20261112",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261112/raw_push2.json"
+      },
+      {
+        "capture_date": "20261116",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261116/raw_push2.json"
+      },
+      {
+        "capture_date": "20261117",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261117/raw_push2.json"
+      },
+      {
+        "capture_date": "20261118",
+        "status": "ok",
+        "raw_path": "docs/field_verification/20261118/raw_push2.json"
+      },
+      {
+        "capture_date": "20261119",
+        "status": "failed",
+        "raw_path": "docs/field_verification/20261119/raw_push2.json"
+      }
+    ],
+    "failed_or_missing_capture_files_used": 0,
+    "response_date_anchor": "same-record f86 Unix seconds converted to Asia/Shanghai must equal capture folder date",
+    "pre_boundary_array_items_excluded": 24
+  },
+  "summary": {
+    "valid_response_arrays": 234,
+    "unique_stock_codes": 20,
+    "array_length_counts": {
+      "5": 1170
+    },
+    "descending_unique_date_arrays": 234,
+    "eligible_array_items": 1146,
+    "same_date_f137_exact_comparisons": 576,
+    "same_date_f137_unique_stock_date_pairs": 214,
+    "same_date_f137_mismatches": 0,
+    "items_without_same_date_f137_record": 570,
+    "response_date_minus_newest_item_calendar_day_counts": {
+      "1": 180,
+      "3": 54
+    },
+    "within_array_calendar_gap_patterns": {
+      "1-1-1-1": 54,
+      "1-1-1-3": 34,
+      "1-1-3-1": 34,
+      "1-3-1-1": 40,
+      "3-1-1-1": 72
+    },
+    "date_anchor_mismatch_records_excluded": 0
+  },
+  "audit_csv": {
+    "path": "docs/field_verification/research/20261124_push2_f178_daily_array_audit.csv",
+    "sha256_lf": "4ec5f0f2df37b02b1c1b35393d9db2d1b721f8665cc5550aefd1bb35cd1b76b2"
+  },
+  "input_files": [
+    {
+      "capture_date": "20261020",
+      "push2_status": "partial",
+      "raw_path": "docs/field_verification/20261020/raw_push2.json",
+      "raw_sha256_lf": "3308dd1dabe078205f90b9e2f9358c75c592935f86a18fdb537c31e651d4baad",
+      "meta_path": "docs/field_verification/20261020/meta.json",
+      "meta_sha256_lf": "e12d2b7395ba912fa621ad9afc356d36d2a8207df9057515edacfd489ef7962d"
+    },
+    {
+      "capture_date": "20261023",
+      "push2_status": "partial",
+      "raw_path": "docs/field_verification/20261023/raw_push2.json",
+      "raw_sha256_lf": "6c1c0ce5141727bf292456774fad25ec0329bed0d3663bf01adfb2c2ec10dab6",
+      "meta_path": "docs/field_verification/20261023/meta.json",
+      "meta_sha256_lf": "f1bf7e57dc0600220b554a04e40df6a83c10cd44123a691229587b594bcc6f7c"
+    },
+    {
+      "capture_date": "20261026",
+      "push2_status": "partial",
+      "raw_path": "docs/field_verification/20261026/raw_push2.json",
+      "raw_sha256_lf": "b2ef56861b7c7a78b3f4a3eed052b79527ef4727b7f16b0eace4a8baad57cb32",
+      "meta_path": "docs/field_verification/20261026/meta.json",
+      "meta_sha256_lf": "2c4a6f7c62ff6d7ef9cd00ea2d3b64eba80ca007fdabbe562df7a104c027d355"
+    },
+    {
+      "capture_date": "20261029",
+      "push2_status": "partial",
+      "raw_path": "docs/field_verification/20261029/raw_push2.json",
+      "raw_sha256_lf": "7b45f5c4db9466221b09a946b5da3ad4e30a81d20f5fd651e09be86eaa1e798f",
+      "meta_path": "docs/field_verification/20261029/meta.json",
+      "meta_sha256_lf": "faa7863ec4e75e764c5c56850e181f815744f9ea44430e2f4768aa7f2d9e4002"
+    },
+    {
+      "capture_date": "20261102",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261102/raw_push2.json",
+      "raw_sha256_lf": "bd1eb991bbc866cbb8ebd74212f0888d07c88fbd502f52fb551b41570acbdc36",
+      "meta_path": "docs/field_verification/20261102/meta.json",
+      "meta_sha256_lf": "569955a6f0388bc0be8329d88d56f2d1d7aec366dbc3a12f79cd6619c6cd5b8b"
+    },
+    {
+      "capture_date": "20261103",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261103/raw_push2.json",
+      "raw_sha256_lf": "e144887c2adf26983ddd7ad1edfd28087fc98e10afe730c8cc84ebccc0407ea3",
+      "meta_path": "docs/field_verification/20261103/meta.json",
+      "meta_sha256_lf": "b42ccfbd97f52bbc49008808eaeaea25eba2bef98c6dc35a4232d1e621dcb557"
+    },
+    {
+      "capture_date": "20261104",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261104/raw_push2.json",
+      "raw_sha256_lf": "dcc5889c7692020401815b9fe99e5a6d3878a40c706eea6198c5161f236c04ee",
+      "meta_path": "docs/field_verification/20261104/meta.json",
+      "meta_sha256_lf": "4b7e1b3a79d51b28b7e8678607e972a869f90be86e1f1805c646823c6d544c06"
+    },
+    {
+      "capture_date": "20261105",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261105/raw_push2.json",
+      "raw_sha256_lf": "fc706b00a6597d988fe38f05f7e466d3a5a0f91fbac15ca4d6128c91991de54b",
+      "meta_path": "docs/field_verification/20261105/meta.json",
+      "meta_sha256_lf": "61e998cf19586a94619c55f92a35baadf38c563b2b4cdf9db6a354ce9c448651"
+    },
+    {
+      "capture_date": "20261106",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261106/raw_push2.json",
+      "raw_sha256_lf": "1ade397dd24b471a9f291c4afdd25be607abd4643e0c62d2fd1e8de566c0e12e",
+      "meta_path": "docs/field_verification/20261106/meta.json",
+      "meta_sha256_lf": "daf316793e27f74347a7f1747f209cd63feeed832a464d986cfabde3b30a2f0b"
+    },
+    {
+      "capture_date": "20261109",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261109/raw_push2.json",
+      "raw_sha256_lf": "33bf683d8886e085f69dc615127d846bd06cea1184573a9e848728a8ed6ed8b6",
+      "meta_path": "docs/field_verification/20261109/meta.json",
+      "meta_sha256_lf": "a5cc30d7c7475764b3fccdfa6354794f10aa3310e4cc5af1a52afd8f5b20a427"
+    },
+    {
+      "capture_date": "20261110",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261110/raw_push2.json",
+      "raw_sha256_lf": "682736a49d7f0abbdba48d435319a2d73f95b06d7e5f3706249c14c5a92cf0f9",
+      "meta_path": "docs/field_verification/20261110/meta.json",
+      "meta_sha256_lf": "4d124388c5824722cf09a157b1d2a610f06b7d3dad9ddbf8fd9c1a08583eb3b5"
+    },
+    {
+      "capture_date": "20261117",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261117/raw_push2.json",
+      "raw_sha256_lf": "26096dd908bd6f324157179ed03aa8042bcc08efa70dd4e72c75d2bcd362a361",
+      "meta_path": "docs/field_verification/20261117/meta.json",
+      "meta_sha256_lf": "58455f1f66177b053234fc12f42e2a3fb3d077b8afd3ae6e23b80844ace36c1f"
+    },
+    {
+      "capture_date": "20261118",
+      "push2_status": "ok",
+      "raw_path": "docs/field_verification/20261118/raw_push2.json",
+      "raw_sha256_lf": "ce2b97587d20427511d6dea1727903a0db9908b5c3d8e694f62b5da07e59fbfd",
+      "meta_path": "docs/field_verification/20261118/meta.json",
+      "meta_sha256_lf": "d7ae7ee24ffaff43986d2b4a0461b5b49820076ba3c7ebfc293adf5027af4d7a"
+    }
+  ]
+}

@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
-"""数据维度充实辅助（V17.2.x 字段治理补充）。
+"""报告字段格式化与轻量派生辅助。
 
-设计铁律（防止引入 bug）：
-- 本模块为**纯函数 + 只读**，不发起任何网络/IO，不修改任何全局状态。
-- 所有取值走 `_v()` 统一安全访问（canonical dataclass 用 getattr，dict 用 .get），
-  缺失/None/非数字一律回退 0，绝不抛异常。
-- 所有除法前做分母保护，避免 ZeroDivisionError。
-- 每个对外函数均包裹防御，即使内部异常也返回 []，由调用方 try/except 兜底。
-- 仅消费已在统一层 CanonicalStockData 归一化（已取数、已清洗、已 QC）的字段，
-  不新增任何采集。契合项目"轻量优先"铁律。
+本模块只做纯函数处理，不发起网络/文件 I/O，不修改全局状态。既包含读取
+``CanonicalStockData`` 的格式化函数，也包含对 CLS 快讯、巨潮公告元数据和
+Push2 f178 记录的安全展示函数；没有来源证据或日期时保留未知，不代填结论。
+历史 `_v()` 帮助函数仍将一般数值缺项转为 0，仅适用于其旧调用方。
 """
 
 from __future__ import annotations
 
 from datetime import datetime
+import math
+import re
 from typing import Any, List
+from urllib.parse import quote, unquote, urlparse, urlunparse
 
 __all__ = [
     "earnings_quality_lines",
@@ -28,7 +27,142 @@ __all__ = [
     "quality_gate_lines",
     "mak_stock_lines",
     "sec_type_label",
+    "cls_telegraph_matches_stock",
+    "cls_telegraph_context_lines",
+    "cninfo_announcement_pdf_markdown",
+    "push2_f178_lines",
 ]
+
+
+def _plain_stock_code(value: Any) -> str:
+    """Normalize common market-prefixed six-digit stock codes for exact matching."""
+    code = str(value or "").strip().lower()
+    match = re.fullmatch(r"(?:sh|sz|bj)?(\d{6})", code)
+    return match.group(1) if match else code
+
+
+def cls_telegraph_matches_stock(item: Any, code: str, name: str = "") -> bool:
+    """Match a CLS telegraph by its exact stock-list code, then title/content text."""
+    try:
+        if not isinstance(item, dict):
+            return False
+        target = _plain_stock_code(code)
+        if target:
+            rows = item.get("stock_list")
+            if isinstance(rows, list):
+                for row in rows:
+                    if isinstance(row, dict) and _plain_stock_code(row.get("code")) == target:
+                        return True
+        from stock_common.sc_datasource._financials import news_matches_stock
+
+        text = "\n".join(str(item.get(key) or "") for key in ("title", "content")).strip()
+        return bool(text and news_matches_stock(text, code, name))
+    except Exception:
+        return False
+
+
+def cls_telegraph_context_lines(item: Any, include_content: bool = True) -> List[str]:
+    """Format verified CLS subject tags and a short body excerpt for a matched item."""
+    try:
+        if not isinstance(item, dict):
+            return []
+        out: List[str] = []
+        subjects = item.get("subjects")
+        names = []
+        if isinstance(subjects, list):
+            for subject in subjects:
+                if isinstance(subject, dict):
+                    label = str(subject.get("name") or "").strip()
+                    if label and label not in names:
+                        names.append(label)
+        if names:
+            out.append(f"      主题: {'、'.join(names[:4])}")
+
+        if include_content:
+            title = " ".join(str(item.get("title") or "").split())
+            content = " ".join(str(item.get("content") or "").split())
+            if content and content != title:
+                excerpt = content[:120]
+                if len(content) > 120:
+                    excerpt += "…"
+                out.append(f"      摘要: {excerpt}")
+        return out
+    except Exception:
+        return []
+
+
+def cninfo_announcement_pdf_markdown(announcement: Any) -> str:
+    """Build a safe CNINFO PDF link from the verified ``adjunct_url`` field only."""
+    try:
+        if not isinstance(announcement, dict):
+            return ""
+        raw = str(announcement.get("adjunct_url") or "").strip()
+        if not raw or raw.startswith("//"):
+            return ""
+        parsed = urlparse(raw)
+        if parsed.scheme or parsed.netloc:
+            host = (parsed.hostname or "").lower()
+            if (
+                parsed.scheme.lower() not in ("http", "https")
+                or not (host == "cninfo.com.cn" or host.endswith(".cninfo.com.cn"))
+                or parsed.username
+                or parsed.password
+                or parsed.port not in (None, 443)
+            ):
+                return ""
+            path = quote(parsed.path, safe="/%:@-._~")
+            link = urlunparse(("https", host, path, "", parsed.query, ""))
+        else:
+            path = raw.split("?", 1)[0].split("#", 1)[0]
+            decoded_parts = [part.lower() for part in unquote(path).replace("\\", "/").split("/")]
+            if any(part in (".", "..") for part in decoded_parts):
+                return ""
+            path = quote(path.lstrip("/"), safe="/%:@-._~")
+            link = f"https://www.cninfo.com.cn/{path}"
+        if not urlparse(link).path.lower().endswith(".pdf"):
+            return ""
+        return f"[公告PDF]({link})"
+    except Exception:
+        return ""
+
+
+def push2_f178_lines(cdata: Any) -> List[str]:
+    """Render dated Push2 f178 daily main-flow records without inferring a shared date."""
+    try:
+        rows = getattr(cdata, "fund_5d_array", ())
+        if isinstance(cdata, dict):
+            rows = cdata.get("fund_5d_array", ())
+        if not isinstance(rows, (list, tuple)):
+            return []
+        dated_records = []
+        seen_dates = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            day = str(row.get("date") or "").strip()
+            try:
+                datetime.strptime(day, "%Y-%m-%d")
+                amount = float(str(row.get("mainNetAmt")))
+            except (TypeError, ValueError, OverflowError):
+                continue
+            if day in seen_dates or not math.isfinite(amount):
+                continue
+            seen_dates.add(day)
+            dated_records.append((day, amount))
+        if not dated_records:
+            return []
+        dated_records.sort(key=lambda record: record[0], reverse=True)
+        dated_records = dated_records[:5]
+        rendered = [
+            f"    {day}: 主力净流入 {amount / 1e4:+.1f} 万元（Push2 f178）"
+            for day, amount in dated_records
+        ]
+        return [
+            "  近 5 条有日期的主力资金记录（各自数据日；Push2 f178，元换算为万元）：",
+            *rendered,
+        ]
+    except Exception:
+        return []
 
 
 def _v(obj: Any, name: str, default: float = 0.0) -> float:

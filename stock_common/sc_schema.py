@@ -804,11 +804,11 @@ class CanonicalStockData:
     eltdx_seal_to_float_ratio: float = 0.0  # 当前买一金额/流通市值Z(%)；仅已封板时解释为封板强度
     eltdx_open_volume_ratio: float = 0.0  # 开盘成交量比(open_volume_ratio)
     eltdx_seal_amount: float = 0.0  # 当前买一金额(元)；仅已封板时才是涨停封单额
-    eltdx_opening_rush: float = 0.0  # 开盘抢筹(opening_rush)
+    eltdx_opening_rush: float = 0.0  # 开盘抢筹指标(%; 算法和正负方向的业务解释未确认)
     eltdx_auction_prev_volume_ratio: float = 0.0  # 竞价量比(auction_prev_volume_ratio)
     eltdx_open_prev_amount_ratio: float = 0.0  # 开盘额/昨额比(open_prev_amount_ratio)
     eltdx_open_change_pct: float = 0.0  # 开盘涨跌幅%(open_change_pct)
-    eltdx_open_turnover_z: float = 0.0  # 开盘换手Z(open_turnover_z)
+    eltdx_open_turnover_z: float = 0.0  # 自由流通口径开盘换手率(%; 历史键名中的Z不是统计Z-score)
     eltdx_has_shortline: bool = False  # 是否命中 eltdx 短线指标(批量缓存命中标记)
 
     def to_dict(self) -> Dict[str, Any]:

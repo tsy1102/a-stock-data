@@ -7,7 +7,7 @@
   MorningBiddingList（竞价涨停委买额——独有数据）
 
 限流：匿名接口实测 1s 间隔安全；本适配器按 1.0s/请求限频
-缓存：@cached（market_emotion 5 分钟盘中 / plate_strength 1h——KPL 数据收盘后不变）
+缓存：市场情绪 5 分钟；板块强度当前不缓存，报告调用显式传入请求数据日
 
 ⚠️ 私有 API 风险：非官方公开，接口/字段可能变更；生产勿高依赖
 """
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import threading
 from stock_common.sc_rate_utils import advance_interval_timestamp
@@ -120,26 +121,54 @@ def _include_raw_response(
     return captured
 
 
-@cached(category="kpl_sentiment", ttl_seconds=TTL["kpl_sentiment"], trading_day=True)
+def _optional_int(value: Any) -> Optional[int]:
+    """转换来源数值；缺失、空串和非法值保留为 None，不伪造 0。"""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    try:
+        numeric = float(str(value).replace(",", "").strip())
+        return int(numeric) if math.isfinite(numeric) and numeric.is_integer() else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _optional_float(value: Any) -> Optional[float]:
+    """转换来源数值；缺失、空串和非法值保留为 None，不伪造 0。"""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    try:
+        numeric = float(str(value).replace(",", "").strip())
+        return numeric if math.isfinite(numeric) else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+@cached(category="kpl_sentiment_v2", ttl_seconds=TTL["kpl_sentiment"], trading_day=True)
 def get_kpl_market_sentiment(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 市场情绪（ChangeStatistics）——情绪指标 strong(0-100)/连板高度/涨停家数。
 
-    字典 §12.17：info=[ztjs 涨停家数, Day, df_num 大幅回撤, strong 情绪指标, lbgd 连板高度] + tip 提示
+    字典 §12.17：info=[ztjs 涨停家数, Day, df_num 大幅回撤, strong 情绪指标分值, lbgd 连板高度] + tip 提示
     来源内语义证据：docs/field_verification/adjudications/20261124_kpl_market_sentiment_fields.md
-    lbgd 已用同批完整涨停名单的已验证 col_15 最大值闭环；day 是响应日期标签，不是 as_of_date。
+    strong 为 0–100 分值，不是百分比或概率；lbgd 已用同批完整涨停名单的已验证
+    col_15 最大值闭环。day 是响应日期标签，不是 as_of_date。
     """
     p = _base()
     p.update({"a": "ChangeStatistics", "st": 10, "c": "HomeDingPan"})
     d = _post("hq", p)
     if "_err" in d or d.get("errcode") != "0":
         return _include_raw_response({}, d, capture_raw)
-    info = (d.get("info") or [{}])[0]
+    info_rows = d.get("info")
+    info = (
+        info_rows[0]
+        if isinstance(info_rows, list) and info_rows and isinstance(info_rows[0], dict)
+        else {}
+    )
     return _include_raw_response(
         {
-            "ztjs": int(info.get("ztjs") or 0),
-            "df_num": int(info.get("df_num") or 0),
-            "strong": int(info.get("strong") or 0),
-            "lbgd": int(info.get("lbgd") or 0),
+            "ztjs": _optional_int(info.get("ztjs")),
+            "df_num": _optional_int(info.get("df_num")),
+            "strong": _optional_int(info.get("strong")),
+            "lbgd": _optional_int(info.get("lbgd")),
             "day": info.get("Day", ""),
             "tip": d.get("tip", ""),
         },
@@ -175,14 +204,18 @@ def get_kpl_up_down(capture_raw: bool = False) -> Dict[str, Any]:
     )
 
 
-def get_kpl_plate_strength(top_n: int = 20, capture_raw: bool = False) -> List[Dict[str, Any]]:
+def get_kpl_plate_strength(
+    top_n: int = 20,
+    capture_raw: bool = False,
+    date: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """KPL 精选板块强度（RealRankingInfo ZSType=7）——强度/涨幅/主力净额/今明 PE。
 
     字典 §12.17：list 19 元素数组：
       [0]=板块代码 [1]=名称 [2]=强度 [3]=涨幅 [4]=涨速 [5]=成交额 [6]=主力净额
       [7]=主买 [8]=主卖 [9]=量比 [10]=流通值 [12]=300万大单净额 [13]=总市值
       [14]=机构增仓 [15]=今PE [16]=明PE
-    ⚠️ 非交易时间需 Date=YYYY-MM-DD
+    date: 可选目标数据日（YYYY-MM-DD）；非交易时间显式传入，避免依赖接口默认日期。
     """
     p = _base()
     p.update(
@@ -196,6 +229,13 @@ def get_kpl_plate_strength(top_n: int = 20, capture_raw: bool = False) -> List[D
             "ZSType": 7,
         }
     )
+    if date:
+        from datetime import datetime
+
+        normalized_date = str(date).strip().replace("/", "-")
+        if len(normalized_date) == 8 and normalized_date.isdigit():
+            normalized_date = f"{normalized_date[:4]}-{normalized_date[4:6]}-{normalized_date[6:]}"
+        p["Date"] = datetime.strptime(normalized_date, "%Y-%m-%d").date().isoformat()
     d = _post("hq", p)
     if "_err" in d or d.get("errcode") != "0":
         return []
@@ -206,20 +246,20 @@ def get_kpl_plate_strength(top_n: int = 20, capture_raw: bool = False) -> List[D
         result = {
             "code": row[0],
             "name": row[1],
-            "strength": _f(row[2]),
-            "change_pct": _f(row[3]),
-            "speed": _f(row[4]),
-            "amount": _f(row[5]),
-            "main_inflow": _f(row[6]),
-            "main_buy": _f(row[7]),
-            "main_sell": _f(row[8]),
-            "vol_ratio": _f(row[9]),
-            "circulation_value": _f(row[10]),
-            "big_order_300w_net": _f(row[12]),
-            "total_value": _f(row[13]),
-            "institution_add": _f(row[14]),
-            "pe_now": _f(row[15]),
-            "pe_next": _f(row[16]),
+            "strength": _optional_float(row[2]),
+            "change_pct": _optional_float(row[3]),
+            "speed": _optional_float(row[4]),
+            "amount": _optional_float(row[5]),
+            "main_inflow": _optional_float(row[6]),
+            "main_buy": _optional_float(row[7]),
+            "main_sell": _optional_float(row[8]),
+            "vol_ratio": _optional_float(row[9]),
+            "circulation_value": _optional_float(row[10]),
+            "big_order_300w_net": _optional_float(row[12]),
+            "total_value": _optional_float(row[13]),
+            "institution_add": _optional_float(row[14]),
+            "pe_now": _optional_float(row[15]),
+            "pe_next": _optional_float(row[16]),
         }
         if capture_raw:
             result["raw_columns"] = {
@@ -313,10 +353,10 @@ def get_kpl_limit_up_detail(
 
 
 def get_kpl_broken_ratio(capture_raw: bool = False) -> Dict[str, Any]:
-    """KPL 涨跌停情绪（RiseFallAnalysis）——涨停/跌停/自然涨停/破板率/炸板。
+    """KPL RiseFallAnalysis 原始计数字段。
 
-    字典 §12.17：info=[[涨停, 跌停, 自然涨停, 曾跌停, 破板率, 炸板, 日期]]
-    zt 与 date 的来源内核验见 docs/field_verification/adjudications/20261124_kpl_market_sentiment_fields.md；date 仅为该响应的日期标签。
+    目前仅 info[0] 与日期槽位有部分来源内核验；dt、zt_natural、dt_ever、
+    broken_ratio 和 broken_num 仍未定案。保留给显式研究/采集，不用于正式报告计数。
     """
     p = _base()
     p.update({"a": "RiseFallAnalysis", "c": "HomeDingPan"})
@@ -328,12 +368,12 @@ def get_kpl_broken_ratio(capture_raw: bool = False) -> Dict[str, Any]:
         return _include_raw_response({}, d, capture_raw)
     return _include_raw_response(
         {
-            "zt": int(info[0]),
-            "dt": int(info[1]),
-            "zt_natural": int(info[2]),
-            "dt_ever": int(info[3]),
-            "broken_ratio": float(info[4]),
-            "broken_num": int(info[5]),
+            "zt": _optional_int(info[0]),
+            "dt": _optional_int(info[1]),
+            "zt_natural": _optional_int(info[2]),
+            "dt_ever": _optional_int(info[3]),
+            "broken_ratio": _optional_float(info[4]),
+            "broken_num": _optional_int(info[5]),
             "date": str(info[6]) if len(info) > 6 else "",
         },
         d,
@@ -343,7 +383,8 @@ def get_kpl_broken_ratio(capture_raw: bool = False) -> Dict[str, Any]:
 
 def _f(v: Any) -> float:
     try:
-        return float(v) if v not in ("", None, "--") else 0.0
+        value = float(v) if v not in ("", None, "--") else 0.0
+        return value if math.isfinite(value) else 0.0
     except (TypeError, ValueError):
         return 0.0
 

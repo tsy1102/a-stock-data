@@ -88,7 +88,6 @@ from stock_common import (
     em_hot_concept,
     get_eastmoney_stock_news,
     cls_telegraph,
-    news_matches_stock,
     get_irm_qa,
     get_zhb_data_date,
     get_zhb_streak_days,
@@ -107,7 +106,7 @@ from stock_common.sc_report_runner import (
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
 
 _SHT_MARKET_DATA_LOCK = threading.Lock()
-_SHT_MARKET_DATA_CACHE: dict[tuple[str, str, str], Any] = {}
+_SHT_MARKET_DATA_CACHE: dict[tuple[str, str, str, str], Any] = {}
 
 
 def _get_sht_market_data(key: str, loader: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
@@ -116,7 +115,12 @@ def _get_sht_market_data(key: str, loader: Callable[..., Any], *args: Any, **kwa
         _zhb_date = str(get_zhb_data_date() or "")
     except Exception:
         _zhb_date = ""
-    cache_key = (key, date.today().isoformat(), _zhb_date)
+    cache_key = (
+        key,
+        date.today().isoformat(),
+        _zhb_date,
+        repr((args, sorted(kwargs.items()))),
+    )
     with _SHT_MARKET_DATA_LOCK:
         if cache_key not in _SHT_MARKET_DATA_CACHE:
             try:
@@ -467,9 +471,7 @@ async def generate_report_async(
 
     _unlock_ratio_warn = _hld.get("unlock_ratio_warn", 5.0)
 
-    _limit_chg = _mkt.get("limit_chg_pct", 9.5)
-
-    _near_limit = _mkt.get("near_limit_pct", 7.0)
+    _near_limit_ratio = _mkt.get("near_limit_ratio", 0.7)
 
     _seal_ratio_warn = _mkt.get("seal_amount_ratio_warn", 0.1)
 
@@ -487,6 +489,20 @@ async def generate_report_async(
     cdata = await asyncio.to_thread(get_canonical_stock_data, code)
     price_today = cdata.price
     q = cdata.to_dict()
+    from stock_common.stock_calendar import latest_market_data_date
+
+    _expected_quote_date = latest_market_data_date(datetime.now()).isoformat()
+    _field_as_of_dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    _quote_data_date = str(
+        _field_as_of_dates.get("price") or getattr(cdata, "quote_date", "") or ""
+    )
+    _change_data_date = str(_field_as_of_dates.get("change_pct") or "")
+    _quote_change_date_valid = (
+        bool(_quote_data_date)
+        and _quote_data_date == _expected_quote_date
+        and _change_data_date == _quote_data_date
+    )
+    _change_date_note = _change_data_date or "未确认"
 
     # V17.0.5 P0: fuyao 官方封单(涨停池 seal_money/max_seal_money——替代买一估算;
     # trading_day 缓存, 全市场一次请求)。非涨停/无 Key → None, 回落原估算逻辑
@@ -501,6 +517,10 @@ async def generate_report_async(
     # 原展示方式更佳; 表格仅用于同业横向对比/资金走向/龙虎榜等数字列对齐章节
     L(f"  股票名称: {stock_name}")
     L(f"  股票代码: {cdata.code}")
+    L(
+        f"  报价数据日：价格={_quote_data_date or '未确认'}；"
+        f"涨跌幅={_change_date_note}；交易日历基准={_expected_quote_date}"
+    )
     # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（canonical is_st/is_new——结构化名称）
     if getattr(cdata, "is_st", False):
         L("  ⚠️ 风险标记: **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险）")
@@ -553,7 +573,8 @@ async def generate_report_async(
     if cdata.price > 0 or cdata.change_pct != 0:
         # V17.0.1e: 撤销 V17.0.1b 表格化, 恢复原"字段: 值"竖排(基本信息/行情不适用表格)
         L(f"  现价:   {cdata.price:.2f} 元")
-        L(f"  涨跌幅:   {cdata.change_pct:.2f}%")
+        _change_label = "涨跌幅" if _quote_change_date_valid else "涨跌幅（日期未确认）"
+        L(f"  {_change_label}: {cdata.change_pct:.2f}%")
         _ohlc_lines = await asyncio.to_thread(
             _canonical_ohlc_lines, cdata, cdata.open, cdata.high, cdata.low
         )
@@ -1107,6 +1128,7 @@ async def generate_report_async(
             #   43.9 两者皆不匹配（来自 TDX MAC 的 pe_dynamic）。
             #   修复: 本股行改用 pe_dynamic，列标题改为「PE（动）」→ 同列同口径 + 标题如实。
             L("  同业龙头对比:")
+            L("  注：同业涨跌幅的实际数据日未核实，该列仅供来源观测。")
             L(
                 f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE（动）':>9} {'PE（静）':>8} {'换手率%':>8}"
             )
@@ -1315,6 +1337,11 @@ async def generate_report_async(
             L("  ⚠️ 返回的历史资金流记录未通过日期或交易日校验，历史窗口不展示")
         else:
             L("  (资金流数据获取失败)")
+
+    from stock_common.enrich_helpers import push2_f178_lines
+
+    for _flow_line in push2_f178_lines(cdata):
+        L(_flow_line)
 
     L("\n" + "---")
     L("## **八、北向资金持仓动态**")
@@ -1909,10 +1936,16 @@ async def generate_report_async(
         _debug_log(f"sht news_fetch: {_e}")
         L("    (新闻获取失败)")
 
-    # 财联社快讯（近420分钟=7小时）— V16.1: 同步包 to_thread
+    # 财联社快讯（近48小时）— 同步接口放入 to_thread
     try:
+        from stock_common.enrich_helpers import (
+            cls_telegraph_context_lines,
+            cls_telegraph_matches_stock,
+        )
+
         cls_news = await asyncio.to_thread(cls_telegraph, page_size=50)
         _cls_shown = 0
+        _cls_excerpt_shown = 0
         _cutoff = datetime.now() - timedelta(hours=48)  # V16.2.14: 7h→48h
         for item in cls_news:
             t_str = str(item.get("time", ""))
@@ -1925,8 +1958,15 @@ async def generate_report_async(
                     pass
             title = str(item.get("title", "")).strip()
             # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过（原直接展示全市场快讯）
-            if title and news_matches_stock(title, code, stock_name):
+            if title and cls_telegraph_matches_stock(item, code, stock_name):
                 L(f"    · [{t_str[:16]}] {title[:80]}")
+                _context_lines = cls_telegraph_context_lines(
+                    item, include_content=_cls_excerpt_shown < 3
+                )
+                for _context_line in _context_lines:
+                    L(_context_line)
+                    if _context_line.startswith("      摘要:"):
+                        _cls_excerpt_shown += 1
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break
@@ -1988,14 +2028,15 @@ async def generate_report_async(
         anns = await get_strategic_announcements_async(session, code, days=7)
 
     if anns:
+        from stock_common.enrich_helpers import cninfo_announcement_pdf_markdown
 
         for i, a in enumerate(anns, 1):
 
             fl = " ⚠️" if any(k in a["title"] for k in ["减持", "立案", "严重异动"]) else ""
 
-            tt = f" [{a['type']}]" if a["type"] else ""
-
-            L(f"  {i}. [{a['date']}]{tt} {a['title']}{fl}")
+            _pdf_link = cninfo_announcement_pdf_markdown(a)
+            _link_suffix = f" {_pdf_link}" if _pdf_link else ""
+            L(f"  {i}. [{a['date']}] {a['title']}{fl}{_link_suffix}")
 
         rc = sum(1 for a in anns if "减持" in a["title"])
 
@@ -2009,50 +2050,34 @@ async def generate_report_async(
     L("\n  ➤ 打板与涨停分析:")
     try:
         from stock_common import get_limit_pool_summary
+        from stock_common.stock_calendar import latest_market_data_date
 
+        _pool_data_date = latest_market_data_date(datetime.now()).isoformat()
         pool = await asyncio.to_thread(
             _get_sht_market_data,
             "limit_pool",
             get_limit_pool_summary,
+            _pool_data_date,
             allow_push2ex=False,
         )
-        zt_count = pool.get("limit_up_count", 0)
+        _pool_report_date = pool.get("requested_data_date") or _pool_data_date
+        zt_count = pool.get("limit_up_count")
         zb_count = pool.get("limit_broken_count", 0)
-        _zt_available = pool.get("limit_up_count_available", True)
-        _zb_available = pool.get("limit_broken_count_available", True)
-        # V17.3 修复: 跌停池接口(pool.limit_down_count)偶发返回 stale T-1 数据(实测 33 篇 sht 报 3 只,
-        # 而 mak A 段用全市场实时涨跌幅口径(is_limit_down)得 0 只)。为与 mak 同源同口径,
-        # 优先采用实时涨跌幅口径, 仅在实时源不可用时回退 pool。
-        _dt_count_pool = pool.get("limit_down_count", 0)
-        _dt_available = pool.get("limit_down_count_available", True)
-        try:
-            from core.tdx_client import tdx_get_market_abnormal_data
-            from stock_common import is_limit_down
-
-            _abn = tdx_get_market_abnormal_data()
-            if _abn:
-                dt_count = sum(
-                    1
-                    for s in _abn
-                    if is_limit_down(
-                        str(s.get("code", "")),
-                        str(s.get("name", "") or ""),
-                        _safe_float(s.get("change_pct", 0)),
-                    )
-                )  # 实时口径优先(与 mak A 段 _dt_count 同源)
-                _dt_available = True
-            else:
-                dt_count = _dt_count_pool
-        except Exception as _e:
-            _debug_log(f"sht dt realtime: {_e}")
-            dt_count = _dt_count_pool
+        _zt_available = pool.get("limit_up_count_available", False) is True
+        _zb_available = pool.get("limit_broken_count_available", False) is True
+        dt_count = pool.get("limit_down_count")
+        _dt_available = pool.get("limit_down_count_available", False) is True
         success_rate = pool.get("success_rate")
         _zt_text = str(zt_count) if _zt_available else "未取得"
         _zb_text = str(zb_count) if _zb_available else "未取得"
         _dt_text = str(dt_count) if _dt_available and dt_count is not None else "未取得"
         _success_text = f"{success_rate:.0f}%" if success_rate is not None else "未取得"
         L(
-            f"    今日涨停 {_zt_text} 只 | 炸板 {_zb_text} 只 | 跌停 {_dt_text} 只 | 封板率 {_success_text}"
+            f"    涨停池查询目标日 {_pool_report_date}：涨停 {_zt_text} 只 | "
+            f"炸板 {_zb_text} 只 | 跌停 {_dt_text} 只 | 封板率 {_success_text}"
+        )
+        L(
+            "    ℹ️ 同花顺涨停名单接口未返回独立实际数据日；名单及数量仅为目标日期请求的来源响应观察。"
         )
         if not _zb_available or not _dt_available:
             L("    ℹ️ 未取得的炸板/跌停数不按 0 计；当前源未提供可核验的同日统计。")
@@ -2064,7 +2089,8 @@ async def generate_report_async(
             _ms = await asyncio.to_thread(tdx_get_market_stat)
             if _ms:
                 L(
-                    f"    全市场(通达信): 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
+                    "    全市场(通达信·本次响应，接口未提供可核验的数据日): "
+                    f"涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
                     f" | 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
                     f" | 停牌{_ms['suspended_count']} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
                 )
@@ -2109,7 +2135,8 @@ async def generate_report_async(
                     _lf_txt = f"{_lf:.0f}"
                 _sector_name = item.get("sector") or "板块信息未提供"
                 L(
-                    f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{_sector_name} 封单额:{_lf_txt}元{_extra}"
+                    f"    📌 同花顺目标日期响应名单包含当前股票（实际日期未单独核验）；"
+                    f"连板{item.get('limit_count',0)} 板块:{_sector_name} 封单额:{_lf_txt}元{_extra}"
                 )
                 break
         for item in pool.get("limit_broken_list", []):
@@ -2160,13 +2187,14 @@ async def generate_report_async(
                     yzt_avg_pct = sum(s["change_pct"] for s in _yzt_observed) / len(_yzt_observed)
                     promotion_rate = len(yzt_promoted) / len(_yzt_observed) * 100
                     L(
-                        f"    昨日涨停名单 {_previous_date} 共 {yzt_total} 只；行情日 {_target_date} "
-                        f"可跟踪 {len(_yzt_observed)}/{yzt_total} 只，晋级 {len(yzt_promoted)} 只，"
-                        f"晋级率 {promotion_rate:.0f}%，平均涨幅 {yzt_avg_pct:+.1f}%"
+                        f"    THS前一交易日名单查询日 {_previous_date} 共 {yzt_total} 只（实际日期未单独核验）；"
+                        f"ZHB 行情日 {_target_date} 可跟踪 {len(_yzt_observed)}/{yzt_total} 只，"
+                        f"观察到 {len(yzt_promoted)} 只达到涨停阈值（{promotion_rate:.0f}%），"
+                        f"平均涨幅 {yzt_avg_pct:+.1f}%"
                     )
                 else:
                     L(
-                        f"    昨日涨停名单 {_previous_date} 共 {yzt_total} 只；"
+                        f"    THS前一交易日名单查询日 {_previous_date} 共 {yzt_total} 只（实际日期未单独核验）；"
                         f"ZHB {_target_date} 无可用对应行情，晋级率未计算。"
                     )
                 # 当前股票是否在昨日涨停池（看今日承接）
@@ -2325,21 +2353,21 @@ async def generate_report_async(
 
     _hi = q.get("high", 0) if q else 0
     _lo = q.get("low", 0) if q else 0
-    _chg = q.get("change_pct", 0) if q else 0
+    _chg = q.get("change_pct", 0) if q and _quote_change_date_valid else 0
 
-    if _lu > 0 and _hi >= _lu * 0.98 and _chg < -15:
+    if _quote_change_date_valid and _lu > 0 and _hi >= _lu * 0.98 and _chg < -15:
 
         signals.append(
             f"⚠️ 天地板预警：今日最高触及涨停({_hi:.2f})后暴跌至{price_today:.2f}，单日振幅{(_hi-_lo)/_hi*100:.1f}%，极端风险！"
         )
 
-    elif _ld > 0 and _lo <= _ld * 1.02 and _chg > 10:
+    elif _quote_change_date_valid and _ld > 0 and _lo <= _ld * 1.02 and _chg > 10:
 
         signals.append(
             f"⚠️ 地天板预警：今日最低触及跌停({_lo:.2f})后拉升至{price_today:.2f}，分歧巨大！"
         )
 
-    if is_lu2 and b1v2 > 0:
+    if _quote_change_date_valid and is_lu2 and b1v2 > 0:
 
         fa2 = b1v2 * lu2 / 1e8
         fr2 = fa2 / (q.get("mcap_yi", 0) or 1) * 100
@@ -2352,15 +2380,20 @@ async def generate_report_async(
             elif fr2 > _lo_mid:
                 signals.append(f"✅ 封单质量良好，封单占比流通市值 {fr2:.1f}%")
 
-    if q and price_today > 0:
+    if q and price_today > 0 and _quote_change_date_valid:
+        _quote_limit_up = _safe_float(q.get("limit_up", 0))
 
-        if q.get("change_pct", 0) > _limit_chg and price_today >= q.get("limit_up", 0) * 0.995:
+        if (
+            is_limit_up(code, stock_name, q.get("change_pct", 0))
+            and _quote_limit_up > 0
+            and price_today >= _quote_limit_up * 0.995
+        ):
             signals.append("🚀 强势涨停，封单密实，短线溢价预期强烈")
 
-        elif q.get("change_pct", 0) > _near_limit:
+        elif q.get("change_pct", 0) >= limit_pct_for(code, stock_name) * _near_limit_ratio:
             signals.append(f"📈 今日涨幅 {q.get('change_pct',0):.1f}%，逼近涨停，短线动能充沛")
 
-    if q and is_lu2 and b1v2 > 0:
+    if _quote_change_date_valid and q and is_lu2 and b1v2 > 0:
 
         _tamt = q.get("amount_wan", 0) * 1e4
 
@@ -2416,7 +2449,7 @@ async def generate_report_async(
                 "仅描述余额变化，不据此推断逼空、参与者身份或后续走势。"
             )
 
-    if rr and len(rr) >= 3 and q and abs(q.get("change_pct", 0)) > 5:
+    if rr and len(rr) >= 3 and q and _quote_change_date_valid and abs(q.get("change_pct", 0)) > 5:
 
         _buy_ratings = sum(
             1
@@ -2506,26 +2539,8 @@ async def generate_report_async(
 
                 break
 
-    mc = miq.get("change_pct") if miq else None
-    # V16.4.1: biq 为空时 bc2 应为 None(原 {} 会骗过下方 all(... is not None) 判断)
-    bc2 = biq.get("change_pct") if biq else None
-
-    sc2 = q.get("change_pct", 0) if q else None
-    ic2 = industry_change_pct if industry_rank > 0 else None
-
-    if all(v is not None for v in [mc, bc2, sc2, ic2]):
-
-        cd = sc2 - ic2
-
-        if cd > 2.0 and sc2 > 0:
-            signals.append(
-                f"🔥 鹤立鸡群模型：个股 {sc2:+.2f}% >> 板块 {ic2:+.2f}% (领先 {cd:.1f}%)，属板块领涨龙头"
-            )
-
-        elif abs(sc2 - ic2) < 1.0 and abs(sc2) > 0.5:
-            signals.append(
-                f"📊 随波逐流模型：个股 {sc2:+.2f}% ≈ 板块 {ic2:+.2f}%，属板块普涨型跟风"
-            )
+    if industry_rank > 0:
+        signals.append("ℹ️ 板块成分行情的实际数据日未确认，本报告不据此判断个股领涨或随涨。")
 
     try:
         from core.data_provider import _should_use_zhb_for_realtime
@@ -2593,71 +2608,50 @@ async def generate_report_async(
     # (重演 V17.0 已修的 M1/M4 假空白章节反模式)。现预置空, 涨停块会覆盖, K线形态块按需自取。
     _sk, _sr = [], []
 
-    if q and price_today > 0 and is_limit_up(code, stock_name, q.get("change_pct", 0)):
-
-        # V17.0(2026-08-15): 连板追踪增强——ZHB [33] 连板数(2026-08-27 天梯20/20 定案)优先, fallback 3日涨幅估算
-        _zt_lb = 0
-        _zt_ty = -1  # L1 修复: 先行初始化, 异常时结构安全
-        _zt_seal = 0
+    if q and price_today > 0 and not _quote_change_date_valid:
+        L("  ⚠️ 涨停/连板追踪：报价与涨跌幅日期未同时确认属于交易日历基准日，本节不据此判断。")
+    elif q and price_today > 0 and is_limit_up(code, stock_name, q.get("change_pct", 0)):
+        _zt_lb = None
+        _zt_seal = 0.0
+        _zhb_snapshot_date = ""
         try:
-            from stock_common.sc_datasource import get_zhb_single_stock_data
+            _zhb_snapshot_date = str(get_zhb_data_date() or "")
+            if _zhb_snapshot_date.replace("-", "") == _quote_data_date.replace("-", ""):
+                from stock_common.sc_datasource import get_zhb_single_stock_data
 
-            _zdata = get_zhb_single_stock_data(code) or {}
-            _zt_lb = int(_zdata.get("zt_lianban", 0) or 0)
-            _zt_v = _zdata.get("zt_type")
-            # H6 修复: 0 是合法值(盘中涨停档), 不能用 `or -1` 吞掉
-            _zt_ty = int(_zt_v) if _zt_v is not None else -1
-            _zt_seal = _zdata.get("zt_seal_amount", 0) or 0
-        except Exception as _e:  # H5 修复: 显式日志, 不静默吞
-            _debug_log(f"sht zt zhb data ({code}): {_e}")
-        if _zt_lb > 0:
-            # 封板类型(zt_type)原取自 Col[33]; V17.0.10 证伪 Col[33]=涨停类型、实为连板数, ZHB 不再提供(=_zt_ty=-1)
-            _ty_txt = "一字/竞价封板" if _zt_ty >= 2 else ("盘中封板" if _zt_ty >= 0 else "")
-            _seal_txt = f" 封单额(官方ZHB): {_zt_seal:.0f}万" if _zt_seal > 0 else ""
-            L(
-                f"  📊 连板追踪: 今日涨停，真连板数 **{_zt_lb}板**(ZHB[33] 连板数铁证){' ['+_ty_txt+']' if _ty_txt else ''}{_seal_txt}"
-            )
-
-        try:
-
-            # V17.0.15: count 5→60（与上文异动雷达共用 cache_key "D:{code}:60"，命中缓存零额外请求）
-            _sk, _sr = await asyncio.to_thread(baidu_kline_full, code, 60)
-
-            _ci = next((i for i, k in enumerate(_sk) if k in ("close", "close_price")), -1)
-
-            if _ci >= 0:
-
-                _c3 = [_safe_float(rr[_ci]) for rr in _sr[-4:] if len(rr) > _ci]
-
-                if len(_c3) == 4 and _c3[0] > 0:
-
-                    _3d = (_c3[-1] / _c3[0] - 1) * 100
-
-                    _lb_pct = limit_pct_for(code, stock_name)  # V16.2: 统一阈值（北交所 30 等）
-
-                    _lb2 = _lb_pct * 1.9
-
-                    _lb3 = _lb_pct * 2.85
-
-                    _lb_t = (
-                        "3连板"
-                        if _lb3 <= _3d < _lb3 + _lb_pct
-                        else (
-                            "2连板"
-                            if _lb2 <= _3d < _lb3
-                            else (
-                                "首板"
-                                if _lb_pct * 0.95 <= _3d < _lb2
-                                else f"高标{int(_3d/_lb_pct)}板" if _3d >= _lb3 + _lb_pct else ""
-                            )
-                        )
-                    )
-
-                    if _lb_t and _zt_lb <= 0:
-                        L(f"  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)")
-
+                _zdata = get_zhb_single_stock_data(code) or {}
+                _raw_zt_lb = _zdata.get("zt_lianban")
+                if _raw_zt_lb is not None and str(_raw_zt_lb).strip() != "":
+                    _zt_lb_value = float(_raw_zt_lb)
+                    if _zt_lb_value.is_integer() and _zt_lb_value >= 1:
+                        _zt_lb = int(_zt_lb_value)
+                _zt_seal = _safe_float(_zdata.get("zt_seal_amount", 0))
+            else:
+                _debug_log(
+                    f"sht zt zhb date mismatch ({code}): "
+                    f"zhb={_zhb_snapshot_date!r}, quote={_quote_data_date!r}"
+                )
+        except (TypeError, ValueError, OverflowError) as _e:
+            _debug_log(f"sht zt zhb data parse ({code}): {_e}")
         except Exception as _e:
-            _debug_log(f"sht lb estimate ({code}): {_e}")  # M11 修复(2026-08-15 二审): 吞异常补日志
+            _debug_log(f"sht zt zhb data ({code}): {_e}")
+
+        if _zhb_snapshot_date.replace("-", "") != _quote_data_date.replace("-", ""):
+            L(
+                f"  ⚠️ 连板追踪：行情日 {_quote_data_date} 涨停；"
+                f"ZHB 数据日 {_zhb_snapshot_date or '未确认'} 不匹配，连板数与封单额未展示。"
+            )
+        elif _zt_lb is not None and _zt_lb > 0:
+            _seal_txt = f" ZHB T日封单额: {_zt_seal:.0f}万元" if _zt_seal > 0 else ""
+            L(
+                f"  📊 连板追踪：行情数据日 {_quote_data_date} 涨停，"
+                f"ZHB 连板数 **{_zt_lb} 板**{_seal_txt}"
+            )
+        else:
+            L(
+                f"  📊 行情数据日 {_quote_data_date} 涨停；ZHB 同日记录未提供有效连板数，"
+                "不按近 3 日累计涨幅推算连板。"
+            )
 
     # ─── V17.0.15: K线形态识别（TA-Lib 61 形态，短线择时高价值维度）───
     # V17.0.17 修复: ① 此前 _sk/_sr 仅在涨停块(L1836)内赋值, 非涨停股触发 NameError 被 except 吞掉
@@ -2757,7 +2751,7 @@ async def generate_report_async(
         code=code,
         name=info.get("name", ""),
         price=price_today,
-        change_pct=q.get("change_pct", 0) if q else 0,
+        change_pct=q.get("change_pct", 0) if q and _quote_change_date_valid else 0,
     )
 
     # 均线数据
@@ -2767,7 +2761,13 @@ async def generate_report_async(
         score_data.ma20 = _safe_float(ma_data.get("ma20avgprice", 0))
 
     # 涨停判断
-    if q and q.get("change_pct", 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
+    if (
+        _quote_change_date_valid
+        and q
+        and is_limit_up(code, stock_name, q.get("change_pct", 0))
+        and _safe_float(q.get("limit_up", 0)) > 0
+        and price_today >= _safe_float(q.get("limit_up", 0)) * 0.99
+    ):
         score_data.is_limit_up = True
 
     # 资金流向：使用最近 20 个有效交易日；“连续流入天数”按最新日期起连续统计。
@@ -2827,6 +2827,8 @@ async def generate_report_async(
     _score_input_gaps = []
     if not ma_data or "ma5avgprice" not in ma_data:
         _score_input_gaps.append("均线数据")
+    if not _quote_change_date_valid:
+        _score_input_gaps.append("目标行情日涨跌幅（日期未确认，不参与日内因子）")
     if score_data.rsi14 is None:
         _score_input_gaps.append("RSI技术指标")
     if _score_flow_sample_count < 20:

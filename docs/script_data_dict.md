@@ -1,7 +1,7 @@
 # 脚本应用接口与字段来源字典(Script Data Dictionary)
 
 > **创建日期**: 2026-07-28
-> **更新日期**: 2026-11-24（同步当前 27 策略 VAL 与 MAK 的 Ulist 行日期核验、竞价字段边界及板块轮动来源标注）
+> **更新日期**: 2026-11-25（同步最新字段裁决、五大报告的数据消费边界与日期缓存口径）
 > **基于**: [field_dict.md](../docs/field_dict.md)(§12 多源字典 + §12.15 源优先级矩阵 O37 修订版 + **V17.0 拼音规律破解/口径实锤**)
 > **目的**: 明确每个脚本的**每个字段**从哪个源/接口获取、走哪个中间层函数、**完整 fallback 链**、**跨脚本获取逻辑差异**——与 field_dict 形成"双字典"对照
 > **使用原则**: 脚本调整前必查; 优先采用字典已确定的中间层函数
@@ -38,7 +38,7 @@
 
 | 层级 | 实现位置 | 说明 |
 |:---|:---|:---|
-| **L1 ZHB 静态** | core/zhb_client `_parse_tdxstat`/`_parse_tdxstat2`/tipinfo; 入口 sc_datasource `get_zhb_single_stock_data` | T-1 快照; **tdxstat2 21 列全映射(V17.0)**;[4]/[6]/[8]=涨停跌停封单额三日滚动(万元, 涨停正/跌停负, V17.0.5 铁证 limit_up_down_seal); **[11]=change_mtd 本月至今涨跌幅(基准=上月末收盘, V17.0.5 铁证——键名已由 change_5k_bar 改名)**; [13]=881 行业/880 概念双段; **⚠️ [9]/[10]/[14]/[15]=竞价量/竞价额(今/昨, 键名 main_net_buy_hands/amount 历史遗留——非主力资金流)** |
+| **L1 ZHB 静态** | core/zhb_client `_parse_tdxstat`/`_parse_tdxstat2`/tipinfo; 入口 sc_datasource `get_zhb_single_stock_data` | T-1 快照; **tdxstat2 21 列全映射(V17.0)**; [4]/[6]/[8] 分别为 T/T-1/T-2 日涨跌停封单额（万元；涨停为正、跌停为负）；短线报告仅在 ZHB 文件日与行情数据日一致时显示 [4]，不得把历史槽位当作当前封单；**[11]=change_mtd 本月至今涨跌幅(基准=上月末收盘, V17.0.5 铁证——键名已由 change_5k_bar 改名)**; [13]=881 行业/880 概念双段; **⚠️ [9]/[10]/[14]/[15]=竞价量/竞价额(今/昨, 键名 main_net_buy_hands/amount 历史遗留——非主力资金流)** |
 | **L1.5 THS SDK** | stock_common/sc_ths.py(同花顺官方 C 库 TCP——正式账号无限频) | 独有: PB/ROE TTM/主力净流入盘中/两融/户均持股/市值——候选级补全 |
 | **L2 TDX TCP** | core/tdx_client(easy_tdx 适配) | 0x0010 金额**单位角**(O19 /10 得元); F10/boards/K线; **prefetch 命中时 canonical 跳过 TDX(V17.0)** |
 | **L3 腾讯** | sc_datasource `get_tencent_quote` / tdx_client `_tencent_batch_fallback`(60/批) | O21 平盘 `is not None` 不回退; [67]/[68]=52周高低(V17.0 实证); **tx75 正名=近180交易日涨跌幅(V17.0.7 证伪"主力净流入")→ 已改名 change_180td_pct 并删除主力兜底分支** |
@@ -62,7 +62,7 @@
 | 财务 | net_profit/revenue/roe/eps | TDX F10/0x0010 | THS ROE TTM/新浪三表 |
 | 股本 | total_shares/float_shares/mcap | 腾讯实时合并 | **gb_info Zgb/Ltgb/FreeLtgb(V17.0 定位)**/sc_capital_cache |
 | 历史涨跌幅 | change_5d-60d/ytd | ZHB(**全部交易日口径**, V17.0 实锤) | 腾讯 52周 |
-| 情绪/轮动 | market_degree/strong/板块强度 | 财联社、KPL（开盘啦） | 短线侠 `duanxianxia.com` 的 `kaipan` 轮动路由为独立接口；不与 KPL/KPH 合并身份 |
+| 情绪/轮动 | KPL `strong/ztjs/df_num/lbgd`、板块榜原始值 | MAK A 展示已核实 KPL 字段；CLS 聚合情绪字段不作报告结论 | `strong` 是 0–100 情绪分值，不是百分比/概率；KPL `day` 只是响应标签。板块强度单位/公式未知，只展示来源值；短线侠 `kaipan` 是独立接口，不与 KPL/KPH 合并 |
 
 ---
 
@@ -75,7 +75,7 @@
 | **main_net_buy** | **get_main_net_buy** | **push2delay f137(主力净=超大单+大单, 无条件) → TDX 0x0011**——ZHB 分支已删(其资金流键=竞价额); ~~腾讯 tx75 兜底~~ V17.0.7 删(证伪=180日涨幅) |
 | main_net_buy_wan(cdata) | get_canonical_stock_data | **f137 /1e4(无条件) → TDX rt_fund**——与 get_main_net_buy 同源; ZHB 兜底已删(竞价额不可作主力); tx75 分支 V17.0.7 删除 |
 | main_net_buy_wan_1d | cdata | **0(缺失)**——ZHB [15]=昨日竞价额(非主力 T-1), 已停用 |
-| 四档资金流 | get_em_quote_full_delay | **主力=f137(=超大单+大单); 超大单=f140/大单=f143/中单=f146/小单=f149(净); 5日=f178 数组聚合; fund_*_5d/10d 旧映射已删** |
+| 四档资金流 | get_em_quote_full_delay | **主力=f137(=超大单+大单); 超大单=f140/大单=f143/中单=f146/小单=f149(净); f178 为 5 条带各自数据日的主力净额记录，SHT/MED 按逐条日期展示；旧 fund_*_5d/10d 映射已删** |
 | **vol_ratio(量比)** | cdata | **腾讯 [49](现用, val 策略07 依赖) → push2 f50(V17.0.4 破解, 20/20 与腾讯同值, 可作等价源)** |
 | **market_type(市场类型)** | get_board_type(code 推算) | **push2 f182(V17.0.4 破解官方枚举: 主板2/创业5/科创32/北交80, 可交叉验证)** |
 | **industry_code_push2(东财板块代码)** | get_em_quote_full | **push2 f198(BKxxxx, 已解析使用)** |
@@ -126,15 +126,15 @@
 
 | 源 | 代表函数 | 脚本 |
 |:---|:---|:---|
-| 东财 push2ex | get_limit_broken_pool/get_limit_down_pool/get_yesterday_limit_pool(**炸板/跌停兜底, V17.0.1g 涨停池已改同花顺优先**) | mak B/B+ |
+| 东财 push2ex | `get_limit_broken_pool`/`get_limit_down_pool`/`get_yesterday_limit_pool` 仍保留适配器能力；当前 MAK/SHT 的 `get_limit_pool_summary` 调用均传 `allow_push2ex=False`，不会走该兜底 | 诊断/显式适配器调用 |
 | 东财 datacenter | get_em_industry_l2_data/get_holder_structure/get_margin_trading/get_block_trade/get_dragon_tiger_board/get_lockup_expiry/**get_yjyg_all(业绩预告全市场分页, V17.0)**/**eastmoney_datacenter(+page_index 参数)** | sht/med/lng/mak/val 策略22 |
 | 东财 push2delay | **get_em_quote_full_delay**(f162/f163/f167/f174/f175/f137/f138/f139/f140/f141/f142/f143/f144/f145/f146 全字段)/prefetch_quote_batch(ulist)/**get_em_batch_quotes(+f62 主力净, V17.0.16 重定案: f62 已含超大单+大单, 不再 +f66)** | canonical/sht 批量预取/mak 全市场主力 |
-| 同花顺 | **get_ths_hot_raw(getharden 唯一入口, V17.0 三版合一)**/ths_hot_list/**get_eps_forecast(本机 ProfitForecast 优先, V17.0 |)**/**ths_limit_up_pool(涨停池优先源, V17.0.1g, 17 字段含涨停原因/板型/封板率/炸板/换手/流通市值; 缓存 limit_pool_v2)** | val/mak/sht/lng |
-| 财联社 | get_cls_market_emotion/cls_telegraph | mak A(主)/val 08/全脚本 |
-| 开盘啦 | get_kph_limit_ladder | mak B+ |
+| 同花顺 | **get_ths_hot_raw(getharden 唯一入口, V17.0 三版合一)**/ths_hot_list/**get_eps_forecast(本机 ProfitForecast 优先, V17.0 |)**/**ths_limit_up_pool(涨停池优先源, V17.0.1g, 17 字段含涨停原因/板型/封板率/炸板/换手/流通市值; 缓存 `limit_pool_v3`)** | val/mak/sht/lng |
+| 财联社 | `cls_telegraph`；`get_cls_market_emotion` 保留字段研究 | 电报关联：VAL 政策线索、SHT/MED/LNG 个股舆情；`get_cls_market_emotion` 不进入五大报告的解释性情绪输出 |
+| KPH（开盘红） | get_kph_limit_ladder | mak B+ |
 | 巨潮 | **get_strategic_announcements(新增 keywords 参数, V17.0 下沉 mak 异动公告)**/cninfo_irm | mak/sht/med/lng |
 | 新浪 | get_sina_financial_report/get_sina_balance_sheet | val 04/med/lng |
-| KPL | get_kpl_market_sentiment/get_kpl_broken_ratio/get_kpl_plate_strength/get_kpl_limit_up_detail | mak A |
+| KPL（开盘啦） | `get_kpl_market_sentiment`、`get_kpl_plate_strength` | MAK A 展示情绪分值、涨停家数、大幅回撤个股数、连板高度及板块榜；KPL 响应日期只作标签，不能单独证明实际数据日；板块 `strength` 只显示源值。`get_kpl_broken_ratio` 与 `get_kpl_limit_up_detail` 保留研究/采集用途，不把未定案 RiseFallAnalysis 字段用于报告计数。MAK B 关闭 Push2，仅把 KPL 统计作为单源对照，不用它回填涨停池名单数 |
 | THS | get_ths_market_snapshot/get_ths_pb | val 04 PB(仅盘中核对——盘后跳过) |
 | duanxianxia（短线侠） | get_plate_rotation_top/get_plate_rotation_matrix | mak D 外部对照；显示接口返回日期和指标值，`kaipan` 参数不等同于直接调用 KPL |
 | ZHB 快照辅助 | get_zhb_full_market_snapshot/get_zhb_market_stat2_snapshot/zhb_field_safe | mak/val 全市场 |
@@ -145,7 +145,7 @@
 
 > ⚠️ **V17.0 行号说明**: 全脚本经 core/ 包化 + 批量骨架收敛 + 死代码清理, 行号已大幅漂移——下表行号为当前代码定位, 以 `Select-String` 复核为准。
 
-### 5.1 get_mak_report.py(市场全景, 1754 行)——8 段(A/B/B+/C/近3日异动回溯/D/E/F)
+### 5.1 get_mak_report.py（市场全景）——8 段(A/B/B+/C/近3日异动回溯/D/E/F)
 
 > ⚠️ **V17.0(2026-08-15 核查修正)**: 原注释"A-G 段"过时——脚本实际段为
 > **A 全市场情绪 → B 涨停池 → B+ 涨停天梯/盘口异动 → C 板块-异动 → 近3日异动回溯 →
@@ -154,13 +154,17 @@
 #### 5.1.1 个股扫描字段(主入口 `get_market_abnormal_data`/`_get_zhb_market_data`)
 | 字段 | 获取函数 | fallback 链 | 说明/口径 |
 |:---|:---|:---|:---|
-| 全市场快照 | get_market_abnormal_data | ZHB `zhb_field_safe` → TDX `tdx_get_market_abnormal_data` | 5124 只 A 股过滤 |
-| price | — | 腾讯 → ZHB price_map | O21 盘中今日 |
-| change_pct | — | 腾讯(`is not None` 且 ≠0) → ZHB Col[6] | O21 平盘不回退 |
-| amount_yi | — | 腾讯 amount_wan/1e4 → ZHB amount/1e4 | O21 万→亿 |
-| turnover | — | 腾讯 turnover_pct → ZHB | O21 |
+| 全市场快照 | `get_market_abnormal_data` | ZHB 全市场快照；腾讯按批次覆盖有逐股 `[30]` 时间戳的字段；TDX 命名 fallback 实际也读取 ZHB 快照 | A 股过滤；ZHB 数据日来自压缩包文件名 |
+| price | — | 日期与时间戳一致的腾讯字段 → ZHB `price_map` | 逐字段保留来源、数据日和观测时刻；腾讯时间戳无效时不借用 ZHB 日期 |
+| change_pct | — | 日期与时间戳一致的腾讯字段（含有效平盘 `0`）→ ZHB Col[6] | 平盘是有效值；收盘判断需目标交易日且腾讯时间戳不早于 15:00，或同日 ZHB 快照在收盘后读取 |
+| amount_yi | — | 有日期时间戳的腾讯 `amount_wan/1e4` → ZHB `amount/1e4` | 万元→亿元；来源日期随所用字段记录 |
+| turnover | — | 有日期时间戳的腾讯 `turnover_pct` → ZHB | 收盘异动辅助条件也须与异动指标日期相同 |
 | mcap_yi | `_calc_mcap_yi` | price×股本(sc_capital_cache) | 股本缓存未命中=0 |
-| ret_3d/5d/10d/20d/60d | `_calc_3d_from_daily` | ZHB Col[28]/[30]/[18]/[20] 等(**交易日口径**) | O28 |
+| `ret_3d` | `_calc_3d_from_daily` | 连续三个交易日涨跌幅复合；以腾讯当日值拼接 ZHB 前序交易日值，或全用同一 ZHB 快照日值 | 不重复计入同日 ZHB 涨跌幅；日期链不连续、字段缺失或无法确认时为未评估，不伪作 0 |
+| `ret_5d/10d/20d/60d` | `_get_zhb_market_data` | ZHB `change_5k_bar/10k_bar/20k_bar/60k_bar` | 按交易日 bar 窗口；字段安全状态及 ZHB 包日期合格后才使用，避免把自然日 `change_10d` 等同交易日收益 |
+| 指数基准 | `get_index_returns` | 带日期指数日 K：TDX → 腾讯 ifzq → 新浪 JSON/JSONP → 腾讯实时缩减兜底 | 每个指标按个股指标的同一结束日和完整交易日窗口计算；缺少任一日期的收盘价即不评估，不按数组尾部直接对比 |
+| 异动评估 | `_evaluate_stock` | 个股收益与对应指数同数据日、同交易日窗口逐项对齐 | 当前扫描只评估目标行情日；3/10/20 交易日异动均要求可确认收盘数据，旧数据日不冒充当前信号；报告分别列出各窗口可评估数及未评估原因 |
+| 历史异动次数 | `count_history_deviations` | TDX 个股日 K + 指数日期 K 线 | 以日期连接最近 10 个先前三交易日窗口；必须 10 个窗口全部具备双方完整 K 线才报告次数，否则为未知，不以 `0` 表示缺数据 |
 | main_net_amount | **ulist 批量 f62**（已验证为主力净额，含超大单+大单，不再加 f66） | `get_em_batch_quotes` 全市场批量；只汇总同一 Ulist 行 `f124` 与 `f297` 一致且匹配交易日历基准日的记录。日期锚缺失、不完整、冲突或不匹配的行不参与合计。 | f62 与 Push2 `stock/get::f137` 的已登记同义关系保留（历史对撞 96.6%）；单位为元（适配器 `main_net_inflow_wan` 万元值×1e4）；ZHB 竞价额不回填 f62，仅在无可用 f62 样本时单独展示 |
 | **industry_code** | ZHB [13] | `_is_industry_code` 过滤 | **V17.0: 仅认 881 段=行业; 880 段=概念/风格(股权转让/微盘股等)已过滤** |
 | name | snapshot/profile/腾讯 | — | ST/退剔除 |
@@ -170,42 +174,53 @@
 #### 5.1.2 其他段(V17.0 变化)
 | 段 | 变化 |
 |:---|:---|
-| A 全市场情绪 | get_cls_market_emotion + KPL 系(不变) |
+| A 市场观测与个股异动 | ZHB 字段按包日期标记；腾讯报价仅在逐股时间戳与字段日期一致时覆盖。涨跌广度/涨跌停统计只纳入目标数据日且收盘时点已确认的涨跌幅；当前个股 3/10/20 交易日异动还要求数据日等于本次目标行情日，并与同日指数窗口对齐。报告列评估覆盖率和缺口原因；窗口不完整时不生成“无异动”结论。历史触发次数按日期连接 K 线，覆盖不足显示未评估。TDX 市场统计仍是独立响应且无可核验数据日，不称同日交叉校验。KPL `strong/ztjs/df_num/lbgd/tip` 使用已核实释义；`strong` 不转成百分比或项目情绪分档，`Day` 只是响应标签。KPL 板块榜只显示未定案接口原始列。连板梯队只统计 ELTDX 有效 `ladder_level`，不按近 3 日涨幅估算；CLS 聚合字段只留研究。 |
 | A 段宏观资金(V17.0 2026-08-15) | get_hsgt_macro_flow(北向宏观, **asyncio.to_thread 包装防阻塞**, H2 审查修复) | 看板首行: 北向净流入+外资情绪 |
-| B/B+ 涨停池 | get_limit_pool_multi_source + get_kph_limit_ladder(不变); **get_ths_hot_pool 请求已统一到 get_ths_hot_raw(V17.0)** |
+| B/B+ 涨停池 | `get_limit_pool_multi_source` 并列展示 KPL `ztjs` 与显式请求日期的东财名单计数；KPL `Day` 只是响应标签，东财请求日期也不是返回数据日证明，两数相同仅表示数值一致，不构成同日交叉确认；计数冲突或无法确定时不汇总、不取最大值。MAK 关闭 Push2，因此只显示 KPL 响应观测，不回填 THS 名单计数。CLS 未定案计数及 KPH 复盘榜不投票；空详情不伪造零炸板。KPH（开盘红）梯队保持独立来源。 |
 | C 板块-异动 | ZHB 旁路优先 `_build_sectors_from_zhb`、TDX 兜底(防 push2 风控) |
 | 异动公告 | **get_abnormal_announcements → get_strategic_announcements(keywords=["异常波动"], V17.0 下沉带缓存+TDX 兜底)** |
+
+MAK/SHT 涨停池显式以 `latest_market_data_date` 查询 THS 并作为汇总缓存键；MAK/SHT 当前关闭 Push2。THS 名单接口未返回独立实际数据日，报告须标为目标日期请求的来源响应观察，不称为已确认的实际数据日。KPL 板块榜接收该请求日期，KPL 情绪接口仍以响应 `Day` 标签识别样本；请求日期或响应标签都不单独证明来源实际数据日。SHT 的前一交易日晋级观察也须保留 THS 名单实际日期未核实的说明。
 
 ### 5.2 get_val_report.py（当前 27 策略全市场）
 
 - 策略扫描使用 asyncio 并发 3；ZHB 快照 O(1) 读取。动态行情字段由可用的腾讯报价覆盖，不以市值是否缺失决定是否更新。
+- **策略07 政策驱动**：优先使用与个股代码关联的 THS 热度题材；快讯回退仅将代码、名称或正文可关联到目标股票的新闻作为候选依据，并在理由中引用标题/时间，不再把全市场政策关键词复制给无关低市值股票。
 - **策略17 竞价额占比**：仅使用与最新有效行情日一致的 ZHB 数据日中的竞价成交额与成交额；ZHB 日期不是最新行情日、日期不可确认或任一分子/分母缺失时跳过；不调用东财主力净流入作回退。结果文案显示 ZHB 数据日和比值，不把竞价额描述成主力资金或资金关注度。
 - **策略18/19 竞价加速与动量**：读取 ZHB `stat2` 竞价额字段，按竞价字段本义展示，不称为主力净流入。
 - **策略20 业绩预增**：`get_yjyg_all` → Eastmoney `RPT_PUBLIC_OP_NEWPREDICT`；按预告类型与 `ADD_AMP_LOWER/UPPER` 评估，并以 `IS_LATEST=1` 去重。
 - **策略21 盈利预期**：本机 `ProfitForecast` 索引（`local_only=True`）及股东户数变化；全市场扫描不触发逐股网络兜底。
 - **策略22/23**：月内动量读取 ZHB 交易日口径涨幅；PS 估值使用 Fuyao 可得字段。
+- **策略27 开盘动量·竞价活跃**：仅用已核实的 ELTDX 竞价量昨比、开盘成交额昨比、开盘涨幅与自由流通口径开盘换手率进行启发式排序；`opening_rush` 算法/正负方向未确认，不参与筛选或评分，策略分不解释为资金流向或买入信号。
 - PB 批量盘中由 THS 核对，盘后跳过；`ths_hot_reason` 委托 `get_ths_hot_raw`；行业判断采用东财申万二级、TDX boards 与 ZHB 行业段过滤；报告通过 `render_md_report` 输出 Markdown。
 
-### 5.3 get_sht_report.py(短线, 1718 行)
+### 5.3 get_sht_report.py（短线）
 | 变化点 | V17.0 |
 |:---|:---|
 | 批量骨架 | **基类 execute_batch_pipeline**；prefetch_fn 经统一层使用 push2delay 基础行情 + 腾讯批量补充；仍保留 ELTDX 短线章节与 SHT 异步 datacenter 预热 |
 | 主力净流入 | 二章/七章**统一 f137(主力=超大单+大单, V17.0.16 重定案)**; T日主力净买入量=TDX 0x0011(非实时 0 时跳过显示) |
 | PE(动) | cdata.pe_dynamic=push2delay f162(真动态 15.55, 腾讯静态不再覆盖) |
-| 封单 | 盘中实时估算=买一量×涨停价(合理); ZHB 封单额三日滚动为增强候选 |
-| 打板(涨停池, V17.0.1g/h) | **get_limit_pool_summary → 同花顺优先**(ths_limit_up_pool 17 字段: 原因/板型/封板率/炸板次数/首末封/回封/换手/流通市值/市场类型/新股, 缓存 limit_pool_v2) → 东财 push2ex 兜底; 板块分布=TDX tdxhy 一级行业注入(零网络); 炸板/跌停池保持东财; 昨日晋级率=东财 getYesterdayZTPool(唯一源, 含今日表现) |
+| 封单 | 盘中优先用 Fuyao 当前封单信息；ZHB tdxstat2 `[4]` 是 T 日封单额，仅在文件日与行情日一致时显示，不把 `[6]/[8]` 历史值混作当前封单 |
+| 打板(涨停池, V17.0.1g/h) | **get_limit_pool_summary → 同花顺优先**(ths_limit_up_pool 17 字段: 原因/板型/封板率/炸板次数/首末封/回封/换手/流通市值/市场类型/新股, 缓存 `limit_pool_v3`); MAK/SHT 显式传交易日历目标数据日并关闭 Push2 回退; 板块分布=TDX tdxhy 一级行业注入(零网络); KPL 单源统计只作对照、不回填名单数; SHT 的 TDX 全市场计数单独展示为本次响应，接口未提供可核验数据日 |
+| SHT 涨停/连板 | 只在价格与涨跌幅日期均匹配交易日历基准日时判涨停；ZHB 连板数及 T 日封单额只在快照文件日与报价日一致时显示，不再按近 3 日累计涨幅估算连板 |
+| SHT 日内信号 | 涨停、逼近涨停、天地板及模型单日涨幅因子均要求目标行情日日期确认；板块成分涨幅日期未确认时不输出领涨/随涨结论。涨停阈值复用统一板块规则，逼近涨停使用板块阈值的 70% |
+| CLS 快讯 | 先按 `stock_list[].code` 精确关联目标证券，再用标题与正文文本兜底；只显示已关联快讯的主题标签，并为最多 3 条附短摘要；不使用未定案的 `stock_list[].pct` |
+| 巨潮公告 | 只显示已定案的标题/日期；PDF 链接仅从 `adjunct_url` 构造，`announcement_id` 不当 URL，未定案 `type` 不展示 |
+| Push2 f178 | 在资金流章节展示 5 条各自带日期的主力净额；日期采用数组元素日期，不用报告日替代，也不把数据并成一个没有明确期间的总额 |
 | 多评委 | **sc_render.render_multi_school_scores(V17.0)** |
 | 行业 | 东财申万二级 → TDX → **881 段过滤** |
 
-### 5.4 get_med_report.py(中线, 1198 行)
+### 5.4 get_med_report.py（中线）
 | 变化点 | V17.0 |
 |:---|:---|
 | 批量骨架 | 基类 execute_batch_pipeline；基础行情/腾讯补充共用批量路由；ELTDX 连板状态在报告中消费，继续预热 |
 | 资金流 60 日 | get_history_fund_flow_120d(60 日窗口) |
 | 阶段涨幅 | cdata change_5d/10d/20d/60d(**交易日口径确认**) |
+| 重大公告/CLS 快讯 | 公告从已验证 `adjunct_url` 加可点击 PDF 原文；CLS 先精确匹配关联证券代码，回退标题/正文，报告显示主题及最多 3 条正文摘要 |
+| 5 日资金细节 | Push2 f178 按每条自身日期和元单位换算显示，不把五日数组日期继承成行情响应日 |
 | 多评委 | sc_render(V17.0) |
 
-### 5.5 get_lng_report.py(长线, 1108 行)
+### 5.5 get_lng_report.py（长线）
 | 变化点 | V17.0 |
 |:---|:---|
 | 批量骨架 | 基类 execute_batch_pipeline；基础行情/腾讯补充共用批量路由；长线正文不消费 ELTDX 短线天梯，故不预热该包 |
@@ -213,6 +228,7 @@
 | 行业 | TDX boards → **ZHB 881 段过滤(V17.0, 防 880 概念污染)** |
 | PE 静态 | `_pe_static = _zhb_pe_dynamic`(ZHB Col[3]=静态 TTM, 口径已知) |
 | **机构一致预期(V17.0 2026-08-15)** | **本机 ProfitForecast JSON(零网络, O(1) 索引缓存 H4)**(get_eps_forecast 默认 local_only=False=允许网络兜底——单股路径安全) → 同花顺网络兜底 | 一章展示: 2025A/2026E-2029E EPS + 机构家数; M6 修复: ths 兜底字符串列 _safe_float |
+| 重大公告/CLS 快讯 | 巨潮公告链接只使用 `adjunct_url`；CLS 以关联证券代码优先、标题/正文兜底，并显示主题及最多 3 条摘要 |
 | 多评委 | sc_render(V17.0) |
 
 ---

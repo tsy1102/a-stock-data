@@ -146,6 +146,7 @@ __all__ = [
     "get_tencent_quote",
     "get_tencent_quote_async",
     "baidu_kline_full",
+    "get_index_kline_bars",
     "get_stock_info",
     "get_stock_info_async",
     "get_reports",
@@ -218,7 +219,7 @@ __all__ = [
     "get_limit_broken_pool",
     "get_limit_down_pool",
     "get_limit_pool_summary",
-    "get_limit_pool_multi_source",  # V16.3.3: 涨停池三源互校
+    "get_limit_pool_multi_source",  # V16.3.3: 涨停池来源计数观测比较
     "get_fupan_zttt",
     "get_fupan_pmsl",  # V16.3.3: 复盘啦缓存包装
     "get_stock_permanent_info",  # V16.3.3: 永久字段 10 年缓存
@@ -470,6 +471,7 @@ from stock_common.sc_datasource import (
     get_tencent_quote,
     get_tencent_quote_async,
     baidu_kline_full,
+    get_index_kline_bars,
     get_stock_info,
     get_stock_info_async,
     # 研报

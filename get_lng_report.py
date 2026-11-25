@@ -74,7 +74,6 @@ from stock_common import (
     get_zhb_data_date,
     get_zhb_tip_info,
     cls_telegraph,
-    news_matches_stock,
     get_irm_qa,
     sec_type_market_label,
 )  # V10.3, V16.2.3; V17.0.32 DEBT-016 露出 sec_type
@@ -1398,9 +1397,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("---")
     anns = await get_strategic_announcements_async(session, code)
     if anns:
+        from stock_common.enrich_helpers import cninfo_announcement_pdf_markdown
+
         for i, a in enumerate(anns[:12], 1):
             flag = " ⚠️" if "减持" in a["title"] else ""
-            L(f"  {i}. [{a['date']}] {a['title']}{flag}")
+            _pdf_link = cninfo_announcement_pdf_markdown(a)
+            _link_suffix = f" {_pdf_link}" if _pdf_link else ""
+            L(f"  {i}. [{a['date']}] {a['title']}{flag}{_link_suffix}")
         reduce_count = sum(1 for a in anns if "减持" in a["title"])
         if reduce_count > 0:
             L(
@@ -1550,8 +1553,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     # 财联社快讯（近2天）
     try:
+        from stock_common.enrich_helpers import (
+            cls_telegraph_context_lines,
+            cls_telegraph_matches_stock,
+        )
+
         cls_news = await asyncio.to_thread(cls_telegraph, 50)
         _cls_shown = 0
+        _cls_excerpt_shown = 0
         _cls_cutoff = datetime.now() - timedelta(days=2)
         for item in cls_news:
             t_str = str(item.get("time", ""))
@@ -1564,8 +1573,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     pass
             title = str(item.get("title", "")).strip()
             # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过
-            if title and news_matches_stock(title, code, info.get("name", "")):
+            if title and cls_telegraph_matches_stock(item, code, info.get("name", "")):
                 L(f"  · [{t_str[:16]}] {title[:80]}")
+                _context_lines = cls_telegraph_context_lines(
+                    item, include_content=_cls_excerpt_shown < 3
+                )
+                for _context_line in _context_lines:
+                    L(_context_line)
+                    if _context_line.startswith("      摘要:"):
+                        _cls_excerpt_shown += 1
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break

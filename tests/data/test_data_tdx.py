@@ -1,6 +1,8 @@
 import pytest
 import pandas as pd
 import core.tdx_client as tdx_client
+from datetime import datetime
+from types import SimpleNamespace
 from core.tdx_client import (
     tdx_get_security_bars,
     tdx_get_quote_full,
@@ -123,6 +125,55 @@ def test_tdx_board_members_sort_by_change_applies_to_eastmoney_fallback(monkeypa
 def test_tdx_all_stocks():
     data = tdx_get_all_stocks()
     assert isinstance(data, list)
+
+
+@pytest.mark.parametrize(
+    ("timestamp", "expected_date", "expected_status"),
+    [
+        ("20261124150100", "2026-11-24", "verified"),
+        ("2026112415", "", "invalid_or_missing"),
+    ],
+)
+def test_tencent_batch_retains_quote_timestamp_provenance(
+    monkeypatch, timestamp, expected_date, expected_status
+):
+    values = [""] * tdx_client._TENCENT_MIN_FIELDS
+    for field, value in (
+        ("name", "测试"),
+        ("price", "10.0"),
+        ("volume_hand", "100"),
+        ("change_pct", "0.0"),
+        ("quote_timestamp", timestamp),
+        ("amount_wan", "0"),
+        ("turnover_pct", "0"),
+    ):
+        values[tdx_client._TENCENT_FIELD_INDEX[field]] = value
+    response = SimpleNamespace(text='v_sh600001="' + "~".join(values) + '";')
+    monkeypatch.setattr(tdx_client, "_http_get", lambda *_args, **_kwargs: response)
+    monkeypatch.setattr(tdx_client, "_TENCENT_BATCH_CACHE", {})
+    monkeypatch.setattr(tdx_client, "_TENCENT_BATCH_CACHE_DATE", datetime.now().strftime("%Y%m%d"))
+
+    import core.stock_cache as stock_cache
+
+    monkeypatch.setattr(stock_cache, "read_tencent_batch_l2", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(stock_cache, "persist_tencent_batch_l2", lambda *_args, **_kwargs: None)
+    result = tdx_client._tencent_batch_fallback(["600001"])
+    quote = result["600001"]
+
+    assert quote["_quote_timestamp_status"] == expected_status
+    assert quote["_as_of_date"] == expected_date
+    if expected_date:
+        assert quote["change_pct"] == 0.0
+        assert quote["_field_as_of_dates"]["change_pct"] == expected_date
+        assert quote["_field_as_of_dates"]["amount_wan"] == expected_date
+        assert quote["_field_as_of_dates"]["turnover_pct"] == expected_date
+    else:
+        assert quote["_field_as_of_dates"] == {}
+
+
+@pytest.mark.parametrize("timestamp", ["", "2026112415", "20260230150000", "2026112415000X"])
+def test_tencent_quote_timestamp_parser_rejects_invalid_values(timestamp):
+    assert tdx_client._parse_tencent_quote_timestamp(timestamp) is None
 
 
 #!/usr/bin/env python3

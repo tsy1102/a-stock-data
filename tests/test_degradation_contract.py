@@ -19,7 +19,7 @@ from unittest import mock
 
 import pytest
 
-from stock_common.sc_datasource import get_index_kline_closes, _eastmoney
+from stock_common.sc_datasource import get_index_kline_bars, get_index_kline_closes, _eastmoney
 import stock_common.sc_datasource as sd
 
 # V17.2.18 重构后片段为独立模块: get_index_kline_closes 定义在 _eastmoney, _quick_request 由其
@@ -77,6 +77,53 @@ def test_layer_l1_tdx_contract():
         out = get_index_kline_closes("sh000001", days=3)
     _assert_full_contract(out)
     assert out == EXPECTED
+
+
+def test_dated_index_bars_preserve_dates_and_drop_undated_rows():
+    keys = ["date", "open", "close"]
+    rows = [
+        ["2026-09-01", 1.0, 10.0],
+        ["20260902", 1.0, 11.0],
+        ["not-a-date", 1.0, 99.0],
+    ]
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", return_value=(keys, rows)),
+        mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=None)),
+    ):
+        bars = get_index_kline_bars("sh000001", days=3)
+
+    assert bars == [
+        {"date": "2026-09-01", "close": 10.0, "source": "tdx"},
+        {"date": "2026-09-02", "close": 11.0, "source": "tdx"},
+    ]
+
+
+def test_dated_index_bars_tencent_fallback_keeps_trading_dates():
+    payload = {
+        "data": {
+            "sh000001": {
+                "qfqday": [
+                    ["2026-09-02", 1.0, 10.0],
+                    ["2026-09-03", 1.0, 11.0],
+                ]
+            }
+        }
+    }
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(
+            _eastmoney,
+            "_quick_request",
+            _url_aware({"ifzq.gtimg.cn": _FakeResp(json_data=payload)}),
+        ),
+    ):
+        bars = get_index_kline_bars("sh000001", days=2)
+
+    assert [(bar["date"], bar["close"]) for bar in bars] == [
+        ("2026-09-02", 10.0),
+        ("2026-09-03", 11.0),
+    ]
+    assert all(bar["source"] == "tencent_ifzq" for bar in bars)
 
 
 # ─────────────────── L2：腾讯 ifzq 前复权日K（完整序列） ───────────────────

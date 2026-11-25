@@ -27,7 +27,7 @@ def test_market_sentiment_cache_uses_integer_ttl() -> None:
     assert result == {"ztjs": 74, "df_num": 4, "strong": 63, "lbgd": 4, "day": "", "tip": "ok"}
     assert len(cache_writes) == 1
     args, kwargs = cache_writes[0]
-    assert args[:2] == ("kpl_sentiment", "get_kpl_market_sentiment")
+    assert args[:2] == ("kpl_sentiment_v2", "get_kpl_market_sentiment")
     assert args[3] == stock_cache.TTL["kpl_sentiment"]
     assert isinstance(args[3], int)
     assert kwargs["trading_day"] is True

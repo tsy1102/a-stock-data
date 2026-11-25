@@ -8,9 +8,8 @@
 # ── 行情 & 板块 ───────────────────────────────────────────
 # 使用者: get_sht_report.py / get_med_report.py
 market:
-  # 涨停判断阈值（%）
-  limit_chg_pct: 9.5           # 涨幅超过此值=强势涨停
-  near_limit_pct: 7.0          # 涨幅超过此值=逼近涨停
+  # 逼近涨停信号：按各板块涨停幅度的比例计算（例如主板 70%=7%，双创 70%=14%）
+  near_limit_ratio: 0.7
   # 封单强度（流通市值占比 %）
   limit_order_strong: 5.0      # >5%=强势封板
   limit_order_mid: 2.0          # >2%=良好

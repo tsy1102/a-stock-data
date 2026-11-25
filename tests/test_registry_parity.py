@@ -584,9 +584,10 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     # ErrorId sample-key decision, and eight API-scoped Date contracts. This
     # count is the validator's active source-contract projection. The
     # CNINFO announcement date/title plus ID/attachment paths add four entries.
-    # Historical source-contract actions superseded by empirical semantics
-    # remain validated by the separate E3 path, but are not counted here.
-    assert len(pairs) == 275
+    # The active projection counts only additions outside the historical
+    # baseline. Contract actions on baseline rows are still validated below,
+    # but are not counted as addenda.
+    assert len(pairs) == 250
     assert {
         code
         for source, code in pairs
@@ -773,12 +774,15 @@ def test_source_contract_adjudications_are_validated_and_counted_separately():
     assert matrix["cctv_news_broadcast_edition_date"] == {"央视网(新闻联播)"}
     assert ("TDX(双命名源)", "Zgb") in pairs
     assert ("TDX(双命名源)", "Ltgb") in pairs
+    bid2 = records_by_pair[("TDX(双命名源)", "bid2")]
+    assert bid2["status_resolution"] == "verified_by_source_contract"
+    assert bid2["status_evidence"]["source_contract_adjudication_ids"]
+    assert ("TDX(双命名源)", "bid2") not in pairs
     assert ("同花顺-fuyao", "auction_final.auction_pct") in pairs
     assert matrix["auction_final.auction_pct"] == {"同花顺-fuyao"}
     assert ("同花顺-fuyao", "growth.total_assets_growth_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.total_assets_net_ratio") in pairs
     assert ("同花顺-fuyao", "profitability.index_deduct_weighted_avg_roe") in pairs
-    assert ("TDX(双命名源)", "bid2") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.target_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.previous_trade_date") in pairs
     assert ("TDX-eltdx(适配层)", "limit_ladder.stats_date") in pairs

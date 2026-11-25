@@ -1859,38 +1859,68 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
         return {}
 
 
-def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
-    """指数日K收盘价序列（V17.0.7 自 mak.get_index_returns._get_kline 下沉统一层）。
+def _normalize_index_bar_date(value: Any) -> str:
+    """Normalize a dated index bar value, rejecting non-date labels."""
+    raw = str(value or "").strip()
+    if len(raw) >= 10 and raw[4:5] == "-":
+        raw = raw[:10]
+        try:
+            return datetime.strptime(raw, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return ""
+    if len(raw) >= 8 and raw[:8].isdigit():
+        try:
+            return datetime.strptime(raw[:8], "%Y%m%d").date().isoformat()
+        except ValueError:
+            return ""
+    return ""
 
-    四源链(与 mak 原实现逐行为等价迁移, 全走限流包装):
-      TDX 指数K线(core.tdx_client) → 腾讯 ifzq 前复权日K → 新浪 getKLineData
-      → 腾讯实时 2 值(仅 1 日回报兜底)。
-    供 mak 行业轮动/异动偏离(ret_3d/10d/20d/60d) 与其他脚本指数区间收益复用。
 
-    Args:
-        index_code: 指数代码（如 sh000001 / sz399106）
-        days: 需要的交易日数量
+def _make_index_bars(
+    rows: Any, date_getter: Callable[[Any], Any], close_getter: Callable[[Any], Any], source: str
+) -> List[Dict[str, Any]]:
+    bars: Dict[str, Dict[str, Any]] = {}
+    for row in rows or []:
+        try:
+            day = _normalize_index_bar_date(date_getter(row))
+            close = _safe_float(close_getter(row))
+        except (IndexError, KeyError, TypeError, ValueError):
+            continue
+        if day and close > 0:
+            bars[day] = {"date": day, "close": close, "source": source}
+    return [bars[day] for day in sorted(bars)]
 
-    Returns:
-        收盘价列表（升序）；全部失败返回 []
+
+def get_index_kline_bars(index_code: str, days: int = 250) -> List[Dict[str, Any]]:
+    """Return index daily closes with their source trading dates preserved.
+
+    Source priority matches the historical close-only helper: TDX, Tencent ifzq,
+    Sina JSON, Sina JSONP, then Tencent realtime (one dated session only).
+    Undated rows are discarded because callers need exact stock/index window joins.
     """
     import json as _json
 
-    # L1: TDX 指数K线(TCP 不封 IP)
     try:
         from core.tdx_client import tdx_get_index_bars
 
         keys, rows = tdx_get_index_bars(index_code, count=days)
         if keys and rows:
-            ci = next((i for i, k in enumerate(keys) if k in ("close", "close_price")), -1)
-            if ci >= 0:
-                closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
-                if closes:
-                    return closes
+            date_i = next(
+                (i for i, key in enumerate(keys) if key in ("time", "date", "datetime")), -1
+            )
+            close_i = next((i for i, key in enumerate(keys) if key in ("close", "close_price")), -1)
+            if date_i >= 0 and close_i >= 0:
+                bars = _make_index_bars(
+                    rows,
+                    lambda row: row[date_i],
+                    lambda row: row[close_i],
+                    "tdx",
+                )
+                if bars:
+                    return bars
     except Exception as _e:
         _debug_log(f"datasource index_kline tdx error {index_code}: {_e}")
 
-    # L2: 腾讯 ifzq 前复权日K（完整序列）
     try:
         r = _quick_request(
             f"https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={index_code},day,,,{days},qfq",
@@ -1899,61 +1929,157 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
         if r:
             d = (r.json().get("data") or {}).get(index_code, {})
             kline = d.get("qfqday") or d.get("day") or []
-            closes = [_safe_float(row[2]) for row in kline if len(row) > 2 and row[2]]
-            if closes:
-                return closes
+            bars = _make_index_bars(kline, lambda row: row[0], lambda row: row[2], "tencent_ifzq")
+            if bars:
+                return bars
     except Exception as _e:
         _debug_log(f"datasource index_kline tencent error {index_code}: {_e}")
 
-    # L3: 新浪日K（V17.0.4: 与腾讯 ifzq 实测一致 <0.01）
-    # L3 主：新浪纯 JSON host（与字典 §12.2 一致，免正则剥壳；2026-09-12 由 jsonp 切换）
-    try:
-        r = _quick_request(
+    for endpoint, label in (
+        (
             "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData",
-            params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
-            headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
-            timeout=10,
-        )
-        if r:
-            _rows = _json.loads(r.text)
-            closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
-            closes = [c for c in closes if c > 0]
-            if closes:
-                return closes
-    except Exception as _e:
-        _debug_log(f"datasource index_kline sina json error {index_code}: {_e}")
-    # L3b 备：新浪 jsonp host（正则剥壳兜底，保持历史可用性）
-    try:
-        r = _quick_request(
+            "sina_json",
+        ),
+        (
             "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
-            params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
-            headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
-            timeout=10,
-        )
-        if r:
-            _m = re.search(r"\((.*)\)", r.text, re.S)
-            if _m:
-                _arr = _m.group(1)
-                if _arr.startswith("["):
-                    _rows = _json.loads(_arr)
-                    closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
-                    closes = [c for c in closes if c > 0]
-                    if closes:
-                        return closes
-    except Exception as _e:
-        _debug_log(f"datasource index_kline sina jsonp error {index_code}: {_e}")
+            "sina_jsonp",
+        ),
+    ):
+        try:
+            r = _quick_request(
+                endpoint,
+                params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
+                headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
+                timeout=10,
+            )
+            if not r:
+                continue
+            payload = r.text
+            if label == "sina_jsonp":
+                match = re.search(r"\((.*)\)", payload, re.S)
+                if not match:
+                    continue
+                payload = match.group(1)
+            rows = _json.loads(payload)
+            bars = _make_index_bars(
+                rows, lambda row: row.get("day"), lambda row: row.get("close"), label
+            )
+            if bars:
+                return bars
+        except Exception as _e:
+            _debug_log(f"datasource index_kline {label} error {index_code}: {_e}")
 
-    # L4: 腾讯实时 2 值（仅 1 日回报——指标静默 None 有提示）
     try:
         r = _quick_request(f"https://qt.gtimg.cn/q={index_code}", timeout=10)
         if r:
             r.encoding = "gbk"
-            v = r.text.split('"')[1].split("~")
-            close = _safe_float(v[3])
-            pre_close = _safe_float(v[4])
-            return [pre_close, close] if close > 0 else []
+            values = r.text.split('"')[1].split("~")
+            if len(values) > 30 and len(values[30]) == 14:
+                quote_time = datetime.strptime(values[30], "%Y%m%d%H%M%S")
+                close = _safe_float(values[3])
+                prev_close = _safe_float(values[4])
+                if close > 0 and prev_close > 0:
+                    from stock_common.stock_calendar import previous_trading_day
+
+                    quote_date = quote_time.date()
+                    previous_date = previous_trading_day(quote_date, include_current=False)
+                    return [
+                        {
+                            "date": previous_date.isoformat(),
+                            "close": prev_close,
+                            "source": "tencent_realtime",
+                        },
+                        {
+                            "date": quote_date.isoformat(),
+                            "close": close,
+                            "source": "tencent_realtime",
+                            "observed_at": quote_time.isoformat(sep=" "),
+                        },
+                    ]
     except Exception as _e:
         _debug_log(f"datasource index_kline realtime error {index_code}: {_e}")
+    return []
+
+
+def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
+    """Legacy close-only index K-line API, retaining its historical fallback behavior.
+
+    Date-sensitive consumers must use :func:`get_index_kline_bars`; this compatibility
+    helper intentionally keeps the old two-value Tencent realtime fallback for callers
+    that only need prices and do not join trading dates.
+    """
+    import json as _json
+
+    try:
+        from core.tdx_client import tdx_get_index_bars
+
+        keys, rows = tdx_get_index_bars(index_code, count=days)
+        if keys and rows:
+            close_i = next((i for i, key in enumerate(keys) if key in ("close", "close_price")), -1)
+            if close_i >= 0:
+                closes = [_safe_float(row[close_i]) for row in rows if len(row) > close_i]
+                if closes:
+                    return closes
+    except Exception as error:
+        _debug_log(f"datasource index_kline legacy tdx error {index_code}: {error}")
+
+    try:
+        response = _quick_request(
+            f"https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={index_code},day,,,{days},qfq",
+            timeout=10,
+        )
+        if response:
+            data = (response.json().get("data") or {}).get(index_code, {})
+            rows = data.get("qfqday") or data.get("day") or []
+            closes = [_safe_float(row[2]) for row in rows if len(row) > 2 and row[2]]
+            if closes:
+                return closes
+    except Exception as error:
+        _debug_log(f"datasource index_kline legacy tencent error {index_code}: {error}")
+
+    for endpoint, label in (
+        (
+            "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData",
+            "sina json",
+        ),
+        (
+            "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
+            "sina jsonp",
+        ),
+    ):
+        try:
+            response = _quick_request(
+                endpoint,
+                params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
+                headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
+                timeout=10,
+            )
+            if not response:
+                continue
+            payload = response.text
+            if label == "sina jsonp":
+                match = re.search(r"\((.*)\)", payload, re.S)
+                if not match:
+                    continue
+                payload = match.group(1)
+            rows = _json.loads(payload)
+            closes = [_safe_float(row.get("close")) for row in rows if row.get("close")]
+            closes = [close for close in closes if close > 0]
+            if closes:
+                return closes
+        except Exception as error:
+            _debug_log(f"datasource index_kline legacy {label} error {index_code}: {error}")
+
+    try:
+        response = _quick_request(f"https://qt.gtimg.cn/q={index_code}", timeout=10)
+        if response:
+            response.encoding = "gbk"
+            values = response.text.split('"')[1].split("~")
+            close = _safe_float(values[3])
+            previous_close = _safe_float(values[4])
+            return [previous_close, close] if close > 0 else []
+    except Exception as error:
+        _debug_log(f"datasource index_kline legacy realtime error {index_code}: {error}")
     return []
 
 
@@ -2081,6 +2207,7 @@ __all__ = [
     'get_history_fund_flow_120d',
     'get_hsgt_macro_flow',
     'get_hsgt_macro_flow_async',
+    'get_index_kline_bars',
     'get_index_kline_closes',
     'get_northbound_hold',
     'get_northbound_hold_async',

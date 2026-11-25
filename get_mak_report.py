@@ -30,7 +30,7 @@ from stock_common.env_setup import ensure_utf8_stdio
 ensure_utf8_stdio()
 
 import time, os, math, warnings, asyncio, re  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import date, datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
 
@@ -221,71 +221,102 @@ def _verified_main_net_amount(code: str) -> float:
 
 
 def _format_limit_pool_source_summary(
-    sources: dict, total: Any, unqueried_sources=()
+    sources: dict,
+    total: Any,
+    unqueried_sources=(),
+    *,
+    cross_verified: bool = False,
 ) -> tuple[str, str]:
-    """Render returned source counts without overstating a majority as unanimity."""
+    """Render source observations without treating a date label as an as-of proof."""
+    source_map = sources if isinstance(sources, dict) else {}
+    kpl_count = source_map.get("kpl")
+    push2_count = source_map.get("push2ex")
+    total_count = total if type(total) is int and total >= 0 else None
+    cross_verified = bool(
+        cross_verified
+        and type(kpl_count) is int
+        and kpl_count >= 0
+        and type(push2_count) is int
+        and push2_count == kpl_count
+        and (total_count is None or total_count == kpl_count)
+    )
     source_parts = []
-    valid_counts = []
+    valid_counts: list[tuple[str, int]] = []
     unqueried = set(unqueried_sources or ())
-    for name, value in (sources or {}).items():
+    labels = {
+        "cls": "CLS",
+        "kpl": "KPL(开盘啦)",
+        "fupan": "KPH复盘榜",
+        "push2ex": "东财Push2",
+    }
+    for name, value in source_map.items():
+        if name not in {"kpl", "push2ex"}:
+            source_parts.append(f"{labels.get(name, name)}=不纳入（非本节合格计数源）")
+            continue
         if value is None:
-            label = "未查询" if name in unqueried else "失败"
-            source_parts.append(f"{name}={label}")
+            status = "未查询" if name in unqueried else "无可用值/日期标签不匹配"
+            source_parts.append(f"{labels.get(name, name)}={status}")
             continue
-        try:
-            count = int(value)
-        except (TypeError, ValueError):
-            source_parts.append(f"{name}=无效值")
+        if type(value) is not int or value < 0:
+            source_parts.append(f"{labels.get(name, name)}=无效值")
             continue
-        source_parts.append(f"{name}={count}")
-        valid_counts.append(count)
+        if name == "kpl":
+            date_note = (
+                "来源实际数据日已核实" if cross_verified else "Day标签匹配；来源实际数据日未核实"
+            )
+            source_parts.append(f"{labels[name]}={value}（{date_note}）")
+        else:
+            date_note = (
+                "来源实际数据日已核实" if cross_verified else "按请求日期查询；来源实际数据日未核实"
+            )
+            source_parts.append(f"{labels[name]}={value}（{date_note}）")
+        valid_counts.append((name, value))
 
     source_text = " / ".join(source_parts) if source_parts else "无来源结果"
-    try:
-        total_count = int(total)
-    except (TypeError, ValueError):
-        total_count = None
-
     if not valid_counts:
-        return source_text, "无可用来源数值，未能交叉验证"
-
-    counts_by_value = {count: valid_counts.count(count) for count in set(valid_counts)}
-    majority_count = max(counts_by_value.values())
-    leaders = sorted(value for value, count in counts_by_value.items() if count == majority_count)
-    majority_value = leaders[0]
-    if majority_count >= 2 and len(leaders) == 1:
-        if majority_count == len(valid_counts):
-            status = f"可用来源全数一致（{majority_count}/{len(valid_counts)}）"
-        else:
-            status = f"多数值 {majority_value}（{majority_count}/{len(valid_counts)} 个可用来源同值），存在差异"
-        if total_count is not None and total_count != majority_value:
-            status += f"；接口汇总值 {total_count} 与多数值不符"
-    elif majority_count >= 2:
-        tied_values = "、".join(str(value) for value in leaders)
-        status = f"来源计数并列（{tied_values} 各 {majority_count} 票），无唯一多数结论"
+        status = "无可用统计值，未生成汇总结论"
     elif len(valid_counts) == 1:
-        status = "仅1个来源可用，未能交叉验证"
+        name = valid_counts[0][0]
+        if name == "kpl":
+            status = "仅有 KPL 日期标签匹配的观测值；来源实际数据日未核实，不能作同日交叉确认"
+        else:
+            status = "仅有东财按请求日期查询的观测值，未能交叉验证"
+    elif len(valid_counts) >= 2 and valid_counts[0][1] == valid_counts[1][1]:
+        count = valid_counts[0][1]
+        if cross_verified and (total_count is None or total_count == count):
+            status = f"KPL 与东财 Push2 两个来源一致（{count}），可同日交叉确认"
+        else:
+            status = (
+                f"两个来源计数值均为 {count}；KPL Day 仅为响应标签，"
+                "来源实际数据日未核实，不作同日交叉确认"
+            )
     else:
-        status = "无两源同值；汇总值是无共识时的最大值回退，不能视为交叉确认"
+        details = " / ".join(f"{labels[name]} {count}" for name, count in valid_counts)
+        status = f"来源观测计数不一致（{details}），未采用任一来源作为汇总结论"
 
     failed_count = sum(
-        1 for name, value in (sources or {}).items() if value is None and name not in unqueried
+        1
+        for name, value in source_map.items()
+        if name in {"kpl", "push2ex"} and value is None and name not in unqueried
     )
     if failed_count:
-        status += f"；另有 {failed_count} 个来源无有效值"
+        status += f"；另有 {failed_count} 个来源无可用值"
     return source_text, status
 
 
-def _limit_pool_count_mismatch_note(multi_total: Any, pool_count: Any) -> str:
-    """Explain separate multi-source and primary-pool counts when they differ."""
+def _limit_pool_count_mismatch_note(
+    multi_total: Any, pool_count: Any, requested_data_date: Any = None
+) -> str:
+    """Explain date-aligned count differences without claiming list-level equivalence."""
     try:
-        if multi_total is None or int(multi_total) == int(pool_count):
+        if multi_total is None or pool_count is None or int(multi_total) == int(pool_count):
             return ""
     except (TypeError, ValueError):
         return ""
+    day_note = f"请求数据日 {requested_data_date} 的" if requested_data_date else ""
     return (
-        f"⚠️ 口径差异：多源统计值 {multi_total} 只与本节涨停池 {pool_count} 只不同；"
-        "多源日期未在本报告中核实，且未逐只对齐名单；封板率和明细仅代表本节涨停池。"
+        f"⚠️ 计数差异：{day_note}来源对照计数 {multi_total} 只与本节涨停名单 {pool_count} 只不同；"
+        "请求日期和来源日期标签不等于实际数据日期证明，且未逐股对齐；封板率和明细仅代表本节名单。"
     )
 
 
@@ -352,14 +383,10 @@ def _main_flow_summary_lines(
 
 
 async def get_market_abnormal_data():
-    """V7: 全市场 + 多周期涨幅 → TDX MAC 协议（push2 fallback 已删除）
-    V10.1: 优先使用zhb全市场快照，零网络请求，失败时回退到TDX
-    V10.2: zhb优先级分级——mak脚本依赖change_pct判断涨停/跌停，属于实时字段，
-           zhb日期非今日时必须fallback到TDX获取当日实时涨跌幅
-    V11.5: 使用data_provider异步接口
-    V15.1: 与其他 5 大报告脚本统一接入 get_canonical_stock_data，但 mak 是全市场异动扫描场景
-          （3000+ 股票），保留批量入口 get_market_snapshot_async 而非逐只调用，避免性能回退。
-          对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
+    """Build full-market anomaly inputs from one ZHB snapshot and a dated Tencent batch.
+
+    Tencent values are overlaid only when their per-field timestamp is valid. ZHB package
+    dates remain attached to ZHB fields, and the legacy TDX-named fallback also reads ZHB.
     """
     global _MAIN_NET_MAP_GLOBAL, _MAIN_NET_REQUESTED_COUNT, _MAIN_NET_RETURNED_COUNT
     global _MAIN_NET_SOURCE_STATUS, _MAIN_NET_DATA_DATE_NOTE
@@ -369,44 +396,41 @@ async def get_market_abnormal_data():
     _MAIN_NET_SOURCE_STATUS = "not_requested"
     _MAIN_NET_DATA_DATE_NOTE = ""
 
-    # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
-    # V17.3.11: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
-    # 既供 _get_zhb_market_data 构建今日 price/change_pct/ret_3d，也供 TDX fallback 路径覆盖，
-    # 消除原 V15.5.15(内层)+V15.5.16(外层) 双拉全市场腾讯（每次扫描多 ~1-2s + 限流等待）。
+    # V17.4: retain dated ZHB periods even when the package is one trading day behind;
+    # Tencent current-day fields are accepted only with their per-row [30] timestamp.
+    # The previous TDX-named fallback also read the ZHB snapshot, so both paths now share
+    # one provenance-aware builder and one Tencent batch request.
     _tencent_map: Dict[str, Any] = {}
-    if zhb_field_safe("change_pct"):
+    _snapshot_loaded = False
+    try:
+        _snap = await get_market_snapshot_async()
+        _snapshot_loaded = True
+        _snap_codes = list(_snap.keys()) if _snap else []
+    except Exception as _snapshot_error:
+        _debug_log(f"mak snapshot async: {_snapshot_error}")
+        _snap_codes = []
+    if _snap_codes:
         try:
-            _snap = await get_market_snapshot_async()
-            _snap_codes = list(_snap.keys()) if _snap else []
-        except Exception:
-            _snap_codes = []
-        if _snap_codes:
-            try:
-                from core.tdx_client import _tencent_batch_fallback
+            from core.tdx_client import _tencent_batch_fallback
 
-                _tencent_map = _tencent_batch_fallback(_snap_codes) or {}
-            except Exception as _e:
-                _debug_log(f"mak tencent batch: {_e}")
-        data = await _get_zhb_market_data(tencent_map=_tencent_map)
-        if not data:
-            data = await asyncio.to_thread(tdx_get_market_abnormal_data)
-            if data:
+            _tencent_map = _tencent_batch_fallback(_snap_codes) or {}
+        except Exception as _e:
+            _debug_log(f"mak tencent batch: {_e}")
+    data = await _get_zhb_market_data(
+        tencent_map=_tencent_map,
+        snapshot=_snap if _snapshot_loaded else None,
+    )
+    if not data:
+        data = await asyncio.to_thread(tdx_get_market_abnormal_data)
+        if data:
+            _annotate_zhb_market_fields(data, get_zhb_data_date())
+            if not _tencent_map:
                 try:
                     from core.tdx_client import _tencent_batch_fallback
 
                     _tencent_map = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
                 except Exception as _e:
                     _debug_log(f"mak tencent batch(fallback): {_e}")
-                _apply_tencent_cover(data, _tencent_map)
-    else:
-        data = await asyncio.to_thread(tdx_get_market_abnormal_data)
-        if data:
-            try:
-                from core.tdx_client import _tencent_batch_fallback
-
-                _tencent_map = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
-            except Exception as _e:
-                _debug_log(f"mak tencent batch: {_e}")
             _apply_tencent_cover(data, _tencent_map)
     # 主力净额批量(ulist f62)必须在两条行情路径后统一执行；每轮先清空模块状态，避免复用上轮样本。
     if data:
@@ -468,10 +492,9 @@ async def get_market_abnormal_data():
 
 
 def _apply_tencent_cover(data, tencent_map: Dict[str, Any]) -> None:
-    """V17.3.11: 抽出原 V15.5.16 外层腾讯实时覆盖循环，供 TDX fallback 路径复用。
+    """Overlay only Tencent fields whose per-field timestamp agrees with their date.
 
-    ZHB 路径已在 _get_zhb_market_data 内用共享 tencent_map 直接构建（无需再次覆盖）。
-    仅覆盖 price/change_pct/name（与历史行为一致）。
+    ZHB values remain in place when Tencent provenance is missing or inconsistent.
     """
     if not data or not tencent_map:
         return
@@ -479,11 +502,54 @@ def _apply_tencent_cover(data, tencent_map: Dict[str, Any]) -> None:
         _cov = 0
         for s in data:
             _tq = tencent_map.get(s.get("code", ""), {})
-            if _tq.get("price"):
-                s["price"] = _safe_float(_tq["price"])
-            if _tq.get("change_pct") is not None:
-                s["change_pct"] = _safe_float(_tq["change_pct"])
+            _sources = _tq.get("_field_sources") or {}
+            _tq_price, _price_date, _price_time = _dated_tencent_value(_tq, "price")
+            _tq_change, _quote_date, _quote_time = _dated_tencent_value(_tq, "change_pct")
+            if _tq_price is not None and _tq_price > 0:
+                s["price"] = _tq_price
+                _set_field_metadata(
+                    s,
+                    "price",
+                    _sources.get("price", "tencent:qt.gtimg"),
+                    _price_date,
+                    _price_time,
+                )
+            if _tq_change is not None:
+                s["change_pct"] = _tq_change
+                _set_field_metadata(
+                    s,
+                    "change_pct",
+                    _sources.get("change_pct", "tencent:qt.gtimg"),
+                    _quote_date,
+                    _quote_time,
+                )
+                _daily = s.get("_zhb_daily_returns") or {}
+                _ret_3d = _calc_3d_from_daily(
+                    _daily,
+                    today_change_pct=_tq_change,
+                    quote_as_of_date=_quote_date,
+                    zhb_as_of_date=s.get("_zhb_data_date", ""),
+                )
+                if _ret_3d is not None and _quote_date:
+                    s["ret_3d"] = _ret_3d
+                    _set_field_metadata(
+                        s,
+                        "ret_3d",
+                        "tencent+zhb:tdxstat",
+                        _quote_date,
+                        _quote_time,
+                    )
                 _cov += 1
+            _tq_turnover, _turnover_date, _turnover_time = _dated_tencent_value(_tq, "turnover_pct")
+            if _tq_turnover is not None:
+                s["turnover"] = _tq_turnover
+                _set_field_metadata(
+                    s,
+                    "turnover",
+                    _sources.get("turnover_pct", "tencent:qt.gtimg"),
+                    _turnover_date,
+                    _turnover_time,
+                )
             # V16.2.14: 补股票名称（ZHB 快照缺失时，如退市整理/新上市股）
             if _tq.get("name") and not s.get("name"):
                 s["name"] = _tq["name"]
@@ -492,17 +558,147 @@ def _apply_tencent_cover(data, tencent_map: Dict[str, Any]) -> None:
         _debug_log(f"mak tencent cover error: {_e}")
 
 
-async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
+def _annotate_zhb_market_fields(data, zhb_data_date: str) -> None:
+    for stock in data or []:
+        zhb_date = _normalize_mak_date(stock.get("_zhb_data_date") or zhb_data_date)
+        stock["_zhb_data_date"] = zhb_date
+        for field in (
+            "price",
+            "change_pct",
+            "turnover",
+            "amount_yi",
+            "ret_3d",
+            "ret_5d",
+            "ret_10d",
+            "ret_20d",
+            "ret_60d",
+            "change_pct_1d",
+            "change_pct_2d",
+        ):
+            value = _optional_number(stock.get(field))
+            if value is not None and (field != "price" or value > 0):
+                _set_field_metadata(stock, field, "zhb:tdxstat", zhb_date)
+
+
+def _normalize_mak_date(value: Any) -> str:
+    raw = str(value or "").strip()
+    if len(raw) >= 10 and raw[4:5] == "-":
+        try:
+            return date.fromisoformat(raw[:10]).isoformat()
+        except ValueError:
+            return ""
+    if len(raw) >= 8 and raw[:8].isdigit():
+        try:
+            return datetime.strptime(raw[:8], "%Y%m%d").date().isoformat()
+        except ValueError:
+            return ""
+    return ""
+
+
+def _optional_number(value: Any) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _dated_tencent_value(quote: Dict[str, Any], field: str) -> Tuple[Optional[float], str, str]:
+    """Return a Tencent field only when its row timestamp proves the same date."""
+    value = _optional_number(quote.get(field))
+    if value is None:
+        return None, "", ""
+    dates = quote.get("_field_as_of_dates") or {}
+    timestamps = quote.get("_field_as_of_timestamps") or {}
+    field_date = _normalize_mak_date(dates.get(field))
+    observed_at = str(timestamps.get(field) or "")
+    try:
+        observed = datetime.fromisoformat(observed_at)
+    except ValueError:
+        return None, "", ""
+    if not field_date or observed.date().isoformat() != field_date:
+        return None, "", ""
+    return value, field_date, observed.isoformat(sep=" ")
+
+
+def _set_field_metadata(
+    stock: Dict[str, Any],
+    field: str,
+    source: str,
+    as_of_date: str,
+    observed_at: str = "",
+    status: str = "verified",
+) -> None:
+    normalized_date = _normalize_mak_date(as_of_date)
+    stock.setdefault("_field_meta", {})[field] = {
+        "source": source,
+        "as_of_date": normalized_date,
+        "observed_at": observed_at,
+        "status": status if normalized_date else "date_unconfirmed",
+    }
+
+
+def _metric_for_date(
+    stock: Dict[str, Any],
+    field: str,
+    expected_date: str,
+    *,
+    require_close_quote: bool = False,
+) -> Tuple[Optional[float], str]:
+    expected = _normalize_mak_date(expected_date)
+    if not expected:
+        return None, "date_unconfirmed"
+    value = _optional_number(stock.get(field))
+    if value is None:
+        return None, "value_missing"
+    meta = (stock.get("_field_meta") or {}).get(field)
+    if not isinstance(meta, dict) or meta.get("status") != "verified":
+        return None, "date_unconfirmed"
+    metric_date = _normalize_mak_date(meta.get("as_of_date"))
+    if metric_date != expected:
+        return None, "date_mismatch"
+    if require_close_quote:
+        source = str(meta.get("source", ""))
+        if "tencent" in source:
+            observed_at = str(meta.get("observed_at") or "")
+            try:
+                observed = datetime.fromisoformat(observed_at)
+            except ValueError:
+                return None, "quote_timestamp_unconfirmed"
+            if observed.date().isoformat() != metric_date:
+                return None, "quote_timestamp_date_mismatch"
+            if observed.time() < datetime.strptime("15:00:00", "%H:%M:%S").time():
+                return None, "quote_not_final_close"
+        elif source.startswith("zhb:"):
+            # A same-day ZHB package must not qualify as a closing snapshot before the
+            # market has closed. Previous-session packages remain valid pre-market.
+            now = datetime.now()
+            if (
+                metric_date == now.date().isoformat()
+                and now.time() < datetime.strptime("15:00:00", "%H:%M:%S").time()
+            ):
+                return None, "snapshot_not_final_close"
+        else:
+            return None, "close_status_unconfirmed"
+    return value, "eligible"
+
+
+async def _get_zhb_market_data(
+    tencent_map: Optional[Dict[str, Any]] = None,
+    snapshot: Optional[Dict[str, Any]] = None,
+):
     """V10.1: 从zhb全市场快照构建异动扫描数据。
 
     返回格式与tdx_get_market_abnormal_data一致，便于无缝替换。
     V11.5: 使用data_provider的get_market_snapshot_async统一获取数据
-    V17.3.11: tencent_map 由上层 get_market_abnormal_data **单次获取并共享传入**，
-             本函数直接用它构建 price/change_pct/amount/turnover/mcap/ret_3d（盘中今日值），
-             不再自行拉取（消除原 V15.5.15 内层 + V15.5.16 外层双拉全市场腾讯）。
+    V17.4: Tencent snapshot fields require per-field row timestamps; values without a
+           valid date anchor fall back to ZHB values while retaining the package date.
     """
     try:
-        snapshot = await get_market_snapshot_async()
+        if snapshot is None:
+            snapshot = await get_market_snapshot_async()
         if not snapshot:
             return []
 
@@ -518,6 +714,22 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
         _tencent_map = tencent_map or {}
         from core.zhb_client import get_stock_name_from_zhb
 
+        zhb_data_date = _normalize_mak_date(get_zhb_data_date())
+        zhb_periods_safe = {
+            "ret_5d": bool(
+                zhb_data_date and zhb_field_safe("change_5k_bar", data_date=zhb_data_date)
+            ),
+            "ret_10d": bool(
+                zhb_data_date and zhb_field_safe("change_10k_bar", data_date=zhb_data_date)
+            ),
+            "ret_20d": bool(
+                zhb_data_date and zhb_field_safe("change_20k_bar", data_date=zhb_data_date)
+            ),
+            "ret_60d": bool(
+                zhb_data_date and zhb_field_safe("change_60k_bar", data_date=zhb_data_date)
+            ),
+        }
+
         zhb_name_cache = {}
         for code, stat in snapshot.items():
             # V14.2.1: ZHB tdxstat 快照无 name 字段，用 profile.dat 离线字典补齐
@@ -532,66 +744,157 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
             if "ST" in name or "退" in name:
                 continue
 
-            # V15.5.15→V17.3.11: 腾讯实时优先（今日 price/change_pct/amount/turnover/mcap），缺失回退 ZHB T-1
+            # Preserve Tencent's per-row quote timestamp separately from the ZHB package date.
             _tq = _tencent_map.get(code, {})
-            price = _safe_float(_tq.get("price") or price_map.get(code, {}).get("price", 0))
-            # V16.3 O21: 平盘（change_pct=0）也是今日事实——is not None 判定，0 不回退 ZHB T-1
-            _tq_cp = _tq.get("change_pct")
-            change_pct = _safe_float(_tq_cp if _tq_cp is not None else stat.get("change_pct", 0))
-            # V16.3 O21: amount 优先腾讯 T 日（原 stat.amount=T-1——盘中"今日成交额"实为昨日）
-            amount_wan = _safe_float(
-                _tq.get("amount_wan")
-                if _tq.get("amount_wan") is not None
-                else stat.get("amount", 0)
-            )
-            # V16.3 O21: turnover 优先腾讯 T 日（原 price_map=ZHB T-1）
-            _tq_to = _tq.get("turnover_pct")
-            turnover = _safe_float(
-                _tq_to if _tq_to is not None else price_map.get(code, {}).get("turnover_pct", 0)
-            )
+            _tq_sources = _tq.get("_field_sources") or {}
+            _tq_cp, _tq_date, _tq_time = _dated_tencent_value(_tq, "change_pct")
+            _tq_price, _tq_price_date, _tq_price_time = _dated_tencent_value(_tq, "price")
+            _tq_to, _tq_to_date, _tq_to_time = _dated_tencent_value(_tq, "turnover_pct")
+            _tq_amount, _tq_amount_date, _tq_amount_time = _dated_tencent_value(_tq, "amount_wan")
+
+            _zhb_price = _optional_number(price_map.get(code, {}).get("price"))
+            price = _tq_price if _tq_price is not None else _zhb_price
+            _zhb_change_pct = _optional_number(stat.get("change_pct"))
+            change_pct = _tq_cp if _tq_cp is not None else _zhb_change_pct
+            _zhb_amount = _optional_number(stat.get("amount"))
+            amount_wan = _tq_amount if _tq_amount is not None else _zhb_amount
+            _zhb_turnover = _optional_number(price_map.get(code, {}).get("turnover_pct"))
+            turnover = _tq_to if _tq_to is not None else _zhb_turnover
 
             # 2026-08-11: 修复恒 0——腾讯批量直给 mcap_yi，缺失才走 股本×price 计算
-            mcap_yi = _safe_float(_tq.get("mcap_yi") or 0) or _calc_mcap_yi(code, price)
+            mcap_yi = _safe_float(_tq.get("mcap_yi") or 0) or _calc_mcap_yi(code, price or 0.0)
 
-            ret_5d = _safe_float(stat.get("change_5d", 0))
-            ret_10d = _safe_float(stat.get("change_10d", 0))
-            ret_20d = _safe_float(stat.get("change_20d", 0))
-            ret_60d = _safe_float(stat.get("change_60d", 0))
-
-            # V16.3 O21: ret_3d 的 r0 用腾讯 T 日（原 stat.change_pct=T-1——盘中 3 日偏离失真）
-            ret_3d = _calc_3d_from_daily(
-                stat, today_change_pct=change_pct if _tq_cp is not None else None
+            # Trading-bar fields avoid comparing calendar-day returns with trading-day index windows.
+            ret_5d = (
+                _optional_number(stat.get("change_5k_bar")) if zhb_periods_safe["ret_5d"] else None
             )
+            ret_10d = (
+                _optional_number(stat.get("change_10k_bar"))
+                if zhb_periods_safe["ret_10d"]
+                else None
+            )
+            ret_20d = (
+                _optional_number(stat.get("change_20k_bar"))
+                if zhb_periods_safe["ret_20d"]
+                else None
+            )
+            ret_60d = (
+                _optional_number(stat.get("change_60k_bar"))
+                if zhb_periods_safe["ret_60d"]
+                else None
+            )
+            _daily_stat = {
+                "change_pct": stat.get("change_pct"),
+                "change_pct_1d": stat.get("change_pct_1d"),
+                "change_pct_2d": stat.get("change_pct_2d"),
+            }
+            ret_3d = None
+            ret_3d_uses_tencent = False
+            if _tq_cp is not None:
+                ret_3d = _calc_3d_from_daily(
+                    _daily_stat,
+                    today_change_pct=_tq_cp,
+                    quote_as_of_date=_tq_date,
+                    zhb_as_of_date=zhb_data_date,
+                )
+                ret_3d_uses_tencent = ret_3d is not None
+            ret_3d_date = _tq_date if ret_3d_uses_tencent else zhb_data_date
+            if ret_3d is None:
+                ret_3d = _calc_3d_from_daily(_daily_stat)
+                ret_3d_date = zhb_data_date if ret_3d is not None else ""
 
-            result.append(
-                {
-                    "code": code,
-                    "name": name,
-                    "price": price,
-                    "change_pct": change_pct,
-                    "turnover": turnover,
-                    "mcap_yi": mcap_yi,
-                    "amount_yi": amount_wan / 10000.0 if amount_wan > 0 else 0,
-                    "ret_3d": ret_3d,
-                    "ret_5d": ret_5d,
-                    "ret_10d": ret_10d,
-                    "ret_20d": ret_20d,
-                    "ret_60d": ret_60d,
-                    # V16.4.1: 新股标记字段——change_pct_1d/2d 为空 = 上市不足 3 个交易日
-                    # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
-                    "change_pct_1d": stat.get("change_pct_1d", ""),
-                    "change_pct_2d": stat.get("change_pct_2d", ""),
-                    # ZHB main_net_buy_amount 实为竞价金额，不能回退填入主力净额字段。
-                    "main_net_amount": _verified_main_net_amount(code),
-                    # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
-                    # （8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
-                    "industry_code": (
-                        stat.get("industry_code", "")
-                        if _is_industry_code(stat.get("industry_code", ""))
-                        else ""
+            stock = {
+                "code": code,
+                "name": name,
+                "price": price,
+                "change_pct": change_pct,
+                "turnover": turnover,
+                "mcap_yi": mcap_yi,
+                "amount_yi": amount_wan / 10000.0 if amount_wan is not None else None,
+                "ret_3d": ret_3d,
+                "ret_5d": ret_5d,
+                "ret_10d": ret_10d,
+                "ret_20d": ret_20d,
+                "ret_60d": ret_60d,
+                # V16.4.1: 新股标记字段——change_pct_1d/2d 为空 = 上市不足 3 个交易日
+                # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
+                "change_pct_1d": _optional_number(stat.get("change_pct_1d")),
+                "change_pct_2d": _optional_number(stat.get("change_pct_2d")),
+                # ZHB main_net_buy_amount 实为竞价金额，不能回退填入主力净额字段。
+                "main_net_amount": _verified_main_net_amount(code),
+                # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
+                # （8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
+                "industry_code": (
+                    stat.get("industry_code", "")
+                    if _is_industry_code(stat.get("industry_code", ""))
+                    else ""
+                ),
+                "_zhb_data_date": zhb_data_date,
+            }
+            for _field, _value, _source, _field_date, _observed_at in (
+                (
+                    "price",
+                    price,
+                    (
+                        _tq_sources.get("price", "tencent:qt.gtimg")
+                        if _tq_price is not None
+                        else "zhb:tdxstat"
                     ),
-                }
+                    _tq_price_date or zhb_data_date,
+                    _tq_price_time,
+                ),
+                (
+                    "change_pct",
+                    change_pct,
+                    (
+                        _tq_sources.get("change_pct", "tencent:qt.gtimg")
+                        if _tq_cp is not None
+                        else "zhb:tdxstat"
+                    ),
+                    _tq_date or zhb_data_date,
+                    _tq_time,
+                ),
+                (
+                    "turnover",
+                    turnover,
+                    (
+                        _tq_sources.get("turnover_pct", "tencent:qt.gtimg")
+                        if _tq_to is not None
+                        else "zhb:tdxstat"
+                    ),
+                    _tq_to_date or zhb_data_date,
+                    _tq_to_time,
+                ),
+                (
+                    "amount_yi",
+                    stock["amount_yi"],
+                    (
+                        _tq_sources.get("amount_wan", "tencent:qt.gtimg")
+                        if _tq_amount is not None
+                        else "zhb:tdxstat"
+                    ),
+                    _tq_amount_date or zhb_data_date,
+                    _tq_amount_time,
+                ),
+            ):
+                if _value is not None and (_field != "price" or _value > 0):
+                    _set_field_metadata(stock, _field, _source, _field_date, _observed_at)
+            _set_field_metadata(
+                stock,
+                "ret_3d",
+                "tencent+zhb:tdxstat" if ret_3d_uses_tencent else "zhb:tdxstat",
+                ret_3d_date,
+                _tq_time if ret_3d_uses_tencent else "",
             )
+            for _field, _value in (
+                ("ret_5d", ret_5d),
+                ("ret_10d", ret_10d),
+                ("ret_20d", ret_20d),
+                ("ret_60d", ret_60d),
+            ):
+                if _value is not None and zhb_data_date:
+                    _set_field_metadata(stock, _field, "zhb:tdxstat", zhb_data_date)
+            result.append(stock)
 
         return result
     except Exception as _e:
@@ -599,30 +902,59 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
         return []
 
 
-def _calc_3d_from_daily(stat, today_change_pct=None):
-    """V10.1: 从T/T-1/T-2日涨跌幅推算3日累计涨跌幅。
-
-    使用复利计算：(1+r1)*(1+r2)*(1+r3) - 1
-    V16.0: 三值全 0（数据缺失）时返回 0，不再用 change_5d*0.6 捏造 fudge 值，
-    避免把捏造数据当作真实 3 日涨跌幅进入异动判定。
-    V16.3 O21: today_change_pct 参数——盘中腾讯 T 日涨跌幅优先（原 stat.change_pct 为 T-1）。
-    """
-    _r0_raw = today_change_pct if today_change_pct is not None else stat.get("change_pct", 0)
-    r0 = _safe_float(_r0_raw) / 100.0
-    # V17.0.4(2026-08-19): 腾讯 T 日覆盖时, 快照 Col[6] 即 T-1(非 T-2)——
-    # 原逻辑 r1=Col[7]/r2=Col[8] 在覆盖分支漏掉 T-1, 3 日窗口错位成 T/T-2/T-3
-    if today_change_pct is not None:
-        r1 = _safe_float(stat.get("change_pct", 0)) / 100.0  # T-1
-        r2 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0  # T-2
+def _calc_3d_from_daily(
+    stat,
+    today_change_pct=None,
+    *,
+    quote_as_of_date: str = "",
+    zhb_as_of_date: str = "",
+):
+    """Compound three consecutive daily returns, preserving missing values and dates."""
+    if today_change_pct is None:
+        values = [
+            _optional_number(stat.get("change_pct")),
+            _optional_number(stat.get("change_pct_1d")),
+            _optional_number(stat.get("change_pct_2d")),
+        ]
     else:
-        r1 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0  # T-2
-        r2 = _safe_float(stat.get("change_pct_2d", 0)) / 100.0  # T-3
+        quote_date = _normalize_mak_date(quote_as_of_date)
+        zhb_date = _normalize_mak_date(zhb_as_of_date)
+        if not quote_date or not zhb_date:
+            # Legacy callers without dates may still calculate a provisional value;
+            # the MAК evaluator will not accept it without field date metadata.
+            values = [
+                _optional_number(today_change_pct),
+                _optional_number(stat.get("change_pct")),
+                _optional_number(stat.get("change_pct_1d")),
+            ]
+        elif quote_date == zhb_date:
+            # ZHB already contains the current trading day; avoid counting it twice.
+            values = [
+                _optional_number(today_change_pct),
+                _optional_number(stat.get("change_pct_1d")),
+                _optional_number(stat.get("change_pct_2d")),
+            ]
+        else:
+            try:
+                from stock_common.stock_calendar import previous_trading_day
 
-    if r0 == 0 and r1 == 0 and r2 == 0:
-        return 0.0
-
-    ret_3d = ((1 + r0) * (1 + r1) * (1 + r2) - 1) * 100.0
-    return round(ret_3d, 2)
+                expected_zhb_date = previous_trading_day(
+                    date.fromisoformat(quote_date), include_current=False
+                ).isoformat()
+            except (ValueError, NotImplementedError):
+                return None
+            if zhb_date != expected_zhb_date:
+                return None
+            values = [
+                _optional_number(today_change_pct),
+                _optional_number(stat.get("change_pct")),
+                _optional_number(stat.get("change_pct_1d")),
+            ]
+    if any(value is None for value in values):
+        return None
+    numeric_values = [value for value in values if value is not None]
+    returns = [value / 100.0 for value in numeric_values]
+    return round(((1 + returns[0]) * (1 + returns[1]) * (1 + returns[2]) - 1) * 100, 2)
 
 
 # V17.3.12: K线 count 归一——count_history_deviations(get_baidu_kline days=x→baidu count=x+10)/
@@ -663,40 +995,77 @@ def get_tdx_kline(code, days=20):
 get_baidu_kline = get_tdx_kline
 
 
-def get_index_returns():
-    def _calc(closes, days):
-        if len(closes) < days + 1:
-            return None
-        return (
-            (closes[-1] - closes[-(days + 1)]) / closes[-(days + 1)] * 100
-            if closes[-(days + 1)] > 0
-            else None
-        )
+def _dated_stock_bars(code: str):
+    keys, rows = _mak_kline_raw(code)
+    if not keys or not rows:
+        return []
+    date_i = next((i for i, key in enumerate(keys) if key in ("time", "date", "datetime")), -1)
+    close_i = next((i for i, key in enumerate(keys) if key in ("close", "close_price")), -1)
+    if date_i < 0 or close_i < 0:
+        return []
+    bars = {}
+    for row in rows:
+        if len(row) <= max(date_i, close_i):
+            continue
+        day = _normalize_mak_date(row[date_i])
+        close = _optional_number(row[close_i])
+        if day and close is not None and close > 0:
+            bars[day] = {"date": day, "close": close, "source": "tdx"}
+    return [bars[day] for day in sorted(bars)]
 
-    def _get_kline(ic):
-        """V17.0.7: 指数K线四源链下沉统一层 sc_datasource.get_index_kline_closes
-        (TDX → 腾讯 ifzq → 新浪日K → 腾讯实时2值)——原 mak 本地实现整体迁移,
-        行为等价; 其他脚本可复用同一实现。"""
+
+def _index_return_for_date(bars, end_date: str, period: int) -> Optional[float]:
+    try:
+        end = date.fromisoformat(end_date)
+        from stock_common.stock_calendar import recent_trading_dates
+
+        expected_dates = [
+            day.isoformat() for day in reversed(recent_trading_dates(period + 1, as_of=end))
+        ]
+    except (ValueError, NotImplementedError):
+        return None
+    if not expected_dates or expected_dates[-1] != end_date:
+        return None
+    close_by_date = {
+        _normalize_mak_date(bar.get("date")): _optional_number(bar.get("close"))
+        for bar in bars
+        if isinstance(bar, dict)
+    }
+    if any(close_by_date.get(day) is None for day in expected_dates):
+        return None
+    first_close = close_by_date[expected_dates[0]]
+    last_close = close_by_date[expected_dates[-1]]
+    if first_close is None or last_close is None or first_close <= 0:
+        return None
+    return round((last_close / first_close - 1) * 100, 2)
+
+
+def get_index_returns(as_of_dates=None):
+    """Return index returns by exact end date and retain dated bars for historical joins."""
+    if as_of_dates is None:
+        from stock_common.stock_calendar import latest_market_data_date
+
+        as_of_dates = [latest_market_data_date(datetime.now()).isoformat()]
+    end_dates = sorted({_normalize_mak_date(value) for value in as_of_dates} - {""})
+    result = {end_date: {} for end_date in end_dates}
+    bars_pool = {}
+    for index_code in INDEX_MAP:
         try:
-            from stock_common.sc_datasource import get_index_kline_closes
+            from stock_common.sc_datasource import get_index_kline_bars
 
-            return get_index_kline_closes(ic, days=250)
+            bars = get_index_kline_bars(index_code, days=250)
         except Exception as _e:
-            _debug_log(f"mak index_kline unified error {ic}: {_e}")
-            return []
-
-    result = {}
-    closes_pool = {}
-    for ic in INDEX_MAP:
-        closes = _get_kline(ic)
-        closes_pool[ic] = closes
-        result[ic] = {
-            "ret_3d": _calc(closes, 3),
-            "ret_10d": _calc(closes, 10),
-            "ret_20d": _calc(closes, 20),
-            "ret_60d": _calc(closes, 60),
-        }
-    return result, closes_pool
+            _debug_log(f"mak index_kline unified error {index_code}: {_e}")
+            bars = []
+        bars_pool[index_code] = bars
+        for end_date in end_dates:
+            result[end_date][index_code] = {
+                "ret_3d": _index_return_for_date(bars, end_date, 3),
+                "ret_10d": _index_return_for_date(bars, end_date, 10),
+                "ret_20d": _index_return_for_date(bars, end_date, 20),
+                "ret_60d": _index_return_for_date(bars, end_date, 60),
+            }
+    return result, bars_pool
 
 
 def get_abnormal_announcements(code):
@@ -717,167 +1086,218 @@ def get_abnormal_announcements(code):
         return 0, 0
 
 
-def count_history_deviations(code, index_code, index_closes_pool, days_lookback=10):
-    """V16.1: 修复负索引错位（原 abs() 转正索引取错位置）。
+def count_history_deviations(code, index_code, index_bars_pool, as_of_date, days_lookback=10):
+    """Count the prior ten valid three-session deviation windows by exact bar dates."""
+    try:
+        end = date.fromisoformat(_normalize_mak_date(as_of_date))
+        from stock_common.stock_calendar import recent_trading_dates
 
-    原实现: si = -(i+4) → abs(si) 后按正索引访问，语义错误（正索引从头部数）。
-    修正: 直接用负索引（Python 语义，从尾部数），窗口为 [-(i+4)-2, -(i+4)] 共 3 根。
-    """
-    closes, _ = get_tdx_kline(code, days_lookback + 5)
-    if len(closes) < days_lookback + 3:
-        return 0, None
-    idx_closes = index_closes_pool.get(index_code, [])
-    if len(idx_closes) < days_lookback + 3:
-        return 0, None
+        prior_end_dates = recent_trading_dates(days_lookback + 1, as_of=end)
+    except (ValueError, NotImplementedError):
+        return None, None, 0
+    if not prior_end_dates or prior_end_dates[0] != end:
+        return None, None, 0
+    prior_end_dates = prior_end_dates[1:]
+    stock_bars = _dated_stock_bars(code)
+    index_bars = index_bars_pool.get(index_code, [])
+    stock_close = {
+        _normalize_mak_date(b.get("date")): _optional_number(b.get("close")) for b in stock_bars
+    }
+    index_close = {
+        _normalize_mak_date(b.get("date")): _optional_number(b.get("close")) for b in index_bars
+    }
     count = 0
     last_dev = None
-    for i in range(days_lookback):
-        # 窗口末端索引（倒数第 i+4 根），向前取 3 根计算 3 日涨幅
-        si = -(i + 4)
-        if si - 2 < -len(closes):
+    valid_windows = 0
+    for window_end in prior_end_dates:
+        window_date = window_end.isoformat()
+        try:
+            from stock_common.stock_calendar import recent_trading_dates
+
+            window_dates = [
+                day.isoformat() for day in reversed(recent_trading_dates(4, as_of=window_end))
+            ]
+        except (ValueError, NotImplementedError):
             continue
-        s_chg = (closes[si] - closes[si - 2]) / closes[si - 2] * 100 if closes[si - 2] > 0 else 0
-        ii = -(i + 4)
-        if ii - 2 < -len(idx_closes):
+        if not window_dates or window_dates[-1] != window_date:
             continue
-        i_chg = (
-            (idx_closes[ii] - idx_closes[ii - 2]) / idx_closes[ii - 2] * 100
-            if idx_closes[ii - 2] > 0
-            else 0
-        )
-        dev = s_chg - i_chg
+        if any(
+            stock_close.get(day) is None or index_close.get(day) is None for day in window_dates
+        ):
+            continue
+        stock_start = stock_close[window_dates[0]]
+        index_start = index_close[window_dates[0]]
+        if stock_start <= 0 or index_start <= 0:
+            continue
+        stock_ret = (stock_close[window_dates[-1]] / stock_start - 1) * 100
+        index_ret = (index_close[window_dates[-1]] / index_start - 1) * 100
+        dev = calc_official_deviation(stock_ret, index_ret)
+        valid_windows += 1
         if abs(dev) >= 20:
             count += 1
             last_dev = dev
-    return count, last_dev
+    if valid_windows != days_lookback:
+        return None, last_dev, valid_windows
+    return count, last_dev, valid_windows
 
 
-def check_stock(s, idx_rets, index_closes_pool):
+def _evaluate_stock(s, idx_rets_by_date, index_bars_pool, expected_data_date=None):
     code = s["code"]
     name = s["name"]
-    # V16.4.1: 上市不足 3 个交易日的新股跳过偏离异动判定——
-    # 创业板/科创板新股前 5 日无涨跌幅限制(首日 +662% 等), 3/10/20 日偏离无意义
-    # (2026-08-12 实测 301717 超纯应材 8/11 上市首日 +662.24% → 20日偏离被误算 +676.84%)
-    if not s.get("change_pct_1d") and not s.get("change_pct_2d"):
-        return []
     idx_code = get_stock_index(code)
-    idx = idx_rets.get(idx_code, {})
-    th = int(limit_pct_for(code, name))  # V17.0 S3: 直调统一阈值(替代 get_threshold)
     board = get_board_name(code, name)
-    results = []
-    if s["ret_3d"] != 0 and idx.get("ret_3d") is not None:
-        dev = calc_official_deviation(s["ret_3d"], idx["ret_3d"])
-        if board == "主板":
-            if 18 <= abs(dev) < 20:
-                results.append(
-                    {
-                        "level": "卡异动",
-                        "tag": "💎",
-                        "desc": f"3日偏离值{dev:+.2f}%，距主板20%红线仅差{20-abs(dev):.2f}%",
-                        "score": abs(dev),
-                    }
-                )
-        elif board in ("创业板", "科创板"):
-            if 27 <= abs(dev) < 30:
-                results.append(
-                    {
-                        "level": "卡异动",
-                        "tag": "💎",
-                        "desc": f"3日偏离值{dev:+.2f}%，距{board}30%红线仅差{30-abs(dev):.2f}%",
-                        "score": abs(dev),
-                    }
-                )
-        if abs(dev) >= th:
-            hist_cnt = 0
-            # V16.2.12: 北交所老段（8/4 开头）白名单服务器无 K 线（实测 832000/430047），
-            # 历史偏离无法计算 → 直接 0（正确降级），跳过 7s 换台探测
-            if code.startswith(("8", "4")):
-                hist_cnt = 0
-            else:
-                try:
-                    hist_cnt, _ = count_history_deviations(code, idx_code, index_closes_pool, 10)
-                except Exception as _e:
-                    _debug_log(f"mak hist_deviation error: {_e}")
-                    hist_cnt = 0
-            cnt_warn = ""
-            if board == "主板" and hist_cnt >= 3:
-                cnt_warn = f" ⚠️ 近10日已触发{hist_cnt}次同向异动！再触发1次停牌核查！"
-            elif board in ("创业板", "科创板") and hist_cnt >= 2:
-                cnt_warn = f" ⚠️ 近10日已触发{hist_cnt}次同向异动！再触发1次停牌核查！"
-            _tr = s.get("turnover", 0)
-            vol_note = ""
-            if _tr < _vol_locked:
-                vol_note = " [极度锁仓，动能强劲]"
-            elif _tr > _vol_overload:
-                vol_note = " [爆量滞涨，警惕派发]"
-            results.append(
-                {
-                    "level": "已触发",
-                    "tag": "🔥" if dev > 0 else "💥",
-                    "desc": f"3日偏离值{dev:+.2f}%≥{th}%({board})触发短期异动{vol_note}{cnt_warn}",
-                    "score": abs(dev),
-                }
+    threshold = int(limit_pct_for(code, name))
+    signals = []
+    rule_status = {}
+
+    def _inputs(field, period):
+        meta = (s.get("_field_meta") or {}).get(field) or {}
+        metric_date = _normalize_mak_date(meta.get("as_of_date"))
+        if not metric_date:
+            rule_status[period] = "date_unconfirmed"
+            return None, None, None
+        expected_date = _normalize_mak_date(expected_data_date)
+        if expected_date and metric_date != expected_date:
+            rule_status[period] = "stock_metric_date_mismatch"
+            return None, None, metric_date
+        stock_return, reason = _metric_for_date(s, field, metric_date, require_close_quote=True)
+        if stock_return is None:
+            rule_status[period] = reason
+            return None, None, metric_date
+        index_return = ((idx_rets_by_date.get(metric_date) or {}).get(idx_code) or {}).get(field)
+        index_return = _optional_number(index_return)
+        if index_return is None:
+            rule_status[period] = "index_window_missing_or_misaligned"
+            return None, None, metric_date
+        rule_status[period] = "evaluated"
+        return stock_return, index_return, metric_date
+
+    def _add(level, tag, desc, score, period, metric_date):
+        signals.append(
+            {
+                "level": level,
+                "tag": tag,
+                "desc": f"{desc}（数据日 {metric_date}）",
+                "score": score,
+                "period": period,
+                "as_of_date": metric_date,
+            }
+        )
+
+    stock_return, index_return, metric_date = _inputs("ret_3d", "3d")
+    if stock_return is not None and index_return is not None:
+        deviation = calc_official_deviation(stock_return, index_return)
+        if board == "主板" and 18 <= abs(deviation) < 20:
+            _add(
+                "卡异动",
+                "💎",
+                f"3日偏离值{deviation:+.2f}%，距主板20%红线仅差{20-abs(deviation):.2f}%",
+                abs(deviation),
+                "3d",
+                metric_date,
             )
-    if s["ret_10d"] != 0 and idx.get("ret_10d") is not None:
-        # V16.0: 统一复利口径（与 3 日偏离一致），原代码用简单减法
-        dev = calc_official_deviation(s["ret_10d"], idx["ret_10d"])
-        ceiling = 100 - dev if dev > 0 else None
+        elif board in ("创业板", "科创板") and 27 <= abs(deviation) < 30:
+            _add(
+                "卡异动",
+                "💎",
+                f"3日偏离值{deviation:+.2f}%，距{board}30%红线仅差{30-abs(deviation):.2f}%",
+                abs(deviation),
+                "3d",
+                metric_date,
+            )
+        if abs(deviation) >= threshold:
+            hist_count = None
+            try:
+                if not code.startswith(("8", "4")):
+                    hist_count, _, _ = count_history_deviations(
+                        code, idx_code, index_bars_pool, metric_date, 10
+                    )
+            except Exception as error:
+                _debug_log(f"mak hist_deviation error {code}: {error}")
+            count_note = ""
+            if hist_count is not None and board == "主板" and hist_count >= 3:
+                count_note = f" ⚠️ 近10个交易日已触发{hist_count}次同向异动！再触发1次停牌核查！"
+            elif hist_count is not None and board in ("创业板", "科创板") and hist_count >= 2:
+                count_note = f" ⚠️ 近10个交易日已触发{hist_count}次同向异动！再触发1次停牌核查！"
+            turnover, _ = _metric_for_date(s, "turnover", metric_date, require_close_quote=True)
+            volume_note = ""
+            if turnover is not None and turnover < _vol_locked:
+                volume_note = " [极度锁仓，动能强劲]"
+            elif turnover is not None and turnover > _vol_overload:
+                volume_note = " [爆量滞涨，警惕派发]"
+            _add(
+                "已触发",
+                "🔥" if deviation > 0 else "💥",
+                f"3日偏离值{deviation:+.2f}%≥{threshold}%({board})触发短期异动{volume_note}{count_note}",
+                abs(deviation),
+                "3d",
+                metric_date,
+            )
+
+    stock_return, index_return, metric_date = _inputs("ret_10d", "10d")
+    if stock_return is not None and index_return is not None:
+        deviation = calc_official_deviation(stock_return, index_return)
+        ceiling = 100 - deviation if deviation > 0 else None
         ceiling_note = ""
         if ceiling is not None and ceiling > 0:
-            limit_pct = limit_pct_for(code, s.get("name", ""))
-            remaining_stops = ceiling / limit_pct
+            remaining_stops = ceiling / limit_pct_for(code, name)
             if remaining_stops <= 3:
                 ceiling_note = f" 距100%仅剩{ceiling:.1f}%（约{remaining_stops:.1f}涨停）！"
-        if dev >= _ret10_warn:
-            results.append(
-                {
-                    "level": "严重",
-                    "tag": "🔥🔥",
-                    "desc": f"10日偏离值{dev:+.2f}%≥+{_ret10_warn:.0f}%，触发严重异动！{ceiling_note}",
-                    "score": dev,
-                }
+        if deviation >= _ret10_warn:
+            _add(
+                "严重",
+                "🔥🔥",
+                f"10日偏离值{deviation:+.2f}%≥+{_ret10_warn:.0f}%，触发严重异动！{ceiling_note}",
+                deviation,
+                "10d",
+                metric_date,
             )
-        elif dev <= _ret10_down:
-            results.append(
-                {
-                    "level": "严重",
-                    "tag": "💥💥",
-                    "desc": f"10日偏离值{dev:+.2f}%≤{_ret10_down:.0f}%, 触发严重异动",
-                    "score": -dev,
-                }
+        elif deviation <= _ret10_down:
+            _add(
+                "严重",
+                "💥💥",
+                f"10日偏离值{deviation:+.2f}%≤{_ret10_down:.0f}%，触发严重异动",
+                -deviation,
+                "10d",
+                metric_date,
             )
         elif ceiling is not None and ceiling <= 15:
-            results.append(
-                {
-                    "level": "严重预警",
-                    "tag": "🚨",
-                    "desc": f"10日偏离值{dev:+.2f}%（距100%仅剩{ceiling:.1f}%）{ceiling_note}",
-                    "score": dev,
-                }
+            _add(
+                "严重预警",
+                "🚨",
+                f"10日偏离值{deviation:+.2f}%（距100%仅剩{ceiling:.1f}%）{ceiling_note}",
+                deviation,
+                "10d",
+                metric_date,
             )
-    # V16.0: 无真实 30 日数据时不再用 (ret_60d - idx_60d)/2 冒充 30 日偏离，
-    # 改为 20 日复利口径偏离（用真实的 ret_20d），避免捏造指标。
-    if s["ret_20d"] != 0 and idx.get("ret_20d") is not None:
-        dev_20d = calc_official_deviation(s["ret_20d"], idx["ret_20d"])
-        if dev_20d >= 100:
-            results.append(
-                {
-                    "level": "严重",
-                    "tag": "🔥🔥🔥",
-                    "desc": f"20日偏离值{dev_20d:+.2f}%≥+100%, 触发严重异动！",
-                    "score": dev_20d,
-                }
+
+    stock_return, index_return, metric_date = _inputs("ret_20d", "20d")
+    if stock_return is not None and index_return is not None:
+        deviation_20d = calc_official_deviation(stock_return, index_return)
+        if deviation_20d >= 100:
+            _add(
+                "严重",
+                "🔥🔥🔥",
+                f"20日偏离值{deviation_20d:+.2f}%≥+100%，触发严重异动！",
+                deviation_20d,
+                "20d",
+                metric_date,
             )
-        elif dev_20d <= -50:
-            results.append(
-                {
-                    "level": "严重",
-                    "tag": "💥💥💥",
-                    "desc": f"20日偏离值{dev_20d:+.2f}%≤-50%, 触发严重异动",
-                    "score": -dev_20d,
-                }
+        elif deviation_20d <= -50:
+            _add(
+                "严重",
+                "💥💥💥",
+                f"20日偏离值{deviation_20d:+.2f}%≤-50%，触发严重异动",
+                -deviation_20d,
+                "20d",
+                metric_date,
             )
-    return results
+    return {"signals": signals, "rule_status": rule_status}
+
+
+def check_stock(s, idx_rets, index_bars_pool):
+    """Return verified anomaly signals while retaining the historical list return shape."""
+    return _evaluate_stock(s, idx_rets, index_bars_pool)["signals"]
 
 
 # Part 2: Sector rotation engine + generate_sector_report + __main__
@@ -1459,7 +1879,10 @@ async def generate_sector_report(output_path):
             f"  📋 A股过滤: 移除 {_before - len(all_stocks)} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）",
             flush=True,
         )
-    _zhb_date = get_zhb_data_date()
+    from stock_common.stock_calendar import latest_market_data_date
+
+    _target_data_date = latest_market_data_date(now).isoformat()
+    _zhb_date = _normalize_mak_date(get_zhb_data_date())
     _zhb_check_as_of = datetime.now()
     _zhb_fresh = is_zhb_data_fresh(max_delay_days=3, data_date=_zhb_date, as_of=_zhb_check_as_of)
     _zhb_age = None
@@ -1494,25 +1917,38 @@ async def generate_sector_report(output_path):
     else:
         L("  ZHB全市场快照数据日：未确认")
     L(
-        "  行情口径：实时字段优先按腾讯/TDX路由覆盖；缺失项可能保留快照值，市场汇总不保证逐股同一时点。"
+        f"  目标行情日：{_target_data_date}；当前异动只评估该数据日。逐字段核验来源日期，收盘异动仅采用 15:00 后的腾讯时间戳或收盘后的同日 ZHB 快照。"
     )
-    idx_rets, index_closes_pool = get_index_returns()
+    _index_dates = [_target_data_date]
+    if _zhb_date and _zhb_date != _target_data_date:
+        _index_dates.append(_zhb_date)
+    idx_rets_by_date, index_bars_pool = get_index_returns(_index_dates)
     for ic, nm in INDEX_MAP.items():
-        r = idx_rets.get(ic, {})
+        r = (idx_rets_by_date.get(_target_data_date) or {}).get(ic, {})
         L(f"  📈 {nm}: 3日{_fmt_ret(r.get('ret_3d'))}%  10日{_fmt_ret(r.get('ret_10d'))}%")
     print("[异动引擎] 扫描全市场异动信号...", flush=True)
     results = {"卡异动": [], "已触发": [], "严重": [], "严重预警": []}
+    rule_evaluations = {period: {"evaluated": 0, "reasons": {}} for period in ("3d", "10d", "20d")}
 
     # V9.3.3: 并行扫描（ThreadPoolExecutor）；V17.3.12 并行度改走命名常量 MAK_SCAN_WORKERS。
     # 注：实测 3→6 不提速(纯CPU下GIL反慢、CPU+I/O混合仅快~3%噪声内)，故常量值保持 3（见下定义处注释）。
     def _check_one(s):
-        """单股票检测，返回 (code, name, rules)"""
+        """Return verified signals and explicit per-window evaluation status."""
         try:
-            rules = check_stock(s, idx_rets, index_closes_pool)
-            return (s["code"], s["name"], rules)
+            evaluation = _evaluate_stock(
+                s, idx_rets_by_date, index_bars_pool, expected_data_date=_target_data_date
+            )
+            return (s["code"], s["name"], evaluation)
         except Exception as _e:
             _debug_log(f"mak check_stock error {s['code']}: {_e}")
-            return (s["code"], s["name"], [])
+            return (
+                s["code"],
+                s["name"],
+                {
+                    "signals": [],
+                    "rule_status": {period: "evaluation_error" for period in rule_evaluations},
+                },
+            )
 
     with ThreadPoolExecutor(max_workers=MAK_SCAN_WORKERS) as executor:
         futures = {executor.submit(_check_one, s): s for s in all_stocks}
@@ -1520,32 +1956,43 @@ async def generate_sector_report(output_path):
             if i % 1000 == 0:
                 print(f"  已扫描 {i}/{len(all_stocks)}", flush=True)
             try:
-                code, name, rules = future.result()
-                for r in rules:
+                code, name, evaluation = future.result()
+                for period, status in evaluation["rule_status"].items():
+                    counter = rule_evaluations.setdefault(period, {"evaluated": 0, "reasons": {}})
+                    if status == "evaluated":
+                        counter["evaluated"] += 1
+                    else:
+                        counter["reasons"][status] = counter["reasons"].get(status, 0) + 1
+                for r in evaluation["signals"]:
                     results[r["level"]].append({**r, "code": code, "name": name})
             except Exception as _e:
                 _debug_log(f"mak future.result error: {_e}")
     total_abnormal = len(results["已触发"]) + len(results["严重"])
-    # V16.0: 复用统一 is_limit_up/is_limit_down（自动识别 ST 与板块阈值），
-    # 消除硬编码 9.5/19.5 导致 ST 涨停漏判的问题（ST 10% 与主板一致）
+    _current_changes = {
+        s["code"]: _metric_for_date(s, "change_pct", _target_data_date, require_close_quote=True)[0]
+        for s in all_stocks
+    }
+    _current_changes = {
+        code: value for code, value in _current_changes.items() if value is not None
+    }
     _zt_count = sum(
-        1 for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), s.get("change_pct", 0))
-    )
-    _zt_float = sum(
         1
         for s in all_stocks
-        if 5 <= s.get("change_pct", 0) < limit_pct_for(s["code"], s.get("name", ""))
+        if _current_changes.get(s["code"]) is not None
+        and is_limit_up(s["code"], s.get("name", ""), _current_changes[s["code"]])
     )
-    _zb_rate = _zt_float / max(_zt_count + _zt_float, 1) * 100
     _dt_count = sum(
-        1 for s in all_stocks if is_limit_down(s["code"], s.get("name", ""), s.get("change_pct", 0))
+        1
+        for s in all_stocks
+        if _current_changes.get(s["code"]) is not None
+        and is_limit_down(s["code"], s.get("name", ""), _current_changes[s["code"]])
     )
-    _lbp = _zt_count
     L(f"\n{'='*90}")
     L("## 【A. 全市场情绪监测看板】")
     L(f"{'---'}")
     L(
-        "  说明：广度、情绪阈值和样本资金流用于描述当日样本，不单独预测次日方向，也不是个性化仓位指令。"
+        "  说明：涨跌广度和涨跌停计数只统计与目标行情日一致且已确认收盘时点的个股涨跌幅；"
+        "缺失、日期不符或收盘前快照不计为零。个股异动规则按各指标自身数据日与指数同日窗口分别评估。"
     )
     # V17.0(2026-08-15): 北向宏观资金 + 两融杠杆情绪(A 段增强, P4)
     try:
@@ -1576,34 +2023,45 @@ async def generate_sector_report(output_path):
             L("  🌐 北向资金: (数据获取失败)")
     except Exception as _e:
         _debug_log(f"mak hsgt macro: {_e}")
-    _up_cnt = sum(1 for s in all_stocks if _safe_float(s.get("change_pct", 0)) > 0)
-    _down_cnt = sum(1 for s in all_stocks if _safe_float(s.get("change_pct", 0)) < 0)
-    _ratio_text, _breadth_sentiment = _market_breadth_display(_up_cnt, _down_cnt)
+    _up_cnt = sum(1 for value in _current_changes.values() if value > 0)
+    _down_cnt = sum(1 for value in _current_changes.values() if value < 0)
+    _flat_cnt = sum(1 for value in _current_changes.values() if value == 0)
+    _ratio_text, _ = _market_breadth_display(_up_cnt, _down_cnt)
     _directional_samples = _up_cnt + _down_cnt
-    _unclassified_samples = max(0, len(all_stocks) - _directional_samples)
+    _unverified_samples = max(0, len(all_stocks) - len(_current_changes))
     L(
-        f"  🌡️ 短线情绪(样本内·剔除ST/退): 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
-        f"（涨跌幅口径;与B段涨停池/通达信全市场口径不同,三者不可直接相加比较）"
+        f"  🌡️ 样本观测(剔除ST/退): 涨停阈值命中{_zt_count} | 跌停阈值命中{_dt_count} | 异动触发{total_abnormal}只"
+        f"（目标数据日 {_target_data_date}；有效收盘涨跌幅 {_directional_samples + _flat_cnt}/{len(all_stocks)}；"
+        "与B段涨停池/通达信全市场口径不同，不可直接相加比较）"
     )
     L(
-        f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ratio_text} | {_breadth_sentiment}"
-        f" | 非零涨跌幅样本{_directional_samples}/{len(all_stocks)}；其余{_unclassified_samples}只涨跌幅为0或缺失"
+        f"  📊 样本涨跌广度观测: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ratio_text}"
+        f" | 平盘{_flat_cnt}只 | 未确认/日期不符/收盘前{_unverified_samples}只（未当作平盘）"
     )
-    # V17.2.0: 全市场广度(通达信统计指数 880005/880001/880006) 交叉校验样本广度
+    for _period, _label in (("3d", "3日"), ("10d", "10交易日"), ("20d", "20交易日")):
+        _coverage = rule_evaluations[_period]
+        _reasons = _coverage["reasons"]
+        _reason_text = "、".join(f"{key}:{value}" for key, value in sorted(_reasons.items()))
+        L(
+            f"  🔎 个股异动评估({_label}): {_coverage['evaluated']}/{len(all_stocks)} 可评估"
+            + (f"；未评估原因 {_reason_text}" if _reason_text else "；无日期/窗口缺口")
+        )
+    # TDX 市场统计是独立的本次响应；接口未提供可核验数据日，不作同日交叉校验。
     try:
         from core.tdx_client import tdx_get_market_stat
 
         _ms = await asyncio.to_thread(tdx_get_market_stat)
         if _ms:
-            _ms_ud, _ms_sentiment = _market_breadth_display(
+            _ms_ud, _ = _market_breadth_display(
                 int(_ms.get("up_count", 0) or 0), int(_ms.get("down_count", 0) or 0)
             )
             L(
-                f"  📊 全市场(通达信·含ST/退/北交所): 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
+                "  📊 全市场(通达信·本次响应，接口未提供可核验数据日): "
+                f"上涨{_ms['up_count']}/下跌{_ms['down_count']}"
                 f" | 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
                 f" | 平{_ms['neutral_count']}/停牌{_ms['suspended_count']}"
-                f" | 涨跌比{_ms_ud}（{_ms_sentiment}）| 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
-                f"（全市场口径,涨停含ST/退/北交所故多于样本内{_zt_count}只;跌停按主板10%口径,故少于样本内{_dt_count}只）"
+                f" | 涨跌比{_ms_ud} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
+                "（通达信源端全市场口径，含 ST/退市整理/北交所）"
             )
     except Exception as _e:
         _debug_log(f"mak market stat: {_e}")
@@ -1637,66 +2095,47 @@ async def generate_sector_report(output_path):
     except Exception as _e:
         _debug_log(f"mak fuyao auction benchmark: {_e}")
 
-    # V16.1.7: 财联社市场情绪增强（字典 §12.10.2 实测可用——热度/封板率/炸板/高开率/获利率/连板梯队）
-    # V16.3 O37: KPL 情绪互校（字典 §12.15.2——财联社 → 开盘红 → KPL 三源兜底，8/7 交叉验证：涨停 74 三家一致）
+    # 市场情绪展示只采用已核实的 KPL 字段；CLS 聚合字段未定案，保留研究采集但不作报告解释。
     try:
-        from stock_common import get_cls_market_emotion
+        from stock_common import get_kpl_market_sentiment, get_kpl_plate_strength
+        from stock_common.stock_calendar import latest_market_data_date
 
-        _emotion = await asyncio.to_thread(get_cls_market_emotion)  # M10: 防阻塞
-        if not _emotion:
-            # O37: 财联社失败 → KPL 兜底（strong 情绪值/连板高度——匿名接口）
-            try:
-                from stock_common import get_kpl_market_sentiment, get_kpl_broken_ratio
+        _market_data_date = latest_market_data_date(now).isoformat()
+        _kpl = await asyncio.to_thread(get_kpl_market_sentiment)
+        if _kpl:
+            _day_label = str(_kpl.get("day") or "未提供")
+            L(f"  📊 开盘啦市场情绪指标（响应日期标签 {_day_label}；标签未确认为来源实际数据日）:")
+            _kpl_parts = []
+            if _kpl.get("ztjs") is not None:
+                _kpl_parts.append(f"涨停家数 {_kpl['ztjs']} 只")
+            if _kpl.get("lbgd") is not None:
+                _kpl_parts.append(f"最高连续涨停 {_kpl['lbgd']} 板")
+            if _kpl.get("df_num") is not None:
+                _kpl_parts.append(f"大幅回撤个股数 {_kpl['df_num']} 只")
+            if _kpl.get("strong") is not None:
+                _kpl_parts.append(f"情绪指标分值 {_kpl['strong']}（0–100；非百分比或概率）")
+            if _kpl_parts:
+                L("  " + " | ".join(_kpl_parts))
+            _tip = str(_kpl.get("tip") or "").strip()
+            if _tip:
+                L(f"  来源提示: {_tip[:160]}")
 
-                _kpl = await asyncio.to_thread(get_kpl_market_sentiment)  # M10: 防阻塞
-                _kbr = get_kpl_broken_ratio()
-                if _kpl:
-                    _ks = _kpl.get("strong")
-                    if _ks is not None:
-                        _emo_tag = "🔥 亢奋" if _ks >= 75 else "😐 中性" if _ks >= 40 else "🧊 冰点"
-                        L(
-                            f"  🌡️ 开盘啦情绪值: {_ks}/100 {_emo_tag}（连板高度 {_kpl.get('lbgd')} | 大幅回撤 {_kpl.get('df_num')}）"
-                        )
-                    if _kbr:
-                        L(
-                            f"  📈 开盘啦破板率: {_kbr.get('broken_ratio')}（涨停 {_kbr.get('zt')} | 跌停 {_kbr.get('dt')} | 炸板 {_kbr.get('broken_num')}）"
-                        )
-            except Exception as _e2:
-                _debug_log(f"mak kpl emotion fallback: {_e2}")
-        elif _emotion:
-            _md = _emotion.get("market_degree")
-            _ur = _emotion.get("up_ratio")
-            _uo = _emotion.get("up_open_num")
-            _perf = _emotion.get("performance")
-            _uor = _emotion.get("up_open_ratio")
-            _pr = _emotion.get("profit_ratio")
-            if _md is not None:
-                _emo_tag = "🔥 亢奋" if _md >= 75 else "😐 中性" if _md >= 40 else "🧊 冰点"
-                L(f"  🌡️ 财联社市场热度: {_md}/100 {_emo_tag}")
-            if _ur is not None:
-                L(
-                    f"  📈 封板率: {_ur}（炸板 {_uo} 只）| 高开率: {_uor} | 获利率: {_pr} | 昨涨停今表现: {_perf}"
-                )
-            _ladder = _emotion.get("limit_up_board") or {}
-            if isinstance(_ladder, dict) and _ladder:
-                _ladder_str = " | ".join(
-                    f"{k}{v.get('count','')}家({v.get('continuous_rate','')})"
-                    for k, v in list(_ladder.items())[:4]
-                )
-                L(f"  🪜 财联社连板梯队: {_ladder_str}")
-            # O37: KPL 情绪指标互校（strong/连板高度——不同体系独立验证）
-            try:
-                from stock_common import get_kpl_market_sentiment
-
-                _kpl = get_kpl_market_sentiment()
-                if _kpl and _kpl.get("strong") is not None:
-                    L(
-                        f"  🧭 开盘啦互校: 情绪值 {_kpl.get('strong')} | 连板高度 {_kpl.get('lbgd')} | 涨停 {_kpl.get('ztjs')}（独立源交叉验证）"
-                    )
-            except Exception as _e3:
-                _debug_log(f"mak kpl emotion cross-check: {_e3}")
+        # KPL 板块接口的请求日不是来源日期证明；字段映射/单位未定案，只展示接口原始值。
+        _plates = await asyncio.to_thread(get_kpl_plate_strength, top_n=8, date=_market_data_date)
+        if _plates:
+            L(
+                f"\n  🧭 开盘啦 ZSType=7 板块榜（请求数据日 {_market_data_date}；字段含义/单位未定案，仅展示接口原始值）:"
+            )
+            for _plate in _plates[:8]:
+                _name = str(_plate.get("name") or "").strip()
+                if not _name:
+                    continue
+                _parts = [_name]
+                if _plate.get("strength") is not None:
+                    _parts.append(f"col_02={_plate['strength']}")
+                L("    " + " | ".join(_parts))
     except Exception as _e:
-        _debug_log(f"mak cls_market_emotion: {_e}")
+        _debug_log(f"mak kpl verified sentiment/plate strength: {_e}")
 
     # V10.3: 汇总本次扫描样本的主力净额；ZHB 竞价金额单独展示，不混作主力资金方向。
     _auction_amount_wan = 0.0
@@ -1717,93 +2156,87 @@ async def generate_sector_report(output_path):
         source_date_note=_MAIN_NET_DATA_DATE_NOTE,
     ):
         L(_flow_line)
-    if _lbp > 80:
-        L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
-    if total_abnormal > 40 and _lbp > 60:
-        L("    ⚠️ 异动+涨停双高，情绪高潮临界点，谨防次日退潮")
-    if _dt_count > 20:
-        L(f"    💥 跌停{_dt_count}家 > 20，亏钱效应扩散，防御优先")
-    _zt_3d = [
-        s for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), s.get("change_pct", 0))
+    _limit_up_samples = [
+        s
+        for s in all_stocks
+        if _current_changes.get(s["code"]) is not None
+        and is_limit_up(s["code"], s.get("name", ""), _current_changes[s["code"]])
     ]
-    # V17.0.25(2026-09-02) P1-4 修复: A段连板高度原由 ret_3d 估算封顶3板(>=4 分支为死代码),
-    # 与 B段真实最高连板(多源 max_ladder, 如 7板)矛盾。优先用财联社真实档位(_ladder),
-    # 否则退回 ret_3d 估算(放开3板封顶, 用复利对数算真实板数); KPL lbgd 作二次校验。
-    _lb_3d = {}
+    # 连板梯队只统计 ELTDX 明确返回的 ladder_level，不用近 3 日涨幅推算连板数。
+    _ladder_counts: dict[str, int] = {}
     _max_board = 0
-    _cl_d = locals().get("_ladder")
-    if isinstance(_cl_d, dict) and _cl_d:
-        for _k, _v in _cl_d.items():
-            _cnt = _v.get("count", 0) if isinstance(_v, dict) else 0
-            _lb_3d[_k] = _cnt
-            _m = re.search(r"(\d+)", str(_k))
-            if _m:
-                _max_board = max(_max_board, int(_m.group(1)))
-    else:
-        for s in _zt_3d:
-            r3 = s.get("ret_3d", 0)
-            code = s.get("code", "")
-            # V16.2: 按板块统一阈值（主板/ST 10, 创业板·科创板 20, 北交所 30）
-            _lim = limit_pct_for(code, s.get("name", ""))
-            if r3 >= _lim * 0.95:
-                # 复利对数估算真实连板数: (1+lim%)^n - 1 = r3% → n = log(1+r3/100)/log(1+lim/100)
-                try:
-                    _est = max(1, int(round(math.log(1 + r3 / 100.0) / math.log(1 + _lim / 100.0))))
-                except (ValueError, ZeroDivisionError):
-                    _est = 1
-                if _est >= 3:
-                    _lb_3d["3板+"] = _lb_3d.get("3板+", 0) + 1
-                    _max_board = max(_max_board, _est)
-                elif _est == 2:
-                    _lb_3d["2板"] = _lb_3d.get("2板", 0) + 1
-                    _max_board = max(_max_board, 2)
-                else:
-                    _lb_3d["首板"] = _lb_3d.get("首板", 0) + 1
-    # V17.2.7(2026-09-07) 修复: 首板 = 样本涨停总数 - 连板合计, 杜绝 ret_3d 阈值误杀致首板≈1 的荒谬值;
-    # 首板 + 连板 恒等于本段涨停总数(_zt_count)。
-    _lb_total = sum(v for k, v in _lb_3d.items() if k != "首板")
-    _lb_3d["首板"] = max(0, len(_zt_3d) - _lb_total)
-    # KPL 连板高度(lbgd)二次校验/兜底——独立源最高连板
-    try:
-        _kpl_d = locals().get("_kpl")
-        if isinstance(_kpl_d, dict) and _kpl_d.get("lbgd") is not None:
-            _max_board = max(_max_board, int(_kpl_d["lbgd"]))
-    except Exception:
-        pass
-    if _lb_3d:
-        _ladder_str = " | ".join(f"{k}: {v}家" for k, v in sorted(_lb_3d.items()))
-        _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
-        L(f"  📊 连板梯队（财联社情绪板档·市场口径）: {_ladder_str}{_max_desc}")
-        # V17.2.27(2026-09-18) P1 口径说明: A段连板高度为财联社情绪板档(市场口径),
-        # B段【涨停池扫描】的最高连板为财联社/KPL/复盘啦多源统计口径；
-        # 来源与统计窗口可能不同，数值并列展示，不将一方当作另一方的逐股核验。
-        L(
-            "    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板的多源统计见【B. 涨停池扫描】。来源与统计窗口可能不同，数值并列展示，不视为逐股核验。"
+    _seen_ladder_codes: set[str] = set()
+    for _row in _eltdx_ladder:
+        if not isinstance(_row, dict):
+            continue
+        _raw_code = str(_row.get("code") or _row.get("full_code") or "").strip().lower()
+        _plain_code = re.sub(r"^(sh|sz|bj)", "", _raw_code)
+        if not _plain_code or _plain_code in _seen_ladder_codes:
+            continue
+        try:
+            _raw_level = _row.get("ladder_level")
+            if isinstance(_raw_level, bool):
+                continue
+            _level_value = float(_raw_level)
+            if not math.isfinite(_level_value) or not _level_value.is_integer():
+                continue
+            _level = int(_level_value)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if _level < 1:
+            continue
+        _seen_ladder_codes.add(_plain_code)
+        _label = f"{_level}板" if _level <= 6 else "7板+"
+        _ladder_counts[_label] = _ladder_counts.get(_label, 0) + 1
+        _max_board = max(_max_board, _level)
+    if _ladder_counts:
+        _ladder_str = " | ".join(
+            f"{k}: {v}只"
+            for k, v in sorted(
+                _ladder_counts.items(),
+                key=lambda item: int(item[0].split("板")[0].replace("+", "")),
+            )
         )
-        if _max_board >= 4:
-            L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
-        elif _max_board <= 1 and _zt_count > 30:
-            L("    ⚠️ 涨停多但无高度板，首板跟风为主，持续性存疑")
+        L(f"  📊 连板梯队（通达信 ELTDX 返回记录）: {_ladder_str} | 最高 {_max_board} 板")
+        L(
+            "    ℹ️ 仅统计 ELTDX 返回且含有效 ladder_level 的记录；未返回记录不推定为首板或非连板，"
+            "也不再用近 3 日涨幅估算连板数。KPL 最高连板字段在上方单独列示，不与本表混算。"
+        )
+    else:
+        L(
+            "  📊 连板梯队：本次未取得含有效 ladder_level 的 ELTDX 记录；"
+            "不根据近 3 日涨幅估算板数，也不据此判断市场没有连板股。"
+        )
     _up_abn = [r for r in results["已触发"] if r.get("tag") == "🔥"]
     if _up_abn:
         # V16.1: 原"异动信号回测(近似)"表述是伪回测（统计的是已上涨股票当前 ret_5d，
         # 非信号发出后的前瞻收益）→ 改为现状描述，不做胜率暗示
-        _pos_5d = 0
-        for r in _up_abn[:30]:
-            for s in all_stocks:
-                if s["code"] == r["code"] and s.get("ret_5d", 0) > 0:
-                    _pos_5d += 1
-                    break
-        _pos_ratio = _pos_5d / min(len(_up_abn), 30) * 100
-        L(
-            f"  📊 多头异动股近5日涨幅为正的比例: {_pos_ratio:.0f}%（{min(len(_up_abn),30)}只样本，现状统计非前瞻回测）"
-        )
+        _up_codes = list(dict.fromkeys(r["code"] for r in _up_abn))[:30]
+        _signal_date_by_code = {
+            r["code"]: r.get("as_of_date", "") for r in _up_abn if r["code"] in _up_codes
+        }
+        _ret5_values = []
+        for _code in _up_codes:
+            _stock = next((s for s in all_stocks if s["code"] == _code), None)
+            if _stock is None:
+                continue
+            _ret5, _ = _metric_for_date(_stock, "ret_5d", _signal_date_by_code.get(_code, ""))
+            if _ret5 is not None:
+                _ret5_values.append(_ret5)
+        if _ret5_values:
+            _positive_ratio = (
+                sum(1 for value in _ret5_values if value > 0) / len(_ret5_values) * 100
+            )
+            L(
+                f"  📊 多头异动股同数据日近5交易日涨幅为正的比例: {_positive_ratio:.0f}%"
+                f"（可对齐 {len(_ret5_values)}/{len(_up_codes)} 只，现状统计非前瞻回测）"
+            )
+        else:
+            L("  📊 多头异动股近5交易日涨幅：没有与异动数据日对齐的有效样本，暂不计算比例。")
     L(f"{'---'}")
     L(
         f"  扫描汇总: 卡异动{len(results['卡异动'])}只 | 已触发{len(results['已触发'])}只 | 严重{len(results['严重'])}只"
     )
-    if total_abnormal > 40:
-        L(f"  ⚠️ 全市场异动总数{total_abnormal}只处于历史高位，警惕监管降温")
     _tech_cache = {}
 
     def _tech(code):
@@ -1878,24 +2311,45 @@ async def generate_sector_report(output_path):
     L(f"\n{'='*90}")
     L("## 【B. 涨停池扫描（打板情绪看板）】")
     L(f"{'---'}")
+    from stock_common.stock_calendar import latest_market_data_date
+
+    _pool_data_date = latest_market_data_date(datetime.now()).isoformat()
+    L(f"  涨停池查询目标日：{_pool_data_date}")
     try:
-        # V16.3.3 (2026-08-10 字典 12.15.5): 多源计数按至少两源同值标记交叉验证；
-        # push2ex 明细仍作主数据源，报告需区分多数值与涨停池逐股名单口径。
+        # MAK 保持关闭 Push2；这里只列 KPL 响应统计值作对照，不把 Day 标签当作实际数据日证明。
         _multi = {}
         try:
             from stock_common import get_limit_pool_multi_source
 
-            _multi = get_limit_pool_multi_source(allow_push2ex=False)
+            _multi = get_limit_pool_multi_source(_pool_data_date, allow_push2ex=False)
             if _multi.get("sources"):
                 _src_txt, _verified = _format_limit_pool_source_summary(
                     _multi.get("sources", {}),
                     _multi.get("total"),
                     _multi.get("unqueried_sources", ()),
+                    cross_verified=_multi.get("cross_verified") is True,
                 )
                 _multi_total = _multi.get("total")
-                _total_text = f"{_multi_total} 只" if _multi_total is not None else "未知"
+                if type(_multi_total) is int:
+                    if _multi.get("cross_verified") is True:
+                        _total_text = f"{_multi_total} 只（同日交叉确认）"
+                    elif _multi.get("counts_agree") is True:
+                        _total_text = f"{_multi_total} 只（两源数值相同，实际数据日未确认）"
+                    else:
+                        _observed_source = (
+                            "KPL响应观测"
+                            if type(_multi.get("sources", {}).get("kpl")) is int
+                            else "东财按请求日期查询"
+                        )
+                        _total_text = f"{_multi_total} 只（{_observed_source}，实际数据日未确认）"
+                else:
+                    _total_text = "未知"
                 _max_ladder = _multi.get("max_ladder")
-                _max_ladder_text = str(_max_ladder) if _max_ladder is not None else "未知"
+                _max_ladder_text = (
+                    f"KPL lbgd={_max_ladder}（响应 Day 标签匹配）"
+                    if _max_ladder is not None
+                    else "未知"
+                )
                 L(
                     f"  📊 涨停数来源对照: {_src_txt} → {_total_text}；"
                     f"{_verified} | 最高连板 {_max_ladder_text}"
@@ -1905,24 +2359,22 @@ async def generate_sector_report(output_path):
 
         from stock_common import get_limit_pool_summary
 
-        pool = get_limit_pool_summary(allow_push2ex=False)
-        zt_count = pool.get("limit_up_count", 0)
+        pool = get_limit_pool_summary(_pool_data_date, allow_push2ex=False)
+        zt_count = pool.get("limit_up_count")
         zb_count = pool.get("limit_broken_count", 0)
         _multi_total = _multi.get("total")
-        _mismatch_note = _limit_pool_count_mismatch_note(_multi_total, zt_count)
+        _mismatch_note = (
+            _limit_pool_count_mismatch_note(
+                _multi_total, zt_count, _multi.get("requested_data_date")
+            )
+            if pool.get("limit_up_count_available") is True
+            else ""
+        )
         if _mismatch_note:
             L(f"  {_mismatch_note}")
-        # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口 tc>0 但 pool=[] 空;
-        # get_limit_pool_summary ZHB 兜底用的是**当前快照**(T-1, 如 8/18)→ 8/19 报告显示 8/18 跌停数(10),
-        # 与 A 段涨跌幅口径(8/19=152)严重不一致。统一: B 段跌停数无条件用 A 段 _dt_count(8/19 涨跌幅口径)
-        # V17.0.8(2026-08-26 报告核查): P0 修复后 pool.limit_down_count 已走权威链
-        # (push2ex tc → KPL RiseFallAnalysis dt → ZHB 仅同日期), 恢复 pool 优先——
-        # A 段 _dt_count(涨跌幅口径, 实时池) 仅作兜底
-        _dt_available = pool.get("limit_down_count_available", True)
-        dt_count = pool.get("limit_down_count", 0)
-        if (dt_count == 0 or not _dt_available) and _dt_count > 0:
-            dt_count = _dt_count
-            _dt_available = True
+        # B 段只展示显式目标数据日、日期合格的来源计数；不以 A 段可能混合时点的样本数回填。
+        _dt_available = pool.get("limit_down_count_available", False) is True
+        dt_count = pool.get("limit_down_count")
 
         # V17.0.5 P1: fuyao 跌停池明细(first/last_limit_time——东财 getTopicDTPool 空缺的正式解法)
         try:
@@ -1959,8 +2411,8 @@ async def generate_sector_report(output_path):
         except Exception as _e:
             _debug_log(f"mak fuyao limit_down detail: {_e}")
         success_rate = pool.get("success_rate")
-        _zt_available = pool.get("limit_up_count_available", True)
-        _zb_available = pool.get("limit_broken_count_available", True)
+        _zt_available = pool.get("limit_up_count_available", False) is True
+        _zb_available = pool.get("limit_broken_count_available", False) is True
         _zt_text = str(zt_count) if _zt_available else "未取得"
         _zb_text = str(zb_count) if _zb_available else "未取得"
         _dt_text = str(dt_count) if _dt_available and dt_count is not None else "未取得"
@@ -1968,8 +2420,11 @@ async def generate_sector_report(output_path):
         L(
             f"  涨停 {_zt_text} 只 | 炸板 {_zb_text} 只 | 跌停 {_dt_text} 只 | 封板率 {_success_text}（涨停池口径）"
         )
+        L("  ℹ️ 同花顺涨停名单接口未返回独立实际数据日；名单及数量仅为目标日期请求的来源响应观察。")
         if not _zb_available or not _dt_available:
-            L("  ℹ️ 未取得的炸板/跌停数不按 0 计；仅展示当日同源聚合数据。")
+            L(
+                "  ℹ️ 未取得的炸板/跌停数不按 0 计；各项只采用目标数据日符合来源日期规则的结果，口径可能不同。"
+            )
         # V17.4.x (#444): 涨跌停数为涨停池口径；与其他来源并列观察，未逐只对齐前不称为一致确认。
         L(
             "  ℹ️ 本节涨跌停数、封板率和名单统一按涨停池口径；其他来源日期未在本报告中核实，且未逐股对账前仅作并列观察，不称为交叉确认。"
@@ -2056,7 +2511,7 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak limit_pool: {_e}")
         L("  (打板数据获取失败)")
 
-    # V16.1.7: 开盘红涨停天梯（字典 §12.10.4 实测可用）
+    # KPH（开盘红）涨停天梯，与 KPL（开盘啦）情绪统计保持独立来源。
     # V17.0.1f(2026-08-16): 移除盘口异动段——用户原则: 5 大脚本零东财 push2ex 接口
     try:
         from stock_common import get_kph_limit_ladder
@@ -2138,7 +2593,7 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak ths pool note: {_e}")
         _ths_pool = []
     if _ths_pool:
-        _zt_all = {s.get("code", "") for s in _zt_3d} if "_zt_3d" in dir() else set()
+        _zt_all = {s.get("code", "") for s in _limit_up_samples}
         _ladder_all = (
             {str(s.get("code", "")) for s in (_ladder or [])}
             if isinstance(_ladder, list)
@@ -2165,11 +2620,11 @@ async def generate_sector_report(output_path):
             "  ⚠️ 同花顺独家交叉验证：数据源受限（同花顺网页接口 401 反爬），强势股热池暂无法获取，交叉验证增量视角缺失。"
         )
 
-    # V17.2.24: 通达信 eltdx 连板天梯实时核验（TDX 7709/7615 原生；与 B/B+ 财联社/开盘红独立源交叉验证）
+    # 通达信 ELTDX 连板天梯与 KPH（开盘红）分源展示，不合并成一个来源结论。
     if _eltdx_ladder:
         L("## 【B++. 连板天梯（通达信 eltdx 实时核验）】")
         L(
-            "  （数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时）；与 B/B+ 财联社/开盘红连板梯队独立互校）"
+            "  （数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时）；与 B+ KPH（开盘红）连板天梯分源展示）"
         )
         _ladder_sorted = sorted(
             [r for r in _eltdx_ladder if isinstance(r, dict) and (r.get("ladder_level") or 0) >= 2],
@@ -2250,94 +2705,130 @@ async def generate_sector_report(output_path):
             L(
                 f"    {_dt_display} - {str(_dt.get('reason', ''))[:40]} | 净买{float(_dt.get('net_buy', 0)):.0f}万"
             )
-    # 近5日异动回溯（基于10日/20日/60日偏离值反推）
+    # Historical high-return review uses only dated trading-bar fields.
     _recent_high = []
-    for s in all_stocks:
-        _r3 = s.get("ret_3d", 0)
-        _r10 = s.get("ret_10d", 0)
-        _r20 = s.get("ret_20d", 0)
-        _r60 = s.get("ret_60d", 0)
-        # V16.2: 3日阈值统一（主板/ST 10 / 双创 20 / 北交所 30）
-        _th = limit_pct_for(s.get("code", ""), s.get("name", ""))
-        _matched = False
-        # 10日严重：近日可能触发过
-        if abs(_r10) >= 80:
-            _matched = True
-        # 20日严重
-        if abs(_r20) >= 150:
-            _matched = True
-        # 3日已触发（当天或最近几天内）
-        if abs(_r3) >= _th:
-            _matched = True
+    for stock in all_stocks:
+        _values = {}
+        _dates = {}
+        for _field in ("ret_3d", "ret_10d", "ret_20d"):
+            _meta = (stock.get("_field_meta") or {}).get(_field) or {}
+            _metric_date = _normalize_mak_date(_meta.get("as_of_date"))
+            _value, _ = _metric_for_date(stock, _field, _metric_date, require_close_quote=True)
+            _values[_field] = _value
+            _dates[_field] = _metric_date if _value is not None else ""
+        _threshold = limit_pct_for(stock.get("code", ""), stock.get("name", ""))
+        _matched = (
+            (_values["ret_10d"] is not None and abs(_values["ret_10d"]) >= 80)
+            or (_values["ret_20d"] is not None and abs(_values["ret_20d"]) >= 150)
+            or (_values["ret_3d"] is not None and abs(_values["ret_3d"]) >= _threshold)
+        )
         if _matched:
-            _recent_high.append((s["code"], s["name"], _r3, _r10, _r20))
-    # 龙虎榜补全回溯名单
+            _recent_high.append(
+                {
+                    "code": stock["code"],
+                    "name": stock["name"],
+                    "ret_3d": _values["ret_3d"],
+                    "ret_10d": _values["ret_10d"],
+                    "ret_20d": _values["ret_20d"],
+                    "dates": _dates,
+                }
+            )
+    # 龙虎榜补全回溯名单；TDX 日 K 每个窗口必须有完整且同日结束的交易日条。
     if _dt_map:
-        for _c, _dt in _dt_map.items():
-            if _c not in {_r[0] for _r in _recent_high}:
-                _s = next((s for s in all_stocks if s["code"] == _c), None)
-                if _s:
-                    _recent_high.append(
-                        (
-                            _c,
-                            _s["name"],
-                            _s.get("ret_3d", 0),
-                            _s.get("ret_10d", 0),
-                            _s.get("ret_20d", 0),
-                        )
+        _recent_codes = {row["code"] for row in _recent_high}
+        for code, dt_row in _dt_map.items():
+            if code in _recent_codes:
+                continue
+            stock = next((item for item in all_stocks if item["code"] == code), None)
+            if stock:
+                _values = {}
+                _dates = {}
+                for _field in ("ret_3d", "ret_10d", "ret_20d"):
+                    _meta = (stock.get("_field_meta") or {}).get(_field) or {}
+                    _metric_date = _normalize_mak_date(_meta.get("as_of_date"))
+                    _values[_field], _ = _metric_for_date(
+                        stock,
+                        _field,
+                        _metric_date,
+                        require_close_quote=True,
                     )
-                else:
-                    # ST/退市不在 all_stocks 池中 → 从 TDX K线 临时算 3/10/20 日涨幅
-                    _r3 = _r10 = _r20 = 0
-                    try:
-                        _k, _kr = await asyncio.to_thread(_mak_kline_raw, _c)
-                        _kr = _kr[-30:] if _kr else _kr
-                        if _k and _kr:
-                            _ci = next(
-                                (i for i, kk in enumerate(_k) if kk in ("close", "close_price")), -1
-                            )
-                            if _ci >= 0:
-                                _cls = [_safe_float(r[_ci]) for r in _kr if len(r) > _ci]
-                                if len(_cls) >= 22:
-                                    _r3 = (_cls[-1] / _cls[-4] - 1) * 100 if _cls[-4] > 0 else 0
-                                    _r10 = (_cls[-1] / _cls[-11] - 1) * 100 if _cls[-11] > 0 else 0
-                                    _r20 = (_cls[-1] / _cls[-21] - 1) * 100 if _cls[-21] > 0 else 0
-                    except Exception as _e:
-                        _debug_log(f"mak recent_high_kline error: {_e}")
-                    _recent_high.append((_c, _dt.get("name", ""), _r3, _r10, _r20))
-    _recent_high.sort(key=lambda x: abs(x[3]), reverse=True)
+                    _dates[_field] = _metric_date if _values[_field] is not None else ""
+                if any(value is not None for value in _values.values()):
+                    _recent_high.append(
+                        {
+                            "code": code,
+                            "name": stock["name"],
+                            **_values,
+                            "dates": _dates,
+                        }
+                    )
+                continue
+            try:
+                dated_bars = await asyncio.to_thread(_dated_stock_bars, code)
+            except Exception as error:
+                _debug_log(f"mak recent_high_kline error {code}: {error}")
+                dated_bars = []
+            values = {
+                f"ret_{period}d": _index_return_for_date(dated_bars, _target_data_date, period)
+                for period in (3, 10, 20)
+            }
+            dates = {
+                field: _target_data_date if value is not None else ""
+                for field, value in values.items()
+            }
+            if any(value is not None for value in values.values()):
+                _recent_high.append(
+                    {
+                        "code": code,
+                        "name": dt_row.get("name", ""),
+                        "ret_3d": values["ret_3d"],
+                        "ret_10d": values["ret_10d"],
+                        "ret_20d": values["ret_20d"],
+                        "dates": dates,
+                    }
+                )
+    _recent_high.sort(key=lambda row: abs(row["ret_10d"] or 0), reverse=True)
     if _recent_high:
         _recent_top = _recent_high[:50]
         _recent_ann = {}
         _ann_t0 = time.time()
         for _r in _recent_top[:15]:
             try:
-                _a, _s = get_abnormal_announcements(_r[0])
+                _a, _s = get_abnormal_announcements(_r["code"])
                 if _a > 0:
-                    _recent_ann[_r[0]] = (_a, _s)
+                    _recent_ann[_r["code"]] = (_a, _s)
             except Exception as _e:
                 _debug_log(f"mak abnormal_announcements error: {_e}")
         _ann_dt = time.time() - _ann_t0
         print(f"  公告查询耗时: {_ann_dt:.2f}s", flush=True)
         L(f"\n{'='*90}")
-        L("## 【近3日异动回溯（高偏离值个股，可能近日触发过异动）】")
+        L("## 【个股异动回溯（仅列有日期化指标的样本）】")
         L(f"{'---'}")
-        # V17.0.2f: md 表格(用户: 20日偏离/公告 应分列)
-        L("| 代码 | 名称 | 3日偏离 | 10日偏离 | 20日偏离 | 公告 |")
-        L("|---|---|---|---|---|---|")
+        L(
+            "| 代码 | 名称 | 3交易日涨幅 | 10交易日涨幅 | 20交易日涨幅 | 指标数据日(3/10/20) | 公告 |"
+        )
+        L("|---|---|---|---|---|---|---|")
         _shown = 0
         for _r in _recent_top[:30]:
             _a_info = ""
-            if _r[0] in _recent_ann:
-                _a_cnt, _s_cnt = _recent_ann[_r[0]]
+            if _r["code"] in _recent_ann:
+                _a_cnt, _s_cnt = _recent_ann[_r["code"]]
                 _a_info = f"已发{_a_cnt}份(严重{_s_cnt}份)" if _s_cnt > 0 else f"已发{_a_cnt}份"
             else:
                 continue
-            L(f"| {_r[0]} | {_r[1]} | {_r[2]:+.2f}% | {_r[3]:+.2f}% | {_r[4]:+.2f}% | {_a_info} |")
+            _fmt_metric = lambda value: f"{value:+.2f}%" if value is not None else "未评估"
+            _date_label = ", ".join(
+                f"{period}日={_r['dates'].get(field) or '未确认'}"
+                for period, field in ((3, "ret_3d"), (10, "ret_10d"), (20, "ret_20d"))
+            )
+            L(
+                f"| {_r['code']} | {_r['name']} | {_fmt_metric(_r['ret_3d'])} | "
+                f"{_fmt_metric(_r['ret_10d'])} | {_fmt_metric(_r['ret_20d'])} | {_date_label} | {_a_info} |"
+            )
             _shown += 1
         if _shown == 0:
-            L("  (近3日无股票触发异常波动公告)")
-        L("\n  > 💡 注: 回溯基于当日快照的 10 日/20 日偏离值反推，非精确历史回放")
+            L("  (无可报告的日期化异动回溯公告样本；不据此断言没有公告)")
+        L("\n  > 💡 指标窗口按各自数据日计算，公告为近7日检索结果；本节不是精确的历史触发回放。")
 
     L(f"\n{'='*90}")
     L("## 【D. 行业轮动强度扫描】")

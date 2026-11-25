@@ -301,41 +301,42 @@ def test_market_breadth_handles_zero_decliners_without_fake_ratio():
     assert get_mak_report._market_breadth_display(10, 0) == ("∞", "上涨样本中无下跌")
 
 
-def test_mak_limit_pool_consensus_distinguishes_majority_from_unanimity():
+def test_mak_limit_pool_summary_excludes_unverified_counts_and_requires_two_sources():
     source_text, status = get_mak_report._format_limit_pool_source_summary(
-        {"cls": 54, "kpl": 54, "fupan": 52}, 54
+        {"cls": 54, "kpl": 54, "fupan": 52, "push2ex": 54}, 54
     )
-    assert "cls=54 / kpl=54 / fupan=52" == source_text
-    assert "多数值 54" in status
-    assert "2/3" in status
-    assert "存在差异" in status
-    assert "全数一致" not in status
+    assert "CLS=不纳入" in source_text
+    assert "KPL(开盘啦)=54" in source_text
+    assert "KPH复盘榜=不纳入" in source_text
+    assert "东财Push2=54" in source_text
+    assert "两个来源计数值均为 54" in status
+    assert "不作同日交叉确认" in status
 
-    _, matching_status = get_mak_report._format_limit_pool_source_summary(
-        {"cls": 54, "kpl": 54, "fupan": None}, 54
+    _, single_source_status = get_mak_report._format_limit_pool_source_summary(
+        {"cls": None, "kpl": 54, "fupan": None, "push2ex": None},
+        54,
+        unqueried_sources=["cls", "fupan", "push2ex"],
     )
-    assert "全数一致（2/2）" in matching_status
-    assert "1 个来源无有效值" in matching_status
+    assert "仅有 KPL 日期标签匹配的观测值" in single_source_status
+    assert "来源实际数据日未核实" in single_source_status
 
-    _, inconsistent_total_status = get_mak_report._format_limit_pool_source_summary(
-        {"cls": 54, "kpl": 54, "fupan": 52}, 52
+    _, conflict_status = get_mak_report._format_limit_pool_source_summary(
+        {"cls": None, "kpl": 54, "fupan": None, "push2ex": 52},
+        None,
+        unqueried_sources=["cls", "fupan"],
     )
-    assert "多数值 54（2/3" in inconsistent_total_status
-    assert "接口汇总值 52 与多数值不符" in inconsistent_total_status
-
-    _, tied_status = get_mak_report._format_limit_pool_source_summary(
-        {"a": 54, "b": 54, "c": 52, "d": 52}, 54
-    )
-    assert "来源计数并列（52、54 各 2 票）" in tied_status
-    assert "无唯一多数结论" in tied_status
+    assert "来源观测计数不一致（KPL(开盘啦) 54 / 东财Push2 52）" in conflict_status
+    assert "未采用任一来源作为汇总结论" in conflict_status
 
 
 def test_mak_limit_pool_mismatch_note_keeps_pool_count_separate():
-    note = get_mak_report._limit_pool_count_mismatch_note(54, 52)
-    assert "多源统计值 54 只" in note
-    assert "本节涨停池 52 只" in note
-    assert "未逐只对齐名单" in note
+    note = get_mak_report._limit_pool_count_mismatch_note(54, 52, "2026-11-24")
+    assert "请求数据日 2026-11-24" in note
+    assert "来源对照计数 54 只" in note
+    assert "本节涨停名单 52 只" in note
+    assert "未逐股对齐" in note
     assert get_mak_report._limit_pool_count_mismatch_note(52, 52) == ""
+    assert get_mak_report._limit_pool_count_mismatch_note(54, None) == ""
 
 
 def test_mak_flow_summary_reports_coverage_and_never_calls_auction_main_flow():

@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union
-from datetime import datetime, timedelta
+from datetime import date as Date, datetime, timedelta
 import json
 import re
 from stock_common.sc_network import (
@@ -24,7 +24,7 @@ from stock_common.sc_utils import _safe_float, is_limit_down
 from core.stock_cache import TTL, cached
 from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LAST_CALL, _KPL_LHB
 from stock_common.sc_kpl import _f, get_kpl_broken_ratio, get_kpl_market_sentiment
-from stock_common.stock_calendar import get_last_trading_day
+from stock_common.stock_calendar import get_last_trading_day, latest_market_data_date
 
 
 def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
@@ -70,22 +70,42 @@ def _parse_nonnegative_count(value: Any) -> Optional[int]:
     return None
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def _resolve_pool_target_date(value: Any = None) -> Date:
+    """Resolve the requested market-data date without substituting the run date."""
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, Date):
+        return value
+    if value is None or not str(value).strip():
+        return latest_market_data_date(datetime.now())
+    raw = str(value).strip().replace("/", "-")
+    if len(raw) == 8 and raw.isdigit():
+        raw = f"{raw[:4]}-{raw[4:6]}-{raw[6:]}"
+    return datetime.strptime(raw, "%Y-%m-%d").date()
+
+
+def _normalize_response_date(value: Any) -> Optional[str]:
+    """Normalize a source's date label for exact comparison; this is not an as-of claim."""
+    raw = str(value or "").strip().replace("/", "-")
+    if len(raw) == 8 and raw.isdigit():
+        raw = f"{raw[:4]}-{raw[4:6]}-{raw[6:]}"
+    try:
+        return datetime.strptime(raw[:10], "%Y-%m-%d").date().isoformat()
+    except (TypeError, ValueError):
+        return None
+
+
+@cached(category="limit_up_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
-def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+def _get_limit_up_pool_for_date(date_str: str) -> List[Dict[str, Any]]:
     """获取东财涨停池数据
 
     Args:
-        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+        date_str: 日期字符串，格式 YYYYMMDD，省略时按最新行情基准日
 
     Returns:
         涨停股票列表，包含代码/名称/封板时间/连板数/涨停原因等
     """
-    if not date_str:
-        from datetime import datetime
-
-        date_str = datetime.now().strftime("%Y%m%d")
-
     url = "https://push2ex.eastmoney.com/getTopicZTPool"
     params = {
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
@@ -107,22 +127,23 @@ def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """Get the Eastmoney limit-up list for an explicit or latest market-data date."""
+    target = _resolve_pool_target_date(date_str).strftime("%Y%m%d")
+    return _get_limit_up_pool_for_date(target)
+
+
+@cached(category="limit_broken_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
-def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
+def _get_limit_broken_pool_for_date(date_str: str) -> List[Dict[str, Any]]:
     """获取东财炸板池数据
 
     Args:
-        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+        date_str: 日期字符串，格式 YYYYMMDD，省略时按最新行情基准日
 
     Returns:
         炸板股票列表
     """
-    if not date_str:
-        from datetime import datetime
-
-        date_str = datetime.now().strftime("%Y%m%d")
-
     url = "https://push2ex.eastmoney.com/getTopicZBPool"
     params = {
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
@@ -144,22 +165,23 @@ def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """Get the Eastmoney broken-limit list for an explicit or latest market-data date."""
+    target = _resolve_pool_target_date(date_str).strftime("%Y%m%d")
+    return _get_limit_broken_pool_for_date(target)
+
+
+@cached(category="limit_down_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
-def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
+def _get_limit_down_pool_for_date(date_str: str) -> List[Dict[str, Any]]:
     """获取东财跌停池数据
 
     Args:
-        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+        date_str: 日期字符串，格式 YYYYMMDD，省略时按最新行情基准日
 
     Returns:
         跌停股票列表
     """
-    if not date_str:
-        from datetime import datetime
-
-        date_str = datetime.now().strftime("%Y%m%d")
-
     url = "https://push2ex.eastmoney.com/getTopicDTPool"
     params = {
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
@@ -179,6 +201,12 @@ def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
     except Exception as _e:
         _debug_log(f"datasource get_limit_down_pool: {_e}")
         return []
+
+
+def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """Get the Eastmoney limit-down list for an explicit or latest market-data date."""
+    target = _resolve_pool_target_date(date_str).strftime("%Y%m%d")
+    return _get_limit_down_pool_for_date(target)
 
 
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
@@ -311,28 +339,31 @@ def get_yesterday_limit_pool(
 
 
 @cached(
-    category="limit_pool_v4",
+    category="limit_pool_v5",
     ttl_seconds=TTL["limit_pool"],
     trading_day=True,
     valid_if=lambda r: bool(
         r
         and isinstance(r, dict)
         and (
-            (r.get("limit_up_count") or 0) > 0
+            r.get("limit_up_count_available") is True
+            or r.get("limit_down_count_available") is True
+            or r.get("limit_broken_count_available") is True
+            or (r.get("limit_up_count") or 0) > 0
             or (r.get("limit_down_count") or 0) > 0
             or (r.get("limit_broken_count") or 0) > 0
         )
     ),
 )
 @requires_push2  # V17.0.1g: 涨停池同花顺优先, push2ex 仅在显式允许时调用
-def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Dict[str, Any]:
+def _get_limit_pool_summary_for_date(date_str: str, allow_push2ex: bool = True) -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
 
     V17.0.1g(2026-08-16): 涨停池改**同花顺优先**（10jqka 官方 dataapi, 字段更丰富:
     涨停原因/板型/封板率/炸板次数; 与东财 push2ex 62 vs 63 只仅差北交所口径）;
     同花顺无 sector 字段 → 用 TDX 本机 tdxhy 行业注入（零网络, 权威一级行业）;
-    失败可由 push2ex 兜底。daily reports set ``allow_push2ex=False`` and use
-    dated CLS/KPL/Fupan counts plus same-date ZHB fallback instead.
+    失败可由 push2ex 兜底。未提供日期时统一按 ``latest_market_data_date`` 请求，
+    不把自然日直接作为行情日期。未定案的 CLS/KPL RiseFallAnalysis 计数不参与正式汇总。
 
     Returns:
         包含涨停/炸板/跌停数量和详细数据的字典
@@ -341,37 +372,19 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
     from ._zhb import get_zhb_data_date
     from ._zhb import get_zhb_full_market_snapshot
 
-    # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底。
-    # 若两者都返回空池，使用财联社/KPL/复盘啦的多源计数兜底；计数可用时
-    # 不能再把全市场涨停显示为 0，但因多源接口只提供计数，明细仍保持为空。
-    zt = ths_limit_up_pool(date_str)
+    target_date = _resolve_pool_target_date(date_str)
+    target_iso = target_date.isoformat()
+    target_compact = target_date.strftime("%Y%m%d")
+
+    # 涨停池: 同花顺优先，显式允许时东财名单兜底。空名单无法区分真实零值与请求失败，
+    # KPL Day 仅为响应标签，不能在这里补成已确认的同日总数。
+    zt = ths_limit_up_pool(target_compact)
     zt_source = "ths"
-    _zt_count_override: Optional[int] = None
     if not zt and allow_push2ex:
-        zt = get_limit_up_pool(date_str)
+        zt = get_limit_up_pool(target_compact)
         zt_source = "em"
-    if not zt:
-        try:
-            _multi = get_limit_pool_multi_source(date_str or None, allow_push2ex=allow_push2ex)
-            _multi_total = _multi.get("total") if isinstance(_multi, dict) else None
-            if type(_multi_total) is int and (
-                _multi_total > 0 or (_multi_total == 0 and _multi.get("cross_verified") is True)
-            ):
-                _zt_count_override = _multi_total
-                zt_source = "multi"
-                _debug_log(
-                    f"get_limit_pool_summary limit-up count fallback: multi_source={_multi_total}, detail unavailable"
-                )
-        except Exception as _e_multi:
-            _debug_log(f"get_limit_pool_summary multi-source fallback: {_e_multi}")
-    # H1(审查 2026-08-16): 休市日 ths 内部回退最近交易日, 炸板/跌停池若仍用当天(空) →
-    # 封板率 100% 假象。统一口径: 回退后日期传给东财炸板/跌停池(东财对历史日期也有效)
-    _zt_date = ""
-    if zt_source == "ths":
-        try:
-            _zt_date = get_last_trading_day().strftime("%Y%m%d")
-        except Exception:
-            _zt_date = ""
+    # 入口已将自然日请求统一解析为最新行情基准日；涨停、炸板、跌停共用该目标日期。
+    _zt_date = target_compact
     # 同花顺源无 sector → TDX 本机 tdxhy 一级行业注入(零网络)
     if zt_source == "ths" and zt:
         try:
@@ -382,23 +395,13 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
             _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
     zb = get_limit_broken_pool(_zt_date or date_str) if allow_push2ex else []
     dt = get_limit_down_pool(_zt_date or date_str) if allow_push2ex else []
-    # V17.0.8(2026-08-26 报告核查): 修复跌停兜底——旧逻辑(ZHB 快照涨跌幅口径)在盘中读到
-    # T-1(前一日) 快照, 把昨日跌停误报为今日(8/26 实测 22 假跌停, 真实=0)。
-    # 权威顺序: ① 东财 getTopicDTPool tc 总数(pool 可能空但 tc>0) → ② KPL RiseFallAnalysis dt
-    # (独立匿名源) → ③ ZHB 快照仅当数据日期==目标日期才允许(ZHB 盘中恒为 T-1)
+    # 跌停计数只采用显式目标日期的东财 tc，或日期完全匹配且非空的 ZHB 快照。
+    # KPL RiseFallAnalysis 的 dt 尚未定案，不作为报告数值。
     _dt_fb = None
-    _zb_fb = None
     _dt_source = None
     if not dt:
         try:
-            if _zt_date or date_str:
-                _target = (_zt_date or date_str).replace("-", "")
-            else:
-                from stock_common.stock_calendar import get_last_trading_day
-
-                _target = get_last_trading_day().strftime("%Y%m%d")
-            _target_date = _target[:4] + "-" + _target[4:6] + "-" + _target[6:]
-            # KPL is independent of Eastmoney and returns same-day aggregate counts.
+            _target = target_compact
             if allow_push2ex:
                 try:
                     from stock_common.sc_datasource import _query_dt_pool_tc
@@ -409,20 +412,6 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
                         _dt_source = "push2ex"
                 except Exception as _e1:
                     _debug_log(f"get_limit_pool_summary dt tc: {_e1}")
-            # KPL is independent of Eastmoney and returns same-day aggregate counts.
-            if _dt_fb is None or not allow_push2ex:
-                try:
-                    from stock_common.sc_kpl import get_kpl_broken_ratio
-
-                    _candidate = get_kpl_broken_ratio()
-                    if _candidate and _candidate.get("date") == _target_date:
-                        _kpl_dt = _parse_nonnegative_count(_candidate.get("dt"))
-                        _zb_fb = _parse_nonnegative_count(_candidate.get("broken_num"))
-                        if _dt_fb is None and _kpl_dt is not None:
-                            _dt_fb = _kpl_dt
-                            _dt_source = "kpl"
-                except Exception as _e2:
-                    _debug_log(f"get_limit_pool_summary kpl counts: {_e2}")
             # ZHB fallback: only count a snapshot when its own date matches target.
             if _dt_fb is None:
                 try:
@@ -431,18 +420,19 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
                     _zhb_date = get_zhb_data_date().replace("-", "")
                     if _zhb_date == _target:
                         _snap = get_zhb_full_market_snapshot() or {}
-                        _dt_fb = sum(
-                            1
-                            for _c, _d in _snap.items()
-                            if _d
-                            and isinstance(_d, dict)
-                            and is_limit_down(
-                                _c,
-                                str(_d.get("name", "") or ""),
-                                _safe_float(_d.get("change_pct", 0)),
+                        if _snap:
+                            _dt_fb = sum(
+                                1
+                                for _c, _d in _snap.items()
+                                if _d
+                                and isinstance(_d, dict)
+                                and is_limit_down(
+                                    _c,
+                                    str(_d.get("name", "") or ""),
+                                    _safe_float(_d.get("change_pct", 0)),
+                                )
                             )
-                        )
-                        _dt_source = "zhb"
+                            _dt_source = "zhb"
                     else:
                         _debug_log(
                             f"get_limit_pool_summary dt: zhb date {_zhb_date} != target {_target}, 跳过 T-1 误判兜底"
@@ -458,11 +448,11 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
         sec = str(item.get("sector") or "").strip() or "板块信息未提供"
         sector_stats[sec] = sector_stats.get(sec, 0) + 1
 
-    # 封板成功率：多源仅提供计数时，用互校涨停数作为分子；若炸板池可用，
-    # 仍按“涨停 / (涨停 + 炸板)”计算，避免空明细把成功率伪造成 0%。
-    _zt_count = _zt_count_override if _zt_count_override is not None else len(zt)
-    _zt_available = bool(zt) or _zt_count_override is not None
-    _broken_count = len(zb) if allow_push2ex else (_zb_fb if _zb_fb is not None else None)
+    # 空名单不能区分真实零值与请求失败；没有有效涨停明细时，计数与封板率保持未知。
+    _zt_count = len(zt)
+    _zt_available = bool(zt)
+    # An empty list cannot distinguish a true zero from a failed/empty response.
+    _broken_count = len(zb) if zb else None
     total_attempt = _zt_count + _broken_count if _broken_count is not None else None
     if _zt_available and total_attempt is not None:
         success_rate = round(_zt_count / total_attempt * 100, 1) if total_attempt > 0 else 0.0
@@ -473,9 +463,10 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
     return {
         "limit_up_count": _zt_count,
         "limit_up_count_available": _zt_available,
+        "limit_up_count_source": zt_source if _zt_available else None,
         "limit_broken_count": _broken_count,
         "limit_broken_count_available": _broken_count is not None,
-        "limit_broken_count_source": "detail" if zb else ("kpl" if _zb_fb is not None else None),
+        "limit_broken_count_source": "detail" if zb else None,
         "limit_down_count": _down_count,
         "limit_down_count_available": _down_count is not None,
         "limit_down_count_source": "detail" if dt else _dt_source,
@@ -484,11 +475,18 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
         "limit_up_list": zt,
         "limit_broken_list": zb,
         "limit_down_list": dt,
+        "requested_data_date": target_iso,
     }
 
 
-@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
-def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Dict[str, Any]:
+    """Get limit-pool data with its resolved market date included in the cache key."""
+    target = _resolve_pool_target_date(date_str).strftime("%Y%m%d")
+    return _get_limit_pool_summary_for_date(target, allow_push2ex=allow_push2ex)
+
+
+@cached(category="limit_pool_v3", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def _ths_limit_up_pool_for_date(date_str: str) -> List[Dict[str, Any]]:
     """同花顺涨停揭秘（涨停原因 + 封板质量增强源）。
 
     V9.6 新增：与东财涨停池互为补充，提供东财没有的字段：
@@ -498,10 +496,10 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     - 炸板次数（break_times）
 
     V17.0.1g(2026-08-16): 升格为涨停池**优先源**(同花顺优先, push2ex 兜底);
-    空日期自动回退最近交易日(休市传当日返回空)。
+    公开包装函数负责把空日期解析为最新行情基准日，本函数按传入日期请求。
     V17.0.1h(2026-08-16): 新增 7 字段(turnover_rate/currency_value/order_volume/
     last_time/change_tag/market_type/is_new——同一次请求已返回, 零额外压力);
-    **缓存 category 升 limit_pool_v2**(旧 pickle 无新字段, 强制失效)。
+    **缓存 category 升 limit_pool_v3**(日期默认口径变化，旧结果失效)。
 
     Args:
         date_str: 交易日，格式 YYYYMMDD
@@ -511,14 +509,6 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """
     from datetime import datetime
 
-    # V17.0.1g(2026-08-16): 休市日(周末/节假日)传当日返回空 → 自动回退最近交易日
-    if not date_str:
-        try:
-            from stock_common.stock_calendar import get_last_trading_day
-
-            date_str = get_last_trading_day().strftime("%Y%m%d")
-        except Exception:
-            date_str = datetime.now().strftime("%Y%m%d")
     url = "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool"
     params = {
         "page": 1,
@@ -598,6 +588,12 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
+def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """Get the THS limit-up list for an explicit or latest market-data date."""
+    target = _resolve_pool_target_date(date_str).strftime("%Y%m%d")
+    return _ths_limit_up_pool_for_date(target)
+
+
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
     """获取交易所重点监控池（风险警示/重点监控名单）。
@@ -650,136 +646,99 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
 
 
 @cached(
-    category="market_emotion_multi_v3",
+    category="market_emotion_multi_v4",
     ttl_seconds=TTL["market_emotion_multi"],
     trading_day=True,
     valid_if=lambda r: bool(
         r
         and isinstance(r, dict)
-        and (
-            (r.get("total") or 0) > 0
-            or any(
-                (v or 0) > 0
-                for v in (r.get("sources") or {}).values()
-                if isinstance(v, (int, float))
-            )
-        )
+        and any(type(value) is int and value >= 0 for value in (r.get("sources") or {}).values())
     ),
 )
-def get_limit_pool_multi_source(
-    date: Optional[str] = None, allow_push2ex: bool = True
-) -> Dict[str, Any]:
-    """涨停池三源互校——财联社=KPL=复盘啦（2026-08-10 实测 99=99=99 三源一致）。
+def _get_limit_pool_multi_source_for_date(date: str, allow_push2ex: bool = True) -> Dict[str, Any]:
+    """并列比较 KPL 响应统计与显式日期东财名单计数。
 
-    源顺序（低风险优先）: 财联社 → KPL → 复盘啦 → 可选 push2ex(东财兜底)。
-    每源 1 次调用（间隔 2s，失败自动跳过——不阻塞、不重复请求）。
+    CLS 情绪计数字段及 KPL/KPH 复盘榜的相关计数尚未定案，故不参与投票。
+    KPL ``day`` 只作响应标签，不证明来源实际数据日；东财列表按显式请求日期读取，
+    也不单独证明返回数据的实际日期。两数相同只记录数值一致，不表示同日交叉确认。
+    KPL 标签不匹配、计数缺失，或东财列表为空/达到分页上限时，相应计数记为未知。
 
     Args:
-        date: 可选日期 YYYY-MM-DD（push2ex 历史；财联社/KPL/复盘啦用当日）
+        date: 目标行情日期 YYYY-MM-DD 或 YYYYMMDD；省略时使用最新行情基准日
 
     Returns:
         dict: {
-            "total": Optional[int],    # 涨停总数；无来源给出计数时为 None
+            "total": Optional[int],    # 单源观测值或相同计数；不是未经日期核实的权威总数
             "sources": {源: 数量},     # 各源实测值（None=源失败或未查询）
             "unqueried_sources": [],   # 因已有替代结果或策略禁止而未查询的来源
-            "cross_verified": bool,    # ≥2 源一致
+            "cross_verified": bool,    # 仅当两源实际数据日均有证据且同值时为 True
+            "counts_agree": bool,      # 计数值相同；不代表 KPL 来源日期已确认
             "max_ladder": Optional[int],  # 最高连板；无有效来源数据时为 None
-            "detail": dict,            # 复盘啦 StockList 全量等
+            "detail": dict,            # 保留结构；未定案来源明细不进入结果
+            "requested_data_date": str,
         }
     """
-    import time as _time
-    from collections import Counter
-
+    target_date = _resolve_pool_target_date(date)
+    target_iso = target_date.isoformat()
+    target_compact = target_date.strftime("%Y%m%d")
     out: Dict[str, Any] = {
-        "sources": {},
-        "unqueried_sources": [],
+        "sources": {"cls": None, "kpl": None, "fupan": None, "push2ex": None},
+        "unqueried_sources": ["cls", "fupan"],
         "cross_verified": False,
-        "max_ladder": 0,
+        "counts_agree": False,
+        "max_ladder": None,
         "detail": {},
+        "requested_data_date": target_iso,
     }
-    max_ladder_known = False
-
-    cls_n = None
-    try:
-        from stock_common import get_cls_market_emotion
-
-        emo = get_cls_market_emotion()
-        if isinstance(emo, dict):
-            cls_n = _parse_nonnegative_count(emo.get("up_ratio_num"))
-    except Exception as _e:
-        _debug_log(f"multi_source cls: {_e}")
-    out["sources"]["cls"] = cls_n
-    _time.sleep(2.0)
-
-    kpl_n = None
     try:
         from stock_common import get_kpl_market_sentiment
 
         sent = get_kpl_market_sentiment()
-        if isinstance(sent, dict):
-            kpl_n = _parse_nonnegative_count(sent.get("ztjs"))
-            kpl_ladder = _parse_nonnegative_count(sent.get("lbgd"))
-            if kpl_ladder is not None:
-                max_ladder_known = True
-                out["max_ladder"] = max(out["max_ladder"], kpl_ladder)
+        if isinstance(sent, dict) and _normalize_response_date(sent.get("day")) == target_iso:
+            out["sources"]["kpl"] = _parse_nonnegative_count(sent.get("ztjs"))
+            out["max_ladder"] = _parse_nonnegative_count(sent.get("lbgd"))
     except Exception as _e:
         _debug_log(f"multi_source kpl: {_e}")
-    out["sources"]["kpl"] = kpl_n
-    _time.sleep(2.0)
 
-    fupan_n = None
-    fupan_list: List[Any] = []
-    try:
-        from levistock.stock.stock_fupanla_kph import get_zttt
-        from stock_common.sc_network import _kph_wait_process_interval
-
-        _kph_wait_process_interval()
-        z = get_zttt()
-        sl = z.get("StockList") if isinstance(z, dict) else None
-        if isinstance(sl, list):
-            fupan_list = sl
-            fupan_n = len(sl)
-            max_ladder_known = not sl
-        for r in fupan_list:
-            if isinstance(r, (list, tuple)) and len(r) > 2:
-                ladder = _parse_nonnegative_count(r[2])
-                if ladder is not None:
-                    max_ladder_known = True
-                    out["max_ladder"] = max(out["max_ladder"], ladder)
-    except Exception as _e:
-        _debug_log(f"multi_source fupan: {_e}")
-    out["sources"]["fupan"] = fupan_n
-    out["detail"]["fupan_list"] = fupan_list[:200]
-    _time.sleep(2.0)
-
-    push2ex_n = None
-    if allow_push2ex and cls_n is None and kpl_n is None and fupan_n is None:
+    if allow_push2ex:
         try:
             from stock_common import get_limit_up_pool
 
-            pool = get_limit_up_pool(date or "") or []
-            push2ex_n = len(pool)
+            pool = get_limit_up_pool(target_compact) or []
+            # Endpoint requests at most 100 rows. A full page may be truncated;
+            # an empty list may mean either zero or request failure. Neither is a count.
+            if 0 < len(pool) < 100:
+                out["sources"]["push2ex"] = len(pool)
         except Exception as _e:
             _debug_log(f"multi_source push2ex: {_e}")
-    elif not allow_push2ex or any(v is not None for v in (cls_n, kpl_n, fupan_n)):
+    else:
         out["unqueried_sources"].append("push2ex")
-    out["sources"]["push2ex"] = push2ex_n
 
-    vals = [v for v in (cls_n, kpl_n, fupan_n, push2ex_n) if v is not None]
-    if vals:
-        cnt = Counter(vals)
-        top_v, top_c = cnt.most_common(1)[0]
-        if top_c >= 2:
-            out["total"] = top_v
-            out["cross_verified"] = True
+    available_counts = [
+        value
+        for value in (out["sources"]["kpl"], out["sources"]["push2ex"])
+        if type(value) is int and value >= 0
+    ]
+    if len(available_counts) == 2:
+        if available_counts[0] == available_counts[1]:
+            out["total"] = available_counts[0]
+            out["counts_agree"] = True
         else:
-            out["total"] = max(vals)
+            out["total"] = None
+    elif available_counts:
+        out["total"] = available_counts[0]
     else:
         out["total"] = None
-    if not max_ladder_known:
-        out["max_ladder"] = None
 
     return out
+
+
+def get_limit_pool_multi_source(
+    date: Optional[str] = None, allow_push2ex: bool = True
+) -> Dict[str, Any]:
+    """Compare limit-count observations using a date-specific cache key."""
+    target = _resolve_pool_target_date(date).isoformat()
+    return _get_limit_pool_multi_source_for_date(target, allow_push2ex=allow_push2ex)
 
 
 def _resolve_kph_trade_date(date_str: str = "") -> str:

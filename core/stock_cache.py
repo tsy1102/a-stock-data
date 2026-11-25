@@ -107,11 +107,12 @@ _ZHB_UNVERIFIED_CACHE_TTL_SECONDS = 300
 
 # V17.4.45: quote_batch v2 携带逐字段来源，避免把 val 的腾讯快照误标成 push2delay。
 QUOTE_BATCH_CACHE_CATEGORY = "quote_batch_v2"
+# V17.4: 腾讯批量原始快照含逐股来源时间戳；升级分类以淘汰无日期锚的旧缓存。
 # V17.3.13: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
 # (复活 V16.0 注释中"val→mak 跨脚本复用"意图；mak 走独立 ZHB+腾讯批量路径，不复用归一化 quote_batch)
-TENCENT_BATCH_CACHE_CATEGORY = "tencent_batch"
-# V17.4.45: 个股报告扩展腾讯字段批次独立版本，不导致 MAK 的全市场旧快照整体失效。
-TENCENT_REPORT_BATCH_CACHE_CATEGORY = "tencent_report_batch_v2"
+TENCENT_BATCH_CACHE_CATEGORY = "tencent_batch_v2"
+# V17.4: 个股报告扩展批次升至 v3，使时间戳元数据缺失的旧快照失效；仍与 MAK 全市场批次隔离。
+TENCENT_REPORT_BATCH_CACHE_CATEGORY = "tencent_report_batch_v3"
 
 # ═══════════════════════════════════════
 # L1 内存缓存（V10.3 新增）
@@ -334,9 +335,8 @@ TTL: Dict[str, int] = {
     "ths_hot_reason": 24 * 3600,  # 同花顺热点题材（trading_day=True覆盖）
     "hsgt_macro_flow": 24 * 3600,  # 北向资金大盘流向（trading_day=True覆盖）
     # V16.3.3 新源缓存分类（2026-08-10 字典 12.15.5 充实后补充）
-    "market_emotion_multi": 7
-    * 86400,  # 涨停池三源互校（财联社=KPL=复盘啦——trading_day 覆盖，盘中 6s+ 调用必须缓存）
-    "kpl_sentiment": 7 * 86400,  # KPL 市场情绪（strong/连板/涨停——trading_day 覆盖）
+    "market_emotion_multi": 5 * 60,  # 涨停来源计数观测对照（盘中动态数据，不证明同日）
+    "kpl_sentiment": 5 * 60,  # KPL 盘中情绪快照（5 分钟刷新；trading_day 仅作过期上限）
     "fupan_review": 7 * 86400,  # 复盘啦涨停天梯/盘面（get_zttt/get_pmsl——trading_day 覆盖）
     "plate_rotation": 7 * 86400,  # 板块轮动 N×天矩阵（duanxianxia——trading_day 覆盖）
     "fuyao_snapshot": 30 * 60,  # fuyao 行情快照（30min——盘中动态）

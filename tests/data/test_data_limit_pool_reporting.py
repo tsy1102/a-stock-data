@@ -50,9 +50,21 @@ def test_em_batch_quote_cooldown_uses_tier2_status_adapter(monkeypatch):
 
 def test_multi_source_marks_push2ex_unqueried_when_disabled(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
-    monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {"up_ratio_num": 47})
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {"ztjs": 47, "lbgd": 4})
-    monkeypatch.setattr(fupan, "get_zttt", lambda: {"StockList": [["600000", "A", 3]] * 47})
+    monkeypatch.setattr(
+        stock_common,
+        "get_cls_market_emotion",
+        lambda: (_ for _ in ()).throw(AssertionError("unverified CLS count used")),
+    )
+    monkeypatch.setattr(
+        stock_common,
+        "get_kpl_market_sentiment",
+        lambda: {"day": "2099-12-31", "ztjs": 47, "lbgd": 4},
+    )
+    monkeypatch.setattr(
+        fupan,
+        "get_zttt",
+        lambda: (_ for _ in ()).throw(AssertionError("unverified KPH count used")),
+    )
     monkeypatch.setattr(sc_network, "_kph_wait_process_interval", lambda: None)
     monkeypatch.setattr(
         stock_common,
@@ -60,12 +72,17 @@ def test_multi_source_marks_push2ex_unqueried_when_disabled(monkeypatch):
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("push2ex called")),
     )
 
-    result = pools.get_limit_pool_multi_source.__wrapped__("2099-12-31", allow_push2ex=False)
+    result = pools._get_limit_pool_multi_source_for_date.__wrapped__(
+        "2099-12-31", allow_push2ex=False
+    )
 
     assert result["total"] == 47
-    assert result["cross_verified"] is True
+    assert result["cross_verified"] is False
+    assert result["sources"]["cls"] is None
+    assert result["sources"]["kpl"] == 47
+    assert result["sources"]["fupan"] is None
     assert result["sources"]["push2ex"] is None
-    assert result["unqueried_sources"] == ["push2ex"]
+    assert result["unqueried_sources"] == ["cls", "fupan", "push2ex"]
 
 
 def test_multi_source_keeps_missing_counts_unknown(monkeypatch):
@@ -75,7 +92,9 @@ def test_multi_source_keeps_missing_counts_unknown(monkeypatch):
     monkeypatch.setattr(fupan, "get_zttt", lambda: {})
     monkeypatch.setattr(sc_network, "_kph_wait_process_interval", lambda: None)
 
-    result = pools.get_limit_pool_multi_source.__wrapped__(allow_push2ex=False)
+    result = pools._get_limit_pool_multi_source_for_date.__wrapped__(
+        "2026-11-24", allow_push2ex=False
+    )
 
     assert result["sources"] == {
         "cls": None,
@@ -90,29 +109,44 @@ def test_multi_source_keeps_missing_counts_unknown(monkeypatch):
 
 def test_multi_source_preserves_explicit_zero_counts(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
-    monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {"up_ratio_num": 0})
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {"ztjs": 0, "lbgd": 0})
-    monkeypatch.setattr(fupan, "get_zttt", lambda: {"StockList": []})
+    monkeypatch.setattr(
+        stock_common,
+        "get_cls_market_emotion",
+        lambda: (_ for _ in ()).throw(AssertionError("unverified CLS count used")),
+    )
+    monkeypatch.setattr(
+        stock_common,
+        "get_kpl_market_sentiment",
+        lambda: {"day": "2026-11-24", "ztjs": 0, "lbgd": 0},
+    )
+    monkeypatch.setattr(
+        fupan,
+        "get_zttt",
+        lambda: (_ for _ in ()).throw(AssertionError("unverified KPH count used")),
+    )
     monkeypatch.setattr(sc_network, "_kph_wait_process_interval", lambda: None)
 
-    result = pools.get_limit_pool_multi_source.__wrapped__(allow_push2ex=False)
+    result = pools._get_limit_pool_multi_source_for_date.__wrapped__(
+        "2026-11-24", allow_push2ex=False
+    )
 
-    assert result["sources"]["cls"] == 0
+    assert result["sources"]["cls"] is None
     assert result["sources"]["kpl"] == 0
-    assert result["sources"]["fupan"] == 0
+    assert result["sources"]["fupan"] is None
     assert result["total"] == 0
-    assert result["cross_verified"] is True
+    assert result["cross_verified"] is False
     assert result["max_ladder"] == 0
 
 
-def test_limit_pool_summary_uses_same_date_kpl_aggregate_without_push2ex(monkeypatch):
+def test_limit_pool_summary_does_not_use_unverified_kpl_risefall_counts(monkeypatch):
     monkeypatch.setattr(pools, "ths_limit_up_pool", lambda _day: [{"code": "600000", "name": "甲"}])
     monkeypatch.setattr(industry, "_tdxhy_industry_map", lambda: {})
     monkeypatch.setattr(
         zhb,
         "get_zhb_data_date",
-        lambda: "2026-10-30",
+        lambda: "2026-10-29",
     )
+    monkeypatch.setattr(zhb, "get_zhb_full_market_snapshot", lambda: {})
     monkeypatch.setattr(
         pools,
         "get_limit_up_pool",
@@ -133,53 +167,39 @@ def test_limit_pool_summary_uses_same_date_kpl_aggregate_without_push2ex(monkeyp
         "get_limit_pool_multi_source",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("unexpected fallback")),
     )
-    monkeypatch.setattr(pools, "get_last_trading_day", lambda: date(2026, 10, 30))
-    monkeypatch.setattr(
-        "stock_common.stock_calendar.get_last_trading_day",
-        lambda *_args, **_kwargs: date(2026, 10, 30),
-    )
-    _target_date = pools.get_last_trading_day().strftime("%Y-%m-%d")
     monkeypatch.setattr(
         kpl,
         "get_kpl_broken_ratio",
-        lambda: {"date": _target_date, "dt": 0, "broken_num": 2},
+        lambda: (_ for _ in ()).throw(AssertionError("unverified RiseFallAnalysis used")),
     )
 
-    result = pools.get_limit_pool_summary.__wrapped__(allow_push2ex=False)
+    result = pools._get_limit_pool_summary_for_date.__wrapped__.__wrapped__(
+        "20261030", allow_push2ex=False
+    )
 
     assert result["limit_up_count"] == 1
     assert result["limit_up_count_available"] is True
-    assert result["limit_broken_count"] == 2
-    assert result["limit_broken_count_source"] == "kpl"
-    assert result["limit_down_count"] == 0
-    assert result["limit_down_count_available"] is True
-    assert result["success_rate"] == 33.3
+    assert result["limit_broken_count"] is None
+    assert result["limit_broken_count_source"] is None
+    assert result["limit_down_count"] is None
+    assert result["limit_down_count_available"] is False
+    assert result["success_rate"] is None
+    assert result["requested_data_date"] == "2026-10-30"
 
 
 def test_limit_pool_summary_does_not_compute_rate_without_limit_up_count(monkeypatch):
     monkeypatch.setattr(pools, "ths_limit_up_pool", lambda _day: [])
-    monkeypatch.setattr(
-        pools,
-        "get_limit_pool_multi_source",
-        lambda *_args, **_kwargs: {"total": 0},
-    )
-    monkeypatch.setattr(pools, "get_last_trading_day", lambda: date(2026, 10, 30))
-    monkeypatch.setattr(
-        "stock_common.stock_calendar.get_last_trading_day",
-        lambda *_args, **_kwargs: date(2026, 10, 30),
-    )
-    monkeypatch.setattr(
-        kpl,
-        "get_kpl_broken_ratio",
-        lambda: {"date": "2026-10-30", "dt": 0, "broken_num": 0},
-    )
+    monkeypatch.setattr(zhb, "get_zhb_data_date", lambda: "2026-10-29")
+    monkeypatch.setattr(zhb, "get_zhb_full_market_snapshot", lambda: {})
 
-    result = pools.get_limit_pool_summary.__wrapped__(allow_push2ex=False)
+    result = pools._get_limit_pool_summary_for_date.__wrapped__.__wrapped__(
+        "20261030", allow_push2ex=False
+    )
 
     assert result["limit_up_count"] == 0
     assert result["limit_up_count_available"] is False
-    assert result["limit_broken_count"] == 0
-    assert result["limit_broken_count_available"] is True
+    assert result["limit_broken_count"] is None
+    assert result["limit_broken_count_available"] is False
     assert result["success_rate"] is None
 
 
@@ -188,47 +208,37 @@ def test_limit_pool_summary_keeps_down_count_unknown_when_sources_fail(monkeypat
     monkeypatch.setattr(pools, "get_limit_up_pool", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(pools, "get_limit_broken_pool", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(pools, "get_limit_down_pool", lambda *_args, **_kwargs: [])
-    monkeypatch.setattr(
-        pools, "get_limit_pool_multi_source", lambda *_args, **_kwargs: {"total": 0}
-    )
-    monkeypatch.setattr(pools, "get_last_trading_day", lambda: date(2026, 10, 30))
-    monkeypatch.setattr(
-        "stock_common.stock_calendar.get_last_trading_day",
-        lambda *_args, **_kwargs: date(2026, 10, 30),
-    )
     monkeypatch.setattr(datasource, "_query_dt_pool_tc", lambda _day: None)
-    monkeypatch.setattr(kpl, "get_kpl_broken_ratio", lambda: {})
     monkeypatch.setattr(zhb, "get_zhb_data_date", lambda: "2026-10-29")
 
-    result = pools.get_limit_pool_summary.__wrapped__.__wrapped__(allow_push2ex=True)
+    result = pools._get_limit_pool_summary_for_date.__wrapped__.__wrapped__(
+        "20261030", allow_push2ex=True
+    )
 
     assert result["limit_down_count"] is None
     assert result["limit_down_count_available"] is False
     assert result["limit_down_count_source"] is None
 
 
-def test_limit_pool_summary_accepts_cross_verified_zero_limit_up_count(monkeypatch):
+def test_limit_pool_summary_does_not_treat_empty_pool_as_verified_zero(monkeypatch):
     monkeypatch.setattr(pools, "ths_limit_up_pool", lambda _day: [])
+    monkeypatch.setattr(zhb, "get_zhb_data_date", lambda: "2026-10-29")
+    monkeypatch.setattr(zhb, "get_zhb_full_market_snapshot", lambda: {})
     monkeypatch.setattr(
         pools,
         "get_limit_pool_multi_source",
-        lambda *_args, **_kwargs: {"total": 0, "cross_verified": True},
-    )
-    monkeypatch.setattr(pools, "get_last_trading_day", lambda: date(2026, 10, 30))
-    monkeypatch.setattr(
-        "stock_common.stock_calendar.get_last_trading_day",
-        lambda *_args, **_kwargs: date(2026, 10, 30),
-    )
-    monkeypatch.setattr(
-        kpl,
-        "get_kpl_broken_ratio",
-        lambda: {"date": "2026-10-30", "dt": 0, "broken_num": 0},
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("unverified KPL observation used as summary count")
+        ),
     )
 
-    result = pools.get_limit_pool_summary.__wrapped__(allow_push2ex=False)
+    result = pools._get_limit_pool_summary_for_date.__wrapped__.__wrapped__(
+        "20261030", allow_push2ex=False
+    )
 
     assert result["limit_up_count"] == 0
-    assert result["limit_up_count_available"] is True
+    assert result["limit_up_count_available"] is False
+    assert result["limit_up_count_source"] is None
 
 
 def test_yesterday_pool_uses_aligned_ths_and_zhb_data_without_push2ex(monkeypatch):

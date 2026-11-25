@@ -897,6 +897,7 @@ _TENCENT_FIELD_INDEX = {
     "bid1_vol": 10,
     "change_amt": 31,
     "change_pct": 32,
+    "quote_timestamp": 30,  # YYYYMMDDHHMMSS，逐股行情观测时间
     "high": 33,
     "low": 34,
     "amount_wan": 37,  # 成交额(万)
@@ -941,6 +942,17 @@ _TENCENT_FIELD_INDEX = {
     "b_vol": 7,  # 外盘(主动买成交量, 手/股随板块) — 统一层键 b_vol（腾讯[7]）
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
+
+
+def _parse_tencent_quote_timestamp(value: Any) -> Optional[datetime]:
+    """Parse qt.gtimg.cn [30] as a China-local quote timestamp; reject malformed values."""
+    raw = str(value or "").strip()
+    if len(raw) != 14 or not raw.isdigit():
+        return None
+    try:
+        return datetime.strptime(raw, "%Y%m%d%H%M%S")
+    except ValueError:
+        return None
 
 
 def _tencent_volume_divisor(code: str) -> float:
@@ -1054,16 +1066,56 @@ def _tencent_batch_fallback(
                         except (ValueError, TypeError):
                             return 0.0
 
+                    def _field_optional_float(field_name: str) -> Optional[float]:
+                        index = _TENCENT_FIELD_INDEX.get(field_name)
+                        if index is None or index >= len(vals) or not vals[index]:
+                            return None
+                        try:
+                            value = float(vals[index])
+                        except (ValueError, TypeError):
+                            return None
+                        return value if math.isfinite(value) else None
+
+                    _quote_time_raw = (
+                        vals[_TENCENT_FIELD_INDEX["quote_timestamp"]]
+                        if _TENCENT_FIELD_INDEX["quote_timestamp"] < len(vals)
+                        else ""
+                    )
+                    _quote_time = _parse_tencent_quote_timestamp(_quote_time_raw)
+                    _quote_date = _quote_time.date().isoformat() if _quote_time else ""
+                    _quote_time_text = _quote_time.isoformat(sep=" ") if _quote_time else ""
+                    _change_pct = _field_optional_float("change_pct")
+                    _field_as_of_dates = {}
+                    _field_as_of_timestamps = {}
+                    _field_sources = {}
+                    if _quote_date:
+                        for _field_name, _field_value in (
+                            ("price", _bprice),
+                            ("change_pct", _change_pct),
+                            ("amount_wan", _field_optional_float("amount_wan")),
+                            ("turnover_pct", _field_optional_float("turnover_pct")),
+                        ):
+                            if _field_value is not None and (
+                                _field_name != "price" or _field_value > 0
+                            ):
+                                _field_as_of_dates[_field_name] = _quote_date
+                                _field_as_of_timestamps[_field_name] = _quote_time_text
+                                _field_sources[_field_name] = "tencent:qt.gtimg"
+
                     _volume_divisor = _tencent_volume_divisor(cv)
                     try:
                         _TENCENT_BATCH_CACHE[cv] = {
                             "name": vals[_TENCENT_FIELD_INDEX["name"]],
                             "price": _bprice,
-                            "change_pct": (
-                                float(vals[_TENCENT_FIELD_INDEX["change_pct"]])
-                                if vals[_TENCENT_FIELD_INDEX["change_pct"]]
-                                else 0
+                            "change_pct": _change_pct,
+                            "_as_of_date": _quote_date,
+                            "_as_of_timestamp": _quote_time_text,
+                            "_quote_timestamp_status": (
+                                "verified" if _quote_time else "invalid_or_missing"
                             ),
+                            "_field_as_of_dates": _field_as_of_dates,
+                            "_field_as_of_timestamps": _field_as_of_timestamps,
+                            "_field_sources": _field_sources,
                             "mcap_yi": (
                                 float(vals[_TENCENT_FIELD_INDEX["mcap_yi"]])
                                 if vals[_TENCENT_FIELD_INDEX["mcap_yi"]]
@@ -3372,25 +3424,27 @@ def tdx_get_board_by_name(board_name: str, board_type: int = 0):
 
 
 def tdx_get_market_abnormal_data():
-    """全市场A股 + 多周期涨幅（用于异动扫描）。
+    """Return the ZHB-backed full-market snapshot used by MAK's legacy fallback.
 
-    V12.0: 改用 ZHB 全市场快照（原 TDX MacClient.get_stock_quotes_list 已废弃）。
-    ZHB 数据为 T-1 收盘快照，对异动扫描足够。
+    Despite the historical function name, this no longer queries the TDX MacClient.
+    Each row carries the ZHB package date so MAK can keep date eligibility explicit.
 
     Returns:
-        list: [{"code": str, "name": str, "price": float, "change_pct": float,
-                "turnover": float, "mcap_yi": float,
-                "ret_3d": float, "ret_5d": float, "ret_10d": float,
-                "ret_20d": float, "ret_60d": float,
+        list: [{"code": str, "name": str, "price": Optional[float], "change_pct": Optional[float],
+                "turnover": Optional[float], "mcap_yi": float,
+                "ret_3d": Optional[float], "ret_5d": Optional[float], "ret_10d": Optional[float],
+                "ret_20d": Optional[float], "ret_60d": Optional[float],
                 "main_net_amount": float}, ...]
     """
     try:
         from stock_common import get_zhb_full_market_snapshot
-        from core.zhb_client import get_stock_name_from_zhb
+        from core.zhb_client import get_stock_name_from_zhb, get_zhb
 
         snapshot = get_zhb_full_market_snapshot()
         if not snapshot:
             return []
+        _zhb_obj = get_zhb()
+        _zhb_data_date = getattr(_zhb_obj, "date", "") or ""
         all_stocks = []
         # V14.2.1: 提前加载 ZHB profile 名称（修复 name 字段缺失 Bug）
         zhb_name_cache: Dict[str, str] = {}
@@ -3418,22 +3472,31 @@ def tdx_get_market_abnormal_data():
             # 仅跳过明确的 ST/退市（避免垃圾股进扫描）
             if 'ST' in name or '退' in name:
                 continue
-            price = _safe_float(data.get('price', 0))
-            change_pct = _safe_float(data.get('change_pct', 0))
+            price = _optional_market_float(data.get('price'))
+            change_pct = _optional_market_float(data.get('change_pct'))
             # V15.5.17: price 缺失不再 continue（腾讯批量补全 price）
+            _daily_returns = {
+                "change_pct": data.get("change_pct"),
+                "change_pct_1d": data.get("change_pct_1d"),
+                "change_pct_2d": data.get("change_pct_2d"),
+            }
             all_stocks.append(
                 {
                     'code': code,
                     'name': name,
                     'price': price,
                     'change_pct': change_pct,
-                    'turnover': _safe_float(data.get('turnover_pct', 0)),
+                    'turnover': _optional_market_float(data.get('turnover_pct')),
                     'mcap_yi': _safe_float(data.get('mcap_yi', 0)),
                     'ret_3d': _calc_ret_3d_snapshot(change_pct, data),
-                    'ret_5d': _safe_float(data.get('change_5d', 0)),
-                    'ret_10d': _safe_float(data.get('change_10d', 0)),
-                    'ret_20d': _safe_float(data.get('change_20d', 0)),
-                    'ret_60d': _safe_float(data.get('change_60d', 0)),
+                    'ret_5d': _optional_market_float(data.get('change_5k_bar')),
+                    'ret_10d': _optional_market_float(data.get('change_10k_bar')),
+                    'ret_20d': _optional_market_float(data.get('change_20k_bar')),
+                    'ret_60d': _optional_market_float(data.get('change_60k_bar')),
+                    'change_pct_1d': data.get('change_pct_1d'),
+                    'change_pct_2d': data.get('change_pct_2d'),
+                    '_zhb_daily_returns': _daily_returns,
+                    '_zhb_data_date': _zhb_data_date,
                     'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0))
                     * 10000,  # ⚠️ V17.0 实锤=竞价额(万元→元), 非主力净
                 }
@@ -3451,12 +3514,24 @@ def _calc_ret_3d_snapshot(change_pct, data):
     2026-08-19 实锤 ZHB tdxstat Col[7]/[8] = change_pct_1d/2d(zhb_client 已解析) →
     恢复真实计算。
     """
-    r0 = _safe_float(change_pct) / 100.0
-    r1 = _safe_float(data.get("change_pct_1d", 0)) / 100.0
-    r2 = _safe_float(data.get("change_pct_2d", 0)) / 100.0
-    if r0 == 0 and r1 == 0 and r2 == 0:
-        return 0.0
-    return round(((1 + r0) * (1 + r1) * (1 + r2) - 1) * 100.0, 2)
+    values = [change_pct, data.get("change_pct_1d"), data.get("change_pct_2d")]
+    try:
+        returns = [float(value) / 100.0 for value in values]
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not all(math.isfinite(value) for value in returns):
+        return None
+    return round(((1 + returns[0]) * (1 + returns[1]) * (1 + returns[2]) - 1) * 100.0, 2)
+
+
+def _optional_market_float(value):
+    if value is None or value == "":
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
 
 
 def tdx_get_all_stocks():

@@ -78,7 +78,6 @@ from stock_common import (
     get_hsgt_macro_flow_async,
     get_market_status,
     cls_telegraph,
-    news_matches_stock,
     get_irm_qa,
     sec_type_market_label,  # V17.0.32(2026-09-06): DEBT-016 报告露出 sec_type
 )  # V10.3
@@ -960,8 +959,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("---")
     anns = await get_strategic_announcements_async(session, code, days=30)
     if anns:
+        from stock_common.enrich_helpers import cninfo_announcement_pdf_markdown
+
         for i, a in enumerate(anns[:10], 1):
-            L(f"  {i}. [{a['date']}] {a['title']}")
+            _pdf_link = cninfo_announcement_pdf_markdown(a)
+            _link_suffix = f" {_pdf_link}" if _pdf_link else ""
+            L(f"  {i}. [{a['date']}] {a['title']}{_link_suffix}")
         rc = sum(1 for a in anns if "减持" in a["title"])
         if rc > 0:
             L(f"\n  ⚠️ 减持预警：近期有 {rc} 条减持相关公告，请仔细甄别。")
@@ -1238,6 +1241,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         elif _cum_f > 0 and _pc_chg < -3:
             L(f"  💎 资金背离：股价下跌但主力净流入{_cum_f/1e8:.2f}亿，资金暗中介入")
 
+    from stock_common.enrich_helpers import push2_f178_lines
+
+    for _flow_line in push2_f178_lines(cdata):
+        L(_flow_line)
+
     L("\n## 【十二、融资融券（两融数据，近15日）】")
     L("---")
     margin = await get_margin_trading_async(session, code)
@@ -1464,10 +1472,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 十七、舆情与互动 ───
     L("\n## **十七、舆情与互动**")
 
-    # 财联社快讯（近3天）
+    # 财联社快讯（近48小时）
     try:
+        from stock_common.enrich_helpers import (
+            cls_telegraph_context_lines,
+            cls_telegraph_matches_stock,
+        )
+
         cls_news = await asyncio.to_thread(cls_telegraph, 50)
         _cls_shown = 0
+        _cls_excerpt_shown = 0
         _cls_cutoff = datetime.now() - timedelta(hours=48)  # V16.2.14: 3天→48h
         for item in cls_news:
             t_str = str(item.get("time", ""))
@@ -1480,8 +1494,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     pass
             title = str(item.get("title", "")).strip()
             # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过
-            if title and news_matches_stock(title, code, cdata.name):
+            if title and cls_telegraph_matches_stock(item, code, cdata.name):
                 L(f"  · [{t_str[:16]}] {title[:80]}")
+                _context_lines = cls_telegraph_context_lines(
+                    item, include_content=_cls_excerpt_shown < 3
+                )
+                for _context_line in _context_lines:
+                    L(_context_line)
+                    if _context_line.startswith("      摘要:"):
+                        _cls_excerpt_shown += 1
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break

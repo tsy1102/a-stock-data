@@ -1177,30 +1177,55 @@ async def strategy_07_policy_driven(stocks, hot_pool=None):
         if len(_ths_result) >= 3:
             return _top10_sorted(_ths_result, lambda x: x["score"])
 
-    # Fallback: 新闻 NLP 关键词匹配
+    # Fallback: 只将与个股明确关联的政策快讯用于候选，不把全市场新闻词套给无关股票。
     news_list = await asyncio.to_thread(cls_telegraph, 30)
     if not news_list:
         news_list = eastmoney_global_news(30)
     if not news_list:
         return []
-    all_text = " ".join([n.get("title", "") + " " + n.get("content", "") for n in news_list])
-    found_policy = [kw for kw in policy_keywords if kw in all_text]
-    if len(found_policy) < 3:
+    from stock_common.enrich_helpers import cls_telegraph_matches_stock
+
+    _policy_news = []
+    for _item in news_list:
+        if not isinstance(_item, dict):
+            continue
+        _text = " ".join(str(_item.get(key) or "") for key in ("title", "content")).strip()
+        _matched_terms = [kw for kw in policy_keywords if kw and kw in _text]
+        if _matched_terms:
+            _policy_news.append((_item, _matched_terms[:3]))
+    if not _policy_news:
         return []
     candidates = [s for s in (stocks or []) if 5 <= s.get("mcap_yi", 0) <= 50]
     if not candidates:
         return []
     result = []
-    # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
-    for s in candidates[:200]:
+    for s in candidates:
         code = s["code"]
-        # V16.4.0: 快照 O(1)——原逐股 canonical（200×2.5s≈500s）改为快照 pe_ttm（ZHB 已有）
         pe_ttm = _safe_float(s.get("pe_ttm", 0))
         if not pe_ttm > 0:
             continue
+        _matched_news = next(
+            (
+                (_item, _terms)
+                for _item, _terms in _policy_news
+                if cls_telegraph_matches_stock(_item, code, str(s.get("name", "") or ""))
+            ),
+            None,
+        )
+        if _matched_news is None:
+            continue
+        _news_item, _news_terms = _matched_news
+        _news_title = str(_news_item.get("title") or _news_item.get("content") or "")
+        _news_title = " ".join(_news_title.split())[:72]
+        _news_time = str(
+            _news_item.get("time")
+            or _news_item.get("publish_time")
+            or _news_item.get("date")
+            or "时间未标注"
+        )[:16]
         mcap_yi = _safe_float(s.get("mcap_yi", 0))
         reason = (
-            f"近期新闻出现政策关键词: {", ".join(found_policy[:3])}，"
+            f"关联快讯[{_news_time}]「{_news_title}」；政策词: {", ".join(_news_terms)}，"
             f"市值{mcap_yi:.1f}亿（小盘对政策更敏感），"
             f"PE={pe_ttm:.1f}x（仅作为估值条件，未与行业或历史区间比较）"
         )
@@ -2229,23 +2254,20 @@ def strategy_26_limit_ladder(all_stocks):
     return picks[:60]  # 截断: 连板/强封标的本就稀缺, 60 上限保证报告可读
 
 
-def strategy_27_shortline_fund_strength(all_stocks):
-    """V17.2.18→V17.2.23: 短线资金强度·开盘抢筹策略——改走统一层 cdata.eltdx_*。
+def strategy_27_opening_auction_momentum(all_stocks):
+    """开盘动量与竞价活跃度的启发式筛选，使用统一层 cdata.eltdx_*。
 
     V17.2.23 重构: 同策略26, 先预热 eltdx bundle → 再逐股 get_canonical_stock_data(code) 读
     cdata.eltdx_* 标准化字段, 不再直接解析 sl_map 原始结构。
     TDX 源(eltdx)不可用 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
     因子(统一层字段名, 数据来源: 通达信 eltdx 7709/7615):
-      - eltdx_opening_rush:              开盘抢筹力度(正值=主力抢筹)
-      - eltdx_auction_prev_volume_ratio: 集合竞价量比(竞价资金关注度)
-      - eltdx_open_prev_amount_ratio:    开盘成交额/昨成交额(开盘放量确认)
-      - eltdx_open_turnover_z:           开盘换手 Z 值(活跃度)
-      - eltdx_open_change_pct:           开盘涨跌幅(资金推动方向)
-    入选: 非连板(eltdx_ladder_level<2, 归策略26) + 开盘为正(eltdx_open_change_pct>0) + 有抢筹(eltdx_opening_rush>0)
-          + 竞价放量(eltdx_auction_prev_volume_ratio>=1) + 开盘放量(eltdx_open_prev_amount_ratio>=1)。
-    排序: score 降序(score = 2*cap(opening_rush,10) + cap(auction_prev_volume_ratio,5)
-          + cap(open_prev_amount_ratio,5) + 0.5*cap(open_change_pct,10) + 0.5*cap(open_turnover_z,10))。
-    与策略26(连板封单)正交: 本策略为竞价+开盘资金抢筹维度, 覆盖非连板短线活跃标的。
+      - eltdx_auction_prev_volume_ratio: 集合竞价成交量昨比(倍)
+      - eltdx_open_prev_amount_ratio:    开盘成交额/昨成交额(%)
+      - eltdx_open_turnover_z:           自由流通口径开盘换手率(%; 字段名中的 Z 不是 Z-score)
+      - eltdx_open_change_pct:           开盘涨跌幅(%)
+    入选: 非连板(eltdx_ladder_level<2) + 开盘涨幅为正 + 竞价量比≥1 倍 + 开盘成交额昨比≥1%。
+    排序: 各已验证指标的启发式加权分，不是资金流向或买入信号；opening_rush 的方向及算法未确认，
+    因此不参与筛选、评分或理由。与策略26(连板封单)正交，覆盖非连板的开盘活跃标的。
     """
     try:
         from core.eltdx_adapter import get_eltdx_shortline_bundle
@@ -2280,24 +2302,21 @@ def strategy_27_shortline_fund_strength(all_stocks):
         if ladder_level >= 2:
             continue  # 连板归策略26
         open_chg = c.eltdx_open_change_pct
-        opening_rush = c.eltdx_opening_rush
         auction_vol = c.eltdx_auction_prev_volume_ratio
         open_amt = c.eltdx_open_prev_amount_ratio
-        if not (open_chg > 0 and opening_rush > 0 and auction_vol >= 1.0 and open_amt >= 1.0):
+        if not (open_chg > 0 and auction_vol >= 1.0 and open_amt >= 1.0):
             continue
-        turn_z = c.eltdx_open_turnover_z
+        turnover_pct = c.eltdx_open_turnover_z
         score = (
-            2.0 * _cap(opening_rush, 10)
-            + 1.0 * _cap(auction_vol, 5)
+            1.0 * _cap(auction_vol, 5)
             + 1.0 * _cap(open_amt, 5)
             + 0.5 * _cap(open_chg, 10)
-            + 0.5 * _cap(turn_z, 10)
+            + 0.5 * _cap(turnover_pct, 10)
         )
         reason = (
-            f"短线资金抢筹·开盘抢筹{opening_rush:.2f}"
-            + f"·竞价量比{auction_vol:.2f}·开盘放量{open_amt:.2f}"
-            + (f"·开涨{open_chg:.2f}%" if open_chg else "")
-            + (f"·换手Z{turn_z:.2f}" if turn_z else "")
+            f"开盘动量·竞价量比{auction_vol:.2f}倍·开盘成交额昨比{open_amt:.2f}%"
+            + f"·开盘涨幅{open_chg:.2f}%"
+            + (f"·开盘换手率{turnover_pct:.2f}%" if turnover_pct else "")
         )
         picks.append(
             {
@@ -2305,11 +2324,10 @@ def strategy_27_shortline_fund_strength(all_stocks):
                 "name": _name_map.get(plain, ""),
                 "reason": reason,
                 "score": score,
-                "opening_rush": opening_rush,
                 "auction_prev_volume_ratio": auction_vol,
                 "open_prev_amount_ratio": open_amt,
                 "open_change_pct": open_chg,
-                "open_turnover_z": turn_z,
+                "open_turnover_pct": turnover_pct,
             }
         )
     picks.sort(key=lambda x: x["score"], reverse=True)
@@ -3061,8 +3079,8 @@ async def run_discovery_async(output_path):
             (all_stocks,),
         ),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
         (
-            "策略27【短线资金强度·开盘抢筹】",
-            strategy_27_shortline_fund_strength,
+            "策略27【开盘动量·竞价活跃】",
+            strategy_27_opening_auction_momentum,
             (all_stocks,),
         ),  # V17.2.18: eltdx 7709/7615 实时(竞价+开盘资金抢筹)
     ]
@@ -3205,7 +3223,7 @@ async def run_discovery_async(output_path):
         "策略24": "24 近5日回撤筛选",
         "策略25": "25 规模因子",
         "策略26": "26 连板梯队·短线封单强度",
-        "策略27": "27 短线资金强度·开盘抢筹",
+        "策略27": "27 开盘动量·竞价活跃",
     }
 
     for _st_name in _names_full:

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- MAK 当前个股异动只评估目标行情日，并按逐字段日期与腾讯行情时间戳筛选；无效时间戳不再借用 ZHB 日期，收盘前同日快照不作为收盘信号。指数收益和历史异动窗口改为按交易日日期连接，缺失 K 线或日期覆盖时显示未评估；报告新增分周期评估覆盖及缺口原因。腾讯批量缓存分类升版以淘汰无日期锚的旧快照。
 - 统一市场快照的东财 fallback 仅向通用调用方返回业务字段，隐藏 Ulist 适配器内部的逐行日期元数据；MAK 专项仍直接读取适配器证据。
 - 基于 HKEX 官方双重上市清单、交易日/休市证据和保留期逐日行情，来源内定案东财 Push2 `f250`、Ulist `f185` 为 H 股上一港股交易日收盘价，Ulist `f186/f187` 为 H 股最新价/当日涨跌幅；修正旧字段表并将同源行日期锚与价格内容日期分开。撤回 33 条有 9 日反例的错误活动映射；133 条无可比非空样本关系先列为未决，后于 11 月 24 日从活动映射停用。详见[字段裁决](docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)和[后续更正](docs/field_verification/adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)。
 - 按同花顺当前官方集合竞价契约和 19 个完整留存批次的逐股样本，登记并验证 `auction_final` 下 9 个完整字段路径。为官方未声明单位、`auction_unmatched` 正负口径及 `auction_volume_ratio` 公式保留未知，不新增跨源映射。详见[裁决](docs/field_verification/adjudications/20261123_fuyao_auction_final_contract_fields.md)和[逐股审计](docs/field_verification/research/20261123_fuyao_auction_contract_field_audit.csv)。
@@ -55,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- 按最新字段裁决调整五大报告消费逻辑：VAL 策略 07 的快讯候选须与证券代码/名称/正文关联，并在理由引用实际标题和时间；策略 27 不再把方向未定的 ELTDX `opening_rush` 当作主力抢筹门槛/评分项，并将 `open_turnover_z` 按自由流通口径开盘换手率展示。MAK 情绪改用已核实的 KPL 指标与板块原始列，CLS/KPH 未定案计数字段不再参与结论；KPL `Day` 及东财请求日期均不作为实际数据日证明，计数相同只作数值一致，冲突或日期不明时不定总数、不取最大值。MAK A 段混合快照计数改列为未确认日期的来源观测，移除据此作出的情绪定性及无历史基线的“历史高位”判断。MAK/SHT 涨停池显式传入交易日历目标数据日并关闭 Push2；THS 名单接口未返回独立实际数据日，报告改标目标日期请求的来源响应观察。SHT 涨停判断要求价格和涨幅同属目标行情日，ZHB 连板数及 T 日封单额仅在快照日期吻合时展示，不再以三日涨幅估算；涨停、逼近涨停、天地板及日内评分因子要求日期确认，板块成分行情日期未确认时不输出相对强弱结论，并改用统一板块涨停阈值。SHT 不再用日期未确认的 TDX 实时跌停数覆盖目标日统计，跌停数也不再用可能混合时点的 A 段样本回填。MAK 连板分布只统计 ELTDX 返回的有效 `ladder_level`。涨跌停查询按最新行情基准日解析，并将日期纳入缓存键；KPL 情绪缺失值保留为 `None`、刷新周期降为 5 分钟。SHT/MED/LNG 快讯按 CLS 关联证券代码优先匹配，补充主题和限量正文摘要；巨潮公告只从已验证 `adjunct_url` 生成 PDF 链接；SHT/MED 增加按自身数据日展示的 Push2 `f178` 资金记录。未定案字段仍可用于采集研究，不作报告结论。
 - 修正 VAL 实时行情覆盖被市值缺失分支限制的问题；策略17现只用同一 ZHB 数据日的竞价额/成交额，过期或缺项时跳过且不回退主力净流入。MAK 的 Ulist f62 请求增加已验证的同行日期锚 `f124/f297`，只汇总与交易日历基准日匹配的记录，并在报告标注排除原因；纠正 Ulist 路径 `f164` 被误读为 PE 的适配器映射。MAK 板块轮动对照现显示短线侠接口标签及响应日期，避免与 KPL/KPH 直接混同。
 - 将 H 股报价复核中 133 条无可比非空样本的未决关系（175 条有向记录）从活动映射和对齐表停用，避免碰撞器将其当作已确认关系抑制候选；保留旧证据，不判为不等价或更改两端字段状态。详见[更正记录](docs/field_verification/adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)。
 - IPO 资金压力报告统一按实际募集总额或“发行数量×发行价”估算发行总额，不再把募资计划预测值 `PREDICT_RAISE_FUNDS` 混作发行总额回退。
@@ -65,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 修复 SHT 报告在规范化行情对象缺少 `quote_date` 属性时崩溃的问题；缺失报价日期继续显示为未确认，并保留日期资格提示。
 - 修正 Ulist 镜像生成器的相对链接：从 `docs/` 源文档复制到 `docs/verify/` 时，为 `field_verification/` 证据链接补上 `../`，避免生成的字段镜像指向不存在的子目录。
 - 按 `registry_parity.py` 的历史基线与裁决证据重建字段×源矩阵投影，修正 15 个缺项、12 个多余项及 3 处来源标签混杂；未改动逐源 `source_fields`。
 - 将 ETF 日期诊断区分为“日期不可解析”和“日期值可解析但口径未认证”；覆盖摘要单列后者。旧版 SZ ETF 行的 `date` 是页面日期，不能充当当前规模统计日。

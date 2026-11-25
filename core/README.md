@@ -1,5 +1,7 @@
 # core/ — 核心模块包
 
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
 > 定位: 项目核心支撑模块(数据层/传输层/缓存/日历同步/上传/跨边界访问器), 由根目录报告脚本(`get_*_report.py`)、`main.py`、`stock_common/`、`scripts/`、`tests/` 通过 `from core import X` 引用。
 
 ## 目录结构

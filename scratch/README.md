@@ -1,5 +1,7 @@
 # scratch/ — 调研沙盒目录
 
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
 > 本目录是**一次性调研/实验沙盒**，不参与生产代码运行，**不承诺稳定性**。
 
 ## 定位（与 tests/、scripts/ 的区别）

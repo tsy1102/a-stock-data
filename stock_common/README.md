@@ -1,5 +1,7 @@
 # stock_common/ — 公共业务与数据适配层
 
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
 > 定位: 报告脚本与 core/ 之上的公共业务模块——网络传输、数据源适配、报告数据富化与渲染、评分/风险/技术指标、日历和工具函数。
 > 报告脚本与 main.py 通过 `from stock_common import X` 引用；公共导出由包入口的 `__all__` 明确列出。
 

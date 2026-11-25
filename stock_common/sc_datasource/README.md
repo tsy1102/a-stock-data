@@ -1,5 +1,7 @@
 # stock_common/sc_datasource/ — 数据源查询子包
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 > **来源**: 原单文件 `sc_datasource.py` 按数据源拆分为本子包；拆分前的历史快照见 `docs/backups/`。
 > 对外接口**保持兼容**: `from stock_common.sc_datasource import <fn>` 与旧 `sc_datasource.py` 命名空间一致（`__init__.py` 统一再导出）。
 > 报告脚本与 main.py 经 `stock_common/__init__.py` 门面转引: `from stock_common import <data_source_fn>`。

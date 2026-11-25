@@ -1,5 +1,7 @@
 # 字段实测验证（Field Verification）
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 本目录保存固定股票池的多源原始采样、来源元数据、字段碰撞和人工复核证据，用于发现字段未知、错义、单位差异与来源映射问题。日常执行从 [`DAILY_RUNBOOK.md`](DAILY_RUNBOOK.md) 开始。
 
 ## 权威规则

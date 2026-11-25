@@ -1,5 +1,7 @@
 # tests 目录说明
 
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
 本目录包含单元测试、组件集成测试与显式标记的真实网络测试。测试通过 `scripts/run_tests.ps1` 运行；默认模式拦截外网并排除 `real_network` 用例。每个测试模块使用项目 `.tmp/` 下的独立 SQLite 缓存，避免测试清理或写入项目真实缓存。
 
 ## 当前模块清单

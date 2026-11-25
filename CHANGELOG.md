@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [17.7.0] - 2026-11-25
+
+### Added
+
 - MAK 当前个股异动只评估目标行情日，并按逐字段日期与腾讯行情时间戳筛选；无效时间戳不再借用 ZHB 日期，收盘前同日快照不作为收盘信号。指数收益和历史异动窗口改为按交易日日期连接，缺失 K 线或日期覆盖时显示未评估；报告新增分周期评估覆盖及缺口原因。腾讯批量缓存分类升版以淘汰无日期锚的旧快照。
 - 统一市场快照的东财 fallback 仅向通用调用方返回业务字段，隐藏 Ulist 适配器内部的逐行日期元数据；MAK 专项仍直接读取适配器证据。
 - 基于 HKEX 官方双重上市清单、交易日/休市证据和保留期逐日行情，来源内定案东财 Push2 `f250`、Ulist `f185` 为 H 股上一港股交易日收盘价，Ulist `f186/f187` 为 H 股最新价/当日涨跌幅；修正旧字段表并将同源行日期锚与价格内容日期分开。撤回 33 条有 9 日反例的错误活动映射；133 条无可比非空样本关系先列为未决，后于 11 月 24 日从活动映射停用。详见[字段裁决](docs/field_verification/adjudications/20261123_eastmoney_hshare_quote_semantics.md)和[后续更正](docs/field_verification/adjudications/20261124_eastmoney_hshare_unresolved_mappings.md)。
@@ -67,6 +75,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- 治理钩子将 `docs/verify/README.md` 识别为导航索引：该文件单独修改时仍运行归档预检，但跳过不相关的字段注册表 parity 与字典生成闸门；其他 `docs/verify/` 字段材料仍运行全部相关闸门。
 - 修复 SHT 报告在规范化行情对象缺少 `quote_date` 属性时崩溃的问题；缺失报价日期继续显示为未确认，并保留日期资格提示。
 - 修正 Ulist 镜像生成器的相对链接：从 `docs/` 源文档复制到 `docs/verify/` 时，为 `field_verification/` 证据链接补上 `../`，避免生成的字段镜像指向不存在的子目录。
 - 按 `registry_parity.py` 的历史基线与裁决证据重建字段×源矩阵投影，修正 15 个缺项、12 个多余项及 3 处来源标签混杂；未改动逐源 `source_fields`。

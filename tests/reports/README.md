@@ -1,5 +1,7 @@
 # tests/reports/ — 报告层测试
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 > 本目录归并**5 大报告生成脚本**(`get_sht/med/lng/mak/val_report.py`)的 pytest 用例, 覆盖 `BaseReportRunner` 基类契约 / 批量流水线骨架 / val 策略注册表 / 章节缺失检测 / 换手率语义。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 

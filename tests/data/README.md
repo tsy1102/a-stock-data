@@ -1,5 +1,7 @@
 # tests/data/ — 数据源层测试
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 > 本目录归并**数据从哪来**的 pytest 用例, 覆盖 ZHB / TDX / 东财 / 网络传输 / 预取等底层数据源, 对应 `stock_common/sc_datasource/` 与 `core/tdx_client.py` / `core/zhb_client.py` / `stock_common/sc_network.py`。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 

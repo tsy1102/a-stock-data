@@ -1,5 +1,7 @@
 # tests/infra/ — 基础设施测试
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 > 本目录覆盖调度器、外部 API/Google Drive、字段工具、入口依赖预检与脚本写入边界等基础设施契约。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 

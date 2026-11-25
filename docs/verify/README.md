@@ -1,5 +1,7 @@
 # `docs/verify/` 字段实测附录
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 本目录保存按来源整理的字段契约、实测样本和交叉核验资料。逐源字段身份、完整路径与状态以 [`field_registry.json`](../field_verification/field_registry.json) 为准；主字典 [`field_dict.md`](../field_dict.md) 是生成的治理入口，本 README 是本目录当前附录的导航。各附录中的接口数、字段数和样本数是对应研究时的快照，不代表当前可用接口或采集状态。
 
 ## 附录索引

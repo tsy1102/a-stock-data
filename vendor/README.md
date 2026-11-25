@@ -1,5 +1,7 @@
 # Vendored runtime wheel
 
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
 `easy_tdx-1.20.8-py3-none-any.whl` is built from the upstream
 [`yanwei99521/easy-tdx`](https://github.com/yanwei99521/easy-tdx) commit
 `41e56376fafa3abae0f6538f271eafd6af26d27f`.

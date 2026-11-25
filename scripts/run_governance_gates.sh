@@ -56,6 +56,17 @@ RELEVANT="$(git diff --cached --name-only -- \
   docs/field_verification/registry_parity_accepted_debt.json \
   docs/verify 2>/dev/null || true)"
 
+# docs/verify/README.md is a manually maintained navigation index, not a
+# generated field-contract view. Keep it in the archive preflight scope below,
+# but do not make index-only edits run registry parity and dictionary checks.
+FIELD_RELEVANT="$(git diff --cached --name-only -- \
+  docs/field_dict.md \
+  docs/field_verification/field_registry.json \
+  docs/field_verification/registry_parity_scope.json \
+  docs/field_verification/registry_parity_accepted_debt.json \
+  docs/verify \
+  ':(exclude)docs/verify/README.md' 2>/dev/null || true)"
+
 if [ "$FORCE" -eq 0 ] && [ -z "$RELEVANT" ]; then
   echo "[governance-gates] 未检测到 field_dict.md / field_registry.json / docs/verify 改动，跳过闸门。"
   exit 0
@@ -105,9 +116,13 @@ run_gate() {
   fi
 }
 
-run_gate G1 scripts/registry_parity.py \
-  --accepted-debt-manifest docs/field_verification/registry_parity_accepted_debt.json
-run_gate G3 scripts/gen_field_dict.py --check
+if [ "$FORCE" -eq 1 ] || [ -n "$FIELD_RELEVANT" ]; then
+  run_gate G1 scripts/registry_parity.py \
+    --accepted-debt-manifest docs/field_verification/registry_parity_accepted_debt.json
+  run_gate G3 scripts/gen_field_dict.py --check
+else
+  echo "[governance-gates] 仅 docs/verify/README.md 导航索引改动，跳过 G1/G3。"
+fi
 run_gate P1 scripts/archive_field_preflight.py
 
 if [ "$WITH_A7" -eq 1 ]; then

@@ -1,6 +1,8 @@
 # `scripts/` 工具索引
 
-当前版本见仓库根目录 `VERSION`。脚本参数以各自的 `--help` 和本仓库 `AGENTS.md` 为准。
+> 项目版本以仓库根目录 [VERSION](../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../CHANGELOG.md)。
+
+脚本参数以各自的 `--help` 和本仓库 `AGENTS.md` 为准。
 
 ## 运行入口
 

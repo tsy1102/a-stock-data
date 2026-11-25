@@ -1,5 +1,7 @@
 # tests/core/ — 统一层 / 服务层测试
 
+> 项目版本以仓库根目录 [VERSION](../../VERSION) 为准；版本变更记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+
 > 本目录归并**核心统一层与公共服务**的 pytest 用例, 对应 `core/` 包(`data_provider` / `stock_cache` / `config` / `zhb_*` 等) 与 `stock_common` 的 schema / scoring / technical / risk / utils。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
